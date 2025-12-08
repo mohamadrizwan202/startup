@@ -1,0 +1,2804 @@
+{
+  "1% milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "2% milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "acai berries": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "acai berry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "acorn": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "agave": {
+    "serving_size": 7.0,
+    "serving_description": "7.0g",
+    "serving_size_grams": 7.0,
+    "display_serving": "7.0g"
+  },
+  "agave nectar": {
+    "serving_size": 7.0,
+    "serving_description": "7.0g",
+    "serving_size_grams": 7.0,
+    "display_serving": "7.0g"
+  },
+  "agave syrup": {
+    "serving_size": 7.0,
+    "serving_description": "7.0g",
+    "serving_size_grams": 7.0,
+    "display_serving": "7.0g"
+  },
+  "aged cheddar": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "allulose": {
+    "serving_size": 4.0,
+    "serving_description": "4.0g",
+    "serving_size_grams": 4.0,
+    "display_serving": "4.0g"
+  },
+  "almond": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "almond milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "almond oil": {
+    "serving_size": 15.0,
+    "serving_description": "15.0g",
+    "serving_size_grams": 15.0,
+    "display_serving": "15.0g"
+  },
+  "almonds": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "aloe vera": {
+    "serving_size": 248.0,
+    "serving_description": "248.0g",
+    "serving_size_grams": 248.0,
+    "display_serving": "248.0g"
+  },
+  "anchovies": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "apple": {
+    "serving_size": 182.0,
+    "serving_description": "182.0g",
+    "serving_size_grams": 182.0,
+    "display_serving": "182.0g"
+  },
+  "apples": {
+    "serving_size": 182.0,
+    "serving_description": "182.0g",
+    "serving_size_grams": 182.0,
+    "display_serving": "182.0g"
+  },
+  "apricot": {
+    "serving_size": 35.0,
+    "serving_description": "35.0g",
+    "serving_size_grams": 35.0,
+    "display_serving": "35.0g"
+  },
+  "apricots": {
+    "serving_size": 35.0,
+    "serving_description": "35.0g",
+    "serving_size_grams": 35.0,
+    "display_serving": "35.0g"
+  },
+  "artichoke": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "artichokes": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "arugula": {
+    "serving_size": 20.0,
+    "serving_description": "20.0g",
+    "serving_size_grams": 20.0,
+    "display_serving": "20.0g"
+  },
+  "asparagus": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "avocado": {
+    "serving_size": 150.0,
+    "serving_description": "150.0g",
+    "serving_size_grams": 150.0,
+    "display_serving": "150.0g"
+  },
+  "avocado oil": {
+    "serving_size": 15.0,
+    "serving_description": "15.0g",
+    "serving_size_grams": 15.0,
+    "display_serving": "15.0g"
+  },
+  "avocados": {
+    "serving_size": 150.0,
+    "serving_description": "150.0g",
+    "serving_size_grams": 150.0,
+    "display_serving": "150.0g"
+  },
+  "baby spinach": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "banana": {
+    "serving_size": 118.0,
+    "serving_description": "118.0g",
+    "serving_size_grams": 118.0,
+    "display_serving": "118.0g"
+  },
+  "barberry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "barley": {
+    "serving_size": 79.0,
+    "serving_description": "79.0g",
+    "serving_size_grams": 79.0,
+    "display_serving": "79.0g"
+  },
+  "barley milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "baruka nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "baruka nuts": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "basil": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "basmati rice": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "beans": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "beech nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "beef": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "beefsteak tomatoes": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "beetroot": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "beets": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "bell pepper": {
+    "serving_size": 150.0,
+    "serving_description": "150.0g",
+    "serving_size_grams": 150.0,
+    "display_serving": "150.0g"
+  },
+  "bell peppers": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "betel nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "black beans": {
+    "serving_size": 130.0,
+    "serving_description": "130.0g",
+    "serving_size_grams": 130.0,
+    "display_serving": "130.0g"
+  },
+  "black pepper": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "black-eyed peas": {
+    "serving_size": 86.0,
+    "serving_description": "86.0g",
+    "serving_size_grams": 86.0,
+    "display_serving": "86.0g"
+  },
+  "blackberries": {
+    "serving_size": 144.0,
+    "serving_description": "144.0g",
+    "serving_size_grams": 144.0,
+    "display_serving": "144.0g"
+  },
+  "blackberry": {
+    "serving_size": 144.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "blood orange": {
+    "serving_size": 154.0,
+    "serving_description": "154.0g",
+    "serving_size_grams": 154.0,
+    "display_serving": "154.0g"
+  },
+  "blue cheese": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "blue cheeses": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "blueberries": {
+    "serving_size": 148.0,
+    "serving_description": "148.0g",
+    "serving_size_grams": 148.0,
+    "display_serving": "148.0g"
+  },
+  "blueberry": {
+    "serving_size": 148.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "bok choy": {
+    "serving_size": 70.0,
+    "serving_description": "70.0g",
+    "serving_size_grams": 70.0,
+    "display_serving": "70.0g"
+  },
+  "bone broth": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "boysenberries": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "boysenberry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "brazil nut": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "brazil nut milk": {
+    "serving_size": 240.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "brazil nuts": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "bread": {
+    "serving_size": 43.0,
+    "serving_description": "43.0g",
+    "serving_size_grams": 43.0,
+    "display_serving": "43.0g"
+  },
+  "broccoli": {
+    "serving_size": 91.0,
+    "serving_description": "91.0g",
+    "serving_size_grams": 91.0,
+    "display_serving": "91.0g"
+  },
+  "brown rice": {
+    "serving_size": 98.0,
+    "serving_description": "98.0g",
+    "serving_size_grams": 98.0,
+    "display_serving": "98.0g"
+  },
+  "brussels sprouts": {
+    "serving_size": 78.0,
+    "serving_description": "78.0g",
+    "serving_size_grams": 78.0,
+    "display_serving": "78.0g"
+  },
+  "buckwheat": {
+    "serving_size": 84.0,
+    "serving_description": "84.0g",
+    "serving_size_grams": 84.0,
+    "display_serving": "84.0g"
+  },
+  "butter": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "butter lettuce": {
+    "serving_size": 55.0,
+    "serving_description": "55.0g",
+    "serving_size_grams": 55.0,
+    "display_serving": "55.0g"
+  },
+  "buttermilk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "butternut": {
+    "serving_size": 14.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "cabbage": {
+    "serving_size": 89.0,
+    "serving_description": "89.0g",
+    "serving_size_grams": 89.0,
+    "display_serving": "89.0g"
+  },
+  "candlenut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "cannellini beans": {
+    "serving_size": 90.0,
+    "serving_description": "90.0g",
+    "serving_size_grams": 90.0,
+    "display_serving": "90.0g"
+  },
+  "cantaloupe": {
+    "serving_size": 177.0,
+    "serving_description": "177.0g",
+    "serving_size_grams": 177.0,
+    "display_serving": "177.0g"
+  },
+  "carrot": {
+    "serving_size": 128.0,
+    "serving_description": "128.0g",
+    "serving_size_grams": 128.0,
+    "display_serving": "128.0g"
+  },
+  "carrots": {
+    "serving_size": 61.0,
+    "serving_description": "61.0g",
+    "serving_size_grams": 61.0,
+    "display_serving": "61.0g"
+  },
+  "cashew milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "cashews": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "cauliflower": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "cayenne pepper": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "celery": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "chamomile": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "chamomile tea": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "cheddar": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "cheddar (pasteurized only)": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "cheddar cheese": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "cherries": {
+    "serving_size": 154.0,
+    "serving_description": "154.0g",
+    "serving_size_grams": 154.0,
+    "display_serving": "154.0g"
+  },
+  "cherry": {
+    "serving_size": 154.0,
+    "serving_description": "154.0g",
+    "serving_size_grams": 154.0,
+    "display_serving": "154.0g"
+  },
+  "cherry tomatoes": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "chestnut": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "chia seeds": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "chicken": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "chicken breast": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "chickpeas": {
+    "serving_size": 82.0,
+    "serving_description": "82.0g",
+    "serving_size_grams": 82.0,
+    "display_serving": "82.0g"
+  },
+  "chicory root": {
+    "serving_size": 3.0,
+    "serving_description": "3.0g",
+    "serving_size_grams": 3.0,
+    "display_serving": "3.0g"
+  },
+  "chili peppers": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "chocolate milk": {
+    "serving_size": 244.0,
+    "serving_description": "244.0g",
+    "serving_size_grams": 244.0,
+    "display_serving": "244.0g"
+  },
+  "cinnamon": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "clams": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "clementine": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "clementines": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "cloudberries": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "cloudberry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "cloves": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "coconut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "coconut meat": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "coconut milk": {
+    "serving_size": 240.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "coconut oil": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "coconut sugar": {
+    "serving_size": 4.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "coconut water": {
+    "serving_size": 244.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "cod": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "coffee": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "cola nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "collard greens": {
+    "serving_size": 36.0,
+    "serving_description": "36.0g",
+    "serving_size_grams": 36.0,
+    "display_serving": "36.0g"
+  },
+  "corn": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "cottage cheese": {
+    "serving_size": 110.0,
+    "serving_description": "110.0g",
+    "serving_size_grams": 110.0,
+    "display_serving": "110.0g"
+  },
+  "cottage cheese (low-fat)": {
+    "serving_size": 110.0,
+    "serving_description": "110.0g",
+    "serving_size_grams": 110.0,
+    "display_serving": "110.0g"
+  },
+  "cottage cheese (probiotics)": {
+    "serving_size": 110.0,
+    "serving_description": "110.0g",
+    "serving_size_grams": 110.0,
+    "display_serving": "110.0g"
+  },
+  "crab": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "cranberries": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "cranberry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "cucumber": {
+    "serving_size": 52.0,
+    "serving_description": "52.0g",
+    "serving_size_grams": 52.0,
+    "display_serving": "52.0g"
+  },
+  "dandelion greens": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "dark chocolate": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "date sugar": {
+    "serving_size": 4.0,
+    "serving_description": "4.0g",
+    "serving_size_grams": 4.0,
+    "display_serving": "4.0g"
+  },
+  "dragon fruit": {
+    "serving_size": 170.0,
+    "serving_description": "170.0g",
+    "serving_size_grams": 170.0,
+    "display_serving": "170.0g"
+  },
+  "dragon fruits": {
+    "serving_size": 170.0,
+    "serving_description": "170.0g",
+    "serving_size_grams": 170.0,
+    "display_serving": "170.0g"
+  },
+  "dried apple": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried apricot": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried banana": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried blueberry": {
+    "serving_size": 40.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "dried cantaloupe": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried cantaloupes": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried cherry": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried coconut": {
+    "serving_size": 40.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "dried cranberry": {
+    "serving_size": 40.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "dried date": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "dried dragon fruit": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried dragon fruits": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried fig": {
+    "serving_size": 38.0,
+    "serving_description": "38.0g",
+    "serving_size_grams": 38.0,
+    "display_serving": "38.0g"
+  },
+  "dried goji berries": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried goji berry": {
+    "serving_size": 40.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "dried gooseberry": {
+    "serving_size": 40.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "dried kiwi": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried mango": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried mulberry": {
+    "serving_size": 40.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "dried papaya": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried passion fruit": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried passion fruits": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried peach": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried pear": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried pears": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried pineapple": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried plum": {
+    "serving_size": 66.0,
+    "serving_description": "66.0g",
+    "serving_size_grams": 66.0,
+    "display_serving": "66.0g"
+  },
+  "dried strawberry": {
+    "serving_size": 40.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "dried watermelon": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "dried watermelons": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "duck": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "edamame": {
+    "serving_size": 80.0,
+    "serving_description": "80.0g",
+    "serving_size_grams": 80.0,
+    "display_serving": "80.0g"
+  },
+  "egg": {
+    "serving_size": 50.0,
+    "serving_description": "50.0g",
+    "serving_size_grams": 50.0,
+    "display_serving": "50.0g"
+  },
+  "egg yolks": {
+    "serving_size": 17.0,
+    "serving_description": "17.0g",
+    "serving_size_grams": 17.0,
+    "display_serving": "17.0g"
+  },
+  "eggs": {
+    "serving_size": 50.0,
+    "serving_description": "50.0g",
+    "serving_size_grams": 50.0,
+    "display_serving": "50.0g"
+  },
+  "elderberries": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "elderberry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "endive": {
+    "serving_size": 50.0,
+    "serving_description": "50.0g",
+    "serving_size_grams": 50.0,
+    "display_serving": "50.0g"
+  },
+  "erythritol": {
+    "serving_size": 4.0,
+    "serving_description": "4.0g",
+    "serving_size_grams": 4.0,
+    "display_serving": "4.0g"
+  },
+  "farro": {
+    "serving_size": 151.0,
+    "serving_description": "151.0g",
+    "serving_size_grams": 151.0,
+    "display_serving": "151.0g"
+  },
+  "fat free milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "fatty fish": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "fava beans": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "fennel": {
+    "serving_size": 44.0,
+    "serving_description": "44.0g",
+    "serving_size_grams": 44.0,
+    "display_serving": "44.0g"
+  },
+  "fenugreek": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "feta": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "fig": {
+    "serving_size": 50.0,
+    "serving_description": "50.0g",
+    "serving_size_grams": 50.0,
+    "display_serving": "50.0g"
+  },
+  "figs": {
+    "serving_size": 50.0,
+    "serving_description": "50.0g",
+    "serving_size_grams": 50.0,
+    "display_serving": "50.0g"
+  },
+  "fish": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "fish oil": {
+    "serving_size": 15.0,
+    "serving_description": "15.0g",
+    "serving_size_grams": 15.0,
+    "display_serving": "15.0g"
+  },
+  "flax milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "flax seeds": {
+    "serving_size": 7.0,
+    "serving_description": "7.0g",
+    "serving_size_grams": 7.0,
+    "display_serving": "7.0g"
+  },
+  "flaxseed oil": {
+    "serving_size": 15.0,
+    "serving_description": "15.0g",
+    "serving_size_grams": 15.0,
+    "display_serving": "15.0g"
+  },
+  "flour": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "fortified milk": {
+    "serving_size": 244.0,
+    "serving_description": "244.0g",
+    "serving_size_grams": 244.0,
+    "display_serving": "244.0g"
+  },
+  "fox nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "fresh apricot": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "fresh coconut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "fresh date": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "fresh dates": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "garbanzo beans": {
+    "serving_size": 82.0,
+    "serving_description": "82.0g",
+    "serving_size_grams": 82.0,
+    "display_serving": "82.0g"
+  },
+  "garlic": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "ginger": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "ginger root": {
+    "serving_size": 11.0,
+    "serving_description": "11.0g",
+    "serving_size_grams": 11.0,
+    "display_serving": "11.0g"
+  },
+  "ginger tea": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "ginkgo nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "ginseng": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "gluten": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "goat milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "goji berries": {
+    "serving_size": 128.0,
+    "serving_description": "128.0g",
+    "serving_size_grams": 128.0,
+    "display_serving": "128.0g"
+  },
+  "goji berry": {
+    "serving_size": 128.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "grape": {
+    "serving_size": 126.0,
+    "serving_description": "126.0g",
+    "serving_size_grams": 126.0,
+    "display_serving": "126.0g"
+  },
+  "grape tomatoes": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "grapefruit": {
+    "serving_size": 230.0,
+    "serving_description": "230.0g",
+    "serving_size_grams": 230.0,
+    "display_serving": "230.0g"
+  },
+  "grapefruits": {
+    "serving_size": 230.0,
+    "serving_description": "230.0g",
+    "serving_size_grams": 230.0,
+    "display_serving": "230.0g"
+  },
+  "grapes": {
+    "serving_size": 151.0,
+    "serving_description": "151.0g",
+    "serving_size_grams": 151.0,
+    "display_serving": "151.0g"
+  },
+  "greek yogurt": {
+    "serving_size": 170.0,
+    "serving_description": "170.0g",
+    "serving_size_grams": 170.0,
+    "display_serving": "170.0g"
+  },
+  "green apple": {
+    "serving_size": 182.0,
+    "serving_description": "182.0g",
+    "serving_size_grams": 182.0,
+    "display_serving": "182.0g"
+  },
+  "green bean": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "green beans": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "green tea": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "guarana": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "guava": {
+    "serving_size": 165.0,
+    "serving_description": "165.0g",
+    "serving_size_grams": 165.0,
+    "display_serving": "165.0g"
+  },
+  "guavas": {
+    "serving_size": 165.0,
+    "serving_description": "165.0g",
+    "serving_size_grams": 165.0,
+    "display_serving": "165.0g"
+  },
+  "half-and-half": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "halibut": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "hazelnut": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "hazelnut milk": {
+    "serving_size": 240.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "hazelnuts": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "heavy whipping cream": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "hemp milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "hemp seeds": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "hickory nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "holy basil": {
+    "serving_size": 1.0,
+    "serving_description": "1.0g",
+    "serving_size_grams": 1.0,
+    "display_serving": "1.0g"
+  },
+  "honey": {
+    "serving_size": 21.0,
+    "serving_description": "21.0g",
+    "serving_size_grams": 21.0,
+    "display_serving": "21.0g"
+  },
+  "honeydew": {
+    "serving_size": 170.0,
+    "serving_description": "170.0g",
+    "serving_size_grams": 170.0,
+    "display_serving": "170.0g"
+  },
+  "honeydew melon": {
+    "serving_size": 170.0,
+    "serving_description": "170.0g",
+    "serving_size_grams": 170.0,
+    "display_serving": "170.0g"
+  },
+  "huckleberries": {
+    "serving_size": 148.0,
+    "serving_description": "148.0g",
+    "serving_size_grams": 148.0,
+    "display_serving": "148.0g"
+  },
+  "huckleberry": {
+    "serving_size": 148.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "iceberg lettuce": {
+    "serving_size": 36.0,
+    "serving_description": "36.0g",
+    "serving_size_grams": 36.0,
+    "display_serving": "36.0g"
+  },
+  "jackfruit": {
+    "serving_size": 165.0,
+    "serving_description": "165.0g",
+    "serving_size_grams": 165.0,
+    "display_serving": "165.0g"
+  },
+  "jasmine rice": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "juniper berry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "kale": {
+    "serving_size": 67.0,
+    "serving_description": "67.0g",
+    "serving_size_grams": 67.0,
+    "display_serving": "67.0g"
+  },
+  "kefir": {
+    "serving_size": 245.0,
+    "serving_description": "245.0g",
+    "serving_size_grams": 245.0,
+    "display_serving": "245.0g"
+  },
+  "kemiri nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "kidney beans": {
+    "serving_size": 88.0,
+    "serving_description": "88.0g",
+    "serving_size_grams": 88.0,
+    "display_serving": "88.0g"
+  },
+  "kimchi": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "kiwi": {
+    "serving_size": 148.0,
+    "serving_description": "148.0g",
+    "serving_size_grams": 148.0,
+    "display_serving": "148.0g"
+  },
+  "kola nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "kombucha": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "kukui nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "lactose-free 1% milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "lactose-free whole milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "lamb": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "lavender": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "lavender tea": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "lean beef": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "leek": {
+    "serving_size": 89.0,
+    "serving_description": "89.0g",
+    "serving_size_grams": 89.0,
+    "display_serving": "89.0g"
+  },
+  "leeks": {
+    "serving_size": 89.0,
+    "serving_description": "89.0g",
+    "serving_size_grams": 89.0,
+    "display_serving": "89.0g"
+  },
+  "lemon": {
+    "serving_size": 58.0,
+    "serving_description": "58.0g",
+    "serving_size_grams": 58.0,
+    "display_serving": "58.0g"
+  },
+  "lemon balm": {
+    "serving_size": 1.0,
+    "serving_description": "1.0g",
+    "serving_size_grams": 1.0,
+    "display_serving": "1.0g"
+  },
+  "lemons": {
+    "serving_size": 58.0,
+    "serving_description": "58.0g",
+    "serving_size_grams": 58.0,
+    "display_serving": "58.0g"
+  },
+  "lentils": {
+    "serving_size": 99.0,
+    "serving_description": "99.0g",
+    "serving_size_grams": 99.0,
+    "display_serving": "99.0g"
+  },
+  "lettuce": {
+    "serving_size": 36.0,
+    "serving_description": "36.0g",
+    "serving_size_grams": 36.0,
+    "display_serving": "36.0g"
+  },
+  "lima beans": {
+    "serving_size": 94.0,
+    "serving_description": "94.0g",
+    "serving_size_grams": 94.0,
+    "display_serving": "94.0g"
+  },
+  "lime": {
+    "serving_size": 67.0,
+    "serving_description": "67.0g",
+    "serving_size_grams": 67.0,
+    "display_serving": "67.0g"
+  },
+  "lingonberry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "liver": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "lobster": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "loganberries": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "loganberry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "loquat": {
+    "serving_size": 163.0,
+    "serving_description": "163.0g",
+    "serving_size_grams": 163.0,
+    "display_serving": "163.0g"
+  },
+  "loquats": {
+    "serving_size": 163.0,
+    "serving_description": "163.0g",
+    "serving_size_grams": 163.0,
+    "display_serving": "163.0g"
+  },
+  "low fat milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "lychee": {
+    "serving_size": 190.0,
+    "serving_description": "190.0g",
+    "serving_size_grams": 190.0,
+    "display_serving": "190.0g"
+  },
+  "lychees": {
+    "serving_size": 190.0,
+    "serving_description": "190.0g",
+    "serving_size_grams": 190.0,
+    "display_serving": "190.0g"
+  },
+  "macadamia": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "macadamia milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "macadamia nut": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "mackerel": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "mango": {
+    "serving_size": 165.0,
+    "serving_description": "165.0g",
+    "serving_size_grams": 165.0,
+    "display_serving": "165.0g"
+  },
+  "maple syrup": {
+    "serving_size": 20.0,
+    "serving_description": "20.0g",
+    "serving_size_grams": 20.0,
+    "display_serving": "20.0g"
+  },
+  "marshmallow root": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "milk": {
+    "serving_size": 244.0,
+    "serving_description": "244.0g",
+    "serving_size_grams": 244.0,
+    "display_serving": "244.0g"
+  },
+  "millet": {
+    "serving_size": 87.0,
+    "serving_description": "87.0g",
+    "serving_size_grams": 87.0,
+    "display_serving": "87.0g"
+  },
+  "millet milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "miso": {
+    "serving_size": 18.0,
+    "serving_description": "18.0g",
+    "serving_size_grams": 18.0,
+    "display_serving": "18.0g"
+  },
+  "mizuna": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "mongongo nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "monk fruit": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "monk fruit sweetener": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "monterey jack": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "monterey jack cheese": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "mozzarella": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "mozzarella (part-skim)": {
+    "serving_size": 55.0,
+    "serving_description": "55.0g",
+    "serving_size_grams": 55.0,
+    "display_serving": "55.0g"
+  },
+  "mulberries": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "mulberry": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "mushroom": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "mushrooms": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "mustard greens": {
+    "serving_size": 56.0,
+    "serving_description": "56.0g",
+    "serving_size_grams": 56.0,
+    "display_serving": "56.0g"
+  },
+  "navel orange": {
+    "serving_size": 154.0,
+    "serving_description": "154.0g",
+    "serving_size_grams": 154.0,
+    "display_serving": "154.0g"
+  },
+  "navy beans": {
+    "serving_size": 91.0,
+    "serving_description": "91.0g",
+    "serving_size_grams": 91.0,
+    "display_serving": "91.0g"
+  },
+  "nectarine": {
+    "serving_size": 142.0,
+    "serving_description": "142.0g",
+    "serving_size_grams": 142.0,
+    "display_serving": "142.0g"
+  },
+  "nectarines": {
+    "serving_size": 142.0,
+    "serving_description": "142.0g",
+    "serving_size_grams": 142.0,
+    "display_serving": "142.0g"
+  },
+  "oat milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "oatmeal": {
+    "serving_size": 117.0,
+    "serving_description": "117.0g",
+    "serving_size_grams": 117.0,
+    "display_serving": "117.0g"
+  },
+  "oats": {
+    "serving_size": 117.0,
+    "serving_description": "117.0g",
+    "serving_size_grams": 117.0,
+    "display_serving": "117.0g"
+  },
+  "okra": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "olive": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "olive oil": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "onion": {
+    "serving_size": 110.0,
+    "serving_description": "110.0g",
+    "serving_size_grams": 110.0,
+    "display_serving": "110.0g"
+  },
+  "onions": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "orange": {
+    "serving_size": 154.0,
+    "serving_description": "154.0g",
+    "serving_size_grams": 154.0,
+    "display_serving": "154.0g"
+  },
+  "oregano": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "organic whole milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "oysters": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "palm nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "papaya": {
+    "serving_size": 140.0,
+    "serving_description": "140.0g",
+    "serving_size_grams": 140.0,
+    "display_serving": "140.0g"
+  },
+  "paradise nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "parmesan": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "parsley": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "passion fruit": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "passionflower": {
+    "serving_size": 1.0,
+    "serving_description": "1.0g",
+    "serving_size_grams": 1.0,
+    "display_serving": "1.0g"
+  },
+  "passionfruit": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "pasta": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "pea milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "peach": {
+    "serving_size": 150.0,
+    "serving_description": "150.0g",
+    "serving_size_grams": 150.0,
+    "display_serving": "150.0g"
+  },
+  "peaches": {
+    "serving_size": 150.0,
+    "serving_description": "150.0g",
+    "serving_size_grams": 150.0,
+    "display_serving": "150.0g"
+  },
+  "peanut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "peanut butter": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "peanuts": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "pear": {
+    "serving_size": 178.0,
+    "serving_description": "178.0g",
+    "serving_size_grams": 178.0,
+    "display_serving": "178.0g"
+  },
+  "pears": {
+    "serving_size": 178.0,
+    "serving_description": "178.0g",
+    "serving_size_grams": 178.0,
+    "display_serving": "178.0g"
+  },
+  "pecan": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "pecan milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "peppermint tea": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "persimmon": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "persimmons": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "pili nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "pine nut": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "pineapple": {
+    "serving_size": 165.0,
+    "serving_description": "165.0g",
+    "serving_size_grams": 165.0,
+    "display_serving": "165.0g"
+  },
+  "pinto beans": {
+    "serving_size": 86.0,
+    "serving_description": "86.0g",
+    "serving_size_grams": 86.0,
+    "display_serving": "86.0g"
+  },
+  "pistachio": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "pistachio milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "pistachio oil": {
+    "serving_size": 15.0,
+    "serving_description": "15.0g",
+    "serving_size_grams": 15.0,
+    "display_serving": "15.0g"
+  },
+  "pistachios": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "plum": {
+    "serving_size": 151.0,
+    "serving_description": "151.0g",
+    "serving_size_grams": 151.0,
+    "display_serving": "151.0g"
+  },
+  "plums": {
+    "serving_size": 151.0,
+    "serving_description": "151.0g",
+    "serving_size_grams": 151.0,
+    "display_serving": "151.0g"
+  },
+  "pomegranate": {
+    "serving_size": 87.0,
+    "serving_description": "87.0g",
+    "serving_size_grams": 87.0,
+    "display_serving": "87.0g"
+  },
+  "pomegranates": {
+    "serving_size": 87.0,
+    "serving_description": "87.0g",
+    "serving_size_grams": 87.0,
+    "display_serving": "87.0g"
+  },
+  "pork": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "potato": {
+    "serving_size": 173.0,
+    "serving_description": "173.0g",
+    "serving_size_grams": 173.0,
+    "display_serving": "173.0g"
+  },
+  "prune": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "psyllium husk": {
+    "serving_size": 5.0,
+    "serving_description": "5.0g",
+    "serving_size_grams": 5.0,
+    "display_serving": "5.0g"
+  },
+  "pumpkin": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "pumpkin seed": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "pumpkin seed milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "pumpkin seed oil": {
+    "serving_size": 15.0,
+    "serving_description": "15.0g",
+    "serving_size_grams": 15.0,
+    "display_serving": "15.0g"
+  },
+  "pumpkin seeds": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "quince": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "quinces": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "quinoa": {
+    "serving_size": 43.0,
+    "serving_description": "43.0g",
+    "serving_size_grams": 43.0,
+    "display_serving": "43.0g"
+  },
+  "quinoa milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "radicchio": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "radish": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "radishes": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "raisin": {
+    "serving_size": 40.0,
+    "serving_description": "40.0g",
+    "serving_size_grams": 40.0,
+    "display_serving": "40.0g"
+  },
+  "raspberries": {
+    "serving_size": 123.0,
+    "serving_description": "123.0g",
+    "serving_size_grams": 123.0,
+    "display_serving": "123.0g"
+  },
+  "raspberry": {
+    "serving_size": 123.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "raw almond": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "raw cashew": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "raw honey": {
+    "serving_size": 21.0,
+    "serving_description": "21.0g",
+    "serving_size_grams": 21.0,
+    "display_serving": "21.0g"
+  },
+  "raw walnut": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "raw walnuts": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "red apple": {
+    "serving_size": 182.0,
+    "serving_description": "182.0g",
+    "serving_size_grams": 182.0,
+    "display_serving": "182.0g"
+  },
+  "red beans": {
+    "serving_size": 88.0,
+    "serving_description": "88.0g",
+    "serving_size_grams": 88.0,
+    "display_serving": "88.0g"
+  },
+  "red bell peppers": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "red grapes": {
+    "serving_size": 151.0,
+    "serving_description": "151.0g",
+    "serving_size_grams": 151.0,
+    "display_serving": "151.0g"
+  },
+  "red wine": {
+    "serving_size": 150.0,
+    "serving_description": "150.0g",
+    "serving_size_grams": 150.0,
+    "display_serving": "150.0g"
+  },
+  "reduced fat milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "reishi mushroom": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "rhodiola": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "rhubarb": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "rice": {
+    "serving_size": 79.0,
+    "serving_description": "79.0g",
+    "serving_size_grams": 79.0,
+    "display_serving": "79.0g"
+  },
+  "rice milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "ricotta": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "roasted almond": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "roasted cashew": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "roasted walnut": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "roasted walnuts": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "roma tomatoes": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "romaine lettuce": {
+    "serving_size": 47.0,
+    "serving_description": "47.0g",
+    "serving_size_grams": 47.0,
+    "display_serving": "47.0g"
+  },
+  "rooibos tea": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "rosemary": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "salmon": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "salt": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "sapodilla": {
+    "serving_size": 170.0,
+    "serving_description": "170.0g",
+    "serving_size_grams": 170.0,
+    "display_serving": "170.0g"
+  },
+  "sapodillas": {
+    "serving_size": 170.0,
+    "serving_description": "170.0g",
+    "serving_size_grams": 170.0,
+    "display_serving": "170.0g"
+  },
+  "sapucaia nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "sardines": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "sauerkraut": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "scallops": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "sesame": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "sesame milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "sesame seeds": {
+    "serving_size": 9.0,
+    "serving_description": "9.0g",
+    "serving_size_grams": 9.0,
+    "display_serving": "9.0g"
+  },
+  "shea nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "shrimp": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "skim milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "slippery elm": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "soy": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "soy milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "soy sauce": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "soybeans": {
+    "serving_size": 86.0,
+    "serving_description": "86.0g",
+    "serving_size_grams": 86.0,
+    "display_serving": "86.0g"
+  },
+  "spinach": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "split peas": {
+    "serving_size": 98.0,
+    "serving_description": "98.0g",
+    "serving_size_grams": 98.0,
+    "display_serving": "98.0g"
+  },
+  "squash": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "star fruit": {
+    "serving_size": 108.0,
+    "serving_description": "108.0g",
+    "serving_size_grams": 108.0,
+    "display_serving": "108.0g"
+  },
+  "starfruit": {
+    "serving_size": 108.0,
+    "serving_description": "108.0g",
+    "serving_size_grams": 108.0,
+    "display_serving": "108.0g"
+  },
+  "stevia": {
+    "serving_size": 1.0,
+    "serving_description": "1.0g",
+    "serving_size_grams": 1.0,
+    "display_serving": "1.0g"
+  },
+  "strawberries": {
+    "serving_size": 144.0,
+    "serving_description": "144.0g",
+    "serving_size_grams": 144.0,
+    "display_serving": "144.0g"
+  },
+  "strawberry": {
+    "serving_size": 144.0,
+    "serving_description": "1 cup fresh",
+    "serving_size_grams": 147.0,
+    "display_serving": "1 cup"
+  },
+  "sugar": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "sunflower seed": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "sunflower seeds": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "sweet potato": {
+    "serving_size": 130.0,
+    "serving_description": "130.0g",
+    "serving_size_grams": 130.0,
+    "display_serving": "130.0g"
+  },
+  "sweet potatoes": {
+    "serving_size": 130.0,
+    "serving_description": "130.0g",
+    "serving_size_grams": 130.0,
+    "display_serving": "130.0g"
+  },
+  "swiss": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "swiss chard": {
+    "serving_size": 36.0,
+    "serving_description": "36.0g",
+    "serving_size_grams": 36.0,
+    "display_serving": "36.0g"
+  },
+  "swiss cheese": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "swiss cheese (alpine-style)": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "swiss cheese (lower sodium)": {
+    "serving_size": 30.0,
+    "serving_description": "30.0g",
+    "serving_size_grams": 30.0,
+    "display_serving": "30.0g"
+  },
+  "tangelo": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "tangelos": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "tangerine": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "tart cherry": {
+    "serving_size": 154.0,
+    "serving_description": "154.0g",
+    "serving_size_grams": 154.0,
+    "display_serving": "154.0g"
+  },
+  "tart cherry juice": {
+    "serving_size": 244.0,
+    "serving_description": "244.0g",
+    "serving_size_grams": 244.0,
+    "display_serving": "244.0g"
+  },
+  "tatsoi": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "tempeh": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "tiger nut": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "tigernut": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "tigernut milk": {
+    "serving_size": 240.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "tofu": {
+    "serving_size": 126.0,
+    "serving_description": "126.0g",
+    "serving_size_grams": 126.0,
+    "display_serving": "126.0g"
+  },
+  "tomatoes": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "trout": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "tuna": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "turkey": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "turkey breast": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "turmeric": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "turmeric root": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "turmeric tea": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "turnip": {
+    "serving_size": 78.0,
+    "serving_description": "78.0g",
+    "serving_size_grams": 78.0,
+    "display_serving": "78.0g"
+  },
+  "turnip greens": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "turnips": {
+    "serving_size": 78.0,
+    "serving_description": "78.0g",
+    "serving_size_grams": 78.0,
+    "display_serving": "78.0g"
+  },
+  "valerian root": {
+    "serving_size": 2.0,
+    "serving_description": "2.0g",
+    "serving_size_grams": 2.0,
+    "display_serving": "2.0g"
+  },
+  "venison": {
+    "serving_size": 85.0,
+    "serving_description": "85g",
+    "serving_size_grams": 85.0,
+    "display_serving": "85g"
+  },
+  "walnut milk": {
+    "serving_size": 240.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "walnut oil": {
+    "serving_size": 15.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "walnuts": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "water": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "watercress": {
+    "serving_size": 34.0,
+    "serving_description": "34.0g",
+    "serving_size_grams": 34.0,
+    "display_serving": "34.0g"
+  },
+  "watermelon": {
+    "serving_size": 152.0,
+    "serving_description": "152.0g",
+    "serving_size_grams": 152.0,
+    "display_serving": "152.0g"
+  },
+  "watermelons": {
+    "serving_size": 152.0,
+    "serving_description": "152.0g",
+    "serving_size_grams": 152.0,
+    "display_serving": "152.0g"
+  },
+  "wheat": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "wheat bread": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "wheat flour": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "whey protein": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "white beans": {
+    "serving_size": 90.0,
+    "serving_description": "90.0g",
+    "serving_size_grams": 90.0,
+    "display_serving": "90.0g"
+  },
+  "white rice": {
+    "serving_size": 79.0,
+    "serving_description": "79.0g",
+    "serving_size_grams": 79.0,
+    "display_serving": "79.0g"
+  },
+  "white tea": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "whole milk": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "whole wheat": {
+    "serving_size": 91.0,
+    "serving_description": "91.0g",
+    "serving_size_grams": 91.0,
+    "display_serving": "91.0g"
+  },
+  "whole wheat bread": {
+    "serving_size": 28.0,
+    "serving_description": "1 oz (28g)",
+    "serving_size_grams": 28.0,
+    "display_serving": "1 oz"
+  },
+  "wild rice": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "yacon syrup": {
+    "serving_size": 7.0,
+    "serving_description": "7.0g",
+    "serving_size_grams": 7.0,
+    "display_serving": "7.0g"
+  },
+  "yam": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  },
+  "yerba mate": {
+    "serving_size": 240.0,
+    "serving_description": "240.0g",
+    "serving_size_grams": 240.0,
+    "display_serving": "240.0g"
+  },
+  "yogurt": {
+    "serving_size": 245.0,
+    "serving_description": "245.0g",
+    "serving_size_grams": 245.0,
+    "display_serving": "245.0g"
+  },
+  "zucchini": {
+    "serving_size": 100.0,
+    "serving_description": "100g",
+    "serving_size_grams": 100.0,
+    "display_serving": "100g"
+  }
+}
