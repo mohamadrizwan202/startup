@@ -2,6 +2,7 @@ import re
 from flask import Flask, render_template, request, jsonify, session
 import time
 import logging
+from flask_wtf.csrf import CSRFProtect, CSRFError
 
 import sqlite3
 import os
@@ -145,6 +146,11 @@ app.config["SECRET_KEY"] = os.environ.get(
     "dev-secret-change-me-in-production"
 )
 # Note: In production (Render), set FLASK_SECRET_KEY to a strong random value.
+
+# --- CSRF Protection ---
+# Initialize CSRF protection for all routes by default
+# API routes will be explicitly exempted below
+csrf = CSRFProtect(app)
 
 # --- Session Cookie Hardening ---
 # HTTP-only: Prevents JavaScript from accessing the cookie (protects against XSS)
@@ -306,6 +312,35 @@ def handle_not_found(error):
         return "Page not found.", 404
 
 
+@app.errorhandler(CSRFError)
+def handle_csrf_error(error):
+    """
+    Handle CSRF validation errors.
+    Logs the error server-side, returns safe message to client.
+    """
+    # Log the CSRF error for debugging (without exposing details to client)
+    error_logger.warning(
+        f"CSRF validation failed: {request.method} {request.path}",
+        extra={
+            "path": request.path,
+            "method": request.method,
+            "remote_addr": request.remote_addr,
+            "referrer": request.referrer
+        }
+    )
+    
+    # Return appropriate response based on whether this is an API endpoint
+    if request.path.startswith('/api/'):
+        # API endpoints: return JSON error response
+        return jsonify({
+            "error": "csrf_failed",
+            "message": "Security check failed. Please try again."
+        }), 400
+    else:
+        # Non-API routes: return simple text/HTML message
+        return "Security check failed. Please reload the page and try again.", 400
+
+
 # ============================================================================
 
 
@@ -329,6 +364,7 @@ def browser():
     """Interactive UI for browsing health categories, subcategories, and ingredients"""
     return render_template('browser.html')
 
+@csrf.exempt
 @app.route('/api/categories')
 def categories():
     """Get list of all unique categories"""
@@ -351,6 +387,7 @@ def categories():
         return jsonify({"error": str(e)}), 500
 
 
+@csrf.exempt
 @app.route('/api/v1/category-hierarchy')
 @app.route('/api/category-hierarchy')
 def category_hierarchy():
@@ -389,6 +426,7 @@ def category_hierarchy():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@csrf.exempt
 @app.route('/api/ingredients/<category>')
 def get_ingredients(category):
     """Get ingredients for a specific category"""
@@ -418,6 +456,7 @@ def get_ingredients(category):
 # ============================================================================
 
 
+@csrf.exempt
 @app.route('/api/ingredient-search')
 def ingredient_search():
     """Search for ingredients by name, returning up to 20 unique matches"""
@@ -477,6 +516,7 @@ def ingredient_search():
         return jsonify({"error": str(e)}), 500
 
 
+@csrf.exempt
 @app.route('/api/categories/<category>/<subcategory>')
 def get_category_ingredients(category, subcategory):
     """Get ingredients for a specific category and subcategory"""
@@ -48386,6 +48426,7 @@ def is_blocked_ingredient_ingredient_tab(ingredient_name):
     normalized = ingredient_name.lower().strip()
     return normalized in [name.lower().strip() for name in BLOCKED_INGREDIENT_NAMES_INGREDIENT_TAB]
 
+@csrf.exempt
 @app.route('/api/analyze', methods=['POST'])
 def api_analyze():
     """Analyze ingredients endpoint - accepts both 'ingredients' array and 'query' string"""
