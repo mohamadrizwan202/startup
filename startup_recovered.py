@@ -1,14 +1,20 @@
 import re
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 import time
 
 import sqlite3
 import os
 app = Flask(__name__)
+
 @app.route("/home")
 def home():
     return render_template("index.html")
-
+@app.route("/debug/session")
+def debug_session():
+    # Touch the Flask session so it has to set a cookie
+    session["debug"] = "yes"
+    return "Debug session set"
+    
 def init_db():
     """Initialize database with all tables"""
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -124,23 +130,102 @@ import os
 
 app = Flask(__name__)
 
-# Enable CORS - try flask_cors first, fallback to manual headers
+# ============================================================================
+# Security Configuration
+# ============================================================================
+# Centralized security settings for the Flask application.
+# This section configures secret keys, session cookies, CORS, and security headers.
+
+# --- Secret Key & Environment Awareness ---
+# Read secret key from environment variable for production security.
+# The default is for local development only and MUST be changed in production.
+app.config["SECRET_KEY"] = os.environ.get(
+    "FLASK_SECRET_KEY",
+    "dev-secret-change-me-in-production"
+)
+# Note: In production (Render), set FLASK_SECRET_KEY to a strong random value.
+
+# --- Session Cookie Hardening ---
+# HTTP-only: Prevents JavaScript from accessing the cookie (protects against XSS)
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+
+# SameSite: Prevents CSRF attacks by restricting when cookies are sent
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+# Secure flag: Only send cookies over HTTPS in production
+# In development (HTTP), allow cookies to work locally
+# In production (HTTPS), enforce secure cookies
+is_production = os.environ.get("FLASK_ENV") == "production" or os.environ.get("ENVIRONMENT") == "production"
+is_debug = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
+app.config["SESSION_COOKIE_SECURE"] = is_production and not is_debug
+
+# --- CORS (Cross-Origin Resource Sharing) ---
+# Allow frontend to make requests from a different origin
+# Configure allowed origin via environment variable, default to * for dev
+allowed_origin = os.environ.get("FRONTEND_ORIGIN", "*")
+
+# Try to use flask_cors if available (cleaner and more feature-rich)
+cors_installed = False
 try:
     from flask_cors import CORS
-    CORS(app)
+    CORS(app, origins=allowed_origin)
+    cors_installed = True
 except ImportError:
-    # CORS not installed, add manual CORS headers
-    @app.after_request
-    def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-        return response
+    # flask_cors not installed - we'll add CORS headers manually in the security headers function
+    pass
+
+# --- Security Headers ---
+@app.after_request
+def add_security_headers(response):
+    """
+    Add security headers and CORS headers (if needed) to every response.
+    This function runs after every request is processed.
+    """
+    # CORS headers (only if flask_cors is not installed)
+    if not cors_installed:
+        response.headers["Access-Control-Allow-Origin"] = allowed_origin
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    
+    # X-Content-Type-Options: Prevents browsers from MIME-sniffing (prevents XSS)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    
+    # X-Frame-Options: Prevents clickjacking by blocking iframe embedding
+    response.headers["X-Frame-Options"] = "DENY"
+    
+    # Referrer-Policy: Controls how much referrer information is sent
+    # "strict-origin-when-cross-origin" sends full URL for same-origin, origin only for cross-origin
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    
+    # Permissions-Policy: Disables powerful browser features by default
+    # This prevents websites from accessing geolocation, microphone, camera without explicit permission
+    response.headers["Permissions-Policy"] = (
+        "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+    )
+    
+    # Cache-Control & Pragma: Prevent caching of sensitive API responses
+    # This ensures that responses containing sensitive data aren't stored in browser cache
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    
+    # Strict-Transport-Security (HSTS): Force HTTPS in production
+    # Only add this header when running over HTTPS (production)
+    # Adding it in development (HTTP) would break local testing
+    if is_production or request.is_secure:
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
+    
+    return response
+
+# ============================================================================
 
 
 @app.route('/')
 def index():
     return render_template('index.html', time=time)
+
+
 
 @app.route('/browser')
 def browser():
@@ -48788,7 +48873,7 @@ if __name__ == '__main__':
     # Get host and port from environment or use defaults
     host = os.environ.get('FLASK_HOST', '0.0.0.0')
     port = int(os.environ.get('FLASK_PORT', 8000))
-    debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+    debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     
     app.run(debug=debug, host=host, port=port)
 
