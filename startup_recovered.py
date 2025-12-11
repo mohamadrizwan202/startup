@@ -160,15 +160,19 @@ is_debug = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
 app.config["SESSION_COOKIE_SECURE"] = is_production and not is_debug
 
 # --- CORS (Cross-Origin Resource Sharing) ---
-# Allow frontend to make requests from a different origin
-# Configure allowed origin via environment variable, default to * for dev
-allowed_origin = os.environ.get("FRONTEND_ORIGIN", "*")
+# Whitelist of allowed origins for CORS
+ALLOWED_ORIGINS = [
+    "https://startup-hmwd.onrender.com",  # Production
+    "http://127.0.0.1:8000",              # Local dev
+    "http://localhost:8000"               # Local dev
+]
 
 # Try to use flask_cors if available (cleaner and more feature-rich)
 cors_installed = False
 try:
     from flask_cors import CORS
-    CORS(app, origins=allowed_origin)
+    # flask_cors will handle CORS independently - whitelist logic only affects manual fallback
+    CORS(app)
     cors_installed = True
 except ImportError:
     # flask_cors not installed - we'll add CORS headers manually in the security headers function
@@ -183,9 +187,19 @@ def add_security_headers(response):
     """
     # CORS headers (only if flask_cors is not installed)
     if not cors_installed:
-        response.headers["Access-Control-Allow-Origin"] = allowed_origin
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        # Read the incoming Origin header from the request
+        incoming_origin = request.headers.get("Origin")
+        
+        # Check if the origin is in the whitelist
+        allowed_origin = None
+        if incoming_origin and incoming_origin in ALLOWED_ORIGINS:
+            allowed_origin = incoming_origin
+        
+        # Only set CORS headers if the origin is whitelisted
+        if allowed_origin is not None:
+            response.headers["Access-Control-Allow-Origin"] = allowed_origin
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
     
     # X-Content-Type-Options: Prevents browsers from MIME-sniffing (prevents XSS)
     response.headers["X-Content-Type-Options"] = "nosniff"
