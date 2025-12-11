@@ -1,6 +1,7 @@
 import re
 from flask import Flask, render_template, request, jsonify, session
 import time
+import logging
 
 import sqlite3
 import os
@@ -233,12 +234,94 @@ def add_security_headers(response):
     return response
 
 # ============================================================================
+# Error Handling
+# ============================================================================
+# Centralized error handlers to hide internal exceptions from users while
+# logging them server-side. This prevents sensitive information (stack traces,
+# SQL errors, file paths) from being exposed to clients.
+
+# Configure logging for error handlers
+logging.basicConfig(
+    level=logging.ERROR,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+error_logger = logging.getLogger(__name__)
+
+
+@app.errorhandler(500)
+def handle_internal_server_error(error):
+    """
+    Handle HTTP 500 (Internal Server Error) exceptions.
+    Logs full error details server-side, returns safe message to client.
+    """
+    # Log the full error details including traceback on the server
+    error_logger.error(
+        f"Internal Server Error: {str(error)}",
+        exc_info=True,
+        extra={
+            "path": request.path,
+            "method": request.method,
+            "remote_addr": request.remote_addr
+        }
+    )
+    
+    # Return appropriate response based on whether this is an API endpoint
+    if request.path.startswith('/api/'):
+        # API endpoints: return JSON error response
+        return jsonify({
+            "error": "server_error",
+            "message": "An internal server error occurred. Please try again later."
+        }), 500
+    else:
+        # Non-API routes: return simple HTML/string message
+        return "Something went wrong. Please try again later.", 500
+
+
+@app.errorhandler(404)
+def handle_not_found(error):
+    """
+    Handle HTTP 404 (Not Found) errors.
+    Logs the request details server-side, returns safe message to client.
+    """
+    # Log the 404 request for debugging (less critical than 500, so use warning level)
+    error_logger.warning(
+        f"404 Not Found: {request.method} {request.path}",
+        extra={
+            "path": request.path,
+            "method": request.method,
+            "remote_addr": request.remote_addr,
+            "referrer": request.referrer
+        }
+    )
+    
+    # Return appropriate response based on whether this is an API endpoint
+    if request.path.startswith('/api/'):
+        # API endpoints: return JSON error response
+        return jsonify({
+            "error": "not_found",
+            "message": "The requested resource was not found."
+        }), 404
+    else:
+        # Non-API routes: return simple HTML/string message
+        return "Page not found.", 404
+
+
+# ============================================================================
 
 
 @app.route('/')
 def index():
     return render_template('index.html', time=time)
 
+
+@app.route('/force-error')
+def force_error():
+    """
+    Local test-only route to trigger a 500 error and verify the error handler.
+    This route deliberately raises an exception to test error handling.
+    WARNING: For local debugging only - should not expose stack traces to client.
+    """
+    raise RuntimeError("Test crash - this is intentional to verify error handler")
 
 
 @app.route('/browser')
