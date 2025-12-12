@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Categories Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .content {
+            padding: 30px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .category-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .category-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        .category-card.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .category-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subcategories {
+            margin-top: 15px;
+            display: none;
+        }
+        .category-card.active .subcategories {
+            display: block;
+        }
+        .subcategory-item {
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .subcategory-item:hover {
+            background: #f0f4ff;
+            transform: translateX(5px);
+        }
+        .subcategory-name {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .ingredient-count {
+            font-size: 0.9em;
+            color: #888;
+        }
+        .ingredients-panel {
+            margin-top: 30px;
+            display: none;
+        }
+        .ingredients-panel.active {
+            display: block;
+        }
+        .ingredients-header {
+            background: #667eea;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ingredients-header h2 {
+            font-size: 1.5em;
+        }
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .ingredients-list {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .ingredient-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .ingredient-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .ingredient-details {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        .ingredient-details strong {
+            color: #667eea;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            opacity: 0.9;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Health Categories Browser</h1>
+            <p>Browse health categories, subcategories, and ingredients</p>
+        </div>
+        <div class="content">
+            <div id="loading" class="loading">
+                <p>Loading categories...</p>
+            </div>
+            <div id="error" class="error" style="display: none;"></div>
+            
+            <div id="stats" class="stats" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-categories">0</div>
+                    <div class="stat-label">Total Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-subcategories">0</div>
+                    <div class="stat-label">Total Subcategories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-ingredients">0</div>
+                    <div class="stat-label">Total Ingredients</div>
+                </div>
+            </div>
+            
+            <div id="categories-container" style="display: none;">
+                <h2 style="margin-bottom: 20px; color: #333;">Health Categories</h2>
+                <div id="categories-grid" class="categories-grid"></div>
+            </div>
+            
+            <div id="ingredients-panel" class="ingredients-panel">
+                <div class="ingredients-header">
+                    <h2 id="ingredients-title">Ingredients</h2>
+                    <button class="close-btn" onclick="closeIngredients()">Close</button>
+                </div>
+                <div class="ingredients-list" id="ingredients-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let hierarchyData = {};
+        let selectedCategory = null;
+        let selectedSubcategory = null;
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/category-hierarchy');
+                if (!response.ok) throw new Error('Failed to load categories');
+                
+                hierarchyData = await response.json();
+                
+                if (Object.keys(hierarchyData).length === 0) {
+                    document.getElementById('error').textContent = 'No categories found. The database may need to be populated.';
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('categories-container').style.display = 'block';
+                document.getElementById('stats').style.display = 'flex';
+                
+                displayCategories();
+                updateStats();
+            } catch (error) {
+                document.getElementById('error').textContent = 'Error loading categories: ' + error.message;
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function updateStats() {
+            const categories = Object.keys(hierarchyData);
+            let totalSubcategories = 0;
+            let totalIngredients = 0;
+            
+            categories.forEach(cat => {
+                const subcats = Object.keys(hierarchyData[cat]);
+                totalSubcategories += subcats.length;
+                subcats.forEach(subcat => {
+                    totalIngredients += hierarchyData[cat][subcat];
+                });
+            });
+            
+            document.getElementById('total-categories').textContent = categories.length;
+            document.getElementById('total-subcategories').textContent = totalSubcategories;
+            document.getElementById('total-ingredients').textContent = totalIngredients;
+        }
+
+        function displayCategories() {
+            const grid = document.getElementById('categories-grid');
+            grid.innerHTML = '';
+            
+            Object.keys(hierarchyData).sort().forEach(category => {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.onclick = () => toggleCategory(card, category);
+                
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.textContent = category;
+                card.appendChild(title);
+                
+                const subcategories = document.createElement('div');
+                subcategories.className = 'subcategories';
+                
+                Object.keys(hierarchyData[category]).sort().forEach(subcategory => {
+                    const count = hierarchyData[category][subcategory];
+                    const subcatItem = document.createElement('div');
+                    subcatItem.className = 'subcategory-item';
+                    subcatItem.onclick = (e) => {
+                        e.stopPropagation();
+                        loadIngredients(category, subcategory);
+                    };
+                    
+                    subcatItem.innerHTML = `
+                        <div class="subcategory-name">${subcategory || '(No subcategory)'}</div>
+                        <div class="ingredient-count">${count} ingredient${count !== 1 ? 's' : ''}</div>
+                    `;
+                    
+                    subcategories.appendChild(subcatItem);
+                });
+                
+                card.appendChild(subcategories);
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleCategory(card, category) {
+            // Close other cards
+            document.querySelectorAll('.category-card').forEach(c => {
+                if (c !== card) c.classList.remove('active');
+            });
+            
+            // Toggle current card
+            card.classList.toggle('active');
+        }
+
+        async function loadIngredients(category, subcategory) {
+            selectedCategory = category;
+            selectedSubcategory = subcategory;
+            
+            const panel = document.getElementById('ingredients-panel');
+            const title = document.getElementById('ingredients-title');
+            const list = document.getElementById('ingredients-list');
+            
+            title.textContent = `${category} > ${subcategory || '(No subcategory)'}`;
+            list.innerHTML = '<div class="loading">Loading ingredients...</div>';
+            panel.classList.add('active');
+            
+            try {
+                const url = `/api/categories/${encodeURIComponent(category)}/${encodeURIComponent(subcategory || '')}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) throw new Error('Failed to load ingredients');
+                
+                const ingredients = await response.json();
+                
+                if (ingredients.error) {
+                    list.innerHTML = `<div class="error">${ingredients.error}</div>`;
+                    return;
+                }
+                
+                if (ingredients.length === 0) {
+                    list.innerHTML = '<div class="loading">No ingredients found for this category/subcategory.</div>';
+                    return;
+                }
+                
+                list.innerHTML = '';
+                ingredients.forEach(ing => {
+                    const item = document.createElement('div');
+                    item.className = 'ingredient-item';
+                    item.innerHTML = `
+                        <div class="ingredient-name">${ing.ingredient}</div>
+                        <div class="ingredient-details">
+                            ${ing.health_benefits ? `<p><strong>Health Benefits:</strong> ${ing.health_benefits}</p>` : ''}
+                            ${ing.key_nutrients ? `<p><strong>Key Nutrients:</strong> ${ing.key_nutrients}</p>` : ''}
+                            ${ing.description ? `<p><strong>Description:</strong> ${ing.description}</p>` : ''}
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            } catch (error) {
+                list.innerHTML = `<div class="error">Error loading ingredients: ${error.message}</div>`;
+            }
+        }
+
+        function closeIngredients() {
+            document.getElementById('ingredients-panel').classList.remove('active');
+        }
+
+        // Load categories on page load
+        loadCategories();
+    </script>
+</body>
+</html>
+

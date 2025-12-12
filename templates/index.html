@@ -1452,6 +1452,15 @@
           
           <!-- Vegan Milk Recommendation Container (shown when non-recommended milk is selected for kids 4-8) -->
           <div id="vegan-milk-recommendation-container" style="display: none; margin-bottom: 15px;"></div>
+          
+          <!-- Blood Sugar Goal Warning Container (shown when adult selects Diabetes–Blood Sugar goal) -->
+          <div id="blood-sugar-goal-warning-container" style="display: none; margin-bottom: 15px;"></div>
+          
+          <!-- Weight Management Goal Warning Container (shown when adult selects Weight Management goal) -->
+          <div id="weight-management-goal-warning-container" style="display: none; margin-bottom: 15px;"></div>
+          
+          <!-- Blood Pressure Goal Warning Container (shown when user selects Blood Pressure goal) -->
+          <div id="blood-pressure-goal-warning-container" style="display: none; margin-bottom: 15px;"></div>
 
 
           <!-- Smoothie Actions -->
@@ -6234,6 +6243,205 @@
     }
     
     /**
+     * Check if a smoothie has any sweeteners
+     * @param {Array} ingredients - Array of ingredient objects
+     * @returns {boolean} - True if the smoothie contains at least one sweetener
+     */
+    function smoothieHasSweetener(ingredients) {
+      if (!Array.isArray(ingredients)) return false;
+      
+      for (const ing of ingredients) {
+        const rawName = typeof ing === 'string' ? ing : (ing && ing.name ? ing.name : '');
+        if (!rawName) continue;
+        
+        const key = normalizeSweetenerKey(rawName);
+        
+        if (key === "honey" ||
+            key === "maple_syrup" ||
+            key === "coconut_sugar" ||
+            key === "date_syrup") {
+          return true;
+        }
+      }
+      return false;
+    }
+    
+    /**
+     * Check if an age group is a child or teen
+     * @param {string} uiAgeGroup - The UI age group string
+     * @returns {boolean} - True if the age group is a child or teen
+     */
+    function isChildOrTeenAge(uiAgeGroup) {
+      return uiAgeGroup === "child-4-8" ||
+             uiAgeGroup === "girl-9-13" ||
+             uiAgeGroup === "boy-9-13" ||
+             uiAgeGroup === "girl-14-18" ||
+             uiAgeGroup === "boy-14-18";
+    }
+    
+    /**
+     * Get sweetener age tip message for children/teens
+     * @param {string} uiAgeGroup - The UI age group string
+     * @param {Array} ingredients - Array of ingredient objects
+     * @returns {string|null} - The tip message or null if not applicable
+     */
+    function getSweetenerAgeTip(uiAgeGroup, ingredients) {
+      if (!isChildOrTeenAge(uiAgeGroup)) return null;
+      if (!smoothieHasSweetener(ingredients)) return null;
+      
+      // Gender and age-specific messages
+      if (uiAgeGroup === "child-4-8") {
+        return "For kids, added sweeteners like honey, maple syrup, coconut sugar or date syrup should stay small. " +
+               "Try to let most of the sweetness come from fruit.";
+      }
+      
+      if (uiAgeGroup === "girl-9-13") {
+        return "For girls 9-13, added sweeteners like honey, maple syrup, coconut sugar or date syrup should stay small. " +
+               "Try to let most of the sweetness come from fruit.";
+      }
+      
+      if (uiAgeGroup === "boy-9-13") {
+        return "For boys 9-13, added sweeteners like honey, maple syrup, coconut sugar or date syrup should stay small. " +
+               "Try to let most of the sweetness come from fruit.";
+      }
+      
+      if (uiAgeGroup === "girl-14-18") {
+        return "For teen girls, added sweeteners like honey, maple syrup, coconut sugar or date syrup are best kept in small amounts. " +
+               "Rely more on fruit for sweetness when possible.";
+      }
+      
+      if (uiAgeGroup === "boy-14-18") {
+        return "For teen boys, added sweeteners like honey, maple syrup, coconut sugar or date syrup are best kept in small amounts. " +
+               "Rely more on fruit for sweetness when possible.";
+      }
+      
+      return null;
+    }
+    
+    /**
+     * Check if an age group is an adult (19+)
+     * @param {string} ageGroup - The UI age group string
+     * @returns {boolean} - True if the age group is an adult
+     */
+    function isAdultAgeGroup(ageGroup) {
+      return ageGroup === "woman-19-30" ||
+             ageGroup === "man-19-30" ||
+             ageGroup === "woman-31-59" ||
+             ageGroup === "man-31-59" ||
+             ageGroup === "woman-60+" ||
+             ageGroup === "man-60+";
+    }
+    
+    /**
+     * Check if the health goal is "Diabetes–Blood Sugar"
+     * @param {string} healthGoalValue - The health goal value from the dropdown
+     * @returns {boolean} - True if the goal is Diabetes–Blood Sugar
+     */
+    function isDiabetesBloodSugarGoal(healthGoalValue) {
+      if (!healthGoalValue) return false;
+      const goalLower = healthGoalValue.toLowerCase().trim();
+      // Normalize by replacing multiple dashes/spaces with single dash, then check
+      const normalized = goalLower.replace(/[\s\-]+/g, '-');
+      // Check for various possible formats: "diabetes-blood-sugar", "diabetes---blood-sugar", etc.
+      return normalized === "diabetes-blood-sugar" ||
+             (normalized.includes("diabetes") && normalized.includes("blood") && normalized.includes("sugar"));
+    }
+    
+    /**
+     * Check if the health goal is "Weight Management"
+     * @param {string} healthGoalValue - The health goal value from the dropdown
+     * @returns {boolean} - True if the goal is Weight Management
+     */
+    function isWeightManagementGoal(healthGoalValue) {
+      if (!healthGoalValue) return false;
+      const v = String(healthGoalValue).toLowerCase().trim();
+      // Normalize by replacing multiple dashes/spaces with single dash, then check
+      const normalized = v.replace(/[\s\-]+/g, '-');
+      // Check for "weight-management" or "weight-loss" format (API uses "Weight Loss" -> value is "weight-loss")
+      return normalized === "weight-management" ||
+             normalized === "weight-loss" ||
+             (normalized.includes("weight") && normalized.includes("management")) ||
+             (normalized.includes("weight") && normalized.includes("loss"));
+    }
+    
+    /**
+     * Check if the health goal is "Blood Pressure"
+     * @param {string} healthGoalValue - The health goal value from the dropdown
+     * @returns {boolean} - True if the goal is Blood Pressure
+     */
+    function isBloodPressureGoal(healthGoalValue) {
+      if (!healthGoalValue) return false;
+      const v = String(healthGoalValue).toLowerCase().trim();
+      // Normalize by replacing multiple dashes/spaces with single dash, then check
+      const normalized = v.replace(/[\s\-]+/g, '-');
+      // Check for "blood-pressure" format
+      return normalized === "blood-pressure" ||
+             (normalized.includes("blood") && normalized.includes("pressure"));
+    }
+    
+    /**
+     * Get blood pressure tip message based on health goal
+     * @param {string} healthGoalValue - The health goal value from the dropdown
+     * @returns {string|null} - The tip message or null if not applicable
+     */
+    function getBloodPressureTip(healthGoalValue) {
+      if (!isBloodPressureGoal(healthGoalValue)) return null;
+      
+      return "We're watching out for your blood pressure—every ingredient matters.<br><br>" +
+             "High blood pressure is serious, and we're here to guide you toward blood pressure-friendly ingredients. " +
+             "From this moment on, we'll help you avoid ingredients that could raise your blood " +
+             "pressure and guide you toward foods that naturally support healthy levels.<br><br>" +
+             "<strong>Hidden dangers we'll help you avoid:</strong><br>" +
+             "❌ Added sodium/salt (even small amounts add up)<br>" +
+             "❌ Added sugars (raises blood pressure over time)<br>" +
+             "❌ High-sodium ingredients (some protein powders, cheeses)<br>" +
+             "❌ Excess caffeine (if you're sensitive)<br>" +
+             "❌ Licorice root (can raise blood pressure)<br><br>" +
+             "<strong>Natural blood pressure supporters we'll recommend:</strong><br>" +
+             "✅ Potassium-rich foods (bananas, oranges, berries)<br>" +
+             "✅ Magnesium sources (spinach, kale, pumpkin seeds)<br>" +
+             "✅ Beets (natural nitrates relax blood vessels)<br>" +
+             "✅ Berries (anthocyanins support vascular health)<br>" +
+             "✅ Low-fat dairy (calcium + potassium combination)<br>" +
+             "✅ Leafy greens (loaded with minerals that help)<br>" +
+             "✅ Unsweetened bases (no hidden sodium)<br><br>" +
+             "<strong>📊 YOUR INGREDIENT COMPANION:</strong> Not sure which option is better? Check the " +
+             "Ingredient Tab to see sodium, potassium, calcium, magnesium, and protein " +
+             "levels in every ingredient. We've made it easy to compare and choose what's " +
+             "best for your heart.<br><br>" +
+             "Every smoothie you make with us is a step toward better control. You're " +
+             "taking care of yourself, and we're honored to help.<br><br>" +
+             "Your heart health matters—to your family, your future, and to us. ❤️<br><br>" +
+             "<em>Remember: Work closely with your healthcare team for the best results.</em>";
+    }
+    
+    /**
+     * Get weight management tip message based on age group and health goal
+     * @param {string} uiAgeGroup - The UI age group string
+     * @param {string} healthGoalValue - The health goal value from the dropdown
+     * @returns {string|null} - The tip message or null if not applicable
+     */
+    function getWeightManagementTip(uiAgeGroup, healthGoalValue) {
+      if (!isWeightManagementGoal(healthGoalValue)) return null;
+      
+      // Use the same encouraging message for all age groups
+      return "💙 We're here to help you succeed.<br><br>" +
+             "You've chosen Weight Management, and we want you to know: we're going to make " +
+             "sure every ingredient works FOR you, not against you.<br><br>" +
+             "<strong>Here's what can sabotage your goals:</strong><br>" +
+             "• Large fruit portions (natural sugar adds up fast)<br>" +
+             "• Dried fruits (concentrated calories)<br>" +
+             "• Nut butters & oils (200+ calories per serving)<br>" +
+             "• Added sweeteners (empty calories you don't need)<br><br>" +
+             "<strong>What we'll guide you toward instead:</strong><br>" +
+             "✓ Fresh vegetables (bulk without calories)<br>" +
+             "✓ Berries & moderate fruit (satisfying sweetness)<br>" +
+             "✓ Unsweetened bases (protein keeps you full)<br>" +
+             "✓ Smart portions (delicious AND effective)<br><br>" +
+             "Your success matters to us. Let's build a smoothie that helps you reach your goals. 💪";
+    }
+    
+    /**
      * Compute total sweetener grams in a smoothie
      * @param {Array} ingredients - Array of ingredient objects
      * @returns {number} - Total grams of sweeteners
@@ -7306,6 +7514,11 @@
         option.textContent = mapCategoryDisplayName(category);
         smoothieHealthGoalsEl.appendChild(option);
       });
+      
+      // Update warnings after health goals are populated (in case a value was already selected)
+      updateBloodSugarGoalWarning();
+      updateWeightManagementGoalWarning();
+      updateBloodPressureGoalWarning();
     }
     
     // Health goal to display name mapping (dynamically created from categories)
@@ -7470,6 +7683,11 @@
       smoothieHealthGoalsEl.addEventListener('change', () => {
         const currentHealthGoal = smoothieHealthGoalsEl.value;
         
+        // Update warnings IMMEDIATELY when health goal changes (before other operations)
+        updateBloodSugarGoalWarning();
+        updateWeightManagementGoalWarning();
+        updateBloodPressureGoalWarning();
+        
         // Hide badge when value changes (will be shown again by updateSmoothieNameFromHealthGoal if a goal is selected)
         if (smoothieNameBarEl && !currentHealthGoal) {
           smoothieNameBarEl.style.display = 'none';
@@ -7494,6 +7712,109 @@
         // Clear smoothie state when health goal changes
         clearSmoothieState();
       });
+    }
+    
+    /**
+     * Update the blood sugar goal warning display based on current health goal and age group
+     */
+    function updateBloodSugarGoalWarning() {
+      const warningContainer = document.getElementById('blood-sugar-goal-warning-container');
+      if (!warningContainer) return;
+      
+      const selectedHealthGoal = smoothieHealthGoalsEl ? smoothieHealthGoalsEl.value : '';
+      const selectedAgeGroup = smoothieForEl ? smoothieForEl.value : '';
+      
+      // Show warning only if: adult age group AND Diabetes–Blood Sugar goal
+      if (isAdultAgeGroup(selectedAgeGroup) && isDiabetesBloodSugarGoal(selectedHealthGoal)) {
+        const warningText = "We're here to help you manage your blood sugar with confidence.<br><br>" +
+                           "You've chosen <strong>Diabetes–Blood Sugar</strong> management, and we take that seriously. " +
+                           "Every ingredient we recommend will help keep your glucose levels steady.<br><br>" +
+                           "<strong>Here's what we'll help you avoid:</strong><br>" +
+                           "❌ Added sweeteners (honey, maple syrup, date syrup—they spike blood sugar)<br>" +
+                           "❌ Large fruit portions (even natural sugar affects glucose)<br>" +
+                           "❌ High-sugar fruits (tropical fruits like mango, pineapple)<br>" +
+                           "❌ Dried fruits (concentrated sugar bombs)<br><br>" +
+                           "<strong>What actually helps stabilize blood sugar:</strong><br><br>" +
+                           "🎯 Berries (lowest glycemic impact)<br>" +
+                           "🎯 Protein (Greek yogurt, unsweetened soy milk)<br>" +
+                           "🎯 Healthy fats (avocado, chia seeds)<br>" +
+                           "🎯 Leafy greens (spinach, kale—fiber is your friend)<br>" +
+                           "🎯 Small portions (½ cup fruit max)<br><br>" +
+                           "We'll guide every choice to support stable glucose levels. You're in good hands. 💚<br><br>" +
+                           "<em>Always consult your healthcare provider for personalized advice</em>";
+        
+        warningContainer.innerHTML = `
+          <div id="blood-sugar-goal-warning" class="info-warning" style="display: block; padding: 16px 20px; background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
+            <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${warningText}</div>
+          </div>
+        `;
+        warningContainer.style.display = 'block';
+      } else {
+        // Hide warning if conditions are not met
+        warningContainer.innerHTML = '';
+        warningContainer.style.display = 'none';
+      }
+    }
+    
+    /**
+     * Update the weight management goal warning display based on current health goal and age group
+     */
+    function updateWeightManagementGoalWarning() {
+      const warningContainer = document.getElementById('weight-management-goal-warning-container');
+      if (!warningContainer) {
+        console.log('[weight-mgmt-warning] Container not found');
+        return;
+      }
+      
+      const selectedHealthGoal = smoothieHealthGoalsEl ? smoothieHealthGoalsEl.value : '';
+      const selectedAgeGroup = smoothieForEl ? smoothieForEl.value : '';
+      
+      console.log('[weight-mgmt-warning] Checking:', {
+        selectedHealthGoal,
+        selectedAgeGroup,
+        isWeightManagement: isWeightManagementGoal(selectedHealthGoal)
+      });
+      
+      // Show warning for all age groups when Weight Management goal is selected
+      const weightMgmtTip = getWeightManagementTip(selectedAgeGroup, selectedHealthGoal);
+      console.log('[weight-mgmt-warning] Tip result:', weightMgmtTip);
+      if (weightMgmtTip) {
+        warningContainer.innerHTML = `
+          <div id="weight-management-goal-warning" class="info-warning" style="display: block; padding: 16px 20px; background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
+            <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${weightMgmtTip}</div>
+          </div>
+        `;
+        warningContainer.style.display = 'block';
+      } else {
+        // Hide warning if conditions are not met
+        warningContainer.innerHTML = '';
+        warningContainer.style.display = 'none';
+      }
+    }
+    
+    /**
+     * Update the blood pressure goal warning display based on current health goal
+     */
+    function updateBloodPressureGoalWarning() {
+      const warningContainer = document.getElementById('blood-pressure-goal-warning-container');
+      if (!warningContainer) return;
+      
+      const selectedHealthGoal = smoothieHealthGoalsEl ? smoothieHealthGoalsEl.value : '';
+      
+      // Show warning for all age groups when Blood Pressure goal is selected
+      const bloodPressureTip = getBloodPressureTip(selectedHealthGoal);
+      if (bloodPressureTip) {
+        warningContainer.innerHTML = `
+          <div id="blood-pressure-goal-warning" class="info-warning" style="display: block; padding: 16px 20px; background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
+            <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${bloodPressureTip}</div>
+          </div>
+        `;
+        warningContainer.style.display = 'block';
+      } else {
+        // Hide warning if conditions are not met
+        warningContainer.innerHTML = '';
+        warningContainer.style.display = 'none';
+      }
     }
     
     // Listen for "Who is this smoothie for" changes
@@ -7522,6 +7843,11 @@
           if (smoothieTimingEl) smoothieTimingEl.value = '';
           previousHealthGoal = null;
         }
+        
+        // Update warnings IMMEDIATELY when age group changes
+        updateBloodSugarGoalWarning();
+        updateWeightManagementGoalWarning();
+        updateBloodPressureGoalWarning();
         
         // Update vegan milk serving sizes when audience changes
         updateVeganMilkServingSizes();
@@ -9156,8 +9482,20 @@
         }
       }
       
+      // Add sweetener age tip for children and teens when sweeteners are present
+      let sweetenerAgeTip = '';
+      const sweetenerTip = getSweetenerAgeTip(currentAgeGroup, smoothieIngredients);
+      if (sweetenerTip) {
+        sweetenerAgeTip = `
+          <div id="sweetener-age-tip" style="width: 100%; margin-bottom: 8px; padding: 10px 12px; background: #fff7e0; border-left: 3px solid #f4b000; border-radius: 6px; font-size: 0.8rem; color: #78350f; line-height: 1.4;">
+            <strong>💡 Sweetness tip:</strong><br>
+            <span style="margin-top: 4px; display: block;">${sweetenerTip}</span>
+          </div>
+        `;
+      }
+      
       // Combine all info messages (will be inserted before chips)
-      const infoMessages = countDisplay + healthWarning60Plus + vegCookingTip;
+      const infoMessages = countDisplay + healthWarning60Plus + vegCookingTip + sweetenerAgeTip;
       
       let chipsHtml = '';
       try {
@@ -10939,6 +11277,37 @@
             currentSmoothie: currentSmoothie
           });
           
+          // Compute blood sugar goal tip for adults with Diabetes–Blood Sugar goal
+          const selectedHealthGoal = smoothieHealthGoalsEl ? smoothieHealthGoalsEl.value : '';
+          let bloodSugarGoalTip = '';
+          if (isAdultAgeGroup(uiAgeGroup) && isDiabetesBloodSugarGoal(selectedHealthGoal)) {
+            bloodSugarGoalTip = "We're here to help you manage your blood sugar with confidence.<br><br>" +
+                               "You've chosen <strong>Diabetes–Blood Sugar</strong> management, and we take that seriously. " +
+                               "Every ingredient we recommend will help keep your glucose levels steady.<br><br>" +
+                               "<strong>Here's what we'll help you avoid:</strong><br>" +
+                               "❌ Added sweeteners (honey, maple syrup, date syrup—they spike blood sugar)<br>" +
+                               "❌ Large fruit portions (even natural sugar affects glucose)<br>" +
+                               "❌ High-sugar fruits (tropical fruits like mango, pineapple)<br>" +
+                               "❌ Dried fruits (concentrated sugar bombs)<br><br>" +
+                               "<strong>What actually helps stabilize blood sugar:</strong><br><br>" +
+                               "🎯 Berries (lowest glycemic impact)<br>" +
+                               "🎯 Protein (Greek yogurt, unsweetened soy milk)<br>" +
+                               "🎯 Healthy fats (avocado, chia seeds)<br>" +
+                               "🎯 Leafy greens (spinach, kale—fiber is your friend)<br>" +
+                               "🎯 Small portions (½ cup fruit max)<br><br>" +
+                               "We'll guide every choice to support stable glucose levels. You're in good hands. 💚<br><br>" +
+                               "<em>Always consult your healthcare provider for personalized advice</em>";
+          }
+          currentSmoothie.bloodSugarGoalTip = bloodSugarGoalTip;
+          
+          // Compute weight management tip for all age groups with Weight Management goal
+          const weightManagementTip = getWeightManagementTip(uiAgeGroup, selectedHealthGoal);
+          currentSmoothie.weightManagementTip = weightManagementTip;
+          
+          // Compute blood pressure tip for all age groups with Blood Pressure goal
+          const bloodPressureTip = getBloodPressureTip(selectedHealthGoal);
+          currentSmoothie.bloodPressureTip = bloodPressureTip;
+          
           // Display smoothie nutrition using the same display function
           displaySmoothieResults(data);
           setSmoothieStatus('Smoothie built successfully');
@@ -11668,10 +12037,37 @@
         </div>
       ` : '';
       
+      // Get blood sugar goal tip from currentSmoothie
+      const bloodSugarGoalTip = currentSmoothie && currentSmoothie.bloodSugarGoalTip ? currentSmoothie.bloodSugarGoalTip : null;
+      const bloodSugarGoalTipHtml = bloodSugarGoalTip ? `
+        <div id="blood-sugar-goal-warning" class="info-warning" style="display: block; padding: 16px 20px; background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
+          <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${bloodSugarGoalTip}</div>
+        </div>
+      ` : '';
+      
+      // Get weight management tip from currentSmoothie
+      const weightManagementTip = currentSmoothie && currentSmoothie.weightManagementTip ? currentSmoothie.weightManagementTip : null;
+      const weightManagementTipHtml = weightManagementTip ? `
+        <div id="smoothie-weight-management-warning" class="smoothie-tip smoothie-tip-weight-management" style="background-color: #e0f2fe; border: 2px solid #0284c7; padding: 16px 20px; margin-bottom: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
+          <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${weightManagementTip}</div>
+        </div>
+      ` : '';
+      
+      // Get blood pressure tip from currentSmoothie
+      const bloodPressureTip = currentSmoothie && currentSmoothie.bloodPressureTip ? currentSmoothie.bloodPressureTip : null;
+      const bloodPressureTipHtml = bloodPressureTip ? `
+        <div id="smoothie-blood-pressure-warning" class="smoothie-tip smoothie-tip-blood-pressure" style="background-color: #e0f2fe; border: 2px solid #0284c7; padding: 16px 20px; margin-bottom: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
+          <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${bloodPressureTip}</div>
+        </div>
+      ` : '';
+      
       let html = `
         <div style="margin-bottom: 16px;">
           ${childFruitWarningHtml}
           ${sweetenerWarningHtml}
+          ${bloodSugarGoalTipHtml}
+          ${weightManagementTipHtml}
+          ${bloodPressureTipHtml}
           <!-- Ingredients List -->
           <div style="padding: 16px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: var(--radius); margin-bottom: 16px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">

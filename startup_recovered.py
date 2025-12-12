@@ -1,8 +1,11 @@
 import re
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
 import time
 import logging
-from flask_wtf.csrf import CSRFProtect, CSRFError
+from flask_wtf.csrf import CSRFProtect, CSRFError  # pyright: ignore[reportMissingImports]
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin  # pyright: ignore[reportMissingImports]
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 import sqlite3
 import os
@@ -84,6 +87,16 @@ def init_db():
         )
     """)
     
+    # Create users table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
     # Populate common allergens if table is empty
     cursor.execute("SELECT COUNT(*) FROM allergens")
     if cursor.fetchone()[0] == 0:
@@ -128,6 +141,61 @@ def init_db():
     conn.commit()
     conn.close()
 
+
+def get_db_path():
+    """Helper to get database path"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(script_dir, 'allergen_nutrition.db')
+
+
+def get_user_by_id(user_id):
+    """Fetch a user by id from the database"""
+    try:
+        conn = sqlite3.connect(get_db_path())
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            # Convert sqlite3.Row to dict
+            return {key: row[key] for key in row.keys()}
+        return None
+    except sqlite3.OperationalError as e:
+        # Table doesn't exist yet - return None gracefully
+        if "no such table" in str(e).lower():
+            return None
+        logging.error(f"Error fetching user by id: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"Error fetching user by id: {e}")
+        return None
+
+
+def get_user_by_email(email):
+    """Fetch a user by email from the database"""
+    try:
+        conn = sqlite3.connect(get_db_path())
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            # Convert sqlite3.Row to dict
+            return {key: row[key] for key in row.keys()}
+        return None
+    except sqlite3.OperationalError as e:
+        # Table doesn't exist yet - return None gracefully
+        if "no such table" in str(e).lower():
+            return None
+        logging.error(f"Error fetching user by email: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"Error fetching user by email: {e}")
+        return None
+
+
 import os
 
 app = Flask(__name__)
@@ -151,6 +219,30 @@ app.config["SECRET_KEY"] = os.environ.get(
 # Initialize CSRF protection for all routes by default
 # API routes will be explicitly exempted below
 csrf = CSRFProtect(app)
+
+# --- Flask-Login Configuration ---
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+login_manager.login_message = "Please log in to access this page."
+
+
+class User(UserMixin):
+    """User class for Flask-Login"""
+    def __init__(self, user_dict):
+        self.id = user_dict['id']
+        self.email = user_dict['email']
+        self.password_hash = user_dict['password_hash']
+        self.created_at = user_dict.get('created_at', '')
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Load user by ID for Flask-Login"""
+    user_dict = get_user_by_id(int(user_id))
+    if user_dict:
+        return User(user_dict)
+    return None
 
 # --- Session Cookie Hardening ---
 # HTTP-only: Prevents JavaScript from accessing the cookie (protects against XSS)
@@ -347,6 +439,102 @@ def handle_csrf_error(error):
 @app.route('/')
 def index():
     return render_template('index.html', time=time)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """User registration route"""
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        # Validation
+        if not email:
+            flash('Email is required.', 'error')
+            return render_template('register.html')
+        
+        if not password:
+            flash('Password is required.', 'error')
+            return render_template('register.html')
+        
+        if password != confirm_password:
+            flash('Passwords do not match.', 'error')
+            return render_template('register.html')
+        
+        # Check if user already exists
+        existing_user = get_user_by_email(email)
+        if existing_user:
+            flash('An account with this email already exists.', 'error')
+            return render_template('register.html')
+        
+        # Create new user
+        try:
+            password_hash = generate_password_hash(password)
+            conn = sqlite3.connect(get_db_path())
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO users (email, password_hash, created_at)
+                VALUES (?, ?, ?)
+            """, (email, password_hash, datetime.now().isoformat()))
+            conn.commit()
+            user_id = cursor.lastrowid
+            conn.close()
+            
+            # Log the user in
+            user_dict = get_user_by_id(user_id)
+            user = User(user_dict)
+            login_user(user, remember=False)
+            
+            flash('Registration successful!', 'success')
+            return redirect(url_for('index'))
+        except Exception as e:
+            logging.error(f"Error creating user: {e}")
+            flash('An error occurred during registration. Please try again.', 'error')
+            return render_template('register.html')
+    
+    return render_template('register.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """User login route"""
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        
+        if not email or not password:
+            flash('Please provide both email and password.', 'error')
+            return render_template('login.html')
+        
+        # Look up user
+        user_dict = get_user_by_email(email)
+        if not user_dict:
+            flash('Invalid email or password.', 'error')
+            return render_template('login.html')
+        
+        # Check password
+        if not check_password_hash(user_dict['password_hash'], password):
+            flash('Invalid email or password.', 'error')
+            return render_template('login.html')
+        
+        # Log the user in
+        user = User(user_dict)
+        login_user(user, remember=False)
+        flash('Login successful!', 'success')
+        
+        next_page = request.args.get('next')
+        return redirect(next_page) if next_page else redirect(url_for('index'))
+    
+    return render_template('login.html')
+
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    """User logout route"""
+    logout_user()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('index'))
 
 
 @app.route('/force-error')
@@ -26464,6 +26652,7 @@ def ensure_ingredient_tab_nutrition_profiles():
     Since populate_db() is called first, most entries should already be in the DB.
     This function checks for zero values and updates them, or inserts missing entries.
     """
+    print("[ensure-ingredient-tab-nutrition] Starting ingredient tab nutrition profile check...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     db_path = os.path.join(script_dir, 'allergen_nutrition.db')
     conn = sqlite3.connect(db_path)
@@ -26545,8 +26734,14 @@ def ensure_ingredient_tab_nutrition_profiles():
         
         # Upsert: insert or update
         if existing:
-            # Check if existing entry has all zeros (needs update)
-            existing_dict = dict(existing) if existing else {}
+            # Build dict from tuple: query returns (calories_per_100g, protein, carbs, fat)
+            # existing is a tuple, so we map column names to tuple indices
+            existing_dict = {
+                'calories_per_100g': existing[0] if len(existing) > 0 else 0,
+                'protein': existing[1] if len(existing) > 1 else 0,
+                'carbs': existing[2] if len(existing) > 2 else 0,
+                'fat': existing[3] if len(existing) > 3 else 0
+            }
             has_zeros = (
                 (existing_dict.get('calories_per_100g', 0) or 0) == 0 and
                 (existing_dict.get('protein', 0) or 0) == 0 and
@@ -26578,6 +26773,7 @@ def ensure_ingredient_tab_nutrition_profiles():
         print(f"[ensure-ingredient-tab-nutrition] ✅ Ensured {total} ingredient tab nutrition profiles ({inserted_count} inserted, {updated_count} updated)")
     else:
         print(f"[ensure-ingredient-tab-nutrition] ✅ All required ingredient tab nutrition profiles already exist with non-zero values")
+    print("[ensure-ingredient-tab-nutrition] Completed successfully.")
 
 def populate_ingredient_categories():
     """Populate ingredient categories with health benefits"""
