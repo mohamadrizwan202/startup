@@ -12,3 +12,11 @@ venv/
 # Logs
 *.log
 
+
+# local databases
+*.db
+*.sqlite
+*.sqlite3
+instance/
+.env
+__pycache__/
