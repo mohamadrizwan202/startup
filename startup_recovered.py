@@ -9,6 +9,11 @@ from datetime import datetime
 
 import sqlite3
 import os
+
+# Single database path constant
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "allergen_nutrition.db")
+
 app = Flask(__name__)
 
 @app.route("/home")
@@ -22,11 +27,7 @@ def debug_session():
     
 def init_db():
     """Initialize database with all tables"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
     
     # Create nutrition_facts table
@@ -143,9 +144,8 @@ def init_db():
 
 
 def get_db_path():
-    """Helper to get database path"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(script_dir, 'allergen_nutrition.db')
+    """Helper to get database path - always returns the single DB_PATH constant"""
+    return DB_PATH
 
 
 def get_user_by_id(user_id):
@@ -470,13 +470,26 @@ def register():
         
         # Create new user
         try:
-            password_hash = generate_password_hash(password)
+            password_hash = generate_password_hash(
+                password,
+                method="pbkdf2:sha256",  # avoid scrypt
+                salt_length=16
+            )
             conn = sqlite3.connect(get_db_path())
             cursor = conn.cursor()
+            # Ensure users table exists before inserting
             cursor.execute("""
-                INSERT INTO users (email, password_hash, created_at)
-                VALUES (?, ?, ?)
-            """, (email, password_hash, datetime.now().isoformat()))
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                INSERT INTO users (email, password_hash)
+                VALUES (?, ?)
+            """, (email, password_hash))
             conn.commit()
             user_id = cursor.lastrowid
             conn.close()
@@ -489,7 +502,7 @@ def register():
             flash('Registration successful!', 'success')
             return redirect(url_for('index'))
         except Exception as e:
-            logging.error(f"Error creating user: {e}")
+            app.logger.exception("Error creating user")
             flash('An error occurred during registration. Please try again.', 'error')
             return render_template('register.html')
     
@@ -529,7 +542,7 @@ def login():
     return render_template('login.html')
 
 
-@app.route('/logout', methods=['GET', 'POST'])
+@app.route('/logout', methods=['GET'])
 def logout():
     """User logout route"""
     logout_user()
@@ -557,9 +570,7 @@ def browser():
 def categories():
     """Get list of all unique categories"""
     try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(get_db_path())
         cursor = conn.cursor()
         cursor.execute("""
             SELECT DISTINCT category 
@@ -581,9 +592,7 @@ def categories():
 def category_hierarchy():
     """Return category hierarchy for health browser"""
     try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(get_db_path())
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
@@ -619,9 +628,7 @@ def category_hierarchy():
 def get_ingredients(category):
     """Get ingredients for a specific category"""
     try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(get_db_path())
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute("""
@@ -653,9 +660,7 @@ def ingredient_search():
         if not query:
             return jsonify([])
         
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(get_db_path())
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
@@ -709,9 +714,7 @@ def ingredient_search():
 def get_category_ingredients(category, subcategory):
     """Get ingredients for a specific category and subcategory"""
     try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(get_db_path())
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
@@ -741,9 +744,7 @@ def get_category_ingredients(category, subcategory):
 
 def ensure_minimum_ingredients_per_subcategory():
     """Ensure each subcategory has at least 5 ingredients"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
     
     # Get all subcategories with fewer than 5 ingredients
@@ -1022,9 +1023,7 @@ def ensure_minimum_ingredients_per_subcategory():
 
 def remove_plural_ingredients():
     """Remove plural ingredient entries and keep only singular entries"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
     
     # Comprehensive list of plural entries to remove
@@ -1080,9 +1079,7 @@ def remove_plural_ingredients():
 
 def update_default_serving_sizes():
     """Update ingredients with default 100g serving size to USDA-approved serving sizes"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
     
     # USDA standard serving sizes for common ingredients (FDA RACC - Reference Amounts Customarily Consumed)
@@ -1199,9 +1196,7 @@ def update_default_serving_sizes():
 
 def update_zero_nutrition_info():
     """Update ingredients with all zero nutrition values using USDA-approved data"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
     
     # USDA-approved nutrition data for zero-calorie sweeteners and ingredients
@@ -1259,9 +1254,7 @@ def update_zero_nutrition_info():
 
 def update_zero_serving_sizes():
     """Update ingredients with 0 or NULL serving_size using USDA serving sizes from health_specific_serving_sizes"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
     
     # Find all ingredients with 0 or NULL serving_size
@@ -1313,11 +1306,7 @@ def update_zero_serving_sizes():
 
 def populate_health_specific_serving_sizes():
     """Populate granular health-specific serving sizes based on health_benefit + nutrient_category + food_item"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
 
     ingredient_rename_map = {
@@ -23721,9 +23710,7 @@ def populate_health_specific_serving_sizes():
 
 def populate_db():
     """Populate nutrition_facts table"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
     
     nutrition_data = [
@@ -26653,9 +26640,7 @@ def ensure_ingredient_tab_nutrition_profiles():
     This function checks for zero values and updates them, or inserts missing entries.
     """
     print("[ensure-ingredient-tab-nutrition] Starting ingredient tab nutrition profile check...")
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
     
     # Required ingredient profiles with their nutrition data (11 fields: ingredient, calories, protein, carbs, fat, fiber, sugar, sodium, serving_size, vitamins, minerals)
@@ -26777,9 +26762,7 @@ def ensure_ingredient_tab_nutrition_profiles():
 
 def populate_ingredient_categories():
     """Populate ingredient categories with health benefits"""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
 
     ingredient_rename_map = {
@@ -48714,9 +48697,7 @@ def nlp_query():
         if isinstance(user_input, list):
             user_input = ", ".join(user_input)
         
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(get_db_path())
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
@@ -49074,13 +49055,10 @@ def nlp_query():
 
 
 if __name__ == '__main__':
-    import os
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, 'allergen_nutrition.db')
-    DB_NAME = db_path
+    DB_NAME = DB_PATH
     
     # Check if database needs initialization
-    needs_init = not os.path.exists(db_path)
+    needs_init = not os.path.exists(DB_PATH)
     
     if needs_init:
         try:
@@ -49094,7 +49072,7 @@ if __name__ == '__main__':
     # IMPORTANT: Always call populate_db() to ensure all entries from nutrition_data array are in DB
     # This uses INSERT OR REPLACE, so it works even if DB is not empty (upsert behavior)
     # This is especially important for Ingredient tab nutrition lookup
-    conn_check = sqlite3.connect(db_path)
+    conn_check = sqlite3.connect(get_db_path())
     cursor_check = conn_check.cursor()
     cursor_check.execute("SELECT COUNT(*) FROM nutrition_facts")
     nutrition_count = cursor_check.fetchone()[0]
@@ -49125,7 +49103,7 @@ if __name__ == '__main__':
         traceback.print_exc()
     
     # Check if serving sizes need to be populated
-    conn_check = sqlite3.connect(db_path)
+    conn_check = sqlite3.connect(get_db_path())
     cursor_check = conn_check.cursor()
     cursor_check.execute("SELECT COUNT(*) FROM health_specific_serving_sizes")
     serving_count = cursor_check.fetchone()[0]
