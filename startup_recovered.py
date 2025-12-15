@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort
 import time
 import logging
 import secrets
@@ -17,6 +17,11 @@ import os
 import sys
 from pathlib import Path
 
+try:
+    import psycopg2  # pyright: ignore[reportMissingModuleSource]
+except ImportError:
+    psycopg2 = None  # Will be available on Render where it's installed
+
 # Single database path constant
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "allergen_nutrition.db")
@@ -31,6 +36,15 @@ logging.basicConfig(
 logger = logging.getLogger("startup_recovered")
 
 app = Flask(__name__)
+
+# Production environment detection
+ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
+IS_PROD = ENV == "production" or (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
+
+@app.before_request
+def block_debug_in_prod():
+    if IS_PROD and request.path.startswith("/__debug/"):
+        abort(404)
 
 # Configure logging to ensure app.logger.info prints to stdout
 app.logger.setLevel(logging.INFO)
@@ -366,6 +380,27 @@ logger.info(
     bool(app.secret_key),
 )
 
+_db_url = os.getenv("DATABASE_URL", "")
+logger.info("POSTGRES_PROBE=begin has_url=%s scheme=%s",
+            bool(_db_url),
+            (_db_url.split(':', 1)[0] if _db_url else None))
+
+if not _db_url:
+    logger.info("POSTGRES_PROBE=skip reason=no_DATABASE_URL")
+elif psycopg2 is None:
+    logger.info("POSTGRES_PROBE=skip reason=psycopg2_not_installed")
+else:
+    try:
+        conn = psycopg2.connect(_db_url, connect_timeout=5)
+        cur = conn.cursor()
+        cur.execute("SELECT 1;")
+        cur.fetchone()
+        cur.close()
+        conn.close()
+        logger.info("POSTGRES_PROBE=ok")
+    except Exception:
+        logger.exception("POSTGRES_PROBE=fail")
+
 # --- Proxy Fix for Render/Production ---
 # Handles X-Forwarded-For and X-Forwarded-Proto headers correctly behind proxy
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
@@ -389,28 +424,30 @@ limiter = Limiter(
 )
 app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 
-@app.get("/__debug/limit-test")
-@limiter.limit("3 per minute")
-def limit_test():
-    return "ok", 200
+# --- Debug Routes (only enabled in non-production) ---
+if not IS_PROD:
+    @app.get("/__debug/limit-test")
+    @limiter.limit("3 per minute")
+    def limit_test():
+        return "ok", 200
 
-@app.get("/__debug/db-info")
-def db_info():
-    # Report current working directory and DB file existence
-    cwd = os.getcwd()
-    # Use the DB_PATH variable defined at module level
-    db_path = globals().get("DB_PATH", "allergen_nutrition.db")
-    p = Path(db_path)
-    abs_path = str(p.resolve())
-    exists = p.exists()
-    size = p.stat().st_size if exists else None
-    return jsonify({
-        "cwd": cwd,
-        "db_path": db_path,
-        "abs_path": abs_path,
-        "exists": exists,
-        "size_bytes": size,
-    }), 200
+    @app.get("/__debug/db-info")
+    def db_info():
+        # Report current working directory and DB file existence
+        cwd = os.getcwd()
+        # Use the DB_PATH variable defined at module level
+        db_path = globals().get("DB_PATH", "allergen_nutrition.db")
+        p = Path(db_path)
+        abs_path = str(p.resolve())
+        exists = p.exists()
+        size = p.stat().st_size if exists else None
+        return jsonify({
+            "cwd": cwd,
+            "db_path": db_path,
+            "abs_path": abs_path,
+            "exists": exists,
+            "size_bytes": size,
+        }), 200
 
 # --- Flask-Login Configuration ---
 login_manager = LoginManager()
