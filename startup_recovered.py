@@ -2,19 +2,166 @@ import re
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
 import time
 import logging
+import secrets
 from flask_wtf.csrf import CSRFProtect, CSRFError  # pyright: ignore[reportMissingImports]
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin  # pyright: ignore[reportMissingImports]
+from flask_limiter import Limiter  # pyright: ignore[reportMissingImports]
+from flask_limiter.util import get_remote_address  # pyright: ignore[reportMissingImports]
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime
+from functools import wraps
 
 import sqlite3
 import os
+import sys
 
 # Single database path constant
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "allergen_nutrition.db")
 
+# Configure Python logging to stdout for reliable output on Render/Gunicorn
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    force=True,
+)
+logger = logging.getLogger("startup_recovered")
+
 app = Flask(__name__)
+
+# Configure logging to ensure app.logger.info prints to stdout
+app.logger.setLevel(logging.INFO)
+if not any(isinstance(h, logging.StreamHandler) for h in app.logger.handlers):
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(message)s')
+    handler.setFormatter(formatter)
+    app.logger.addHandler(handler)
+
+@app.get("/debug/auth")
+def debug_auth():
+    # never expose debug in production
+    if os.environ.get("ENVIRONMENT") == "production" or os.environ.get("RENDER") == "true":
+        return ("Not Found", 404)
+
+    user_id = session.get("user_id")
+    sess_token = session.get("active_session_token")
+
+    db_token = None
+    if user_id:
+        conn = sqlite3.connect(get_db_path())
+        cur = conn.cursor()
+        cur.execute("SELECT active_session_token FROM users WHERE id=?", (user_id,))
+        row = cur.fetchone()
+        conn.close()
+        db_token = row[0] if row else None
+
+    return jsonify({
+        "user_id": user_id,
+        "session_token_present": bool(sess_token),
+        "db_token_present": bool(db_token),
+        "token_match": (sess_token == db_token) if (sess_token and db_token) else False,
+        "db_path": get_db_path(),
+        "cookie_secure": app.config.get("SESSION_COOKIE_SECURE"),
+        "secret_key_set": bool(app.config.get("SECRET_KEY")),
+    })
+
+
+# Define helper functions and decorator before routes
+def get_db_path():
+    """Helper to get database path - always returns the single DB_PATH constant"""
+    return DB_PATH
+
+
+def get_conn():
+    """Get a database connection with Row factory"""
+    conn = sqlite3.connect(get_db_path())
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def ensure_users_schema():
+    """Ensure users table exists with active_session_token column"""
+    conn = sqlite3.connect(get_db_path())
+    cursor = conn.cursor()
+    
+    # Create users table if it doesn't exist
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            active_session_token TEXT
+        )
+    """)
+    
+    # Add active_session_token column if it doesn't exist (migration for existing databases)
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN active_session_token TEXT")
+    except sqlite3.OperationalError:
+        # Column already exists, ignore
+        pass
+    
+    conn.commit()
+    conn.close()
+
+
+def set_user_session_token(user_id):
+    """Generate and store active session token for a user"""
+    app.logger.info("DB PATH IN USE: %s", get_db_path())
+    token = secrets.token_urlsafe(32)
+    conn = get_conn()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET active_session_token = ? WHERE id = ?", (token, user_id))
+    conn.commit()
+    conn.close()
+    return token
+
+
+def login_required_single_session(f):
+    """Decorator to enforce single session per user"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user_id = session.get('user_id')
+        session_token = session.get('active_session_token')
+        
+        if not user_id or not session_token:
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "auth_required"}), 401
+            flash('Please log in to access this page.', 'error')
+            return redirect(url_for('login'))
+        
+        # Check if session token matches DB token
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT active_session_token FROM users WHERE id = ?", (user_id,))
+        result = cursor.fetchone()
+        conn.close()
+        
+        db_token = result[0] if result else None
+        
+        # Debug logging for session check endpoint
+        if request.path == "/api/session-check":
+            app.logger.info(f"Session check - user_id: {user_id}, session_token present: {bool(session_token)}, db_token present: {bool(db_token)}, tokens match: {db_token == session_token if (db_token and session_token) else False}")
+        
+        # Token mismatch means session was invalidated (e.g., login from another device)
+        if not db_token or db_token != session_token:
+            session.clear()
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "session_invalidated"}), 401
+            flash('You were logged out because this account was used on another device.', 'warning')
+            return redirect(url_for('login'))
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+# Ensure users schema exists at startup (after function definitions, before routes run)
+ensure_users_schema()
+
 
 @app.route("/home")
 def home():
@@ -94,9 +241,17 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            active_session_token TEXT
         )
     """)
+    
+    # Add active_session_token column if it doesn't exist (migration for existing databases)
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN active_session_token TEXT")
+    except sqlite3.OperationalError:
+        # Column already exists, ignore
+        pass
     
     # Populate common allergens if table is empty
     cursor.execute("SELECT COUNT(*) FROM allergens")
@@ -143,16 +298,10 @@ def init_db():
     conn.close()
 
 
-def get_db_path():
-    """Helper to get database path - always returns the single DB_PATH constant"""
-    return DB_PATH
-
-
 def get_user_by_id(user_id):
     """Fetch a user by id from the database"""
     try:
-        conn = sqlite3.connect(get_db_path())
-        conn.row_factory = sqlite3.Row
+        conn = get_conn()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
         row = cursor.fetchone()
@@ -175,8 +324,7 @@ def get_user_by_id(user_id):
 def get_user_by_email(email):
     """Fetch a user by email from the database"""
     try:
-        conn = sqlite3.connect(get_db_path())
-        conn.row_factory = sqlite3.Row
+        conn = get_conn()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
         row = cursor.fetchone()
@@ -195,11 +343,6 @@ def get_user_by_email(email):
         logging.error(f"Error fetching user by email: {e}")
         return None
 
-
-import os
-
-app = Flask(__name__)
-
 # ============================================================================
 # Security Configuration
 # ============================================================================
@@ -215,10 +358,40 @@ app.config["SECRET_KEY"] = os.environ.get(
 )
 # Note: In production (Render), set FLASK_SECRET_KEY to a strong random value.
 
+logger.info(
+    "ENVIRONMENT=%s FLASK_DEBUG=%s SECRET_KEY_SET=%s",
+    os.getenv("ENVIRONMENT"),
+    os.getenv("FLASK_DEBUG"),
+    bool(app.secret_key),
+)
+
+# --- Proxy Fix for Render/Production ---
+# Handles X-Forwarded-For and X-Forwarded-Proto headers correctly behind proxy
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
 # --- CSRF Protection ---
 # Initialize CSRF protection for all routes by default
 # API routes will be explicitly exempted below
 csrf = CSRFProtect(app)
+
+# --- Flask-Limiter Configuration ---
+# Use Redis in production (if REDIS_URL is set), otherwise use memory storage
+# Only specific routes will be rate-limited (not all routes)
+REDIS_URL = os.getenv("REDIS_URL")
+LIMITER_STORAGE = REDIS_URL if REDIS_URL else "memory://"
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[],   # do NOT rate limit everything
+    storage_uri=LIMITER_STORAGE,
+    headers_enabled=True
+)
+app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
+
+@app.get("/__debug/limit-test")
+@limiter.limit("3 per minute")
+def limit_test():
+    return "ok", 200
 
 # --- Flask-Login Configuration ---
 login_manager = LoginManager()
@@ -243,6 +416,19 @@ def load_user(user_id):
     if user_dict:
         return User(user_dict)
     return None
+
+
+def set_user_session_token(user_id):
+    """Generate and store active session token for a user"""
+    token = secrets.token_urlsafe(32)
+    conn = sqlite3.connect(get_db_path())
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET active_session_token = ? WHERE id = ?", (token, user_id))
+    conn.commit()
+    conn.close()
+    return token
+
+
 
 # --- Session Cookie Hardening ---
 # HTTP-only: Prevents JavaScript from accessing the cookie (protects against XSS)
@@ -442,6 +628,7 @@ def index():
 
 
 @app.route('/register', methods=['GET', 'POST'])
+@limiter.limit("3 per hour", methods=["POST"])
 def register():
     """User registration route"""
     if request.method == 'POST':
@@ -483,7 +670,8 @@ def register():
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     email TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    active_session_token TEXT
                 )
             """)
             cursor.execute("""
@@ -493,6 +681,17 @@ def register():
             conn.commit()
             user_id = cursor.lastrowid
             conn.close()
+            
+            # Generate and store session token
+            app.logger.info("DB PATH IN USE: %s", get_db_path())
+            token = set_user_session_token(user_id)
+            
+            # Clear existing session to avoid session fixation
+            session.clear()
+            
+            # Set new session values
+            session['user_id'] = user_id
+            session['active_session_token'] = token
             
             # Log the user in
             user_dict = get_user_by_id(user_id)
@@ -510,6 +709,7 @@ def register():
 
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute", methods=["POST"])
 def login():
     """User login route"""
     if request.method == 'POST':
@@ -531,9 +731,22 @@ def login():
             flash('Invalid email or password.', 'error')
             return render_template('login.html')
         
-        # Log the user in
+        # Generate and store session token
+        user_id = user_dict['id']
+        app.logger.info("DB PATH IN USE: %s", get_db_path())
+        token = set_user_session_token(user_id)
+        
+        # Clear existing session to avoid session fixation
+        session.clear()
+        
+        # Set new session values
+        session['user_id'] = user_id
+        session['active_session_token'] = token
+        
+        # Log the user in with Flask-Login
         user = User(user_dict)
         login_user(user, remember=False)
+        
         flash('Login successful!', 'success')
         
         next_page = request.args.get('next')
@@ -544,7 +757,26 @@ def login():
 
 @app.route('/logout', methods=['GET'])
 def logout():
-    """User logout route"""
+    """User logout route - token-safe: only clears DB token if session token matches"""
+    user_id = session.get('user_id')
+    sess_token = session.get('active_session_token')
+    
+    # Only clear DB token if session token matches DB token (prevent old session from logging out new session)
+    if user_id and sess_token:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT active_session_token FROM users WHERE id = ?", (user_id,))
+        result = cursor.fetchone()
+        if result:
+            db_token = result[0]
+            # Only update DB if tokens match (this session is still active)
+            if db_token == sess_token:
+                cursor.execute("UPDATE users SET active_session_token = NULL WHERE id = ?", (user_id,))
+                conn.commit()
+        conn.close()
+    
+    # Always clear session and logout, regardless of token match
+    session.clear()
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
@@ -561,6 +793,7 @@ def force_error():
 
 
 @app.route('/browser')
+@login_required_single_session
 def browser():
     """Interactive UI for browsing health categories, subcategories, and ingredients"""
     return render_template('browser.html')
@@ -48606,6 +48839,20 @@ def is_blocked_ingredient_ingredient_tab(ingredient_name):
     return normalized in [name.lower().strip() for name in BLOCKED_INGREDIENT_NAMES_INGREDIENT_TAB]
 
 @csrf.exempt
+@app.get("/api/analyze")
+def analyze_get():
+    return redirect(url_for("index"))
+
+
+@csrf.exempt
+@app.get("/api/session-check")
+@login_required_single_session
+def session_check():
+    """Check if current session is valid - returns 401 if invalid or missing"""
+    return jsonify({"ok": True})
+
+
+@csrf.exempt
 @app.route('/api/analyze', methods=['POST'])
 def api_analyze():
     """Analyze ingredients endpoint - accepts both 'ingredients' array and 'query' string"""
@@ -48685,6 +48932,7 @@ def row_to_nutrition_dict(row: sqlite3.Row) -> dict:
         'minerals': d.get('minerals', '')
     }
 
+@csrf.exempt
 @app.route('/nlp-query', methods=['POST'])
 def nlp_query():
     try:
@@ -49054,139 +49302,10 @@ def nlp_query():
         return jsonify({"error": str(e)}), 500
 
 
-if __name__ == '__main__':
-    DB_NAME = DB_PATH
-    
-    # Check if database needs initialization
-    needs_init = not os.path.exists(DB_PATH)
-    
-    if needs_init:
-        try:
-            print("Initializing database...")
-            init_db()
-            print("Database initialized.")
-        except Exception as e:
-            print(f"Error initializing database: {e}")
-    
-    # Check if nutrition data needs to be populated or updated
-    # IMPORTANT: Always call populate_db() to ensure all entries from nutrition_data array are in DB
-    # This uses INSERT OR REPLACE, so it works even if DB is not empty (upsert behavior)
-    # This is especially important for Ingredient tab nutrition lookup
-    conn_check = sqlite3.connect(get_db_path())
-    cursor_check = conn_check.cursor()
-    cursor_check.execute("SELECT COUNT(*) FROM nutrition_facts")
-    nutrition_count = cursor_check.fetchone()[0]
-    conn_check.close()
-    
-    # Always populate/update nutrition data to ensure all entries from nutrition_data array are in DB
-    # This ensures entries like "dried mango" and "dried papaya" are always present
-    try:
-        if nutrition_count == 0:
-            print("Database is empty. Populating USDA nutrition data...")
-        else:
-            print(f"Database has {nutrition_count} entries. Updating/inserting all nutrition data entries (upsert)...")
-        populate_db()
-        print("✅ USDA nutrition data populated/updated successfully.")
-    except Exception as e:
-        print(f"Error populating nutrition data: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Ensure Ingredient tab specific nutrition profiles are present (non-destructive upsert)
-    # This is ONLY for Ingredient tab nutrition lookup, not for smoothie logic
-    try:
-        print("Ensuring Ingredient tab nutrition profiles are present...")
-        ensure_ingredient_tab_nutrition_profiles()
-    except Exception as e:
-        print(f"Error ensuring ingredient tab nutrition profiles: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Check if serving sizes need to be populated
-    conn_check = sqlite3.connect(get_db_path())
-    cursor_check = conn_check.cursor()
-    cursor_check.execute("SELECT COUNT(*) FROM health_specific_serving_sizes")
-    serving_count = cursor_check.fetchone()[0]
-    conn_check.close()
-    
-    if serving_count == 0:
-        try:
-            print("Populating health-specific serving sizes...")
-            populate_health_specific_serving_sizes()
-            print("✅ Serving sizes populated.")
-        except Exception as e:
-            print(f"Error populating serving sizes: {e}")
-    
-    # Update any ingredients with 0 or NULL serving_size using USDA serving sizes
-    try:
-        print("Checking for ingredients with missing serving sizes...")
-        updated = update_zero_serving_sizes()
-        if updated > 0:
-            print(f"✅ Updated {updated} ingredients with USDA serving sizes.")
-        else:
-            print("✅ All ingredients already have serving sizes.")
-    except Exception as e:
-        print(f"Error updating serving sizes: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Update any ingredients with all zero nutrition values using USDA-approved data
-    try:
-        print("Checking for ingredients with zero nutrition information...")
-        updated = update_zero_nutrition_info()
-        if updated > 0:
-            print(f"✅ Updated {updated} ingredients with USDA-approved nutrition values.")
-        else:
-            print("✅ All ingredients already have proper nutrition values.")
-    except Exception as e:
-        print(f"Error updating nutrition info: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Update any ingredients with default 100g serving size to USDA-approved serving sizes
-    try:
-        print("Checking for ingredients with default 100g serving size...")
-        updated = update_default_serving_sizes()
-        if updated > 0:
-            print(f"✅ Updated {updated} ingredients from default 100g to USDA-approved serving sizes.")
-        else:
-            print("✅ All ingredients already have USDA-approved serving sizes.")
-    except Exception as e:
-        print(f"Error updating default serving sizes: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Remove plural ingredient entries, keep only singular
-    try:
-        print("Checking for plural ingredient entries to remove...")
-        removed = remove_plural_ingredients()
-        if removed > 0:
-            print(f"✅ Removed {removed} plural ingredient entries.")
-        else:
-            print("✅ No plural ingredient entries found.")
-    except Exception as e:
-        print(f"Error removing plural ingredients: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Ensure each subcategory has at least 5 ingredients
-    try:
-        print("Checking subcategories for minimum ingredient count...")
-        added = ensure_minimum_ingredients_per_subcategory()
-        if added > 0:
-            print(f"✅ Added {added} ingredients to subcategories.")
-        else:
-            print("✅ All subcategories have at least 5 ingredients.")
-    except Exception as e:
-        print(f"Error ensuring minimum ingredients: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    # Get host and port from environment or use defaults
-    host = os.environ.get('FLASK_HOST', '0.0.0.0')
-    port = int(os.environ.get('FLASK_PORT', 8000))
-    debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-    
-    app.run(debug=debug, host=host, port=port)
+if __name__ == "__main__":
+    # Parse debug mode from environment variable
+    debug = str(os.getenv('FLASK_DEBUG', '0')).lower() in ('1', 'true', 'yes', 'on')
+    port = int(os.getenv('PORT', '8000'))
+    app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=debug)
 
 
