@@ -393,6 +393,38 @@
 
         // Load categories on page load
         loadCategories();
+
+        // Check session validity on page load (detect if session was invalidated)
+        (async function checkSession() {
+            try {
+                const response = await fetch('/api/session-check', {
+                    credentials: 'same-origin',
+                    method: 'GET'
+                });
+                
+                if (response.status === 401) {
+                    try {
+                        const data = await response.json();
+                        if (data.error === 'session_invalidated') {
+                            // Session was invalidated (e.g., logged in from another device)
+                            const nextUrl = encodeURIComponent(window.location.pathname + window.location.search);
+                            window.location.href = `/login?next=${nextUrl}`;
+                            return;
+                        }
+                        // If error === 'auth_required', do nothing (free mode - allow access)
+                    } catch (parseError) {
+                        // If JSON parsing fails, still treat 401 as potential invalidation
+                        console.warn('Session check returned 401 but could not parse response:', parseError);
+                    }
+                } else if (response.ok) {
+                    // Session is valid, do nothing
+                    console.debug('Session check: valid');
+                }
+            } catch (error) {
+                // Network errors are ignored - allow page to load normally
+                console.debug('Session check network error (ignored):', error);
+            }
+        })();
     </script>
 </body>
 </html>

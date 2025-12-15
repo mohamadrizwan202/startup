@@ -1219,6 +1219,48 @@
       background: var(--secondary);
     }
   </style>
+  <script>
+    // Check session validity immediately (before page renders)
+    // This runs as early as possible to catch invalidated sessions
+    console.log('[SESSION CHECK] Starting early session check...');
+    (async function checkSessionEarly() {
+      try {
+        console.log('[SESSION CHECK] Fetching /api/session-check...');
+        const response = await fetch('/api/session-check', {
+          credentials: 'same-origin',
+          method: 'GET'
+        });
+        
+        console.log('[SESSION CHECK] Response status:', response.status, 'ok:', response.ok);
+        
+        if (response.status === 401) {
+          try {
+            const data = await response.json();
+            console.log('[SESSION CHECK] 401 response data:', data);
+            if (data.error === 'session_invalidated') {
+              // Session was invalidated (e.g., logged in from another device)
+              console.log('[SESSION CHECK] Session invalidated! Redirecting to login...');
+              const nextUrl = encodeURIComponent(window.location.pathname + window.location.search);
+              window.location.href = `/login?next=${nextUrl}`;
+              return;
+            }
+            // If error === 'auth_required', do nothing (free mode - allow access)
+            console.log('[SESSION CHECK] auth_required (free mode, ignoring)');
+          } catch (parseError) {
+            console.warn('[SESSION CHECK] Could not parse 401 response:', parseError);
+          }
+        } else if (response.ok) {
+          const data = await response.json();
+          console.log('[SESSION CHECK] Valid session:', data);
+        } else {
+          console.log('[SESSION CHECK] Unexpected status:', response.status);
+        }
+      } catch (error) {
+        // Network errors are logged but don't block page load
+        console.error('[SESSION CHECK] Network error:', error);
+      }
+    })();
+  </script>
 </head>
 <body>
   <!-- Auth Header -->
@@ -12897,6 +12939,50 @@
         forceScrollToTop();
       }, 100);
     })();
+
+    // Check session validity on page load (detect if session was invalidated) - backup check
+    // This runs after DOM loads as a backup to the early check in <head>
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('[SESSION CHECK] DOMContentLoaded - running backup session check...');
+      (async function checkSession() {
+        try {
+          console.log('[SESSION CHECK] Fetching /api/session-check (backup)...');
+          const response = await fetch('/api/session-check', {
+            credentials: 'same-origin',
+            method: 'GET'
+          });
+          
+          console.log('[SESSION CHECK] Backup check - Response status:', response.status, 'ok:', response.ok);
+          
+          if (response.status === 401) {
+            try {
+              const data = await response.json();
+              console.log('[SESSION CHECK] Backup check - 401 response data:', data);
+              if (data.error === 'session_invalidated') {
+                // Session was invalidated (e.g., logged in from another device)
+                console.log('[SESSION CHECK] Backup check - Session invalidated! Redirecting to login...');
+                const nextUrl = encodeURIComponent(window.location.pathname + window.location.search);
+                window.location.href = `/login?next=${nextUrl}`;
+                return;
+              }
+              // If error === 'auth_required', do nothing (free mode - allow access)
+              console.log('[SESSION CHECK] Backup check - auth_required (free mode, ignoring)');
+            } catch (parseError) {
+              // If JSON parsing fails, still treat 401 as potential invalidation
+              console.warn('[SESSION CHECK] Backup check - Could not parse 401 response:', parseError);
+            }
+          } else if (response.ok) {
+            const data = await response.json();
+            console.log('[SESSION CHECK] Backup check - Valid session:', data);
+          } else {
+            console.log('[SESSION CHECK] Backup check - Unexpected status:', response.status);
+          }
+        } catch (error) {
+          // Network errors are logged but don't block page load
+          console.error('[SESSION CHECK] Backup check - Network error:', error);
+        }
+      })();
+    });
   </script>
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>

@@ -15,6 +15,7 @@ from functools import wraps
 import sqlite3
 import os
 import sys
+from pathlib import Path
 
 # Single database path constant
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -392,6 +393,24 @@ app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 @limiter.limit("3 per minute")
 def limit_test():
     return "ok", 200
+
+@app.get("/__debug/db-info")
+def db_info():
+    # Report current working directory and DB file existence
+    cwd = os.getcwd()
+    # Use the DB_PATH variable defined at module level
+    db_path = globals().get("DB_PATH", "allergen_nutrition.db")
+    p = Path(db_path)
+    abs_path = str(p.resolve())
+    exists = p.exists()
+    size = p.stat().st_size if exists else None
+    return jsonify({
+        "cwd": cwd,
+        "db_path": db_path,
+        "abs_path": abs_path,
+        "exists": exists,
+        "size_bytes": size,
+    }), 200
 
 # --- Flask-Login Configuration ---
 login_manager = LoginManager()
