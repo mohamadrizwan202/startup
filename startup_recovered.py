@@ -381,38 +381,29 @@ logger.info(
     bool(app.secret_key),
 )
 
-# --- Postgres probe (truthful logging) ---
-import os
-import logging
+# --- Postgres probe (psycopg v3) ---
 from importlib import metadata
-
-logger = logging.getLogger(__name__)
 
 db_url = os.getenv("DATABASE_URL", "")
 scheme = db_url.split(":", 1)[0] if db_url else None
 
 try:
-    v = metadata.version("psycopg2-binary")
-    logger.info("PSYCOPG2_BINARY=present version=%s", v)
+    v = metadata.version("psycopg")
+    logger.info("PSYCOPG=present version=%s", v)
 except metadata.PackageNotFoundError:
-    logger.info("PSYCOPG2_BINARY=missing")
+    logger.info("PSYCOPG=missing")
 
 if not db_url or not scheme or "postgres" not in scheme:
     logger.info("POSTGRES_PROBE=skip reason=no_DATABASE_URL_or_not_postgres scheme=%s", scheme)
 else:
     try:
-        import psycopg2
-        logger.info("PSYCOPG2_IMPORT=ok version=%s", getattr(psycopg2, "__version__", "unknown"))
+        import psycopg
+        logger.info("PSYCOPG_IMPORT=ok version=%s", getattr(psycopg, "__version__", "unknown"))
 
-        connect_kwargs = {"connect_timeout": 5}
-        if "sslmode=" not in db_url:
-            connect_kwargs["sslmode"] = "require"
-
-        conn = psycopg2.connect(db_url, **connect_kwargs)
-        cur = conn.cursor()
-        cur.execute("SELECT 1;")
-        cur.fetchone()
-        cur.close()
+        conn = psycopg.connect(db_url, connect_timeout=5, sslmode="require")
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1;")
+            cur.fetchone()
         conn.close()
 
         logger.info("POSTGRES_PROBE=ok")
