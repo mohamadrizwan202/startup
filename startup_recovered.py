@@ -16,6 +16,7 @@ import sqlite3
 import os
 import sys
 from pathlib import Path
+from importlib import metadata
 
 try:
     import psycopg2  # pyright: ignore[reportMissingModuleSource]
@@ -380,26 +381,43 @@ logger.info(
     bool(app.secret_key),
 )
 
-_db_url = os.getenv("DATABASE_URL", "")
-logger.info("POSTGRES_PROBE=begin has_url=%s scheme=%s",
-            bool(_db_url),
-            (_db_url.split(':', 1)[0] if _db_url else None))
+# --- Postgres probe (truthful logging) ---
+import os
+import logging
+from importlib import metadata
 
-if not _db_url:
-    logger.info("POSTGRES_PROBE=skip reason=no_DATABASE_URL")
-elif psycopg2 is None:
-    logger.info("POSTGRES_PROBE=skip reason=psycopg2_not_installed")
+logger = logging.getLogger(__name__)
+
+db_url = os.getenv("DATABASE_URL", "")
+scheme = db_url.split(":", 1)[0] if db_url else None
+
+try:
+    v = metadata.version("psycopg2-binary")
+    logger.info("PSYCOPG2_BINARY=present version=%s", v)
+except metadata.PackageNotFoundError:
+    logger.info("PSYCOPG2_BINARY=missing")
+
+if not db_url or not scheme or "postgres" not in scheme:
+    logger.info("POSTGRES_PROBE=skip reason=no_DATABASE_URL_or_not_postgres scheme=%s", scheme)
 else:
     try:
-        conn = psycopg2.connect(_db_url, connect_timeout=5)
+        import psycopg2
+        logger.info("PSYCOPG2_IMPORT=ok version=%s", getattr(psycopg2, "__version__", "unknown"))
+
+        connect_kwargs = {"connect_timeout": 5}
+        if "sslmode=" not in db_url:
+            connect_kwargs["sslmode"] = "require"
+
+        conn = psycopg2.connect(db_url, **connect_kwargs)
         cur = conn.cursor()
         cur.execute("SELECT 1;")
         cur.fetchone()
         cur.close()
         conn.close()
+
         logger.info("POSTGRES_PROBE=ok")
-    except Exception:
-        logger.exception("POSTGRES_PROBE=fail")
+    except Exception as e:
+        logger.exception("POSTGRES_PROBE=fail %r", e)
 
 # --- Proxy Fix for Render/Production ---
 # Handles X-Forwarded-For and X-Forwarded-Proto headers correctly behind proxy
