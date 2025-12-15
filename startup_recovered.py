@@ -20,7 +20,6 @@ from importlib import metadata
 
 # Import database helpers
 import db
-import db_monitor
 
 # Single database path constant (for SQLite fallback only)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -149,9 +148,6 @@ def login_required_single_session(f):
 
 # Ensure users schema exists at startup (after function definitions, before routes run)
 db.ensure_schema()
-
-# Start database health monitoring (if enabled)
-db_monitor.start_db_monitor()
 
 
 @app.route("/home")
