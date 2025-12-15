@@ -414,13 +414,19 @@ app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 @app.get("/__dbcheck")
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
-    # Check token from query param or header
-    expected_token = os.getenv("DBCHECK_TOKEN", "")
-    provided_token = request.args.get("token") or request.headers.get("X-DBCHECK-TOKEN")
+    # Read expected token from environment variable
+    expected_token = os.getenv("DBCHECK_TOKEN")
     
-    # If no token configured or wrong token, return 404 to avoid advertising endpoint
-    if not expected_token or provided_token != expected_token:
-        abort(404)
+    # If DBCHECK_TOKEN is not set, return 500 with JSON explaining it's missing
+    if not expected_token:
+        return jsonify({"error": "DBCHECK_TOKEN environment variable is not set"}), 500
+    
+    # Get provided token from query param
+    provided_token = request.args.get("token")
+    
+    # If token doesn't match, return 403 with JSON error
+    if provided_token != expected_token:
+        return jsonify({"error": "forbidden"}), 403
     
     try:
         conn = db.get_conn()
