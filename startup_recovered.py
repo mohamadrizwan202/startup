@@ -9,7 +9,7 @@ from flask_limiter import Limiter  # pyright: ignore[reportMissingImports]
 from flask_limiter.util import get_remote_address  # pyright: ignore[reportMissingImports]
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import wraps
 
 import sqlite3
@@ -20,6 +20,7 @@ from importlib import metadata
 
 # Import database helpers
 import db
+import db_monitor
 
 # Single database path constant (for SQLite fallback only)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -148,6 +149,9 @@ def login_required_single_session(f):
 
 # Ensure users schema exists at startup (after function definitions, before routes run)
 db.ensure_schema()
+
+# Start database health monitoring (if enabled)
+db_monitor.start_db_monitor()
 
 
 @app.route("/home")
@@ -481,6 +485,15 @@ def dbcheck():
         return jsonify({"error": str(e)}), 500
 
 logger.info("DBCHECK_ROUTE=enabled")
+
+# --- Health Check Endpoint (public, safe, fast) ---
+@app.get("/__health")
+def health_check():
+    """
+    Simple health check endpoint for Render.
+    Returns HTTP 200 with {"status":"ok"} - fast, no DB queries.
+    """
+    return jsonify({"status": "ok"}), 200
 
 # --- Debug Routes (only enabled in non-production) ---
 if not IS_PROD:
