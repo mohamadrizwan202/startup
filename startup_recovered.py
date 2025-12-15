@@ -18,12 +18,10 @@ import sys
 from pathlib import Path
 from importlib import metadata
 
-try:
-    import psycopg2  # pyright: ignore[reportMissingModuleSource]
-except ImportError:
-    psycopg2 = None  # Will be available on Render where it's installed
+# Import database helpers
+import db
 
-# Single database path constant
+# Single database path constant (for SQLite fallback only)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "allergen_nutrition.db")
 
@@ -67,12 +65,13 @@ def debug_auth():
 
     db_token = None
     if user_id:
-        conn = sqlite3.connect(get_db_path())
+        conn = get_conn()
         cur = conn.cursor()
-        cur.execute("SELECT active_session_token FROM users WHERE id=?", (user_id,))
+        query = db.prepare_query("SELECT active_session_token FROM users WHERE id=?")
+        cur.execute(query, (user_id,))
         row = cur.fetchone()
         conn.close()
-        db_token = row[0] if row else None
+        db_token = row['active_session_token'] if row and isinstance(row, dict) else (row[0] if row else None)
 
     return jsonify({
         "user_id": user_id,
@@ -87,51 +86,22 @@ def debug_auth():
 
 # Define helper functions and decorator before routes
 def get_db_path():
-    """Helper to get database path - always returns the single DB_PATH constant"""
+    """Helper to get database path - only used for SQLite fallback"""
     return DB_PATH
 
 
 def get_conn():
-    """Get a database connection with Row factory"""
-    conn = sqlite3.connect(get_db_path())
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def ensure_users_schema():
-    """Ensure users table exists with active_session_token column"""
-    conn = sqlite3.connect(get_db_path())
-    cursor = conn.cursor()
-    
-    # Create users table if it doesn't exist
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            active_session_token TEXT
-        )
-    """)
-    
-    # Add active_session_token column if it doesn't exist (migration for existing databases)
-    try:
-        cursor.execute("ALTER TABLE users ADD COLUMN active_session_token TEXT")
-    except sqlite3.OperationalError:
-        # Column already exists, ignore
-        pass
-    
-    conn.commit()
-    conn.close()
+    """Get a database connection - delegates to db.py"""
+    return db.get_conn()
 
 
 def set_user_session_token(user_id):
     """Generate and store active session token for a user"""
-    app.logger.info("DB PATH IN USE: %s", get_db_path())
     token = secrets.token_urlsafe(32)
     conn = get_conn()
     cursor = conn.cursor()
-    cursor.execute("UPDATE users SET active_session_token = ? WHERE id = ?", (token, user_id))
+    query = db.prepare_query("UPDATE users SET active_session_token = ? WHERE id = ?")
+    cursor.execute(query, (token, user_id))
     conn.commit()
     conn.close()
     return token
@@ -153,11 +123,12 @@ def login_required_single_session(f):
         # Check if session token matches DB token
         conn = get_conn()
         cursor = conn.cursor()
-        cursor.execute("SELECT active_session_token FROM users WHERE id = ?", (user_id,))
+        query = db.prepare_query("SELECT active_session_token FROM users WHERE id = ?")
+        cursor.execute(query, (user_id,))
         result = cursor.fetchone()
         conn.close()
         
-        db_token = result[0] if result else None
+        db_token = result['active_session_token'] if result and isinstance(result, dict) else (result[0] if result else None)
         
         # Debug logging for session check endpoint
         if request.path == "/api/session-check":
@@ -176,7 +147,7 @@ def login_required_single_session(f):
 
 
 # Ensure users schema exists at startup (after function definitions, before routes run)
-ensure_users_schema()
+db.ensure_schema()
 
 
 @app.route("/home")
@@ -319,20 +290,18 @@ def get_user_by_id(user_id):
     try:
         conn = get_conn()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+        query = db.prepare_query("SELECT * FROM users WHERE id = ?")
+        cursor.execute(query, (user_id,))
         row = cursor.fetchone()
         conn.close()
         if row:
-            # Convert sqlite3.Row to dict
-            return {key: row[key] for key in row.keys()}
-        return None
-    except sqlite3.OperationalError as e:
-        # Table doesn't exist yet - return None gracefully
-        if "no such table" in str(e).lower():
-            return None
-        logging.error(f"Error fetching user by id: {e}")
+            return db.row_to_dict(row, cursor)
         return None
     except Exception as e:
+        error_str = str(e).lower()
+        # Table doesn't exist yet - return None gracefully
+        if "no such table" in error_str or "relation" in error_str and "does not exist" in error_str:
+            return None
         logging.error(f"Error fetching user by id: {e}")
         return None
 
@@ -342,20 +311,18 @@ def get_user_by_email(email):
     try:
         conn = get_conn()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+        query = db.prepare_query("SELECT * FROM users WHERE email = ?")
+        cursor.execute(query, (email,))
         row = cursor.fetchone()
         conn.close()
         if row:
-            # Convert sqlite3.Row to dict
-            return {key: row[key] for key in row.keys()}
-        return None
-    except sqlite3.OperationalError as e:
-        # Table doesn't exist yet - return None gracefully
-        if "no such table" in str(e).lower():
-            return None
-        logging.error(f"Error fetching user by email: {e}")
+            return db.row_to_dict(row, cursor)
         return None
     except Exception as e:
+        error_str = str(e).lower()
+        # Table doesn't exist yet - return None gracefully
+        if "no such table" in error_str or "relation" in error_str and "does not exist" in error_str:
+            return None
         logging.error(f"Error fetching user by email: {e}")
         return None
 
@@ -382,10 +349,13 @@ logger.info(
 )
 
 # --- Postgres probe (psycopg v3) ---
+import os
+import logging
 from importlib import metadata
 
+logger = logging.getLogger(__name__)
+
 db_url = os.getenv("DATABASE_URL", "")
-scheme = db_url.split(":", 1)[0] if db_url else None
 
 try:
     v = metadata.version("psycopg")
@@ -393,19 +363,26 @@ try:
 except metadata.PackageNotFoundError:
     logger.info("PSYCOPG=missing")
 
-if not db_url or not scheme or "postgres" not in scheme:
-    logger.info("POSTGRES_PROBE=skip reason=no_DATABASE_URL_or_not_postgres scheme=%s", scheme)
+def _normalize_pg_url(url: str) -> str:
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://"):]
+    if "sslmode=" not in url:
+        url += ("&" if "?" in url else "?") + "sslmode=require"
+    return url
+
+if not db_url or not (db_url.startswith("postgres://") or db_url.startswith("postgresql://")):
+    logger.info("POSTGRES_PROBE=skip reason=no_DATABASE_URL_or_not_postgres")
 else:
     try:
-        import psycopg
+        import psycopg  # pyright: ignore[reportMissingImports]
         logger.info("PSYCOPG_IMPORT=ok version=%s", getattr(psycopg, "__version__", "unknown"))
 
-        conn = psycopg.connect(db_url, connect_timeout=5, sslmode="require")
-        with conn.cursor() as cur:
-            cur.execute("SELECT 1;")
-            cur.fetchone()
+        conn = psycopg.connect(_normalize_pg_url(db_url), connect_timeout=5)
+        cur = conn.cursor()
+        cur.execute("SELECT 1;")
+        cur.fetchone()
+        cur.close()
         conn.close()
-
         logger.info("POSTGRES_PROBE=ok")
     except Exception as e:
         logger.exception("POSTGRES_PROBE=fail %r", e)
@@ -432,6 +409,72 @@ limiter = Limiter(
     headers_enabled=True
 )
 app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
+
+# --- DB Check Route (protected with token, enabled in all environments) ---
+@app.get("/__dbcheck")
+def dbcheck():
+    """Database status endpoint - protected by DBCHECK_TOKEN"""
+    # Check token from query param or header
+    expected_token = os.getenv("DBCHECK_TOKEN", "")
+    provided_token = request.args.get("token") or request.headers.get("X-DBCHECK-TOKEN")
+    
+    # If no token configured or wrong token, return 404 to avoid advertising endpoint
+    if not expected_token or provided_token != expected_token:
+        abort(404)
+    
+    try:
+        conn = db.get_conn()
+        cursor = conn.cursor()
+        
+        # Determine DB type
+        db_type = "postgres" if db.USE_POSTGRES else "sqlite"
+        
+        # Get Python version
+        python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        
+        # Get psycopg version if installed
+        psycopg_version = None
+        try:
+            import psycopg  # pyright: ignore[reportMissingImports]
+            psycopg_version = getattr(psycopg, "__version__", "unknown")
+        except ImportError:
+            pass
+        
+        # Get database URL scheme
+        database_url = os.getenv("DATABASE_URL", "")
+        database_url_scheme = ""
+        if database_url:
+            parts = database_url.split(":", 1)
+            database_url_scheme = parts[0] if parts else ""
+        
+        # Get users count - works on both Postgres and SQLite
+        query = db.prepare_query("SELECT COUNT(*) as count FROM users")
+        cursor.execute(query)
+        row = cursor.fetchone()
+        users_count = row['count'] if isinstance(row, dict) else row[0]
+        
+        # Get table names
+        if db.USE_POSTGRES:
+            cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name")
+            tables = [row['table_name'] for row in cursor.fetchall()]
+        else:
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+            tables = [row[0] for row in cursor.fetchall()]
+        
+        conn.close()
+        
+        return jsonify({
+            "db_type": db_type,
+            "python_version": python_version,
+            "psycopg_version": psycopg_version,
+            "database_url_scheme": database_url_scheme,
+            "users_count": users_count,
+            "tables": tables
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+logger.info("DBCHECK_ROUTE=enabled")
 
 # --- Debug Routes (only enabled in non-production) ---
 if not IS_PROD:
@@ -485,13 +528,6 @@ def load_user(user_id):
 
 def set_user_session_token(user_id):
     """Generate and store active session token for a user"""
-    token = secrets.token_urlsafe(32)
-    conn = sqlite3.connect(get_db_path())
-    cursor = conn.cursor()
-    cursor.execute("UPDATE users SET active_session_token = ? WHERE id = ?", (token, user_id))
-    conn.commit()
-    conn.close()
-    return token
 
 
 
@@ -727,28 +763,26 @@ def register():
                 method="pbkdf2:sha256",  # avoid scrypt
                 salt_length=16
             )
-            conn = sqlite3.connect(get_db_path())
+            conn = get_conn()
             cursor = conn.cursor()
-            # Ensure users table exists before inserting
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    email TEXT UNIQUE NOT NULL,
-                    password_hash TEXT NOT NULL,
-                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-                    active_session_token TEXT
-                )
-            """)
-            cursor.execute("""
-                INSERT INTO users (email, password_hash)
-                VALUES (?, ?)
-            """, (email, password_hash))
+            if db.USE_POSTGRES:
+                # PostgreSQL: use RETURNING clause to get the id
+                query = "INSERT INTO users (email, password_hash) VALUES (%s, %s) RETURNING id"
+                cursor.execute(query, (email, password_hash))
+                result = cursor.fetchone()
+                user_id = result['id'] if result else None
+            else:
+                # SQLite: use lastrowid
+                query = "INSERT INTO users (email, password_hash) VALUES (?, ?)"
+                cursor.execute(query, (email, password_hash))
+                user_id = cursor.lastrowid
             conn.commit()
-            user_id = cursor.lastrowid
             conn.close()
             
+            if not user_id:
+                raise Exception("Failed to get user_id after insert")
+            
             # Generate and store session token
-            app.logger.info("DB PATH IN USE: %s", get_db_path())
             token = set_user_session_token(user_id)
             
             # Clear existing session to avoid session fixation
@@ -830,13 +864,15 @@ def logout():
     if user_id and sess_token:
         conn = get_conn()
         cursor = conn.cursor()
-        cursor.execute("SELECT active_session_token FROM users WHERE id = ?", (user_id,))
+        query = db.prepare_query("SELECT active_session_token FROM users WHERE id = ?")
+        cursor.execute(query, (user_id,))
         result = cursor.fetchone()
         if result:
-            db_token = result[0]
+            db_token = result['active_session_token'] if isinstance(result, dict) else result[0]
             # Only update DB if tokens match (this session is still active)
             if db_token == sess_token:
-                cursor.execute("UPDATE users SET active_session_token = NULL WHERE id = ?", (user_id,))
+                query = db.prepare_query("UPDATE users SET active_session_token = NULL WHERE id = ?")
+                cursor.execute(query, (user_id,))
                 conn.commit()
         conn.close()
     
