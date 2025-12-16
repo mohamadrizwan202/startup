@@ -421,11 +421,41 @@ def dbcheck():
     if not expected_token:
         return jsonify({"error": "DBCHECK_TOKEN environment variable is not set"}), 500
     
-    # Get provided token from query param
-    provided_token = request.args.get("token")
+    # Check query param token - if valid, set cookie and redirect
+    query_token = request.args.get("token")
+    if query_token:
+        if secrets.compare_digest(query_token, expected_token):
+            # Token valid - set cookie and redirect to same path without query params
+            response = redirect("/__dbcheck")
+            # Set secure cookie (Max-Age=86400 = 1 day)
+            response.set_cookie(
+                "__dbc_token",
+                expected_token,
+                max_age=86400,  # 1 day
+                httponly=True,
+                secure=True,
+                samesite="Strict"
+            )
+            return response
+        else:
+            # Query token invalid
+            return jsonify({"error": "forbidden"}), 403
     
-    # If token doesn't match, return 403 with JSON error
-    if provided_token != expected_token:
+    # Check authorization: Bearer header or cookie
+    provided_token = None
+    
+    # Check Authorization: Bearer header
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        provided_token = auth_header[7:].strip()
+    else:
+        # Check cookie
+        cookie_token = request.cookies.get("__dbc_token")
+        if cookie_token:
+            provided_token = cookie_token
+    
+    # Validate token using constant-time comparison
+    if not provided_token or not secrets.compare_digest(provided_token, expected_token):
         return jsonify({"error": "forbidden"}), 403
     
     try:
@@ -469,7 +499,7 @@ def dbcheck():
         
         conn.close()
         
-        return jsonify({
+        response = jsonify({
             "db_type": db_type,
             "python_version": python_version,
             "psycopg_version": psycopg_version,
@@ -477,6 +507,9 @@ def dbcheck():
             "users_count": users_count,
             "tables": tables
         })
+        # Add Cache-Control: no-store header
+        response.headers["Cache-Control"] = "no-store"
+        return response
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
