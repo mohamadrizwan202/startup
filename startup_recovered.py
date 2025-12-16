@@ -547,7 +547,7 @@ def dbcheck_auth():
     return response
 
 # --- Health Check Endpoint (public, safe, fast) ---
-@app.get("/health")
+@app.get("/__health")
 def health_check():
     """
     Simple health check endpoint for Render.
@@ -850,25 +850,30 @@ def register():
             flash('An account with this email already exists.', 'error')
             return render_template('register.html')
         
+        # --- Secure Password Hashing ---
+        # Hash the plain-text password using a strong algorithm (pbkdf2:sha256)
+        # The original 'password' variable remains unchanged for security best practices
+        hashed_password = generate_password_hash(
+            password,
+            method="pbkdf2:sha256",  # Strong hashing algorithm with salt
+            salt_length=16
+        )
+        # Password hashing step is complete - original password variable is preserved
+        
         # Create new user
         try:
-            password_hash = generate_password_hash(
-                password,
-                method="pbkdf2:sha256",  # avoid scrypt
-                salt_length=16
-            )
             conn = get_conn()
             cursor = conn.cursor()
             if db.USE_POSTGRES:
                 # PostgreSQL: use RETURNING clause to get the id
                 query = "INSERT INTO users (email, password_hash) VALUES (%s, %s) RETURNING id"
-                cursor.execute(query, (email, password_hash))
+                cursor.execute(query, (email, hashed_password))
                 result = cursor.fetchone()
                 user_id = result['id'] if result else None
             else:
                 # SQLite: use lastrowid
                 query = "INSERT INTO users (email, password_hash) VALUES (?, ?)"
-                cursor.execute(query, (email, password_hash))
+                cursor.execute(query, (email, hashed_password))
                 user_id = cursor.lastrowid
             conn.commit()
             conn.close()
