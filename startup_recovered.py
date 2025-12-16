@@ -411,33 +411,34 @@ limiter = Limiter(
 app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 
 # --- DB Check Route (protected with token, enabled in all environments) ---
+# Usage: curl -H "Authorization: Bearer $DBCHECK_TOKEN" https://your-app.onrender.com/__dbcheck
 @app.get("/__dbcheck")
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
-    # Read expected token from environment variable (single source of truth)
+    # Read expected token from environment variable
     expected_token = os.getenv("DBCHECK_TOKEN")
     
-    # If DBCHECK_TOKEN is not set, return 500 with JSON explaining it's missing
+    # If DBCHECK_TOKEN is missing/empty, return 500 with server_misconfigured error
     if not expected_token:
-        return jsonify({"error": "DBCHECK_TOKEN environment variable is not set"}), 500
+        return jsonify({"error": "server_misconfigured"}), 500
     
-    # Get provided token from Authorization header (preferred) or query param (backward compatible)
+    # Get provided token from Authorization header (required in production)
     provided_token = None
     auth_method = None
     
-    # Check Authorization: Bearer header (preferred)
+    # Check Authorization: Bearer header (required)
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         provided_token = auth_header[7:].strip()
         auth_method = "header"
-    else:
-        # Check query param (backward compatible)
+    elif not IS_PROD:
+        # Allow query param auth only in non-production (for local testing)
         query_token = request.args.get("token")
         if query_token:
             provided_token = query_token
             auth_method = "query"
     
-    # Log which auth method was used
+    # Log which auth method was used (without logging token value)
     if auth_method:
         logger.info("DBCHECK_AUTH=%s", auth_method)
     
