@@ -11,6 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime, timezone
 from functools import wraps
+from flask import jsonify # pyright: ignore[reportMissingImports]
 
 import sqlite3
 import os
