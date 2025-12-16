@@ -428,7 +428,11 @@ def dbcheck():
     
     # If DBCHECK_TOKEN is missing/empty, return 500 with server_misconfigured error
     if not expected_token:
-        return jsonify({"error": "server_misconfigured"}), 500
+        # In production, return 404 to hide the endpoint, but log the issue
+        if is_production:
+            logger.warning("DBCHECK_TOKEN not set in production environment")
+            abort(404)
+        return jsonify({"error": "server_misconfigured", "message": "DBCHECK_TOKEN environment variable is not set"}), 500
     
     # Get provided token from Authorization header OR cookie
     provided_token = None
@@ -515,7 +519,11 @@ def dbcheck_auth():
     expected_token = os.getenv("DBCHECK_TOKEN")
     
     if not expected_token:
-        return jsonify({"error": "server_misconfigured"}), 500
+        # In production, return 404 to hide the endpoint
+        if is_production:
+            logger.warning("DBCHECK_TOKEN not set in production environment")
+            abort(404)
+        return jsonify({"error": "server_misconfigured", "message": "DBCHECK_TOKEN environment variable is not set"}), 500
     
     # Get token from query parameter
     provided_token = request.args.get("token", "")
