@@ -36,14 +36,19 @@ logger = logging.getLogger("startup_recovered")
 
 app = Flask(__name__)
 
-# Production environment detection
+# Production environment detection (single source of truth)
 ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
 IS_PROD = ENV == "production" or (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
+is_production = IS_PROD
 
 @app.before_request
 def block_debug_in_prod():
-    if IS_PROD and request.path.startswith("/__debug/"):
-        abort(404)
+    """Block all debug endpoints in production"""
+    if is_production:
+        path = request.path
+        # Note: /__proxycheck is temporarily enabled for ProxyFix testing - remove from this list after testing
+        if path.startswith("/__debug/") or path.startswith("/debug/") or path == "/force-error":
+            abort(404)
 
 # Configure logging to ensure app.logger.info prints to stdout
 app.logger.setLevel(logging.INFO)
@@ -54,34 +59,31 @@ if not any(isinstance(h, logging.StreamHandler) for h in app.logger.handlers):
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
 
-@app.get("/debug/auth")
-def debug_auth():
-    # never expose debug in production
-    if os.environ.get("ENVIRONMENT") == "production" or os.environ.get("RENDER") == "true":
-        return ("Not Found", 404)
+if not is_production:
+    @app.get("/debug/auth")
+    def debug_auth():
+        user_id = session.get("user_id")
+        sess_token = session.get("active_session_token")
 
-    user_id = session.get("user_id")
-    sess_token = session.get("active_session_token")
+        db_token = None
+        if user_id:
+            conn = get_conn()
+            cur = conn.cursor()
+            query = db.prepare_query("SELECT active_session_token FROM users WHERE id=?")
+            cur.execute(query, (user_id,))
+            row = cur.fetchone()
+            conn.close()
+            db_token = row['active_session_token'] if row and isinstance(row, dict) else (row[0] if row else None)
 
-    db_token = None
-    if user_id:
-        conn = get_conn()
-        cur = conn.cursor()
-        query = db.prepare_query("SELECT active_session_token FROM users WHERE id=?")
-        cur.execute(query, (user_id,))
-        row = cur.fetchone()
-        conn.close()
-        db_token = row['active_session_token'] if row and isinstance(row, dict) else (row[0] if row else None)
-
-    return jsonify({
-        "user_id": user_id,
-        "session_token_present": bool(sess_token),
-        "db_token_present": bool(db_token),
-        "token_match": (sess_token == db_token) if (sess_token and db_token) else False,
-        "db_path": get_db_path(),
-        "cookie_secure": app.config.get("SESSION_COOKIE_SECURE"),
-        "secret_key_set": bool(app.config.get("SECRET_KEY")),
-    })
+        return jsonify({
+            "user_id": user_id,
+            "session_token_present": bool(sess_token),
+            "db_token_present": bool(db_token),
+            "token_match": (sess_token == db_token) if (sess_token and db_token) else False,
+            "db_path": get_db_path(),
+            "cookie_secure": app.config.get("SESSION_COOKIE_SECURE"),
+            "secret_key_set": bool(app.config.get("SECRET_KEY")),
+        })
 
 
 # Define helper functions and decorator before routes
@@ -153,11 +155,12 @@ db.ensure_schema()
 @app.route("/home")
 def home():
     return render_template("index.html")
-@app.route("/debug/session")
-def debug_session():
-    # Touch the Flask session so it has to set a cookie
-    session["debug"] = "yes"
-    return "Debug session set"
+if not is_production:
+    @app.route("/debug/session")
+    def debug_session():
+        # Touch the Flask session so it has to set a cookie
+        session["debug"] = "yes"
+        return "Debug session set"
     
 def init_db():
     """Initialize database with all tables"""
@@ -415,35 +418,28 @@ app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 @app.get("/__dbcheck")
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
-    # Read expected token from environment variable
+    # Read expected token from environment variable (single source of truth)
     expected_token = os.getenv("DBCHECK_TOKEN")
     
     # If DBCHECK_TOKEN is missing/empty, return 500 with server_misconfigured error
     if not expected_token:
         return jsonify({"error": "server_misconfigured"}), 500
     
-    # Get provided token from Authorization header (required in production)
-    provided_token = None
-    auth_method = None
-    
-    # Check Authorization: Bearer header (required)
+    # Get provided token from Authorization: Bearer header ONLY (no query param support)
     auth_header = request.headers.get("Authorization", "")
-    if auth_header.startswith("Bearer "):
-        provided_token = auth_header[7:].strip()
-        auth_method = "header"
-    elif not IS_PROD:
-        # Allow query param auth only in non-production (for local testing)
-        query_token = request.args.get("token")
-        if query_token:
-            provided_token = query_token
-            auth_method = "query"
+    if not auth_header.startswith("Bearer "):
+        # Return 404 in production to reduce endpoint discovery, 403 in non-production
+        if is_production:
+            abort(404)
+        return jsonify({"error": "forbidden"}), 403
     
-    # Log which auth method was used (without logging token value)
-    if auth_method:
-        logger.info("DBCHECK_AUTH=%s", auth_method)
+    provided_token = auth_header[7:].strip()
     
     # Validate token using constant-time comparison
-    if not provided_token or not secrets.compare_digest(provided_token, expected_token):
+    if not secrets.compare_digest(provided_token, expected_token):
+        # Return 404 in production to reduce endpoint discovery, 403 in non-production
+        if is_production:
+            abort(404)
         return jsonify({"error": "forbidden"}), 403
     
     try:
@@ -513,7 +509,7 @@ def health_check():
     return jsonify({"ok": True}), 200
 
 # --- Debug Routes (only enabled in non-production) ---
-if not IS_PROD:
+if not is_production:
     @app.get("/__debug/limit-test")
     @limiter.limit("3 per minute")
     def limit_test():
@@ -536,6 +532,21 @@ if not IS_PROD:
             "exists": exists,
             "size_bytes": size,
         }), 200
+
+# --- Temporary ProxyFix verification endpoint (remove after testing) ---
+# Note: This endpoint is enabled in all environments for testing ProxyFix on Render
+@app.get("/__proxycheck")
+def proxycheck():
+    """Temporary endpoint to verify ProxyFix is working correctly"""
+    return jsonify({
+        "scheme": request.scheme,
+        "is_secure": request.is_secure,
+        "host": request.host,
+        "remote_addr": request.remote_addr,
+        "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
+        "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+        "x_forwarded_host": request.headers.get("X-Forwarded-Host"),
+    }), 200
 
 # --- Flask-Login Configuration ---
 login_manager = LoginManager()
@@ -919,14 +930,15 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/force-error')
-def force_error():
-    """
-    Local test-only route to trigger a 500 error and verify the error handler.
-    This route deliberately raises an exception to test error handling.
-    WARNING: For local debugging only - should not expose stack traces to client.
-    """
-    raise RuntimeError("Test crash - this is intentional to verify error handler")
+if not is_production:
+    @app.route('/force-error')
+    def force_error():
+        """
+        Local test-only route to trigger a 500 error and verify the error handler.
+        This route deliberately raises an exception to test error handling.
+        WARNING: For local debugging only - should not expose stack traces to client.
+        """
+        raise RuntimeError("Test crash - this is intentional to verify error handler")
 
 
 @app.route('/browser')
