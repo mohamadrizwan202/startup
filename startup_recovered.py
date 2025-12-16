@@ -414,45 +414,32 @@ app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 @app.get("/__dbcheck")
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
-    # Read expected token from environment variable
+    # Read expected token from environment variable (single source of truth)
     expected_token = os.getenv("DBCHECK_TOKEN")
     
     # If DBCHECK_TOKEN is not set, return 500 with JSON explaining it's missing
     if not expected_token:
         return jsonify({"error": "DBCHECK_TOKEN environment variable is not set"}), 500
     
-    # Check query param token - if valid, set cookie and redirect
-    query_token = request.args.get("token")
-    if query_token:
-        if secrets.compare_digest(query_token, expected_token):
-            # Token valid - set cookie and redirect to same path without query params
-            response = redirect("/__dbcheck")
-            # Set secure cookie (Max-Age=86400 = 1 day)
-            response.set_cookie(
-                "__dbc_token",
-                expected_token,
-                max_age=86400,  # 1 day
-                httponly=True,
-                secure=True,
-                samesite="Strict"
-            )
-            return response
-        else:
-            # Query token invalid
-            return jsonify({"error": "forbidden"}), 403
-    
-    # Check authorization: Bearer header or cookie
+    # Get provided token from Authorization header (preferred) or query param (backward compatible)
     provided_token = None
+    auth_method = None
     
-    # Check Authorization: Bearer header
+    # Check Authorization: Bearer header (preferred)
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         provided_token = auth_header[7:].strip()
+        auth_method = "header"
     else:
-        # Check cookie
-        cookie_token = request.cookies.get("__dbc_token")
-        if cookie_token:
-            provided_token = cookie_token
+        # Check query param (backward compatible)
+        query_token = request.args.get("token")
+        if query_token:
+            provided_token = query_token
+            auth_method = "query"
+    
+    # Log which auth method was used
+    if auth_method:
+        logger.info("DBCHECK_AUTH=%s", auth_method)
     
     # Validate token using constant-time comparison
     if not provided_token or not secrets.compare_digest(provided_token, expected_token):
@@ -520,9 +507,9 @@ logger.info("DBCHECK_ROUTE=enabled")
 def health_check():
     """
     Simple health check endpoint for Render.
-    Returns HTTP 200 with {"status":"ok"} - fast, no DB queries.
+    Returns HTTP 200 with {"ok":true} - fast, no DB queries, no auth required.
     """
-    return jsonify({"status": "ok"}), 200
+    return jsonify({"ok": True}), 200
 
 # --- Debug Routes (only enabled in non-production) ---
 if not IS_PROD:
