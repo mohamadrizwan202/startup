@@ -414,7 +414,12 @@ limiter = Limiter(
 app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 
 # --- DB Check Route (protected with token, enabled in all environments) ---
-# Usage: curl -H "Authorization: Bearer $DBCHECK_TOKEN" https://your-app.onrender.com/__dbcheck
+# Usage (Header): curl -H "Authorization: Bearer $DBCHECK_TOKEN" https://your-app.onrender.com/__dbcheck
+# Usage (Cookie): After visiting /__dbcheck-auth?token=TOKEN, access /__dbcheck from browser
+# 
+# To set up permanently:
+# 1. In Render dashboard → Environment → Add: DBCHECK_TOKEN = "yIqGqoyXI0UeoH0sklJsXjksvRHEldrewouz4vctCQU"
+# 2. Redeploy the service
 @app.get("/__dbcheck")
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
@@ -425,18 +430,19 @@ def dbcheck():
     if not expected_token:
         return jsonify({"error": "server_misconfigured"}), 500
     
-    # Get provided token from Authorization: Bearer header ONLY (no query param support)
-    auth_header = request.headers.get("Authorization", "")
-    if not auth_header.startswith("Bearer "):
-        # Return 404 in production to reduce endpoint discovery, 403 in non-production
-        if is_production:
-            abort(404)
-        return jsonify({"error": "forbidden"}), 403
+    # Get provided token from Authorization header OR cookie
+    provided_token = None
     
-    provided_token = auth_header[7:].strip()
+    # Try Authorization header first (preferred method)
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        provided_token = auth_header[7:].strip()
+    else:
+        # Fallback to cookie authentication (for browser access)
+        provided_token = request.cookies.get("__dbc_token")
     
     # Validate token using constant-time comparison
-    if not secrets.compare_digest(provided_token, expected_token):
+    if not provided_token or not secrets.compare_digest(provided_token, expected_token):
         # Return 404 in production to reduce endpoint discovery, 403 in non-production
         if is_production:
             abort(404)
@@ -498,6 +504,39 @@ def dbcheck():
         return jsonify({"error": str(e)}), 500
 
 logger.info("DBCHECK_ROUTE=enabled")
+
+# --- DB Check Authentication Helper (sets cookie for browser access) ---
+@app.get("/__dbcheck-auth")
+def dbcheck_auth():
+    """
+    Helper endpoint to set authentication cookie for /__dbcheck.
+    Usage: Visit /__dbcheck-auth?token=YOUR_TOKEN to set cookie, then access /__dbcheck from browser.
+    """
+    expected_token = os.getenv("DBCHECK_TOKEN")
+    
+    if not expected_token:
+        return jsonify({"error": "server_misconfigured"}), 500
+    
+    # Get token from query parameter
+    provided_token = request.args.get("token", "")
+    
+    # Validate token
+    if not provided_token or not secrets.compare_digest(provided_token, expected_token):
+        if is_production:
+            abort(404)
+        return jsonify({"error": "forbidden"}), 403
+    
+    # Set secure cookie and redirect to /__dbcheck
+    response = redirect(url_for("dbcheck"))
+    response.set_cookie(
+        "__dbc_token",
+        provided_token,
+        httponly=True,
+        secure=True,
+        samesite="Strict",
+        max_age=86400  # 24 hours
+    )
+    return response
 
 # --- Health Check Endpoint (public, safe, fast) ---
 @app.get("/__health")
