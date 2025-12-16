@@ -547,7 +547,7 @@ def dbcheck_auth():
     return response
 
 # --- Health Check Endpoint (public, safe, fast) ---
-@app.get("/__health")
+@app.get("/health")
 def health_check():
     """
     Simple health check endpoint for Render.
