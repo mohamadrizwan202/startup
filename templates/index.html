@@ -1220,7 +1220,7 @@
     }
   </style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
-  <script>
+  <script nonce="{{ csp_nonce }}">
     // Check session validity immediately (before page renders)
     // This runs as early as possible to catch invalidated sessions
     console.log('[SESSION CHECK] Starting early session check...');
@@ -1561,7 +1561,7 @@
     </div>
     <!-- End Smoothie Builder Tab Content -->
 
-  <script>
+  <script nonce="{{ csp_nonce }}">
     // DOM Elements
     const categoryListEl = document.getElementById('category-list');
     const subcatListEl = document.getElementById('subcategory-list');
@@ -1618,7 +1618,7 @@
       toast.className = `toast ${type}`;
       
       const icon = type === 'success' ? '✓' : type === 'warning' ? '⚠' : type === 'error' ? '✕' : 'ℹ';
-
+      
       const iconEl = document.createElement('div');
       iconEl.className = 'toast-icon';
       iconEl.textContent = icon;
@@ -1644,7 +1644,7 @@
       toast.appendChild(contentEl);
       toast.appendChild(closeBtn);
       toast.appendChild(progressEl);
-
+      
       toastContainer.appendChild(toast);
       
       // Auto-remove after duration
@@ -1733,7 +1733,7 @@
 
       selectedIngredientsEl.style.display = 'flex';
       analyzeBtn.disabled = false;
-
+      
       // Clear existing chips
       selectedIngredientsEl.innerHTML = '';
 
@@ -10732,8 +10732,8 @@
         const recommendedMilksList = Object.entries(recommendedMilksObj)
           .map(([key, value]) => {
           const servingDisplayRaw = typeof value.servingMl === 'string' 
-            ? value.servingMl 
-            : `${value.servingMl} ml`;
+              ? value.servingMl 
+              : `${value.servingMl} ml`;
           const servingDisplay = escapeHTML(servingDisplayRaw);
           const milkName = escapeHTML(value.displayName);
             return `<tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
@@ -12418,7 +12418,7 @@
           </div>
           
           <!-- Tab Content -->
-            <div id="smoothie-nutrition-whole" class="smoothie-nutrition-tab-content" style="display: block;">
+          <div id="smoothie-nutrition-whole" class="smoothie-nutrition-tab-content" style="display: block;">
             <!-- Header with USDA badge -->
             <div style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 8px;">

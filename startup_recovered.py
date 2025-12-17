@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g
 import time
 import logging
 import secrets
@@ -67,6 +67,18 @@ def enforce_https_in_production():
             url = request.url.replace("http://", "https://", 1)
             return redirect(url, code=301)
         return jsonify({"error": "https_required"}), 400
+
+
+@app.before_request
+def _csp_nonce():
+    """Generate a per-request nonce for Content-Security-Policy."""
+    g.csp_nonce = secrets.token_urlsafe(16)
+
+
+@app.context_processor
+def inject_csp_nonce():
+    """Inject CSP nonce into templates."""
+    return {"csp_nonce": getattr(g, "csp_nonce", "")}
 
 # Configure logging to ensure app.logger.info prints to stdout
 app.logger.setLevel(logging.INFO)
@@ -742,19 +754,29 @@ def add_security_headers(response):
     response.headers.setdefault("Cache-Control", "no-store, no-cache, must-revalidate")
     response.headers.setdefault("Pragma", "no-cache")
 
-    # Content-Security-Policy: XSS baseline (inline scripts/styles temporarily allowed)
-    csp_value = (
-        "default-src 'self'; "
-        "base-uri 'self'; "
-        "object-src 'none'; "
-        "frame-ancestors 'none'; "
-        "form-action 'self'; "
-        "img-src 'self' data:; "
-        "style-src 'self' 'unsafe-inline'; "
-        "script-src 'self' 'unsafe-inline'; "
-        "connect-src 'self'; "
-        "upgrade-insecure-requests"
+    # Content-Security-Policy: XSS baseline with nonce-based scripts
+    nonce = getattr(g, "csp_nonce", None)
+    csp_directives = [
+        "default-src 'self'",
+        "base-uri 'self'",
+        "object-src 'none'",
+        "frame-ancestors 'none'",
+        "form-action 'self'",
+        "img-src 'self' data:",
+        "style-src 'self' 'unsafe-inline'",
+    ]
+    if nonce:
+        csp_directives.append(f"script-src 'self' 'nonce-{nonce}'")
+    else:
+        # Fallback if nonce missing for some reason
+        csp_directives.append("script-src 'self'")
+    csp_directives.extend(
+        [
+            "connect-src 'self'",
+            "upgrade-insecure-requests",
+        ]
     )
+    csp_value = "; ".join(csp_directives)
     csp_report_only = os.getenv("CSP_REPORT_ONLY") == "1"
     # Only set CSP headers if none are already present
     if "Content-Security-Policy" not in response.headers and "Content-Security-Policy-Report-Only" not in response.headers:
