@@ -42,6 +42,10 @@ ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
 IS_PROD = ENV == "production" or (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
 is_production = IS_PROD
 
+# Trust Render / Cloudflare proxy headers so request.is_secure and URL generation work correctly
+# behind the proxy (X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host, X-Forwarded-Port).
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
+
 @app.before_request
 def block_debug_in_prod():
     """Block all debug endpoints in production"""
@@ -51,6 +55,19 @@ def block_debug_in_prod():
         if path.startswith("/__debug/") or path.startswith("/debug/") or path == "/force-error":
             abort(404)
 
+
+@app.before_request
+def enforce_https_in_production():
+    """Redirect HTTP to HTTPS in production and reject non-GET/HEAD over HTTP."""
+    if not is_production:
+        return
+    # request.is_secure is reliable behind Render/Cloudflare because ProxyFix is enabled
+    if not request.is_secure:
+        if request.method in ("GET", "HEAD"):
+            url = request.url.replace("http://", "https://", 1)
+            return redirect(url, code=301)
+        return jsonify({"error": "https_required"}), 400
+
 # Configure logging to ensure app.logger.info prints to stdout
 app.logger.setLevel(logging.INFO)
 if not any(isinstance(h, logging.StreamHandler) for h in app.logger.handlers):
@@ -59,6 +76,18 @@ if not any(isinstance(h, logging.StreamHandler) for h in app.logger.handlers):
     formatter = logging.Formatter('%(message)s')
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
+
+
+@app.after_request
+def add_security_headers(resp):
+    """Add security-related response headers in production."""
+    if is_production and request.is_secure:
+        # Honor any existing HSTS header (e.g. from Cloudflare), but set one if missing.
+        resp.headers.setdefault(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains",
+        )
+    return resp
 
 if not is_production:
     @app.get("/debug/auth")
@@ -337,19 +366,36 @@ def get_user_by_email(email):
 # This section configures secret keys, session cookies, CORS, and security headers.
 
 # --- Secret Key & Environment Awareness ---
-# Read secret key from environment variable for production security.
-# The default is for local development only and MUST be changed in production.
-app.config["SECRET_KEY"] = os.environ.get(
-    "FLASK_SECRET_KEY",
-    "dev-secret-change-me-in-production"
-)
-# Note: In production (Render), set FLASK_SECRET_KEY to a strong random value.
+# In production, require a strong SECRET_KEY from the environment and fail fast if missing.
+# In non-production, allow a FLASK_SECRET_KEY fallback (with a warning), otherwise generate
+# a random ephemeral key for local development.
+if is_production:
+    secret_from_env = os.getenv("SECRET_KEY")
+    if not secret_from_env or len(secret_from_env) < 32:
+        raise RuntimeError(
+            "SECURITY: SECRET_KEY environment variable must be set and at least 32 characters long in production."
+        )
+    app.config["SECRET_KEY"] = secret_from_env
+else:
+    secret_from_env = os.getenv("SECRET_KEY")
+    if not secret_from_env:
+        legacy_secret = os.getenv("FLASK_SECRET_KEY")
+        if legacy_secret:
+            # Warn that legacy FLASK_SECRET_KEY is being used outside production.
+            logger.warning("Using FLASK_SECRET_KEY for non-production environment; prefer SECRET_KEY for future rotation.")
+            secret_from_env = legacy_secret
+        else:
+            # Generate an ephemeral development key; users should set a stable SECRET_KEY or FLASK_SECRET_KEY.
+            secret_from_env = secrets.token_urlsafe(64)
+            logger.warning("Generated ephemeral development SECRET_KEY; set SECRET_KEY for a stable dev session key.")
+    app.config["SECRET_KEY"] = secret_from_env
 
+# Log only whether a secret key is set (never log the key value itself)
 logger.info(
     "ENVIRONMENT=%s FLASK_DEBUG=%s SECRET_KEY_SET=%s",
     os.getenv("ENVIRONMENT"),
     os.getenv("FLASK_DEBUG"),
-    bool(app.secret_key),
+    bool(app.config.get("SECRET_KEY")),
 )
 
 # --- Postgres probe (psycopg v3) ---
@@ -390,10 +436,6 @@ else:
         logger.info("POSTGRES_PROBE=ok")
     except Exception as e:
         logger.exception("POSTGRES_PROBE=fail %r", e)
-
-# --- Proxy Fix for Render/Production ---
-# Handles X-Forwarded-For and X-Forwarded-Proto headers correctly behind proxy
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
 # --- CSRF Protection ---
 # Initialize CSRF protection for all routes by default
@@ -634,11 +676,7 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # Secure flag: Only send cookies over HTTPS in production
-# In development (HTTP), allow cookies to work locally
-# In production (HTTPS), enforce secure cookies
-is_production = os.environ.get("FLASK_ENV") == "production" or os.environ.get("ENVIRONMENT") == "production"
-is_debug = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
-app.config["SESSION_COOKIE_SECURE"] = is_production and not is_debug
+app.config["SESSION_COOKIE_SECURE"] = is_production
 
 # --- CORS (Cross-Origin Resource Sharing) ---
 # Whitelist of allowed origins for CORS
@@ -683,34 +721,48 @@ def add_security_headers(response):
             response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
     
     # X-Content-Type-Options: Prevents browsers from MIME-sniffing (prevents XSS)
-    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
     
     # X-Frame-Options: Prevents clickjacking by blocking iframe embedding
-    response.headers["X-Frame-Options"] = "DENY"
+    response.headers.setdefault("X-Frame-Options", "DENY")
     
     # Referrer-Policy: Controls how much referrer information is sent
     # "strict-origin-when-cross-origin" sends full URL for same-origin, origin only for cross-origin
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     
     # Permissions-Policy: Disables powerful browser features by default
     # This prevents websites from accessing geolocation, microphone, camera without explicit permission
-    response.headers["Permissions-Policy"] = (
-        "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+    response.headers.setdefault(
+        "Permissions-Policy",
+        "geolocation=(), microphone=(), camera=(), payment=(), usb=()",
     )
     
     # Cache-Control & Pragma: Prevent caching of sensitive API responses
     # This ensures that responses containing sensitive data aren't stored in browser cache
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
-    
-    # Strict-Transport-Security (HSTS): Force HTTPS in production
-    # Only add this header when running over HTTPS (production)
-    # Adding it in development (HTTP) would break local testing
-    if is_production or request.is_secure:
-        response.headers["Strict-Transport-Security"] = (
-            "max-age=31536000; includeSubDomains"
+    response.headers.setdefault("Cache-Control", "no-store, no-cache, must-revalidate")
+    response.headers.setdefault("Pragma", "no-cache")
+
+    # Content-Security-Policy: XSS baseline (inline scripts/styles temporarily allowed)
+    csp_value = (
+        "default-src 'self'; "
+        "base-uri 'self'; "
+        "object-src 'none'; "
+        "frame-ancestors 'none'; "
+        "form-action 'self'; "
+        "img-src 'self' data:; "
+        "style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "connect-src 'self'; "
+        "upgrade-insecure-requests"
+    )
+    csp_report_only = os.getenv("CSP_REPORT_ONLY") == "1"
+    # Only set CSP headers if none are already present
+    if "Content-Security-Policy" not in response.headers and "Content-Security-Policy-Report-Only" not in response.headers:
+        csp_header_name = (
+            "Content-Security-Policy-Report-Only" if csp_report_only else "Content-Security-Policy"
         )
-    
+        response.headers.setdefault(csp_header_name, csp_value)
+
     return response
 
 # ============================================================================

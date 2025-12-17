@@ -1219,6 +1219,7 @@
       background: var(--secondary);
     }
   </style>
+  <script src="{{ url_for('static', filename='js/security.js') }}"></script>
   <script>
     // Check session validity immediately (before page renders)
     // This runs as early as possible to catch invalidated sessions
@@ -1617,16 +1618,33 @@
       toast.className = `toast ${type}`;
       
       const icon = type === 'success' ? '✓' : type === 'warning' ? '⚠' : type === 'error' ? '✕' : 'ℹ';
-      
-      toast.innerHTML = `
-        <div class="toast-icon">${icon}</div>
-        <div class="toast-content">
-          <div class="toast-message">${message}</div>
-        </div>
-        <button class="toast-close" aria-label="Close">×</button>
-        <div class="toast-progress"></div>
-      `;
-      
+
+      const iconEl = document.createElement('div');
+      iconEl.className = 'toast-icon';
+      iconEl.textContent = icon;
+
+      const contentEl = document.createElement('div');
+      contentEl.className = 'toast-content';
+
+      const messageEl = document.createElement('div');
+      messageEl.className = 'toast-message';
+      messageEl.textContent = message;
+
+      contentEl.appendChild(messageEl);
+
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'toast-close';
+      closeBtn.setAttribute('aria-label', 'Close');
+      closeBtn.textContent = '×';
+
+      const progressEl = document.createElement('div');
+      progressEl.className = 'toast-progress';
+
+      toast.appendChild(iconEl);
+      toast.appendChild(contentEl);
+      toast.appendChild(closeBtn);
+      toast.appendChild(progressEl);
+
       toastContainer.appendChild(toast);
       
       // Auto-remove after duration
@@ -1640,7 +1658,6 @@
       }, duration);
       
       // Manual close
-      const closeBtn = toast.querySelector('.toast-close');
       closeBtn.addEventListener('click', () => {
         clearTimeout(timeout);
         toast.classList.add('hiding');
@@ -1716,17 +1733,28 @@
 
       selectedIngredientsEl.style.display = 'flex';
       analyzeBtn.disabled = false;
-      
-      const chipsHtml = selectedIngredients
-        .map((ing, idx) => `
-          <div class="ingredient-chip fade-in">
-            <span>${ing}</span>
-            <button class="remove-btn" data-index="${idx}" title="Remove">×</button>
-          </div>
-        `)
-        .join('');
-      
-      selectedIngredientsEl.innerHTML = chipsHtml;
+
+      // Clear existing chips
+      selectedIngredientsEl.innerHTML = '';
+
+      // Build chips using DOM APIs to avoid injecting unsanitized HTML
+      selectedIngredients.forEach((ing, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'ingredient-chip fade-in';
+
+        const label = document.createElement('span');
+        label.textContent = ing;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.dataset.index = String(idx);
+        removeBtn.title = 'Remove';
+        removeBtn.textContent = '×';
+
+        chip.appendChild(label);
+        chip.appendChild(removeBtn);
+        selectedIngredientsEl.appendChild(chip);
+      });
       console.log('[renderSelectedIngredients] Rendered', selectedIngredients.length, 'chips');
 
       // Re-attach remove button handlers
@@ -1799,7 +1827,9 @@
         div.className = 'panel-item';
         // Map category name for display (Weight Loss -> Weight Management)
         const displayName = mapCategoryDisplayName(category);
-        div.innerHTML = `<span>${displayName}</span>`;
+        const span = document.createElement('span');
+        span.textContent = displayName;
+        div.appendChild(span);
         div.addEventListener('click', () => {
           [...categoryListEl.children].forEach(c => c.classList.remove('active'));
           div.classList.add('active');
@@ -1846,7 +1876,15 @@
         const count = hierarchy[category][subcat];
         const div = document.createElement('div');
         div.className = 'panel-item';
-        div.innerHTML = `<span>${subcat}</span><span class="count">${count} items</span>`;
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = subcat;
+
+        const countSpan = document.createElement('span');
+        countSpan.className = 'count';
+        countSpan.textContent = `${count} items`;
+
+        div.appendChild(nameSpan);
+        div.appendChild(countSpan);
         div.addEventListener('click', () => {
           [...subcatListEl.children].forEach(c => c.classList.remove('active'));
           div.classList.add('active');
@@ -1897,7 +1935,15 @@
       ingredients.forEach(ingredient => {
         const div = document.createElement('div');
         div.className = 'panel-item';
-        div.innerHTML = `<span>${ingredient}</span><span class="count">Add →</span>`;
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = ingredient;
+
+        const countSpan = document.createElement('span');
+        countSpan.className = 'count';
+        countSpan.textContent = 'Add →';
+
+        div.appendChild(nameSpan);
+        div.appendChild(countSpan);
         
         // Single click handler - immediately adds ingredient
         div.addEventListener('click', (e) => {
@@ -2403,11 +2449,31 @@
           errorTarget = resultsBodyEl;
         }
         if (errorTarget) {
-          errorTarget.innerHTML = `<div class="empty-state" style="color: var(--danger); padding: 20px; text-align: center;">
-            <div style="font-size: 1.2rem; margin-bottom: 10px;">⚠️</div>
-            <div style="font-weight: 600; margin-bottom: 5px;">Error</div>
-            <div>${errorMessage}</div>
-          </div>`;
+          // Clear previous content and build error UI using DOM APIs to avoid XSS
+          errorTarget.innerHTML = '';
+          const wrapper = document.createElement('div');
+          wrapper.className = 'empty-state';
+          wrapper.style.color = 'var(--danger)';
+          wrapper.style.padding = '20px';
+          wrapper.style.textAlign = 'center';
+
+          const iconDiv = document.createElement('div');
+          iconDiv.style.fontSize = '1.2rem';
+          iconDiv.style.marginBottom = '10px';
+          iconDiv.textContent = '⚠️';
+
+          const titleDiv = document.createElement('div');
+          titleDiv.style.fontWeight = '600';
+          titleDiv.style.marginBottom = '5px';
+          titleDiv.textContent = 'Error';
+
+          const messageDiv = document.createElement('div');
+          messageDiv.textContent = errorMessage;
+
+          wrapper.appendChild(iconDiv);
+          wrapper.appendChild(titleDiv);
+          wrapper.appendChild(messageDiv);
+          errorTarget.appendChild(wrapper);
         }
       } finally {
         // Only update button state if there's still text/ingredients (for error cases)
@@ -2677,11 +2743,12 @@
             });
           }
           
+          const safeDisplayName = escapeHTML(displayName);
           html += `
             <div style="display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr; gap: 8px; padding: 15px; border-bottom: 1px solid var(--bg-tertiary); align-items: center; ${hasData ? '' : 'opacity: 0.7;'} ${idx === ingredients.length - 1 ? 'border-bottom: none;' : ''}">
               <!-- Ingredient Name -->
               <div style="font-weight: 600; color: var(--text-primary); font-size: 0.95rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                ${displayName}
+                ${safeDisplayName}
                 ${allZeros ? '<span style="font-size: 0.7rem; color: #dc2626; background: #fee2e2; padding: 2px 6px; border-radius: 3px; margin-left: 4px;">⚠️ No nutrition data</span>' : ''}
                 ${isPlantBasedMilk(ing.ingredient || '') ? '<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px;">🌱 Vegan</span>' : ''}
                 ${isUnsweetenedMilk(ing.ingredient || '') && isPlantBasedMilk(ing.ingredient || '') ? '<span style="font-size: 0.7rem; color: #7c3aed; background: #ede9fe; padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
@@ -2703,8 +2770,9 @@
                     servingSizeGrams = usdaServing.grams;
                   }
                   
+                  const safeDisplayServing = escapeHTML(displayServing);
                   return `<span style="font-size: 0.85rem; color: var(--primary); background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); padding: 5px 12px; border-radius: 6px; font-weight: 600; border: 1px solid var(--primary); display: inline-block;">
-                  📏 ${displayServing}
+                  📏 ${safeDisplayServing}
                 </span>`;
                 })()}
               </div>
@@ -2760,7 +2828,7 @@
       }
 
       if (message) {
-        html += `<div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: var(--radius); color: var(--text-secondary); font-size: 0.9rem;">${message}</div>`;
+        html += `<div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: var(--radius); color: var(--text-secondary); font-size: 0.9rem;">${escapeHTML(message)}</div>`;
       }
 
       // Use the nutrition-specific results body
@@ -2790,12 +2858,13 @@
       ingredients.forEach(ing => {
         // Use display_name if available (user's original input), otherwise fall back to ingredient (DB key)
         const displayName = ing.display_name || ing.ingredient || 'Unknown';
+        const safeDisplayName = escapeHTML(displayName);
         
         if (ing.health_benefits && Array.isArray(ing.health_benefits) && ing.health_benefits.length > 0) {
           ing.health_benefits.forEach(hb => {
             if (hb.health_benefits) {
               allHealthBenefits.push({
-                ingredient: displayName,  // Use display name for UI
+                ingredient: safeDisplayName,  // Use display name for UI
                 category: hb.category || '',
                 health_benefits: hb.health_benefits,
                 key_nutrients: hb.key_nutrients || ''
@@ -2854,6 +2923,7 @@
 
       Object.keys(benefitsByIngredient).forEach(ingredient => {
         const benefits = benefitsByIngredient[ingredient];
+        const safeIngredient = escapeHTML(ingredient);
         html += `
           <div style="background: #ffffff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border: 1px solid #e5e7eb;">
             <!-- Ingredient Header -->
@@ -2862,7 +2932,7 @@
                 <span style="font-size: 1rem;">🥗</span>
               </div>
               <div style="flex: 1;">
-                <h3 style="color: #166534; font-size: 1.1rem; font-weight: 700; margin: 0;">${ingredient}</h3>
+                <h3 style="color: #166534; font-size: 1.1rem; font-weight: 700; margin: 0;">${safeIngredient}</h3>
                 <div style="font-size: 0.75rem; color: #6b7280; margin-top: 2px;">${benefits.length} benefit${benefits.length > 1 ? 's' : ''}</div>
               </div>
             </div>
@@ -2872,21 +2942,24 @@
         `;
 
         benefits.forEach((hb, idx) => {
+          const safeCategory = hb.category ? escapeHTML(hb.category) : '';
+          const safeBenefitsText = hb.health_benefits ? escapeHTML(hb.health_benefits) : '';
+          const safeKeyNutrients = hb.key_nutrients ? escapeHTML(hb.key_nutrients) : '';
           html += `
             <div style="background: #f9fafb; border-radius: 6px; padding: 12px; border-left: 3px solid #22c55e;">
               ${hb.category ? `
                 <div style="display: inline-block; background: #22c55e; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-                  ${hb.category}
+                  ${safeCategory}
                 </div>
               ` : ''}
               <div style="font-size: 0.9rem; color: #374151; line-height: 1.6; margin-bottom: ${hb.key_nutrients ? '8px' : '0'};">
-                ${hb.health_benefits}
+                ${safeBenefitsText}
               </div>
               ${hb.key_nutrients ? `
                 <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
                   <div style="font-size: 0.7rem; color: #15803d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Key Nutrients</div>
                   <div style="font-size: 0.85rem; color: #4b5563; line-height: 1.5; background: white; padding: 8px 10px; border-radius: 4px; border: 1px solid #e5e7eb;">
-                    ${hb.key_nutrients}
+                    ${safeKeyNutrients}
                   </div>
                 </div>
               ` : ''}
@@ -2906,7 +2979,7 @@
       `;
 
       if (message) {
-        html += `<div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: var(--radius); color: var(--text-secondary); font-size: 0.9rem;">${message}</div>`;
+        html += `<div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: var(--radius); color: var(--text-secondary); font-size: 0.9rem;">${escapeHTML(message)}</div>`;
       }
 
       // Use the health benefits-specific results body
@@ -2980,16 +3053,18 @@
       ingredients.forEach((ing, idx) => {
         // Use display_name if available (user's original input), otherwise fall back to ingredient (DB key)
         const displayName = ing.display_name || ing.ingredient || 'Unknown';
+        const safeDisplayName = escapeHTML(displayName);
         
         const hasAllergen = ing.allergens && typeof ing.allergens === 'object' && !Array.isArray(ing.allergens) && ing.allergens.name;
         const servingText = ing.serving_size || '100g';
+        const safeServingText = escapeHTML(servingText.replace(' (estimated)', ''));
         const rowBg = idx % 2 === 0 ? 'white' : 'var(--bg-secondary)';
         
         ingredientSummaryHtml += `
                   <tr style="background: ${rowBg}; border-bottom: 1px solid var(--bg-tertiary);">
                     <td style="padding: 10px 14px;">
                       <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-weight: 600; color: var(--text-primary);">${displayName}</span>
+                        <span style="font-weight: 600; color: var(--text-primary);">${safeDisplayName}</span>
                         ${ing.is_usda ? `<span style="font-size: 0.65rem; color: #059669; background: #d1fae5; padding: 2px 5px; border-radius: 3px; font-weight: 600; border: 1px solid #10b981;" title="USDA Verified">✓</span>` : ''}
                       </div>
                     </td>
@@ -3004,7 +3079,7 @@
                         </span>
                       `}
                     </td>
-                    <td style="padding: 10px 14px; text-align: center; font-size: 0.8rem; color: var(--text-secondary);">${servingText.replace(' (estimated)', '')}</td>
+                    <td style="padding: 10px 14px; text-align: center; font-size: 0.8rem; color: var(--text-secondary);">${safeServingText}</td>
                   </tr>
         `;
       });
@@ -3079,21 +3154,27 @@
 
         const config = severityConfig[allergen.severity] || severityConfig['Unknown'];
         const rowBg = idx % 2 === 0 ? 'white' : 'var(--bg-secondary)';
-        const ingredientsList = allergen.ingredients.slice(0, 3).join(', ') + (allergen.ingredients.length > 3 ? ` +${allergen.ingredients.length - 3} more` : '');
+        const ingredientsListRaw = allergen.ingredients.slice(0, 3).join(', ') + (allergen.ingredients.length > 3 ? ` +${allergen.ingredients.length - 3} more` : '');
+        const ingredientsList = escapeHTML(ingredientsListRaw);
+        const safeAllergenName = escapeHTML(allergen.name || '');
+        const desc = allergen.description || '';
+        const descSnippet = desc.length > 80 ? desc.substring(0, 80) + '...' : desc;
+        const safeDescription = escapeHTML(descSnippet);
+        const safeSeverity = escapeHTML(allergen.severity || '');
 
         html += `
                   <tr style="background: ${rowBg}; border-bottom: 1px solid var(--bg-tertiary);">
                     <td style="padding: 10px 14px;">
-                      <div style="font-weight: 600; color: var(--text-primary);">${allergen.name}</div>
+                      <div style="font-weight: 600; color: var(--text-primary);">${safeAllergenName}</div>
                       ${allergen.description ? `
                         <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.4;">
-                          ${allergen.description.substring(0, 80)}${allergen.description.length > 80 ? '...' : ''}
+                          ${safeDescription}
                         </div>
                       ` : ''}
                     </td>
                     <td style="padding: 10px 14px; text-align: center;">
                       <span style="display: inline-block; padding: 4px 10px; background: ${config.bg}; color: ${config.textColor}; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: 1px solid ${config.border};">
-                        ${allergen.severity}
+                        ${safeSeverity}
                       </span>
                     </td>
                     <td style="padding: 10px 14px; font-size: 0.85rem; color: var(--text-primary);">
@@ -10163,14 +10244,14 @@
               <div style="flex: 1; min-width: 0;">
                 <!-- Ingredient Name and Badge -->
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
-                  <span style="font-weight: 700; font-size: 0.95rem; color: #78350f; line-height: 1.3;">${displayName}</span>
+                  <span style="font-weight: 700; font-size: 0.95rem; color: #78350f; line-height: 1.3;">${escapeHTML(displayName)}</span>
                   ${badge}
                 </div>
                 
                 <!-- Serving Size Display -->
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
                   <span style="font-size: 0.75rem; color: #92400e; opacity: 0.7;">•</span>
-                  <span style="font-size: 0.8rem; color: #92400e; font-weight: 500;">${servingDisplay}</span>
+                  <span style="font-size: 0.8rem; color: #92400e; font-weight: 500;">${escapeHTML(servingDisplay)}</span>
                 </div>
                 
                 <!-- Quantity Controls -->
@@ -10650,11 +10731,13 @@
         // Build recommendation table
         const recommendedMilksList = Object.entries(recommendedMilksObj)
           .map(([key, value]) => {
-            const servingDisplay = typeof value.servingMl === 'string' 
-              ? value.servingMl 
-              : `${value.servingMl} ml`;
+          const servingDisplayRaw = typeof value.servingMl === 'string' 
+            ? value.servingMl 
+            : `${value.servingMl} ml`;
+          const servingDisplay = escapeHTML(servingDisplayRaw);
+          const milkName = escapeHTML(value.displayName);
             return `<tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
-              <td style="padding: 8px 12px; font-size: 0.85rem; color: white;">${value.displayName}</td>
+              <td style="padding: 8px 12px; font-size: 0.85rem; color: white;">${milkName}</td>
               <td style="padding: 8px 12px; font-size: 0.85rem; color: white; text-align: center; font-weight: 600;">${servingDisplay}</td>
             </tr>`;
           }).join('');
@@ -10666,14 +10749,14 @@
               <div style="font-size: 0.75rem; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Vegan Milk Recommendation</div>
             </div>
             <div style="font-size: 0.9rem; color: #7f1d1d; margin-bottom: 12px; line-height: 1.5;">
-              For ${ageGroupText}, we recommend using the following vegan milk types (unsweetened, fortified when possible):
+              For ${escapeHTML(ageGroupText)}, we recommend using the following vegan milk types (unsweetened, fortified when possible):
             </div>
             <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
               <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                   <tr style="background: rgba(0, 0, 0, 0.2);">
                     <th style="padding: 10px 12px; font-size: 0.75rem; color: white; text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Vegan milk type (unsweetened, fortified when possible)</th>
-                    <th style="padding: 10px 12px; font-size: 0.75rem; color: white; text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">${servingText}</th>
+                    <th style="padding: 10px 12px; font-size: 0.75rem; color: white; text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">${escapeHTML(servingText)}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -10855,16 +10938,25 @@
               return;
             }
 
-            smoothieIngredientSuggestionsEl.innerHTML = suggestions
-              .map(sug => `
-                <div class="suggestion-item" data-ingredient="${sug.name}">
-                  <div>
-                    <div class="suggestion-name">${sug.name}</div>
-                  </div>
-                </div>
-              `)
-              .join('');
+            // Build suggestion items using DOM APIs and textContent to avoid XSS
+            smoothieIngredientSuggestionsEl.innerHTML = '';
+            const frag = document.createDocumentFragment();
+            suggestions.forEach(sug => {
+              const item = document.createElement('div');
+              item.className = 'suggestion-item';
+              item.dataset.ingredient = sug.name;
 
+              const inner = document.createElement('div');
+              const nameDiv = document.createElement('div');
+              nameDiv.className = 'suggestion-name';
+              nameDiv.textContent = sug.name;
+
+              inner.appendChild(nameDiv);
+              item.appendChild(inner);
+              frag.appendChild(item);
+            });
+
+            smoothieIngredientSuggestionsEl.appendChild(frag);
             smoothieIngredientSuggestionsEl.style.display = 'block';
 
             smoothieIngredientSuggestionsEl.querySelectorAll('.suggestion-item').forEach(item => {
@@ -11428,7 +11520,13 @@
         } catch (err) {
           console.error('Build smoothie error:', err);
           setSmoothieStatus('Failed to build smoothie', true);
-          smoothieResultsBodyEl.innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+          if (smoothieResultsBodyEl) {
+            smoothieResultsBodyEl.innerHTML = '';
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'empty-state';
+            errorDiv.textContent = `Error: ${err.message}`;
+            smoothieResultsBodyEl.appendChild(errorDiv);
+          }
         }
       });
     }
@@ -11448,75 +11546,150 @@
     }
     
     // Function to render smoothie nutrition metrics
-    // Matches the ingredient tab style: vertical column layout with horizontal tiles
+    // Returns a DOM node (no HTML string) to avoid HTML injection sinks
     function renderSmoothieNutritionMetrics(nutritionData, isPerServing = false) {
-      return `
-        <div class="nutrition-grid" style="gap: 8px; margin: 0; padding: 0; display: flex; flex-direction: column; flex-wrap: nowrap; overflow-y: auto; width: 100%;">
-          <div class="nutrition-tile calories" style="background: white; border-left: 2px solid #3b82f6; box-shadow: 0 1px 1px rgba(59, 130, 246, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-            <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-              <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🔥</span>
-              <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">CALORIES</div>
-            </div>
-            <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #3b82f6; line-height: 1.2;">
-              ${nutritionData.calories.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">kcal</span>
-            </div>
-          </div>
-          <div class="nutrition-tile protein" style="background: white; border-left: 2px solid #10b981; box-shadow: 0 1px 1px rgba(16, 185, 129, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-            <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-              <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">💪</span>
-              <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">PROTEIN</div>
-            </div>
-            <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #10b981; line-height: 1.2;">
-              ${nutritionData.protein.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-            </div>
-          </div>
-          <div class="nutrition-tile carbs" style="background: white; border-left: 2px solid #f59e0b; box-shadow: 0 1px 1px rgba(245, 158, 11, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-            <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-              <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🌾</span>
-              <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">CARBS</div>
-            </div>
-            <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #f59e0b; line-height: 1.2;">
-              ${nutritionData.carbs.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-            </div>
-          </div>
-          <div class="nutrition-tile fat" style="background: white; border-left: 2px solid #ef4444; box-shadow: 0 1px 1px rgba(239, 68, 68, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-            <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-              <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🥑</span>
-              <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">FAT</div>
-            </div>
-            <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #ef4444; line-height: 1.2;">
-              ${nutritionData.fat.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-            </div>
-          </div>
-          <div class="nutrition-tile fiber" style="background: white; border-left: 2px solid #8b5cf6; box-shadow: 0 1px 1px rgba(139, 92, 246, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-            <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-              <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🌿</span>
-              <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">FIBER</div>
-            </div>
-            <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #8b5cf6; line-height: 1.2;">
-              ${nutritionData.fiber.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-            </div>
-          </div>
-          <div class="nutrition-tile sugar" style="background: white; border-left: 2px solid #ec4899; box-shadow: 0 1px 1px rgba(236, 72, 153, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-            <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-              <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🍬</span>
-              <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">SUGAR</div>
-            </div>
-            <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #ec4899; line-height: 1.2;">
-              ${nutritionData.sugar.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-            </div>
-          </div>
-          <div class="nutrition-tile sodium" style="background: white; border-left: 2px solid #06b6d4; box-shadow: 0 1px 1px rgba(6, 182, 212, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-            <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-              <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🧂</span>
-              <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">SODIUM</div>
-            </div>
-            <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #06b6d4; line-height: 1.2;">
-              ${nutritionData.sodium.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">mg</span>
-            </div>
-          </div>
-        </div>
-      `;
+      const grid = document.createElement('div');
+      grid.className = 'nutrition-grid';
+      grid.style.gap = '8px';
+      grid.style.margin = '0';
+      grid.style.padding = '0';
+      grid.style.display = 'flex';
+      grid.style.flexDirection = 'column';
+      grid.style.flexWrap = 'nowrap';
+      grid.style.overflowY = 'auto';
+      grid.style.width = '100%';
+
+      function addTile({ className, borderColor, icon, label, value, unit }) {
+        const tile = document.createElement('div');
+        tile.className = `nutrition-tile ${className} smoothie-metrics-row`;
+        tile.style.background = 'white';
+        tile.style.borderLeft = `2px solid ${borderColor}`;
+        tile.style.boxShadow = '0 1px 1px rgba(0, 0, 0, 0.05)';
+        tile.style.padding = '8px 12px';
+        tile.style.display = 'flex';
+        tile.style.flexDirection = 'row';
+        tile.style.alignItems = 'center';
+        tile.style.justifyContent = 'space-between';
+        tile.style.gap = '12px';
+
+        const left = document.createElement('div');
+        left.style.display = 'flex';
+        left.style.flexDirection = 'row';
+        left.style.alignItems = 'center';
+        left.style.gap = '10px';
+        left.style.flex = '1';
+
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'icon';
+        iconSpan.style.fontSize = '1rem';
+        iconSpan.style.lineHeight = '1.2';
+        iconSpan.style.margin = '0';
+        iconSpan.textContent = icon;
+
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'label';
+        labelDiv.style.fontSize = '0.7rem';
+        labelDiv.style.fontWeight = '600';
+        labelDiv.style.color = '#64748b';
+        labelDiv.style.textTransform = 'uppercase';
+        labelDiv.style.letterSpacing = '0.05em';
+        labelDiv.style.margin = '0';
+        labelDiv.style.lineHeight = '1.2';
+        labelDiv.textContent = label;
+
+        left.appendChild(iconSpan);
+        left.appendChild(labelDiv);
+
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'value';
+        valueDiv.style.fontSize = '0.95rem';
+        valueDiv.style.fontWeight = '700';
+        valueDiv.style.lineHeight = '1.2';
+        valueDiv.style.color = borderColor;
+
+        const valueText = document.createTextNode(typeof value === 'number' ? value.toFixed(1) : String(value));
+        valueDiv.appendChild(valueText);
+
+        const unitSpan = document.createElement('span');
+        unitSpan.className = 'unit';
+        unitSpan.style.fontSize = '0.6rem';
+        unitSpan.style.color = '#94a3b8';
+        unitSpan.style.fontWeight = '500';
+        unitSpan.style.marginLeft = '3px';
+        unitSpan.textContent = unit;
+
+        valueDiv.appendChild(unitSpan);
+
+        tile.appendChild(left);
+        tile.appendChild(valueDiv);
+
+        grid.appendChild(tile);
+      }
+
+      addTile({
+        className: 'calories',
+        borderColor: '#3b82f6',
+        icon: '🔥',
+        label: 'CALORIES',
+        value: Number(nutritionData.calories || 0),
+        unit: 'kcal',
+      });
+
+      addTile({
+        className: 'protein',
+        borderColor: '#10b981',
+        icon: '💪',
+        label: 'PROTEIN',
+        value: Number(nutritionData.protein || 0),
+        unit: 'g',
+      });
+
+      addTile({
+        className: 'carbs',
+        borderColor: '#f59e0b',
+        icon: '🌾',
+        label: 'CARBS',
+        value: Number(nutritionData.carbs || 0),
+        unit: 'g',
+      });
+
+      addTile({
+        className: 'fat',
+        borderColor: '#ef4444',
+        icon: '🥑',
+        label: 'FAT',
+        value: Number(nutritionData.fat || 0),
+        unit: 'g',
+      });
+
+      addTile({
+        className: 'fiber',
+        borderColor: '#8b5cf6',
+        icon: '🌿',
+        label: 'FIBER',
+        value: Number(nutritionData.fiber || 0),
+        unit: 'g',
+      });
+
+      addTile({
+        className: 'sugar',
+        borderColor: '#ec4899',
+        icon: '🍬',
+        label: 'SUGAR',
+        value: Number(nutritionData.sugar || 0),
+        unit: 'g',
+      });
+
+      addTile({
+        className: 'sodium',
+        borderColor: '#06b6d4',
+        icon: '🧂',
+        label: 'SODIUM',
+        value: Number(nutritionData.sodium || 0),
+        unit: 'mg',
+      });
+
+      return grid;
     }
 
     function displaySmoothieResults(data) {
@@ -12245,7 +12418,7 @@
           </div>
           
           <!-- Tab Content -->
-          <div id="smoothie-nutrition-whole" class="smoothie-nutrition-tab-content" style="display: block;">
+            <div id="smoothie-nutrition-whole" class="smoothie-nutrition-tab-content" style="display: block;">
             <!-- Header with USDA badge -->
             <div style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -12262,7 +12435,7 @@
                 </div>
               ` : ''}
             </div>
-            ${renderSmoothieNutritionMetrics(totalNutrients, false)}
+            <div id="smoothie-metrics-whole"></div>
           </div>
           
           <div id="smoothie-nutrition-serving" class="smoothie-nutrition-tab-content" style="display: none;">
@@ -12282,12 +12455,25 @@
                 </div>
               ` : ''}
             </div>
-            ${renderSmoothieNutritionMetrics(perServingNutrients, true)}
+            <div id="smoothie-metrics-serving"></div>
           </div>
         </div>
       `;
 
       smoothieResultsBodyEl.innerHTML = html;
+
+      // Render nutrition metrics into their containers using DOM nodes
+      const wholeMetricsContainer = document.getElementById('smoothie-metrics-whole');
+      if (wholeMetricsContainer) {
+        wholeMetricsContainer.innerHTML = '';
+        wholeMetricsContainer.appendChild(renderSmoothieNutritionMetrics(totalNutrients, false));
+      }
+
+      const servingMetricsContainer = document.getElementById('smoothie-metrics-serving');
+      if (servingMetricsContainer) {
+        servingMetricsContainer.innerHTML = '';
+        servingMetricsContainer.appendChild(renderSmoothieNutritionMetrics(perServingNutrients, true));
+      }
       
       // Set up tab switching
       setupSmoothieNutritionTabs();
@@ -12418,10 +12604,11 @@
           }
         }
         
-        // Update the metrics
-        const metricsRow = servingContent.querySelector('.smoothie-metrics-row');
+        // Update the metrics by replacing the row's contents with a newly rendered node
+        const metricsRow = servingContent.querySelector('.smoothie-metrics-row') || document.getElementById('smoothie-metrics-serving');
         if (metricsRow) {
-          metricsRow.outerHTML = renderSmoothieNutritionMetrics(perServingNutrients, true);
+          metricsRow.innerHTML = '';
+          metricsRow.appendChild(renderSmoothieNutritionMetrics(perServingNutrients, true));
         }
       }
     }

@@ -196,6 +196,7 @@
             font-size: 1em;
         }
     </style>
+    <script src="{{ url_for('static', filename='js/security.js') }}"></script>
 </head>
 <body>
     <div class="container">
@@ -314,12 +315,18 @@
                         e.stopPropagation();
                         loadIngredients(category, subcategory);
                     };
-                    
-                    subcatItem.innerHTML = `
-                        <div class="subcategory-name">${subcategory || '(No subcategory)'}</div>
-                        <div class="ingredient-count">${count} ingredient${count !== 1 ? 's' : ''}</div>
-                    `;
-                    
+
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'subcategory-name';
+                    nameEl.textContent = subcategory || '(No subcategory)';
+
+                    const countEl = document.createElement('div');
+                    countEl.className = 'ingredient-count';
+                    countEl.textContent = `${count} ingredient${count !== 1 ? 's' : ''}`;
+
+                    subcatItem.appendChild(nameEl);
+                    subcatItem.appendChild(countEl);
+
                     subcategories.appendChild(subcatItem);
                 });
                 
@@ -357,33 +364,70 @@
                 if (!response.ok) throw new Error('Failed to load ingredients');
                 
                 const ingredients = await response.json();
-                
+
                 if (ingredients.error) {
-                    list.innerHTML = `<div class="error">${ingredients.error}</div>`;
+                    list.innerHTML = '';
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'error';
+                    errorDiv.textContent = ingredients.error;
+                    list.appendChild(errorDiv);
                     return;
                 }
-                
+
                 if (ingredients.length === 0) {
                     list.innerHTML = '<div class="loading">No ingredients found for this category/subcategory.</div>';
                     return;
                 }
-                
+
                 list.innerHTML = '';
                 ingredients.forEach(ing => {
                     const item = document.createElement('div');
                     item.className = 'ingredient-item';
-                    item.innerHTML = `
-                        <div class="ingredient-name">${ing.ingredient}</div>
-                        <div class="ingredient-details">
-                            ${ing.health_benefits ? `<p><strong>Health Benefits:</strong> ${ing.health_benefits}</p>` : ''}
-                            ${ing.key_nutrients ? `<p><strong>Key Nutrients:</strong> ${ing.key_nutrients}</p>` : ''}
-                            ${ing.description ? `<p><strong>Description:</strong> ${ing.description}</p>` : ''}
-                        </div>
-                    `;
+
+                    const nameEl = document.createElement('div');
+                    nameEl.className = 'ingredient-name';
+                    nameEl.textContent = ing.ingredient || '';
+
+                    const detailsEl = document.createElement('div');
+                    detailsEl.className = 'ingredient-details';
+
+                    if (ing.health_benefits) {
+                        const p = document.createElement('p');
+                        const strong = document.createElement('strong');
+                        strong.textContent = 'Health Benefits:';
+                        p.appendChild(strong);
+                        p.appendChild(document.createTextNode(' ' + ing.health_benefits));
+                        detailsEl.appendChild(p);
+                    }
+
+                    if (ing.key_nutrients) {
+                        const p = document.createElement('p');
+                        const strong = document.createElement('strong');
+                        strong.textContent = 'Key Nutrients:';
+                        p.appendChild(strong);
+                        p.appendChild(document.createTextNode(' ' + ing.key_nutrients));
+                        detailsEl.appendChild(p);
+                    }
+
+                    if (ing.description) {
+                        const p = document.createElement('p');
+                        const strong = document.createElement('strong');
+                        strong.textContent = 'Description:';
+                        p.appendChild(strong);
+                        p.appendChild(document.createTextNode(' ' + ing.description));
+                        detailsEl.appendChild(p);
+                    }
+
+                    item.appendChild(nameEl);
+                    item.appendChild(detailsEl);
                     list.appendChild(item);
                 });
             } catch (error) {
-                list.innerHTML = `<div class="error">Error loading ingredients: ${error.message}</div>`;
+                list.innerHTML = '';
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = `Error loading ingredients: ${error.message}`;
+                list.appendChild(errorDiv);
             }
         }
 
