@@ -42,6 +42,28 @@ ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
 IS_PROD = ENV == "production" or (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
 is_production = IS_PROD
 
+
+def is_truthy(value):
+    """
+    Helper to interpret common truthy strings from the environment.
+    Returns True for: '1', 'true', 'yes', 'on' (case-insensitive).
+    """
+    if value is None:
+        return False
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+
+# Fail fast if someone attempts to enable Flask debug in production via FLASK_DEBUG.
+if is_production and is_truthy(os.getenv("FLASK_DEBUG")):
+    # Verification (manual):
+    #   ENVIRONMENT=production FLASK_DEBUG=1 python -c "import startup_recovered"
+    # should raise this RuntimeError during import.
+    raise RuntimeError("SECURITY: FLASK_DEBUG must be OFF in production")
+
+# Force core debug/testing config flags to False at import time.
+app.config["DEBUG"] = False
+app.config["TESTING"] = False
+
 # Trust Render / Cloudflare proxy headers so request.is_secure and URL generation work correctly
 # behind the proxy (X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host, X-Forwarded-Port).
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
@@ -197,6 +219,7 @@ db.ensure_schema()
 @app.route("/home")
 def home():
     return render_template("index.html")
+
 if not is_production:
     @app.route("/debug/session")
     def debug_session():
@@ -409,6 +432,15 @@ logger.info(
     os.getenv("FLASK_DEBUG"),
     bool(app.config.get("SECRET_KEY")),
 )
+
+# --- Debug / Testing / Template reload hardening ---
+# In production, never allow template auto-reload (debug already forced off above).
+if is_production:
+    app.config["TEMPLATES_AUTO_RELOAD"] = False
+    # Simple visibility log without exposing any secrets.
+    logger.info("DEBUG_GUARD=%s", "active")
+else:
+    logger.info("DEBUG_GUARD=%s", "inactive")
 
 # --- Postgres probe (psycopg v3) ---
 import os
@@ -690,6 +722,11 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 # Secure flag: Only send cookies over HTTPS in production
 app.config["SESSION_COOKIE_SECURE"] = is_production
 
+# --- Flask-Login "remember me" cookie hardening (only relevant if remember=True is used) ---
+app.config["REMEMBER_COOKIE_HTTPONLY"] = True
+app.config["REMEMBER_COOKIE_SAMESITE"] = "Lax"
+app.config["REMEMBER_COOKIE_SECURE"] = is_production
+
 # --- CORS (Cross-Origin Resource Sharing) ---
 # Whitelist of allowed origins for CORS
 ALLOWED_ORIGINS = [
@@ -784,7 +821,7 @@ def add_security_headers(response):
             "Content-Security-Policy-Report-Only" if csp_report_only else "Content-Security-Policy"
         )
         response.headers.setdefault(csp_header_name, csp_value)
-
+    
     return response
 
 # ============================================================================
@@ -949,7 +986,7 @@ def register():
                 # SQLite: use lastrowid
                 query = "INSERT INTO users (email, password_hash) VALUES (?, ?)"
                 cursor.execute(query, (email, hashed_password))
-                user_id = cursor.lastrowid
+            user_id = cursor.lastrowid
             conn.commit()
             conn.close()
             
@@ -49579,9 +49616,9 @@ def nlp_query():
 
 
 if __name__ == "__main__":
-    # Parse debug mode from environment variable
-    debug = str(os.getenv('FLASK_DEBUG', '0')).lower() in ('1', 'true', 'yes', 'on')
-    port = int(os.getenv('PORT', '8000'))
-    app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=debug)
+    # Never run the dev server in production (Render uses gunicorn)
+    if is_production:
+        raise RuntimeError("Do not start with python startup_recovered.py in production. Use gunicorn.")
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")), debug=True)
 
 
