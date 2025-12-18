@@ -412,36 +412,36 @@ def get_user_by_email(email):
 # This section configures secret keys, session cookies, CORS, and security headers.
 
 # --- Secret Key & Environment Awareness ---
-# In production, require a strong SECRET_KEY from the environment and fail fast if missing.
-# In non-production, allow a FLASK_SECRET_KEY fallback (with a warning), otherwise generate
-# a random ephemeral key for local development.
-if is_production:
-    secret_from_env = os.getenv("SECRET_KEY")
-    if not secret_from_env or len(secret_from_env) < 32:
-        raise RuntimeError(
-            "SECURITY: SECRET_KEY environment variable must be set and at least 32 characters long in production."
-        )
-    app.config["SECRET_KEY"] = secret_from_env
-else:
-    secret_from_env = os.getenv("SECRET_KEY")
-    if not secret_from_env:
-        legacy_secret = os.getenv("FLASK_SECRET_KEY")
-        if legacy_secret:
-            # Warn that legacy FLASK_SECRET_KEY is being used outside production.
-            logger.warning("Using FLASK_SECRET_KEY for non-production environment; prefer SECRET_KEY for future rotation.")
-            secret_from_env = legacy_secret
-        else:
-            # Generate an ephemeral development key; users should set a stable SECRET_KEY or FLASK_SECRET_KEY.
-            secret_from_env = secrets.token_urlsafe(64)
-            logger.warning("Generated ephemeral development SECRET_KEY; set SECRET_KEY for a stable dev session key.")
-    app.config["SECRET_KEY"] = secret_from_env
+# Stable session key handling:
+# - If SECRET_KEY env var is set, always use it (never generate)
+# - Only generate ephemeral key when SECRET_KEY is missing AND not production
+# - In production, SECRET_KEY must be set or app will fail to start
+secret_from_env = os.getenv("SECRET_KEY")
+secret_key_source = None
 
-# Log only whether a secret key is set (never log the key value itself)
+if secret_from_env:
+    # SECRET_KEY is set - always use it (stable sessions)
+    app.config["SECRET_KEY"] = secret_from_env
+    secret_key_source = "env"
+elif is_production:
+    # Production requires SECRET_KEY - fail fast if missing
+    raise RuntimeError(
+        "SECURITY: SECRET_KEY environment variable must be set in production. "
+        "Sessions will be invalidated on restart without a stable SECRET_KEY."
+    )
+else:
+    # Non-production: generate ephemeral key only when SECRET_KEY is missing
+    app.config["SECRET_KEY"] = secrets.token_urlsafe(64)
+    secret_key_source = "generated"
+    logger.warning("Generated ephemeral SECRET_KEY for development; set SECRET_KEY env var for stable sessions.")
+
+# Log secret key source (never log the key value itself)
 logger.info(
-    "ENVIRONMENT=%s FLASK_DEBUG=%s SECRET_KEY_SET=%s",
+    "ENVIRONMENT=%s FLASK_DEBUG=%s SECRET_KEY_SET=%s SECRET_KEY_SOURCE=%s",
     os.getenv("ENVIRONMENT"),
     os.getenv("FLASK_DEBUG"),
     bool(app.config.get("SECRET_KEY")),
+    secret_key_source or "unknown",
 )
 
 # --- Debug / Testing / Template reload hardening ---
