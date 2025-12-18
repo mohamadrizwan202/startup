@@ -501,13 +501,13 @@ limiter = Limiter(
 app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 
 # --- DB Check Route (protected with token, enabled in all environments) ---
-# Usage (Header): curl -H "Authorization: Bearer $DBCHECK_TOKEN" https://your-app.onrender.com/__dbcheck
-# Usage (Cookie): After visiting /__dbcheck-auth?token=TOKEN, access /__dbcheck from browser
+# Usage (Header): curl -H "Authorization: Bearer $DBCHECK_TOKEN" https://your-app.onrender.com/dbcheck
+# Usage (Cookie): After visiting /__dbcheck-auth?token=TOKEN, access /dbcheck from browser
 # 
 # To set up permanently:
 # 1. In Render dashboard → Environment → Add: DBCHECK_TOKEN = "yIqGqoyXI0UeoH0sklJsXjksvRHEldrewouz4vctCQU"
 # 2. Redeploy the service
-@app.get("/__dbcheck")
+@app.get("/dbcheck")
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
     # Read expected token from environment variable (single source of truth)
@@ -517,7 +517,7 @@ def dbcheck():
     if not expected_token:
         # In production, return 404 to hide the endpoint, but log the issue
         if is_production:
-            logger.warning("DBCHECK_TOKEN not set in production environment")
+            logger.warning("DBCHECK_ROUTE_ACCESS=denied reason=DBCHECK_TOKEN_not_set path=%s", request.path)
             abort(404)
         return jsonify({"error": "server_misconfigured", "message": "DBCHECK_TOKEN environment variable is not set"}), 500
     
@@ -528,16 +528,22 @@ def dbcheck():
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         provided_token = auth_header[7:].strip()
+        auth_method = "header"
     else:
         # Fallback to cookie authentication (for browser access)
         provided_token = request.cookies.get("__dbc_token")
+        auth_method = "cookie" if provided_token else "none"
     
     # Validate token using constant-time comparison
     if not provided_token or not secrets.compare_digest(provided_token, expected_token):
         # Return 404 in production to reduce endpoint discovery, 403 in non-production
         if is_production:
+            logger.warning("DBCHECK_ROUTE_ACCESS=denied reason=token_mismatch_or_missing auth_method=%s path=%s", auth_method, request.path)
             abort(404)
         return jsonify({"error": "forbidden"}), 403
+    
+    # Token validated successfully
+    logger.info("DBCHECK_ROUTE_ACCESS=allowed auth_method=%s", auth_method)
     
     try:
         conn = db.get_conn()
@@ -600,8 +606,8 @@ logger.info("DBCHECK_ROUTE=enabled")
 @app.get("/__dbcheck-auth")
 def dbcheck_auth():
     """
-    Helper endpoint to set authentication cookie for /__dbcheck.
-    Usage: Visit /__dbcheck-auth?token=YOUR_TOKEN to set cookie, then access /__dbcheck from browser.
+    Helper endpoint to set authentication cookie for /dbcheck.
+    Usage: Visit /__dbcheck-auth?token=YOUR_TOKEN to set cookie, then access /dbcheck from browser.
     """
     expected_token = os.getenv("DBCHECK_TOKEN")
     
@@ -621,7 +627,7 @@ def dbcheck_auth():
             abort(404)
         return jsonify({"error": "forbidden"}), 403
     
-    # Set secure cookie and redirect to /__dbcheck
+    # Set secure cookie and redirect to /dbcheck
     response = redirect(url_for("dbcheck"))
     response.set_cookie(
         "__dbc_token",
@@ -49614,6 +49620,10 @@ def nlp_query():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# Log registered routes containing "dbcheck" for verification (after all routes are defined)
+dbcheck_routes = [str(rule) for rule in app.url_map.iter_rules() if "dbcheck" in str(rule).lower()]
+logger.warning("ROUTES_WITH_DBCHECK=%s", dbcheck_routes)
 
 if __name__ == "__main__":
     # Never run the dev server in production (Render uses gunicorn)

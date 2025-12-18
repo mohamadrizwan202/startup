@@ -1,11 +1,11 @@
 #!/bin/bash
-# Test script for /__dbcheck endpoint
+# Test script for /dbcheck endpoint
 # Usage: ./test_dbcheck.sh
 
 TOKEN="yIqGqoyXI0UeoH0sklJsXjksvRHEldrewouz4vctCQU"
-URL="https://startup-hmwd.onrender.com/__dbcheck"
+URL="https://startup-hmwd.onrender.com/dbcheck"
 
-echo "Testing /__dbcheck endpoint..."
+echo "Testing /dbcheck endpoint..."
 echo "URL: $URL"
 echo ""
 
