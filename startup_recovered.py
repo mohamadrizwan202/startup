@@ -552,6 +552,20 @@ def dbcheck():
         # Determine DB type
         db_type = "postgres" if db.USE_POSTGRES else "sqlite"
         
+        # Get current user and database name (Postgres only)
+        db_user = None
+        db_name = None
+        if db.USE_POSTGRES:
+            try:
+                cursor.execute("SELECT current_user, current_database()")
+                row = cursor.fetchone()
+                if row:
+                    db_user = row['current_user'] if isinstance(row, dict) else row[0]
+                    db_name = row['current_database'] if isinstance(row, dict) else row[1]
+            except Exception as e:
+                # If query fails, leave as None
+                logger.warning("Failed to get current_user/current_database: %s", str(e))
+        
         # Get Python version
         python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         
@@ -588,6 +602,8 @@ def dbcheck():
         
         response = jsonify({
             "db_type": db_type,
+            "db_user": db_user,
+            "db_name": db_name,
             "python_version": python_version,
             "psycopg_version": psycopg_version,
             "database_url_scheme": database_url_scheme,
