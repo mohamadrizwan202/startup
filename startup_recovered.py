@@ -53,6 +53,10 @@ def is_truthy(value):
     return str(value).strip().lower() in ("1", "true", "yes", "on")
 
 
+# Internal routes flag (PoLP: only enable with explicit flag)
+ENABLE_INTERNAL_ROUTES = is_truthy(os.getenv("ENABLE_INTERNAL_ROUTES", "0"))
+logger.info("ENABLE_INTERNAL_ROUTES=%s", "enabled" if ENABLE_INTERNAL_ROUTES else "disabled")
+
 # Fail fast if someone attempts to enable Flask debug in production via FLASK_DEBUG.
 if is_production and is_truthy(os.getenv("FLASK_DEBUG")):
     # Verification (manual):
@@ -123,7 +127,7 @@ def add_security_headers(resp):
         )
     return resp
 
-if not is_production:
+if ENABLE_INTERNAL_ROUTES:
     @app.get("/debug/auth")
     def debug_auth():
         user_id = session.get("user_id")
@@ -227,7 +231,7 @@ else:
 def home():
     return render_template("index.html")
 
-if not is_production:
+if ENABLE_INTERNAL_ROUTES:
     @app.route("/debug/session")
     def debug_session():
         # Touch the Flask session so it has to set a cookie
@@ -671,8 +675,8 @@ def health_check():
     """
     return jsonify({"ok": True}), 200
 
-# --- Debug Routes (only enabled in non-production) ---
-if not is_production:
+# --- Debug Routes (only enabled when ENABLE_INTERNAL_ROUTES=1) ---
+if ENABLE_INTERNAL_ROUTES:
     @app.get("/__debug/limit-test")
     @limiter.limit("3 per minute")
     def limit_test():
@@ -696,20 +700,20 @@ if not is_production:
             "size_bytes": size,
         }), 200
 
-# --- Temporary ProxyFix verification endpoint (remove after testing) ---
-# Note: This endpoint is enabled in all environments for testing ProxyFix on Render
-@app.get("/__proxycheck")
-def proxycheck():
-    """Temporary endpoint to verify ProxyFix is working correctly"""
-    return jsonify({
-        "scheme": request.scheme,
-        "is_secure": request.is_secure,
-        "host": request.host,
-        "remote_addr": request.remote_addr,
-        "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
-        "x_forwarded_for": request.headers.get("X-Forwarded-For"),
-        "x_forwarded_host": request.headers.get("X-Forwarded-Host"),
-    }), 200
+# --- Temporary ProxyFix verification endpoint (only enabled when ENABLE_INTERNAL_ROUTES=1) ---
+if ENABLE_INTERNAL_ROUTES:
+    @app.get("/__proxycheck")
+    def proxycheck():
+        """Temporary endpoint to verify ProxyFix is working correctly"""
+        return jsonify({
+            "scheme": request.scheme,
+            "is_secure": request.is_secure,
+            "host": request.host,
+            "remote_addr": request.remote_addr,
+            "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
+            "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+            "x_forwarded_host": request.headers.get("X-Forwarded-Host"),
+        }), 200
 
 # --- Flask-Login Configuration ---
 login_manager = LoginManager()
@@ -1123,13 +1127,13 @@ def logout():
     return redirect(url_for('index'))
 
 
-if not is_production:
+if ENABLE_INTERNAL_ROUTES:
     @app.route('/force-error')
     def force_error():
         """
-    Local test-only route to trigger a 500 error and verify the error handler.
-    This route deliberately raises an exception to test error handling.
-    WARNING: For local debugging only - should not expose stack traces to client.
+        Local test-only route to trigger a 500 error and verify the error handler.
+        This route deliberately raises an exception to test error handling.
+        WARNING: For local debugging only - should not expose stack traces to client.
         """
         raise RuntimeError("Test crash - this is intentional to verify error handler")
 
