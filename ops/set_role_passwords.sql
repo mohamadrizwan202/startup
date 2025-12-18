@@ -1,0 +1,2 @@
+ALTER ROLE app_runtime WITH LOGIN PASSWORD 'Hadi';
+ALTER ROLE app_migrate WITH LOGIN PASSWORD 'Hadi';

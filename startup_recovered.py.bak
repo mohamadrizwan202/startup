@@ -229,10 +229,10 @@ def home():
 
 if not is_production:
     @app.route("/debug/session")
-    def debug_session():
-        # Touch the Flask session so it has to set a cookie
-        session["debug"] = "yes"
-        return "Debug session set"
+        def debug_session():
+    # Touch the Flask session so it has to set a cookie
+    session["debug"] = "yes"
+    return "Debug session set"
     
 def init_db():
     """Initialize database with all tables"""
@@ -1124,14 +1124,14 @@ def logout():
 
 
 if not is_production:
-    @app.route('/force-error')
-    def force_error():
-        """
+@app.route('/force-error')
+def force_error():
+    """
     Local test-only route to trigger a 500 error and verify the error handler.
     This route deliberately raises an exception to test error handling.
     WARNING: For local debugging only - should not expose stack traces to client.
-        """
-        raise RuntimeError("Test crash - this is intentional to verify error handler")
+    """
+    raise RuntimeError("Test crash - this is intentional to verify error handler")
 
 
 @app.route('/browser')
