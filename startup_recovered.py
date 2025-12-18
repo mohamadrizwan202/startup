@@ -49199,6 +49199,91 @@ def session_check():
 
 
 @csrf.exempt
+@app.get("/api/me")
+@login_required_single_session
+def get_current_user():
+    """Get the authenticated user's record (PoLP: users can only access their own data)"""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "auth_required"}), 401
+    
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        query = db.prepare_query("SELECT id, email, created_at FROM users WHERE id = ?")
+        cursor.execute(query, (user_id,))
+        row = cursor.fetchone()
+        conn.close()
+        
+        if not row:
+            return jsonify({"error": "user_not_found"}), 404
+        
+        user_data = db.row_to_dict(row, cursor)
+        # Return only safe fields (exclude password_hash and active_session_token)
+        return jsonify({
+            "id": user_data.get("id"),
+            "email": user_data.get("email"),
+            "created_at": user_data.get("created_at")
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@csrf.exempt
+@app.route("/api/me", methods=['PATCH'])
+@login_required_single_session
+def update_current_user():
+    """Update the authenticated user's allowed fields (PoLP: users can only update their own data with allowlist)"""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "auth_required"}), 401
+    
+    try:
+        data = request.get_json(force=True) or {}
+        
+        # Explicit allowlist of fields users can update themselves
+        ALLOWED_UPDATE_FIELDS = ["email"]
+        
+        # Filter to only allowed fields
+        updates = {}
+        for field in ALLOWED_UPDATE_FIELDS:
+            if field in data:
+                updates[field] = data[field]
+        
+        if not updates:
+            return jsonify({"error": "no_valid_fields"}), 400
+        
+        # Validate email format if email is being updated
+        if "email" in updates:
+            email = updates["email"]
+            if not email or not isinstance(email, str) or "@" not in email:
+                return jsonify({"error": "invalid_email"}), 400
+            
+            # Check if email is already taken by another user
+            conn = get_conn()
+            cursor = conn.cursor()
+            query = db.prepare_query("SELECT id FROM users WHERE email = ? AND id != ?")
+            cursor.execute(query, (email, user_id))
+            existing = cursor.fetchone()
+            if existing:
+                conn.close()
+                return jsonify({"error": "email_already_exists"}), 409
+            
+            # Update email
+            update_query = db.prepare_query("UPDATE users SET email = ? WHERE id = ?")
+            cursor.execute(update_query, (email, user_id))
+            conn.commit()
+            conn.close()
+            
+            return jsonify({"message": "user_updated", "updated_fields": ["email"]})
+        
+        return jsonify({"error": "no_updates"}), 400
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@csrf.exempt
 @app.route('/api/analyze', methods=['POST'])
 def api_analyze():
     """Analyze ingredients endpoint - accepts both 'ingredients' array and 'query' string"""
