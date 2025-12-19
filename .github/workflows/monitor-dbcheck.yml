@@ -1,0 +1,19 @@
+name: Monitor dbcheck
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  dbcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call dbcheck (Bearer)
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $DBCHECK_TOKEN" \
+            https://startup-hmwd.onrender.com/dbcheck
+        env:
+          DBCHECK_TOKEN: ${{ secrets.DBCHECK_TOKEN }}
+
