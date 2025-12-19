@@ -49244,6 +49244,41 @@ def get_current_user():
 
 
 @csrf.exempt
+@app.get("/api/users/<int:user_id>")
+@login_required_single_session
+def get_user_by_id(user_id):
+    """IDOR guard test: Only allow users to access their own data (PoLP/IDOR protection)"""
+    current_user_id = session.get("user_id")
+    if not current_user_id:
+        return jsonify({"error": "auth_required"}), 401
+    
+    # Enforce ownership: only allow access if user_id matches current_user.id
+    if user_id != current_user_id:
+        return jsonify({"error": "forbidden"}), 403
+    
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        query = db.prepare_query("SELECT id, email, created_at FROM users WHERE id = ?")
+        cursor.execute(query, (user_id,))
+        row = cursor.fetchone()
+        conn.close()
+        
+        if not row:
+            return jsonify({"error": "user_not_found"}), 404
+        
+        user_data = db.row_to_dict(row, cursor)
+        # Return only safe fields (exclude password_hash and active_session_token)
+        return jsonify({
+            "id": user_data.get("id"),
+            "email": user_data.get("email"),
+            "created_at": user_data.get("created_at")
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@csrf.exempt
 @app.route("/api/me", methods=['PATCH'])
 @login_required_single_session
 def update_current_user():
