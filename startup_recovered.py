@@ -1074,17 +1074,25 @@ def login():
             flash('Invalid email or password.', 'error')
             return render_template('login.html')
         
-        # Generate and store session token
+        # Password verified - generate new session token for single-session enforcement
         user_id = user_dict['id']
-        app.logger.info("DB PATH IN USE: %s", get_db_path())
-        token = set_user_session_token(user_id)
+        new_token = secrets.token_urlsafe(32)
+        
+        # Update active_session_token in database and commit
+        conn = get_conn()
+        cursor = conn.cursor()
+        query = db.prepare_query("UPDATE users SET active_session_token = ? WHERE id = ?")
+        cursor.execute(query, (new_token, user_id))
+        conn.commit()
+        conn.close()
+        app.logger.info("LOGIN: Generated new session token for user_id=%s", user_id)
         
         # Clear existing session to avoid session fixation
         session.clear()
         
         # Set new session values
         session['user_id'] = user_id
-        session['active_session_token'] = token
+        session['active_session_token'] = new_token
         
         # Log the user in with Flask-Login
         user = User(user_dict)
@@ -1118,9 +1126,15 @@ def logout():
                 query = db.prepare_query("UPDATE users SET active_session_token = NULL WHERE id = ?")
                 cursor.execute(query, (user_id,))
                 conn.commit()
+                app.logger.info("LOGOUT: Cleared session token for user_id=%s", user_id)
+            else:
+                app.logger.info("LOGOUT: Session token mismatch for user_id=%s (token rotation detected)", user_id)
         conn.close()
     
     # Always clear session and logout, regardless of token match
+    # Clear session token from cookie
+    session.pop('active_session_token', None)
+    session.pop('user_id', None)
     session.clear()
     logout_user()
     flash('You have been logged out.', 'info')
