@@ -127,7 +127,7 @@ if not any(isinstance(h, logging.StreamHandler) for h in app.logger.handlers):
 
 
 @app.after_request
-def add_security_headers(resp):
+def add_hsts_header(resp):
     """Add security-related response headers in production."""
     if is_production and request.is_secure:
         # Honor any existing HSTS header (e.g. from Cloudflare), but set one if missing.
@@ -173,6 +173,59 @@ def get_db_path():
 def get_conn():
     """Get a database connection - delegates to db.py"""
     return db.get_conn()
+
+
+def run_db(sql, params=(), *, fetchone=False, fetchall=False, commit=False):
+    """
+    Safe DB access helper that standardizes connection/cursor handling.
+    
+    Args:
+        sql: SQL query string (will be processed via db.prepare_query)
+        params: Query parameters tuple
+        fetchone: If True, fetch and return one row as dict (or None)
+        fetchall: If True, fetch and return all rows as list of dicts (or [])
+        commit: If True, commit the transaction (for write operations)
+    
+    Returns:
+        - If fetchone=True: dict or None
+        - If fetchall=True: list of dicts (may be empty)
+        - Otherwise: None
+    
+    Raises:
+        Any exception from the database operation (after rollback attempt)
+    
+    Always closes cursor and connection, even on exceptions.
+    """
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        q = db.prepare_query(sql)
+        cur.execute(q, params)
+        result = None
+        if fetchone:
+            row = cur.fetchone()
+            result = db.row_to_dict(row, cur) if row else None
+        elif fetchall:
+            rows = cur.fetchall()
+            result = [db.row_to_dict(row, cur) for row in rows] if rows else []
+        if commit:
+            conn.commit()
+        return result
+    except Exception:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        raise
+    finally:
+        try:
+            cur.close()
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 def set_user_session_token(user_id):
@@ -49284,17 +49337,16 @@ def get_current_user():
         return jsonify({"error": "auth_required"}), 401
     
     try:
-        conn = get_conn()
-        cursor = conn.cursor()
-        query = db.prepare_query("SELECT id, email, created_at FROM users WHERE id = ?")
-        cursor.execute(query, (user_id,))
-        row = cursor.fetchone()
-        conn.close()
+        # Example: Using run_db() helper for safe DB access
+        user_data = run_db(
+            "SELECT id, email, created_at FROM users WHERE id = ?",
+            (user_id,),
+            fetchone=True
+        )
         
-        if not row:
+        if not user_data:
             return jsonify({"error": "user_not_found"}), 404
         
-        user_data = db.row_to_dict(row, cursor)
         # Return only safe fields (exclude password_hash and active_session_token)
         return jsonify({
             "id": user_data.get("id"),
