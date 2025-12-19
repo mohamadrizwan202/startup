@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 import time
 import logging
 import secrets
+import uuid
 from flask_wtf.csrf import CSRFProtect, CSRFError  # pyright: ignore[reportMissingImports]
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin  # pyright: ignore[reportMissingImports]
 from flask_limiter import Limiter  # pyright: ignore[reportMissingImports]
@@ -93,6 +94,15 @@ def enforce_https_in_production():
             url = request.url.replace("http://", "https://", 1)
             return redirect(url, code=301)
         return jsonify({"error": "https_required"}), 400
+
+
+@app.before_request
+def _request_id_and_timing():
+    """Generate/retrieve request_id and start timing for request logging."""
+    # Reuse X-Request-ID header if present, otherwise generate new one
+    g.request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex
+    # Start timing for duration calculation
+    g.request_start_time = time.perf_counter()
 
 
 @app.before_request
@@ -786,6 +796,34 @@ def add_security_headers(response):
     Add security headers and CORS headers (if needed) to every response.
     This function runs after every request is processed.
     """
+    # Add X-Request-ID header to response
+    request_id = getattr(g, "request_id", None)
+    if request_id:
+        response.headers["X-Request-ID"] = request_id
+    
+    # Log request summary (one line per request)
+    start_time = getattr(g, "request_start_time", None)
+    duration_ms = "-"
+    if start_time is not None:
+        duration_ms = int((time.perf_counter() - start_time) * 1000)
+    
+    method = request.method
+    path = request.path
+    status = response.status_code
+    user_id = session.get("user_id") if session else None
+    remote_addr = request.headers.get("X-Forwarded-For") or request.remote_addr or "-"
+    
+    logger.info(
+        "request_id=%s method=%s path=%s status=%s duration_ms=%s user_id=%s remote_addr=%s",
+        request_id or "-",
+        method,
+        path,
+        status,
+        duration_ms,
+        user_id if user_id else "-",
+        remote_addr,
+    )
+    
     # CORS headers (only if flask_cors is not installed)
     if not cors_installed:
         # Read the incoming Origin header from the request
@@ -872,20 +910,44 @@ logging.basicConfig(
 error_logger = logging.getLogger(__name__)
 
 
+@app.errorhandler(Exception)
+def handle_unhandled_exception(error):
+    """
+    Global error handler for unhandled exceptions.
+    Logs with request_id and traceback, then delegates to existing handlers.
+    """
+    request_id = getattr(g, "request_id", None)
+    path = getattr(request, "path", "-")
+    method = getattr(request, "method", "-")
+    
+    logger.exception(
+        "event=unhandled_exception request_id=%s path=%s method=%s",
+        request_id or "-",
+        path,
+        method,
+    )
+    
+    # Let Flask's default error handling or specific error handlers take over
+    # This ensures existing error handler behavior (status codes, responses) is preserved
+    raise error
+
+
 @app.errorhandler(500)
 def handle_internal_server_error(error):
     """
     Handle HTTP 500 (Internal Server Error) exceptions.
     Logs full error details server-side, returns safe message to client.
     """
+    request_id = getattr(g, "request_id", None)
     # Log the full error details including traceback on the server
     error_logger.error(
-        f"Internal Server Error: {str(error)}",
+        f"Internal Server Error: {str(error)} request_id={request_id or '-'}",
         exc_info=True,
         extra={
             "path": request.path,
             "method": request.method,
-            "remote_addr": request.remote_addr
+            "remote_addr": request.remote_addr,
+            "request_id": request_id,
         }
     )
     
