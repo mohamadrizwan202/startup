@@ -33,3 +33,7 @@ login*.html
 
 yenv/
 *.bak
+cookies*.txt
+login*.html
+myenv/
+*.bak
