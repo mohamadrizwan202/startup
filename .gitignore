@@ -45,3 +45,9 @@ login*.html
 * 3.py
 * 3.sql
 
+
+# local curl artifacts
+cookies.txt
+cookies*.txt
+login.html
+login*.html
