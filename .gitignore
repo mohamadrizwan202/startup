@@ -37,3 +37,11 @@ cookies*.txt
 login*.html
 myenv/
 *.bak
+
+cookies*.txt
+login*.html
+* 2.py
+* 2.sql
+* 3.py
+* 3.sql
+
