@@ -1,0 +1,1403 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@getzep/zep-cloud": {
+      "name": "@getzep/zep-cloud",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        "form-data"
+      ],
+      "effects": [
+        "@langchain/community",
+        "flowise-components"
+      ],
+      "range": "<=2.2.0",
+      "nodes": [
+        "node_modules/@getzep/zep-cloud"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@grpc/grpc-js": {
+      "name": "@grpc/grpc-js",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1097546,
+          "name": "@grpc/grpc-js",
+          "dependency": "@grpc/grpc-js",
+          "title": "@grpc/grpc-js can allocate memory for incoming messages well above configured limits",
+          "url": "https://github.com/advisories/GHSA-7v5v-9h63-cj86",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-789"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<1.8.22"
+        }
+      ],
+      "effects": [
+        "@zilliz/milvus2-sdk-node"
+      ],
+      "range": "<1.8.22",
+      "nodes": [
+        "node_modules/@zilliz/milvus2-sdk-node/node_modules/@grpc/grpc-js"
+      ],
+      "fixAvailable": true
+    },
+    "@ladle/react": {
+      "name": "@ladle/react",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "@vitejs/plugin-react",
+        "vite"
+      ],
+      "effects": [],
+      "range": "<=0.0.0-next-ff8694c || 0.2.1 - 3.3.1",
+      "nodes": [
+        "node_modules/@ladle/react"
+      ],
+      "fixAvailable": true
+    },
+    "@langchain/community": {
+      "name": "@langchain/community",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        "@getzep/zep-cloud",
+        "expr-eval"
+      ],
+      "effects": [],
+      "range": ">=0.0.41",
+      "nodes": [
+        "node_modules/@langchain/community"
+      ],
+      "fixAvailable": true
+    },
+    "@mem0/community": {
+      "name": "@mem0/community",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "axios",
+        "mem0ai"
+      ],
+      "effects": [
+        "flowise-components"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@mem0/community"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@modelcontextprotocol/sdk": {
+      "name": "@modelcontextprotocol/sdk",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1111155,
+          "name": "@modelcontextprotocol/sdk",
+          "dependency": "@modelcontextprotocol/sdk",
+          "title": "Model Context Protocol (MCP) TypeScript SDK does not enable DNS rebinding protection by default",
+          "url": "https://github.com/advisories/GHSA-w48q-cv73-mx4w",
+          "severity": "high",
+          "cwe": [
+            "CWE-350",
+            "CWE-1188"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<1.24.0"
+        }
+      ],
+      "effects": [
+        "@modelcontextprotocol/server-brave-search",
+        "@modelcontextprotocol/server-github",
+        "@modelcontextprotocol/server-postgres",
+        "@modelcontextprotocol/server-sequential-thinking",
+        "@modelcontextprotocol/server-slack"
+      ],
+      "range": "<1.24.0",
+      "nodes": [
+        "node_modules/@modelcontextprotocol/server-brave-search/node_modules/@modelcontextprotocol/sdk",
+        "node_modules/@modelcontextprotocol/server-github/node_modules/@modelcontextprotocol/sdk",
+        "node_modules/@modelcontextprotocol/server-postgres/node_modules/@modelcontextprotocol/sdk",
+        "node_modules/@modelcontextprotocol/server-sequential-thinking/node_modules/@modelcontextprotocol/sdk",
+        "node_modules/@modelcontextprotocol/server-slack/node_modules/@modelcontextprotocol/sdk"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@modelcontextprotocol/server-brave-search": {
+      "name": "@modelcontextprotocol/server-brave-search",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@modelcontextprotocol/sdk"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@modelcontextprotocol/server-brave-search"
+      ],
+      "fixAvailable": true
+    },
+    "@modelcontextprotocol/server-github": {
+      "name": "@modelcontextprotocol/server-github",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@modelcontextprotocol/sdk"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@modelcontextprotocol/server-github"
+      ],
+      "fixAvailable": true
+    },
+    "@modelcontextprotocol/server-postgres": {
+      "name": "@modelcontextprotocol/server-postgres",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@modelcontextprotocol/sdk"
+      ],
+      "effects": [
+        "flowise-components"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@modelcontextprotocol/server-postgres"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@modelcontextprotocol/server-sequential-thinking": {
+      "name": "@modelcontextprotocol/server-sequential-thinking",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@modelcontextprotocol/sdk"
+      ],
+      "effects": [],
+      "range": "<=2025.7.1",
+      "nodes": [
+        "node_modules/@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "fixAvailable": true
+    },
+    "@modelcontextprotocol/server-slack": {
+      "name": "@modelcontextprotocol/server-slack",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@modelcontextprotocol/sdk"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@modelcontextprotocol/server-slack"
+      ],
+      "fixAvailable": true
+    },
+    "@puppeteer/browsers": {
+      "name": "@puppeteer/browsers",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "tar-fs"
+      ],
+      "effects": [
+        "puppeteer",
+        "puppeteer-core"
+      ],
+      "range": "1.4.2 - 2.2.3",
+      "nodes": [
+        "node_modules/@puppeteer/browsers"
+      ],
+      "fixAvailable": true
+    },
+    "@qdrant/js-client-rest": {
+      "name": "@qdrant/js-client-rest",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "undici"
+      ],
+      "effects": [],
+      "range": "1.8.0 - 1.14.0",
+      "nodes": [
+        "node_modules/@mem0/community/node_modules/@qdrant/js-client-rest"
+      ],
+      "fixAvailable": true
+    },
+    "@stripe/agent-toolkit": {
+      "name": "@stripe/agent-toolkit",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "ai"
+      ],
+      "effects": [
+        "flowise-components"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@stripe/agent-toolkit"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@vitejs/plugin-react": {
+      "name": "@vitejs/plugin-react",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "vite"
+      ],
+      "effects": [
+        "@ladle/react"
+      ],
+      "range": "2.0.0-alpha.0 - 4.1.1",
+      "nodes": [
+        "node_modules/@vitejs/plugin-react"
+      ],
+      "fixAvailable": true
+    },
+    "@zilliz/milvus2-sdk-node": {
+      "name": "@zilliz/milvus2-sdk-node",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@grpc/grpc-js"
+      ],
+      "effects": [],
+      "range": "2.2.21 - 2.3.5 || >=2.5.11",
+      "nodes": [
+        "node_modules/@zilliz/milvus2-sdk-node"
+      ],
+      "fixAvailable": true
+    },
+    "ai": {
+      "name": "ai",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1111095,
+          "name": "ai",
+          "dependency": "ai",
+          "title": "Vercel’s AI SDK's filetype whitelists can be bypassed when uploading files",
+          "url": "https://github.com/advisories/GHSA-rwvc-j5jr-mgvh",
+          "severity": "low",
+          "cwe": [
+            "CWE-20",
+            "CWE-682"
+          ],
+          "cvss": {
+            "score": 3.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": "<5.0.52"
+        },
+        "jsondiffpatch"
+      ],
+      "effects": [
+        "@stripe/agent-toolkit",
+        "langwatch"
+      ],
+      "range": "<=5.0.51",
+      "nodes": [
+        "node_modules/ai",
+        "node_modules/langwatch/node_modules/ai"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "anymatch": {
+      "name": "anymatch",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [
+        "chokidar",
+        "glob-watcher"
+      ],
+      "range": "1.2.0 - 2.0.0",
+      "nodes": [
+        "node_modules/glob-watcher/node_modules/anymatch"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "axios": {
+      "name": "axios",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1108263,
+          "name": "axios",
+          "dependency": "axios",
+          "title": "Axios is vulnerable to DoS attack through lack of data size check",
+          "url": "https://github.com/advisories/GHSA-4hjh-wcwx-xvwj",
+          "severity": "high",
+          "cwe": [
+            "CWE-770"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=1.0.0 <1.12.0"
+        },
+        {
+          "source": 1111035,
+          "name": "axios",
+          "dependency": "axios",
+          "title": "axios Requests Vulnerable To Possible SSRF and Credential Leakage via Absolute URL",
+          "url": "https://github.com/advisories/GHSA-jr5f-v2jv-69x6",
+          "severity": "high",
+          "cwe": [
+            "CWE-918"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=1.0.0 <1.8.2"
+        }
+      ],
+      "effects": [
+        "@mem0/community",
+        "mem0ai"
+      ],
+      "range": "1.0.0 - 1.11.0",
+      "nodes": [
+        "node_modules/@mem0/community/node_modules/axios"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "braces": {
+      "name": "braces",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1098094,
+          "name": "braces",
+          "dependency": "braces",
+          "title": "Uncontrolled resource consumption in braces",
+          "url": "https://github.com/advisories/GHSA-grv7-fg5c-xmjg",
+          "severity": "high",
+          "cwe": [
+            "CWE-400",
+            "CWE-1050"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<3.0.3"
+        }
+      ],
+      "effects": [
+        "chokidar",
+        "micromatch"
+      ],
+      "range": "<3.0.3",
+      "nodes": [
+        "node_modules/findup-sync/node_modules/braces",
+        "node_modules/glob-watcher/node_modules/braces",
+        "node_modules/matchdep/node_modules/braces"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "chokidar": {
+      "name": "chokidar",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "anymatch",
+        "braces",
+        "readdirp"
+      ],
+      "effects": [
+        "glob-watcher"
+      ],
+      "range": "1.3.0 - 2.1.8",
+      "nodes": [
+        "node_modules/glob-watcher/node_modules/chokidar"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "cohere-ai": {
+      "name": "cohere-ai",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        "form-data"
+      ],
+      "effects": [
+        "llamaindex"
+      ],
+      "range": "7.6.1 - 7.11.0",
+      "nodes": [
+        "node_modules/llamaindex/node_modules/cohere-ai"
+      ],
+      "fixAvailable": true
+    },
+    "esbuild": {
+      "name": "esbuild",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1102341,
+          "name": "esbuild",
+          "dependency": "esbuild",
+          "title": "esbuild enables any website to send any requests to the development server and read the response",
+          "url": "https://github.com/advisories/GHSA-67mh-4wv8-2f99",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-346"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+          },
+          "range": "<=0.24.2"
+        }
+      ],
+      "effects": [
+        "vite"
+      ],
+      "range": "<=0.24.2",
+      "nodes": [
+        "node_modules/esbuild"
+      ],
+      "fixAvailable": true
+    },
+    "expr-eval": {
+      "name": "expr-eval",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1109807,
+          "name": "expr-eval",
+          "dependency": "expr-eval",
+          "title": "expr-eval vulnerable to Prototype Pollution",
+          "url": "https://github.com/advisories/GHSA-8gw3-rxh4-v6jx",
+          "severity": "high",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": "<=2.0.2"
+        },
+        {
+          "source": 1111287,
+          "name": "expr-eval",
+          "dependency": "expr-eval",
+          "title": "expr-eval does not restrict functions passed to the evaluate function",
+          "url": "https://github.com/advisories/GHSA-jc85-fpwf-qm7x",
+          "severity": "high",
+          "cwe": [
+            "CWE-94"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=2.0.2"
+        }
+      ],
+      "effects": [
+        "@langchain/community"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/expr-eval"
+      ],
+      "fixAvailable": true
+    },
+    "findup-sync": {
+      "name": "findup-sync",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [
+        "liftoff",
+        "matchdep"
+      ],
+      "range": "0.4.0 - 3.0.0",
+      "nodes": [
+        "node_modules/findup-sync",
+        "node_modules/matchdep/node_modules/findup-sync"
+      ],
+      "fixAvailable": true
+    },
+    "flowise": {
+      "name": "flowise",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "flowise-components",
+        "flowise-ui",
+        "gulp"
+      ],
+      "effects": [],
+      "range": ">=1.6.1",
+      "nodes": [
+        "node_modules/flowise"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "flowise-components": {
+      "name": "flowise-components",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        "@getzep/zep-cloud",
+        "@mem0/community",
+        "@modelcontextprotocol/server-brave-search",
+        "@modelcontextprotocol/server-github",
+        "@modelcontextprotocol/server-postgres",
+        "@modelcontextprotocol/server-sequential-thinking",
+        "@modelcontextprotocol/server-slack",
+        "@stripe/agent-toolkit",
+        "langwatch",
+        "xlsx"
+      ],
+      "effects": [
+        "flowise"
+      ],
+      "range": ">=1.6.2",
+      "nodes": [
+        "node_modules/flowise-components"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "flowise-embed": {
+      "name": "flowise-embed",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "solid-js"
+      ],
+      "effects": [
+        "flowise-embed-react",
+        "flowise-ui"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/flowise-embed"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "flowise-embed-react": {
+      "name": "flowise-embed-react",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@ladle/react",
+        "flowise-embed"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/flowise-embed-react"
+      ],
+      "fixAvailable": true
+    },
+    "flowise-ui": {
+      "name": "flowise-ui",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "flowise-embed",
+        "flowise-embed-react",
+        "react-code-blocks",
+        "react-syntax-highlighter"
+      ],
+      "effects": [
+        "flowise"
+      ],
+      "range": ">=1.2.0",
+      "nodes": [
+        "node_modules/flowise-ui"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "form-data": {
+      "name": "form-data",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1109538,
+          "name": "form-data",
+          "dependency": "form-data",
+          "title": "form-data uses unsafe random function in form-data for choosing boundary",
+          "url": "https://github.com/advisories/GHSA-fjxv-7rqg-78g4",
+          "severity": "critical",
+          "cwe": [
+            "CWE-330"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=4.0.0 <4.0.4"
+        }
+      ],
+      "effects": [
+        "@getzep/zep-cloud",
+        "cohere-ai"
+      ],
+      "range": "4.0.0 - 4.0.3",
+      "nodes": [
+        "node_modules/@getzep/zep-cloud/node_modules/form-data",
+        "node_modules/llamaindex/node_modules/form-data"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "glob-watcher": {
+      "name": "glob-watcher",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "anymatch",
+        "chokidar"
+      ],
+      "effects": [
+        "gulp"
+      ],
+      "range": "5.0.0 - 5.0.5",
+      "nodes": [
+        "node_modules/glob-watcher"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "gulp": {
+      "name": "gulp",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "glob-watcher",
+        "gulp-cli"
+      ],
+      "effects": [
+        "flowise"
+      ],
+      "range": "4.0.0 - 4.0.2",
+      "nodes": [
+        "node_modules/gulp"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "gulp-cli": {
+      "name": "gulp-cli",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "liftoff",
+        "matchdep"
+      ],
+      "effects": [],
+      "range": "1.3.0 - 2.3.0",
+      "nodes": [
+        "node_modules/gulp-cli"
+      ],
+      "fixAvailable": true
+    },
+    "jsondiffpatch": {
+      "name": "jsondiffpatch",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1108189,
+          "name": "jsondiffpatch",
+          "dependency": "jsondiffpatch",
+          "title": "jsondiffpatch is vulnerable to Cross-site Scripting (XSS) via HtmlFormatter::nodeBegin",
+          "url": "https://github.com/advisories/GHSA-33vc-wfww-vjfv",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79"
+          ],
+          "cvss": {
+            "score": 4.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:L/I:L/A:N"
+          },
+          "range": "<0.7.2"
+        }
+      ],
+      "effects": [
+        "ai"
+      ],
+      "range": "<0.7.2",
+      "nodes": [
+        "node_modules/jsondiffpatch"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "langwatch": {
+      "name": "langwatch",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        "ai"
+      ],
+      "effects": [
+        "flowise-components"
+      ],
+      "range": "<=0.2.0",
+      "nodes": [
+        "node_modules/langwatch"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "liftoff": {
+      "name": "liftoff",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "findup-sync"
+      ],
+      "effects": [
+        "gulp-cli"
+      ],
+      "range": "2.2.3 - 3.1.0",
+      "nodes": [
+        "node_modules/liftoff"
+      ],
+      "fixAvailable": true
+    },
+    "llamaindex": {
+      "name": "llamaindex",
+      "severity": "critical",
+      "isDirect": false,
+      "via": [
+        "cohere-ai"
+      ],
+      "effects": [],
+      "range": "0.3.16 - 0.5.20",
+      "nodes": [
+        "node_modules/llamaindex"
+      ],
+      "fixAvailable": true
+    },
+    "matchdep": {
+      "name": "matchdep",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "findup-sync",
+        "micromatch"
+      ],
+      "effects": [
+        "gulp-cli"
+      ],
+      "range": ">=1.0.1",
+      "nodes": [
+        "node_modules/matchdep"
+      ],
+      "fixAvailable": true
+    },
+    "mem0ai": {
+      "name": "mem0ai",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@qdrant/js-client-rest",
+        "axios"
+      ],
+      "effects": [],
+      "range": ">=2.0.0",
+      "nodes": [
+        "node_modules/@mem0/community/node_modules/mem0ai"
+      ],
+      "fixAvailable": true
+    },
+    "micromatch": {
+      "name": "micromatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1098681,
+          "name": "micromatch",
+          "dependency": "micromatch",
+          "title": "Regular Expression Denial of Service (ReDoS) in micromatch",
+          "url": "https://github.com/advisories/GHSA-952p-6rrq-rcjv",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<4.0.8"
+        },
+        "braces"
+      ],
+      "effects": [
+        "anymatch",
+        "findup-sync",
+        "matchdep",
+        "readdirp"
+      ],
+      "range": "<=4.0.7",
+      "nodes": [
+        "node_modules/findup-sync/node_modules/micromatch",
+        "node_modules/glob-watcher/node_modules/micromatch",
+        "node_modules/matchdep/node_modules/micromatch"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "prismjs": {
+      "name": "prismjs",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1105770,
+          "name": "prismjs",
+          "dependency": "prismjs",
+          "title": "PrismJS DOM Clobbering vulnerability",
+          "url": "https://github.com/advisories/GHSA-x7hr-w5r2-h6wg",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-79",
+            "CWE-94"
+          ],
+          "cvss": {
+            "score": 4.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:C/C:L/I:L/A:N"
+          },
+          "range": "<1.30.0"
+        }
+      ],
+      "effects": [
+        "refractor"
+      ],
+      "range": "<1.30.0",
+      "nodes": [
+        "node_modules/refractor/node_modules/prismjs"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "puppeteer": {
+      "name": "puppeteer",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@puppeteer/browsers",
+        "puppeteer-core"
+      ],
+      "effects": [],
+      "range": "18.2.0 - 22.13.0",
+      "nodes": [
+        "node_modules/puppeteer"
+      ],
+      "fixAvailable": true
+    },
+    "puppeteer-core": {
+      "name": "puppeteer-core",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@puppeteer/browsers",
+        "ws"
+      ],
+      "effects": [
+        "puppeteer"
+      ],
+      "range": "11.0.0 - 22.13.0",
+      "nodes": [
+        "node_modules/puppeteer-core"
+      ],
+      "fixAvailable": true
+    },
+    "react-code-blocks": {
+      "name": "react-code-blocks",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "react-syntax-highlighter"
+      ],
+      "effects": [
+        "flowise-ui"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/react-code-blocks"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "react-syntax-highlighter": {
+      "name": "react-syntax-highlighter",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "refractor"
+      ],
+      "effects": [
+        "flowise-ui",
+        "react-code-blocks"
+      ],
+      "range": "6.0.0 - 15.6.6",
+      "nodes": [
+        "node_modules/react-syntax-highlighter"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "readdirp": {
+      "name": "readdirp",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [
+        "chokidar"
+      ],
+      "range": "2.2.0 - 2.2.1",
+      "nodes": [
+        "node_modules/glob-watcher/node_modules/readdirp"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "refractor": {
+      "name": "refractor",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "prismjs"
+      ],
+      "effects": [
+        "react-syntax-highlighter"
+      ],
+      "range": "<=4.6.0",
+      "nodes": [
+        "node_modules/refractor"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "solid-js": {
+      "name": "solid-js",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1102828,
+          "name": "solid-js",
+          "dependency": "solid-js",
+          "title": "Solid Lacks Escaping of HTML in JSX Fragments allows for Cross-Site Scripting (XSS)",
+          "url": "https://github.com/advisories/GHSA-3qxh-p7jc-5xh6",
+          "severity": "high",
+          "cwe": [
+            "CWE-79",
+            "CWE-116"
+          ],
+          "cvss": {
+            "score": 7.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": "<1.9.4"
+        }
+      ],
+      "effects": [
+        "flowise-embed"
+      ],
+      "range": "<1.9.4",
+      "nodes": [
+        "node_modules/flowise-embed/node_modules/solid-js"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    },
+    "tar-fs": {
+      "name": "tar-fs",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1109534,
+          "name": "tar-fs",
+          "dependency": "tar-fs",
+          "title": "tar-fs has a symlink validation bypass if destination directory is predictable with a specific tarball",
+          "url": "https://github.com/advisories/GHSA-vj76-c3g6-qr5v",
+          "severity": "high",
+          "cwe": [
+            "CWE-22",
+            "CWE-61"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=3.0.0 <3.1.1"
+        },
+        {
+          "source": 1109542,
+          "name": "tar-fs",
+          "dependency": "tar-fs",
+          "title": "tar-fs can extract outside the specified dir with a specific tarball",
+          "url": "https://github.com/advisories/GHSA-8cj5-5rvv-wf4v",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=3.0.0 <3.0.9"
+        },
+        {
+          "source": 1109551,
+          "name": "tar-fs",
+          "dependency": "tar-fs",
+          "title": "tar-fs Vulnerable to Link Following and Path Traversal via Extracting a Crafted tar File",
+          "url": "https://github.com/advisories/GHSA-pq67-2wwv-3xjx",
+          "severity": "high",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
+          },
+          "range": ">=3.0.0 <3.0.7"
+        }
+      ],
+      "effects": [
+        "@puppeteer/browsers"
+      ],
+      "range": "3.0.0 - 3.1.0",
+      "nodes": [
+        "node_modules/@puppeteer/browsers/node_modules/tar-fs"
+      ],
+      "fixAvailable": true
+    },
+    "undici": {
+      "name": "undici",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1104501,
+          "name": "undici",
+          "dependency": "undici",
+          "title": "undici Denial of Service attack via bad certificate data",
+          "url": "https://github.com/advisories/GHSA-cxrh-j4jr-qwg3",
+          "severity": "low",
+          "cwe": [
+            "CWE-401"
+          ],
+          "cvss": {
+            "score": 3.1,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<5.29.0"
+        }
+      ],
+      "effects": [
+        "@qdrant/js-client-rest"
+      ],
+      "range": "<5.29.0",
+      "nodes": [
+        "node_modules/@mem0/community/node_modules/undici"
+      ],
+      "fixAvailable": true
+    },
+    "vite": {
+      "name": "vite",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1107323,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite middleware may serve files starting with the same name with the public directory",
+          "url": "https://github.com/advisories/GHSA-g4jq-h2w9-997c",
+          "severity": "low",
+          "cwe": [
+            "CWE-22",
+            "CWE-200",
+            "CWE-284"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=5.4.19"
+        },
+        {
+          "source": 1107327,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "Vite's `server.fs` settings were not applied to HTML files",
+          "url": "https://github.com/advisories/GHSA-jqfw-vq24-v9c3",
+          "severity": "low",
+          "cwe": [
+            "CWE-23",
+            "CWE-200",
+            "CWE-284"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<=5.4.19"
+        },
+        {
+          "source": 1109132,
+          "name": "vite",
+          "dependency": "vite",
+          "title": "vite allows server.fs.deny bypass via backslash on Windows",
+          "url": "https://github.com/advisories/GHSA-93m4-6634-74q7",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=4.5.3 <5.0.0"
+        },
+        "esbuild"
+      ],
+      "effects": [
+        "@ladle/react",
+        "@vitejs/plugin-react"
+      ],
+      "range": "<=6.1.6",
+      "nodes": [
+        "node_modules/vite"
+      ],
+      "fixAvailable": true
+    },
+    "ws": {
+      "name": "ws",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1098392,
+          "name": "ws",
+          "dependency": "ws",
+          "title": "ws affected by a DoS when handling a request with many HTTP headers",
+          "url": "https://github.com/advisories/GHSA-3h5v-q93c-6h6q",
+          "severity": "high",
+          "cwe": [
+            "CWE-476"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=8.0.0 <8.17.1"
+        }
+      ],
+      "effects": [
+        "puppeteer-core"
+      ],
+      "range": "8.0.0 - 8.17.0",
+      "nodes": [
+        "node_modules/puppeteer-core/node_modules/ws"
+      ],
+      "fixAvailable": true
+    },
+    "xlsx": {
+      "name": "xlsx",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1108110,
+          "name": "xlsx",
+          "dependency": "xlsx",
+          "title": "Prototype Pollution in sheetJS",
+          "url": "https://github.com/advisories/GHSA-4r6h-8v6p-xvw6",
+          "severity": "high",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 7.8,
+            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"
+          },
+          "range": "<0.19.3"
+        },
+        {
+          "source": 1108111,
+          "name": "xlsx",
+          "dependency": "xlsx",
+          "title": "SheetJS Regular Expression Denial of Service (ReDoS)",
+          "url": "https://github.com/advisories/GHSA-5pgg-2g8v-p4x9",
+          "severity": "high",
+          "cwe": [
+            "CWE-1333"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<0.20.2"
+        }
+      ],
+      "effects": [
+        "flowise-components"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/xlsx"
+      ],
+      "fixAvailable": {
+        "name": "flowise",
+        "version": "1.6.0",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 6,
+      "moderate": 16,
+      "high": 26,
+      "critical": 6,
+      "total": 54
+    },
+    "dependencies": {
+      "prod": 3358,
+      "dev": 0,
+      "optional": 195,
+      "peer": 153,
+      "peerOptional": 0,
+      "total": 3666
+    }
+  }
+}

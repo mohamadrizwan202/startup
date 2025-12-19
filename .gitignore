@@ -20,3 +20,10 @@ venv/
 instance/
 .env
 __pycache__/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# local sqlite db
+allergen_nutrition.db

@@ -42,6 +42,32 @@ ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
 IS_PROD = ENV == "production" or (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
 is_production = IS_PROD
 
+
+def is_truthy(value):
+    """
+    Helper to interpret common truthy strings from the environment.
+    Returns True for: '1', 'true', 'yes', 'on' (case-insensitive).
+    """
+    if value is None:
+        return False
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+
+# Internal routes flag (PoLP: only enable with explicit flag)
+ENABLE_INTERNAL_ROUTES = is_truthy(os.getenv("ENABLE_INTERNAL_ROUTES", "0"))
+logger.info("ENABLE_INTERNAL_ROUTES=%s", "enabled" if ENABLE_INTERNAL_ROUTES else "disabled")
+
+# Fail fast if someone attempts to enable Flask debug in production via FLASK_DEBUG.
+if is_production and is_truthy(os.getenv("FLASK_DEBUG")):
+    # Verification (manual):
+    #   ENVIRONMENT=production FLASK_DEBUG=1 python -c "import startup_recovered"
+    # should raise this RuntimeError during import.
+    raise RuntimeError("SECURITY: FLASK_DEBUG must be OFF in production")
+
+# Force core debug/testing config flags to False at import time.
+app.config["DEBUG"] = False
+app.config["TESTING"] = False
+
 # Trust Render / Cloudflare proxy headers so request.is_secure and URL generation work correctly
 # behind the proxy (X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host, X-Forwarded-Port).
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
@@ -101,7 +127,7 @@ def add_security_headers(resp):
         )
     return resp
 
-if not is_production:
+if ENABLE_INTERNAL_ROUTES:
     @app.get("/debug/auth")
     def debug_auth():
         user_id = session.get("user_id")
@@ -191,13 +217,21 @@ def login_required_single_session(f):
 
 
 # Ensure users schema exists at startup (after function definitions, before routes run)
-db.ensure_schema()
+# Only run schema creation if RUN_SCHEMA=1 is set (default: skip to prevent app_runtime from attempting DDL)
+# In production web runtime, schema creation must be skipped so app_runtime never attempts DDL
+RUN_SCHEMA = is_truthy(os.getenv("RUN_SCHEMA", "0"))
+if RUN_SCHEMA:
+    logger.info("RUN_SCHEMA=1 executing schema creation")
+    db.ensure_schema()
+else:
+    logger.info("RUN_SCHEMA=0 skipping schema creation (use RUN_SCHEMA=1 to enable)")
 
 
 @app.route("/home")
 def home():
     return render_template("index.html")
-if not is_production:
+
+if ENABLE_INTERNAL_ROUTES:
     @app.route("/debug/session")
     def debug_session():
         # Touch the Flask session so it has to set a cookie
@@ -378,37 +412,46 @@ def get_user_by_email(email):
 # This section configures secret keys, session cookies, CORS, and security headers.
 
 # --- Secret Key & Environment Awareness ---
-# In production, require a strong SECRET_KEY from the environment and fail fast if missing.
-# In non-production, allow a FLASK_SECRET_KEY fallback (with a warning), otherwise generate
-# a random ephemeral key for local development.
-if is_production:
-    secret_from_env = os.getenv("SECRET_KEY")
-    if not secret_from_env or len(secret_from_env) < 32:
-        raise RuntimeError(
-            "SECURITY: SECRET_KEY environment variable must be set and at least 32 characters long in production."
-        )
-    app.config["SECRET_KEY"] = secret_from_env
-else:
-    secret_from_env = os.getenv("SECRET_KEY")
-    if not secret_from_env:
-        legacy_secret = os.getenv("FLASK_SECRET_KEY")
-        if legacy_secret:
-            # Warn that legacy FLASK_SECRET_KEY is being used outside production.
-            logger.warning("Using FLASK_SECRET_KEY for non-production environment; prefer SECRET_KEY for future rotation.")
-            secret_from_env = legacy_secret
-        else:
-            # Generate an ephemeral development key; users should set a stable SECRET_KEY or FLASK_SECRET_KEY.
-            secret_from_env = secrets.token_urlsafe(64)
-            logger.warning("Generated ephemeral development SECRET_KEY; set SECRET_KEY for a stable dev session key.")
-    app.config["SECRET_KEY"] = secret_from_env
+# Stable session key handling:
+# - If SECRET_KEY env var is set, always use it (never generate)
+# - Only generate ephemeral key when SECRET_KEY is missing AND not production
+# - In production, SECRET_KEY must be set or app will fail to start
+secret_from_env = os.getenv("SECRET_KEY")
+secret_key_source = None
 
-# Log only whether a secret key is set (never log the key value itself)
+if secret_from_env:
+    # SECRET_KEY is set - always use it (stable sessions)
+    app.config["SECRET_KEY"] = secret_from_env
+    secret_key_source = "env"
+elif is_production:
+    # Production requires SECRET_KEY - fail fast if missing
+    raise RuntimeError(
+        "SECURITY: SECRET_KEY environment variable must be set in production. "
+        "Sessions will be invalidated on restart without a stable SECRET_KEY."
+    )
+else:
+    # Non-production: generate ephemeral key only when SECRET_KEY is missing
+    app.config["SECRET_KEY"] = secrets.token_urlsafe(64)
+    secret_key_source = "generated"
+    logger.warning("Generated ephemeral SECRET_KEY for development; set SECRET_KEY env var for stable sessions.")
+
+# Log secret key source (never log the key value itself)
 logger.info(
-    "ENVIRONMENT=%s FLASK_DEBUG=%s SECRET_KEY_SET=%s",
+    "ENVIRONMENT=%s FLASK_DEBUG=%s SECRET_KEY_SET=%s SECRET_KEY_SOURCE=%s",
     os.getenv("ENVIRONMENT"),
     os.getenv("FLASK_DEBUG"),
     bool(app.config.get("SECRET_KEY")),
+    secret_key_source or "unknown",
 )
+
+# --- Debug / Testing / Template reload hardening ---
+# In production, never allow template auto-reload (debug already forced off above).
+if is_production:
+    app.config["TEMPLATES_AUTO_RELOAD"] = False
+    # Simple visibility log without exposing any secrets.
+    logger.info("DEBUG_GUARD=%s", "active")
+else:
+    logger.info("DEBUG_GUARD=%s", "inactive")
 
 # --- Postgres probe (psycopg v3) ---
 import os
@@ -469,13 +512,13 @@ limiter = Limiter(
 app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 
 # --- DB Check Route (protected with token, enabled in all environments) ---
-# Usage (Header): curl -H "Authorization: Bearer $DBCHECK_TOKEN" https://your-app.onrender.com/__dbcheck
-# Usage (Cookie): After visiting /__dbcheck-auth?token=TOKEN, access /__dbcheck from browser
+# Usage (Header): curl -H "Authorization: Bearer $DBCHECK_TOKEN" https://your-app.onrender.com/dbcheck
+# Usage (Cookie): After visiting /__dbcheck-auth?token=TOKEN, access /dbcheck from browser
 # 
 # To set up permanently:
 # 1. In Render dashboard → Environment → Add: DBCHECK_TOKEN = "yIqGqoyXI0UeoH0sklJsXjksvRHEldrewouz4vctCQU"
 # 2. Redeploy the service
-@app.get("/__dbcheck")
+@app.get("/dbcheck")
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
     # Read expected token from environment variable (single source of truth)
@@ -485,7 +528,7 @@ def dbcheck():
     if not expected_token:
         # In production, return 404 to hide the endpoint, but log the issue
         if is_production:
-            logger.warning("DBCHECK_TOKEN not set in production environment")
+            logger.warning("DBCHECK_ROUTE_ACCESS=denied reason=DBCHECK_TOKEN_not_set path=%s", request.path)
             abort(404)
         return jsonify({"error": "server_misconfigured", "message": "DBCHECK_TOKEN environment variable is not set"}), 500
     
@@ -496,16 +539,22 @@ def dbcheck():
     auth_header = request.headers.get("Authorization", "")
     if auth_header.startswith("Bearer "):
         provided_token = auth_header[7:].strip()
+        auth_method = "header"
     else:
         # Fallback to cookie authentication (for browser access)
         provided_token = request.cookies.get("__dbc_token")
+        auth_method = "cookie" if provided_token else "none"
     
     # Validate token using constant-time comparison
     if not provided_token or not secrets.compare_digest(provided_token, expected_token):
         # Return 404 in production to reduce endpoint discovery, 403 in non-production
         if is_production:
+            logger.warning("DBCHECK_ROUTE_ACCESS=denied reason=token_mismatch_or_missing auth_method=%s path=%s", auth_method, request.path)
             abort(404)
         return jsonify({"error": "forbidden"}), 403
+    
+    # Token validated successfully
+    logger.info("DBCHECK_ROUTE_ACCESS=allowed auth_method=%s", auth_method)
     
     try:
         conn = db.get_conn()
@@ -513,6 +562,20 @@ def dbcheck():
         
         # Determine DB type
         db_type = "postgres" if db.USE_POSTGRES else "sqlite"
+        
+        # Get current user and database name (Postgres only)
+        db_user = None
+        db_name = None
+        if db.USE_POSTGRES:
+            try:
+                cursor.execute("SELECT current_user, current_database()")
+                row = cursor.fetchone()
+                if row:
+                    db_user = row['current_user'] if isinstance(row, dict) else row[0]
+                    db_name = row['current_database'] if isinstance(row, dict) else row[1]
+            except Exception as e:
+                # If query fails, leave as None
+                logger.warning("Failed to get current_user/current_database: %s", str(e))
         
         # Get Python version
         python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
@@ -550,6 +613,8 @@ def dbcheck():
         
         response = jsonify({
             "db_type": db_type,
+            "db_user": db_user,
+            "db_name": db_name,
             "python_version": python_version,
             "psycopg_version": psycopg_version,
             "database_url_scheme": database_url_scheme,
@@ -568,8 +633,8 @@ logger.info("DBCHECK_ROUTE=enabled")
 @app.get("/__dbcheck-auth")
 def dbcheck_auth():
     """
-    Helper endpoint to set authentication cookie for /__dbcheck.
-    Usage: Visit /__dbcheck-auth?token=YOUR_TOKEN to set cookie, then access /__dbcheck from browser.
+    Helper endpoint to set authentication cookie for /dbcheck.
+    Usage: Visit /__dbcheck-auth?token=YOUR_TOKEN to set cookie, then access /dbcheck from browser.
     """
     expected_token = os.getenv("DBCHECK_TOKEN")
     
@@ -589,7 +654,7 @@ def dbcheck_auth():
             abort(404)
         return jsonify({"error": "forbidden"}), 403
     
-    # Set secure cookie and redirect to /__dbcheck
+    # Set secure cookie and redirect to /dbcheck
     response = redirect(url_for("dbcheck"))
     response.set_cookie(
         "__dbc_token",
@@ -610,8 +675,8 @@ def health_check():
     """
     return jsonify({"ok": True}), 200
 
-# --- Debug Routes (only enabled in non-production) ---
-if not is_production:
+# --- Debug Routes (only enabled when ENABLE_INTERNAL_ROUTES=1) ---
+if ENABLE_INTERNAL_ROUTES:
     @app.get("/__debug/limit-test")
     @limiter.limit("3 per minute")
     def limit_test():
@@ -635,20 +700,20 @@ if not is_production:
             "size_bytes": size,
         }), 200
 
-# --- Temporary ProxyFix verification endpoint (remove after testing) ---
-# Note: This endpoint is enabled in all environments for testing ProxyFix on Render
-@app.get("/__proxycheck")
-def proxycheck():
-    """Temporary endpoint to verify ProxyFix is working correctly"""
-    return jsonify({
-        "scheme": request.scheme,
-        "is_secure": request.is_secure,
-        "host": request.host,
-        "remote_addr": request.remote_addr,
-        "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
-        "x_forwarded_for": request.headers.get("X-Forwarded-For"),
-        "x_forwarded_host": request.headers.get("X-Forwarded-Host"),
-    }), 200
+# --- Temporary ProxyFix verification endpoint (only enabled when ENABLE_INTERNAL_ROUTES=1) ---
+if ENABLE_INTERNAL_ROUTES:
+    @app.get("/__proxycheck")
+    def proxycheck():
+        """Temporary endpoint to verify ProxyFix is working correctly"""
+        return jsonify({
+            "scheme": request.scheme,
+            "is_secure": request.is_secure,
+            "host": request.host,
+            "remote_addr": request.remote_addr,
+            "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
+            "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+            "x_forwarded_host": request.headers.get("X-Forwarded-Host"),
+        }), 200
 
 # --- Flask-Login Configuration ---
 login_manager = LoginManager()
@@ -689,6 +754,11 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # Secure flag: Only send cookies over HTTPS in production
 app.config["SESSION_COOKIE_SECURE"] = is_production
+
+# --- Flask-Login "remember me" cookie hardening (only relevant if remember=True is used) ---
+app.config["REMEMBER_COOKIE_HTTPONLY"] = True
+app.config["REMEMBER_COOKIE_SAMESITE"] = "Lax"
+app.config["REMEMBER_COOKIE_SECURE"] = is_production
 
 # --- CORS (Cross-Origin Resource Sharing) ---
 # Whitelist of allowed origins for CORS
@@ -784,7 +854,7 @@ def add_security_headers(response):
             "Content-Security-Policy-Report-Only" if csp_report_only else "Content-Security-Policy"
         )
         response.headers.setdefault(csp_header_name, csp_value)
-
+    
     return response
 
 # ============================================================================
@@ -949,7 +1019,7 @@ def register():
                 # SQLite: use lastrowid
                 query = "INSERT INTO users (email, password_hash) VALUES (?, ?)"
                 cursor.execute(query, (email, hashed_password))
-                user_id = cursor.lastrowid
+            user_id = cursor.lastrowid
             conn.commit()
             conn.close()
             
@@ -1004,17 +1074,25 @@ def login():
             flash('Invalid email or password.', 'error')
             return render_template('login.html')
         
-        # Generate and store session token
+        # Password verified - generate new session token for single-session enforcement
         user_id = user_dict['id']
-        app.logger.info("DB PATH IN USE: %s", get_db_path())
-        token = set_user_session_token(user_id)
+        new_token = secrets.token_urlsafe(32)
+        
+        # Update active_session_token in database and commit
+        conn = get_conn()
+        cursor = conn.cursor()
+        query = db.prepare_query("UPDATE users SET active_session_token = ? WHERE id = ?")
+        cursor.execute(query, (new_token, user_id))
+        conn.commit()
+        conn.close()
+        app.logger.info("LOGIN: Generated new session token for user_id=%s", user_id)
         
         # Clear existing session to avoid session fixation
         session.clear()
         
         # Set new session values
         session['user_id'] = user_id
-        session['active_session_token'] = token
+        session['active_session_token'] = new_token
         
         # Log the user in with Flask-Login
         user = User(user_dict)
@@ -1048,16 +1126,22 @@ def logout():
                 query = db.prepare_query("UPDATE users SET active_session_token = NULL WHERE id = ?")
                 cursor.execute(query, (user_id,))
                 conn.commit()
+                app.logger.info("LOGOUT: Cleared session token for user_id=%s", user_id)
+            else:
+                app.logger.info("LOGOUT: Session token mismatch for user_id=%s (token rotation detected)", user_id)
         conn.close()
     
     # Always clear session and logout, regardless of token match
+    # Clear session token from cookie
+    session.pop('active_session_token', None)
+    session.pop('user_id', None)
     session.clear()
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
 
-if not is_production:
+if ENABLE_INTERNAL_ROUTES:
     @app.route('/force-error')
     def force_error():
         """
@@ -49129,6 +49213,91 @@ def session_check():
 
 
 @csrf.exempt
+@app.get("/api/me")
+@login_required_single_session
+def get_current_user():
+    """Get the authenticated user's record (PoLP: users can only access their own data)"""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "auth_required"}), 401
+    
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        query = db.prepare_query("SELECT id, email, created_at FROM users WHERE id = ?")
+        cursor.execute(query, (user_id,))
+        row = cursor.fetchone()
+        conn.close()
+        
+        if not row:
+            return jsonify({"error": "user_not_found"}), 404
+        
+        user_data = db.row_to_dict(row, cursor)
+        # Return only safe fields (exclude password_hash and active_session_token)
+        return jsonify({
+            "id": user_data.get("id"),
+            "email": user_data.get("email"),
+            "created_at": user_data.get("created_at")
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@csrf.exempt
+@app.route("/api/me", methods=['PATCH'])
+@login_required_single_session
+def update_current_user():
+    """Update the authenticated user's allowed fields (PoLP: users can only update their own data with allowlist)"""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "auth_required"}), 401
+    
+    try:
+        data = request.get_json(force=True) or {}
+        
+        # Explicit allowlist of fields users can update themselves
+        ALLOWED_UPDATE_FIELDS = ["email"]
+        
+        # Filter to only allowed fields
+        updates = {}
+        for field in ALLOWED_UPDATE_FIELDS:
+            if field in data:
+                updates[field] = data[field]
+        
+        if not updates:
+            return jsonify({"error": "no_valid_fields"}), 400
+        
+        # Validate email format if email is being updated
+        if "email" in updates:
+            email = updates["email"]
+            if not email or not isinstance(email, str) or "@" not in email:
+                return jsonify({"error": "invalid_email"}), 400
+            
+            # Check if email is already taken by another user
+            conn = get_conn()
+            cursor = conn.cursor()
+            query = db.prepare_query("SELECT id FROM users WHERE email = ? AND id != ?")
+            cursor.execute(query, (email, user_id))
+            existing = cursor.fetchone()
+            if existing:
+                conn.close()
+                return jsonify({"error": "email_already_exists"}), 409
+            
+            # Update email
+            update_query = db.prepare_query("UPDATE users SET email = ? WHERE id = ?")
+            cursor.execute(update_query, (email, user_id))
+            conn.commit()
+            conn.close()
+            
+            return jsonify({"message": "user_updated", "updated_fields": ["email"]})
+        
+        return jsonify({"error": "no_updates"}), 400
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@csrf.exempt
 @app.route('/api/analyze', methods=['POST'])
 def api_analyze():
     """Analyze ingredients endpoint - accepts both 'ingredients' array and 'query' string"""
@@ -49578,10 +49747,14 @@ def nlp_query():
         return jsonify({"error": str(e)}), 500
 
 
+# Log registered routes containing "dbcheck" for verification (after all routes are defined)
+dbcheck_routes = [str(rule) for rule in app.url_map.iter_rules() if "dbcheck" in str(rule).lower()]
+logger.warning("ROUTES_WITH_DBCHECK=%s", dbcheck_routes)
+
 if __name__ == "__main__":
-    # Parse debug mode from environment variable
-    debug = str(os.getenv('FLASK_DEBUG', '0')).lower() in ('1', 'true', 'yes', 'on')
-    port = int(os.getenv('PORT', '8000'))
-    app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=debug)
+    # Never run the dev server in production (Render uses gunicorn)
+    if is_production:
+        raise RuntimeError("Do not start with python startup_recovered.py in production. Use gunicorn.")
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")), debug=True)
 
 

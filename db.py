@@ -7,8 +7,21 @@ import sqlite3
 from pathlib import Path
 
 # Detect database type
+# Support for runtime vs migrate roles (least-privilege)
+# If DB_USE_RUNTIME_ROLE=1, use DATABASE_URL_RUNTIME for runtime operations
+# Otherwise, fall back to DATABASE_URL (backward compatible)
+USE_RUNTIME_ROLE = os.getenv("DB_USE_RUNTIME_ROLE", "").strip().lower() in ("1", "true", "yes", "on")
+DATABASE_URL_RUNTIME = os.getenv("DATABASE_URL_RUNTIME", "")
+DATABASE_URL_MIGRATE = os.getenv("DATABASE_URL_MIGRATE", "")
 DATABASE_URL = os.getenv("DATABASE_URL", "")
-USE_POSTGRES = bool(DATABASE_URL and (DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://")))
+
+# Determine which URL to use for runtime operations
+if USE_RUNTIME_ROLE and DATABASE_URL_RUNTIME:
+    RUNTIME_DB_URL = DATABASE_URL_RUNTIME
+else:
+    RUNTIME_DB_URL = DATABASE_URL
+
+USE_POSTGRES = bool(RUNTIME_DB_URL and (RUNTIME_DB_URL.startswith("postgres://") or RUNTIME_DB_URL.startswith("postgresql://")))
 
 # SQLite path (local dev only)
 if not USE_POSTGRES:
@@ -34,11 +47,33 @@ def get_conn():
     Get database connection - single source of truth.
     Returns PostgreSQL connection if DATABASE_URL is set, otherwise SQLite.
     PostgreSQL connections use dict_row factory so rows are already dictionaries.
+    Uses DATABASE_URL_RUNTIME if DB_USE_RUNTIME_ROLE=1, else falls back to DATABASE_URL.
     """
     if USE_POSTGRES:
         import psycopg  # pyright: ignore[reportMissingImports]
         from psycopg.rows import dict_row  # pyright: ignore[reportMissingImports]
-        normalized_url = normalize_pg_url(DATABASE_URL)
+        normalized_url = normalize_pg_url(RUNTIME_DB_URL)
+        conn = psycopg.connect(normalized_url, row_factory=dict_row, connect_timeout=5)
+        return conn
+    else:
+        # SQLite fallback (local dev only)
+        conn = sqlite3.connect(str(DB_PATH))
+        conn.row_factory = sqlite3.Row
+        return conn
+
+
+def get_migrate_conn():
+    """
+    Get database connection for migrations/schema changes.
+    Uses DATABASE_URL_MIGRATE if set, otherwise falls back to get_conn().
+    This allows migrations to use a higher-privilege role (app_migrate) while
+    runtime operations use a least-privilege role (app_runtime).
+    """
+    migrate_url = DATABASE_URL_MIGRATE or RUNTIME_DB_URL
+    if migrate_url and (migrate_url.startswith("postgres://") or migrate_url.startswith("postgresql://")):
+        import psycopg  # pyright: ignore[reportMissingImports]
+        from psycopg.rows import dict_row  # pyright: ignore[reportMissingImports]
+        normalized_url = normalize_pg_url(migrate_url)
         conn = psycopg.connect(normalized_url, row_factory=dict_row, connect_timeout=5)
         return conn
     else:
@@ -94,8 +129,10 @@ def ensure_schema():
     Create users table if it doesn't exist (idempotent).
     Works with both PostgreSQL and SQLite.
     Always commits changes for both database types.
+    Uses migrate connection if available (for schema changes).
     """
-    conn = get_conn()
+    # Use migrate connection for schema changes if available
+    conn = get_migrate_conn() if DATABASE_URL_MIGRATE else get_conn()
     try:
         cursor = conn.cursor()
         
