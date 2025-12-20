@@ -66,7 +66,7 @@ conda run -n pg18 psql "$TARGET_DB_URL" -c "SELECT COUNT(*) FROM public.users;"
 - [ ] `\dt` shows expected tables (users, etc.)
 - [ ] `SELECT COUNT(*) FROM public.users;` returns expected row count
 - [ ] App `/__health` endpoint returns 200
-- [ ] App `/dbcheck` endpoint (with token) shows correct `users_count`
+- [ ] App `/dbcheck` endpoint (with token) returns 200 (DB reachable).
 - [ ] Test login with a known user account
 
 ---
