@@ -166,6 +166,44 @@ def ensure_schema():
                 # Column already exists, ignore
                 pass
         
+        # Create nutrition_facts table for both Postgres and SQLite
+        if USE_POSTGRES:
+            # PostgreSQL schema
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS nutrition_facts (
+                    id SERIAL PRIMARY KEY,
+                    ingredient VARCHAR(255) UNIQUE NOT NULL,
+                    calories_per_100g REAL,
+                    protein REAL,
+                    carbs REAL,
+                    fat REAL,
+                    fiber REAL,
+                    sugar REAL,
+                    sodium REAL,
+                    serving_size REAL,
+                    vitamins TEXT,
+                    minerals TEXT
+                )
+            """)
+        else:
+            # SQLite schema
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS nutrition_facts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ingredient TEXT UNIQUE NOT NULL,
+                    calories_per_100g REAL,
+                    protein REAL,
+                    carbs REAL,
+                    fat REAL,
+                    fiber REAL,
+                    sugar REAL,
+                    sodium REAL,
+                    serving_size REAL,
+                    vitamins TEXT,
+                    minerals TEXT
+                )
+            """)
+        
         # Always commit schema changes for both Postgres and SQLite
         conn.commit()
     finally:

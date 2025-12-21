@@ -51,3 +51,4 @@ cookies.txt
 cookies*.txt
 login.html
 login*.html
+.pgdata_restore
