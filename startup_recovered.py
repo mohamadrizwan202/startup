@@ -864,6 +864,29 @@ def readiness_check():
         except Exception:
             pass
 
+
+# --- Legacy API Redirect Routes ---
+def _redirect_api(target_path: str):
+    qs = request.query_string.decode()
+    url = target_path + (f"?{qs}" if qs else "")
+    return redirect(url, code=307)  # keeps method, fetch follows it
+
+
+@app.get("/categories")
+def categories_legacy():
+    return _redirect_api("/api/categories")
+
+
+@app.get("/category-hierarchy")
+def category_hierarchy_legacy():
+    return _redirect_api("/api/category-hierarchy")
+
+
+@app.get("/session-check")
+def session_check_legacy():
+    return _redirect_api("/api/session-check")
+
+
 # --- Debug Routes (only enabled when ENABLE_INTERNAL_ROUTES=1) ---
 if ENABLE_INTERNAL_ROUTES:
     @app.get("/__debug/limit-test")
