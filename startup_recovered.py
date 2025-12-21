@@ -346,7 +346,8 @@ def seed_nutrition_facts_if_empty():
 RUN_SCHEMA = is_truthy(os.getenv("RUN_SCHEMA", "0"))
 if RUN_SCHEMA:
     logger.info("RUN_SCHEMA=1 executing schema creation")
-    db.ensure_schema()
+    if is_truthy(os.getenv("RUN_SCHEMA", "0")):
+        db.ensure_schema()
     # Seed nutrition_facts table if empty (idempotent)
     seed_nutrition_facts_if_empty()
 else:
