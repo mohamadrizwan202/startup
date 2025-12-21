@@ -823,20 +823,15 @@ def readiness_check():
         missing_tables = []
 
         if db.USE_POSTGRES:
-            # Postgres: information_schema with correct EXISTS syntax + %s placeholder
+            # Postgres: use to_regclass for reliable table existence check
             for table_name in required_tables:
                 cursor.execute(
-                    """
-                    SELECT EXISTS (
-                        SELECT 1
-                        FROM information_schema.tables
-                        WHERE table_schema = 'public'
-                          AND table_name = %s
-                    );
-                    """,
-                    (table_name,),
+                    "SELECT to_regclass(%s) IS NOT NULL as exists;",
+                    (f"public.{table_name}",),
                 )
-                exists = cursor.fetchone()[0]
+                result = cursor.fetchone()
+                # Handle dict_row (Postgres) or tuple (fallback)
+                exists = result['exists'] if isinstance(result, dict) else result[0]
                 if not exists:
                     missing_tables.append(table_name)
         else:
@@ -850,7 +845,7 @@ def readiness_check():
                     missing_tables.append(table_name)
 
         if missing_tables:
-            return jsonify({"ok": False, "reason": f"missing_tables:{','.join(missing_tables)}"}), 500
+            return jsonify({"ok": False, "reason": "missing_tables", "tables": missing_tables}), 500
 
         return jsonify({"ok": True}), 200
 
