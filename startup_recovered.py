@@ -49470,10 +49470,47 @@ def analyze_get():
 
 @csrf.exempt
 @app.get("/api/session-check")
-@login_required_single_session
 def session_check():
-    """Check if current session is valid - returns 401 if invalid or missing"""
-    return jsonify({"ok": True})
+    # Never 401. UI should always get a clean answer.
+    user_id = session.get("user_id") or session.get("user") or session.get("uid")
+
+    if not user_id:
+        return jsonify({"authenticated": False}), 200
+
+    # If you can't fetch user safely, still don't break the UI.
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+
+        # IMPORTANT: do NOT return password hashes or secrets.
+        # Adjust column names if your schema differs.
+        q = db.prepare_query("SELECT id, email FROM users WHERE id = ?")
+        cur.execute(q, (user_id,))
+        row = cur.fetchone()
+
+        cur.close()
+        conn.close()
+
+        if not row:
+            # stale session -> treat as logged out
+            try:
+                session.clear()
+            except Exception:
+                pass
+            return jsonify({"authenticated": False}), 200
+
+        # Row can be tuple or dict depending on cursor/row factory
+        if isinstance(row, dict):
+            user = {"id": row.get("id"), "email": row.get("email")}
+        else:
+            user = {"id": row[0], "email": row[1]}
+
+        return jsonify({"authenticated": True, "user": user}), 200
+
+    except Exception as e:
+        # Log it, but don't nuke the UI.
+        app.logger.exception("session-check failed")
+        return jsonify({"authenticated": False, "error": type(e).__name__}), 200
 
 
 @csrf.exempt
