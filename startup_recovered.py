@@ -280,12 +280,75 @@ def login_required_single_session(f):
 
 
 # Ensure users schema exists at startup (after function definitions, before routes run)
+def seed_nutrition_facts_if_empty():
+    """
+    Seed nutrition_facts table with minimal data if it's empty.
+    This is idempotent - safe to run multiple times.
+    Works with both Postgres and SQLite.
+    """
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        
+        # Check if table is empty
+        query = db.prepare_query("SELECT COUNT(*) as count FROM nutrition_facts")
+        cursor.execute(query)
+        result = cursor.fetchone()
+        count = result['count'] if isinstance(result, dict) else result[0]
+        
+        if count > 0:
+            logger.info(f"nutrition_facts table already has {count} rows, skipping seed")
+            cursor.close()
+            conn.close()
+            return
+        
+        # Minimal seed data (enough to prove it works)
+        # Format: (ingredient, calories_per_100g, protein, carbs, fat, fiber, sugar, sodium, serving_size, vitamins, minerals)
+        seed_data = [
+            ("chicken breast", 165, 31, 0, 3.6, 0, 0, 74, 100, "B6, B12, Niacin", "Phosphorus, Selenium"),
+            ("salmon", 208, 25, 0, 12, 0, 0, 44, 85, "D, B12, B6", "Selenium, Phosphorus"),
+            ("apple", 52, 0.3, 14, 0.2, 2.4, 10, 1, 100, "C, K", "Potassium"),
+            ("banana", 89, 1.1, 23, 0.3, 2.6, 12, 1, 100, "C, B6", "Potassium, Manganese"),
+            ("spinach", 23, 2.9, 3.6, 0.4, 2.2, 0.4, 79, 100, "A, C, K, Folate", "Iron, Calcium, Magnesium"),
+        ]
+        
+        # Insert data using appropriate upsert syntax for each DB
+        if db.USE_POSTGRES:
+            # PostgreSQL: use ON CONFLICT
+            for row in seed_data:
+                query = db.prepare_query(
+                    "INSERT INTO nutrition_facts "
+                    "(ingredient, calories_per_100g, protein, carbs, fat, fiber, sugar, sodium, serving_size, vitamins, minerals) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+                    "ON CONFLICT (ingredient) DO NOTHING"
+                )
+                cursor.execute(query, row)
+        else:
+            # SQLite: use INSERT OR REPLACE
+            query = db.prepare_query(
+                "INSERT OR REPLACE INTO nutrition_facts "
+                "(ingredient, calories_per_100g, protein, carbs, fat, fiber, sugar, sodium, serving_size, vitamins, minerals) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            )
+            cursor.executemany(query, seed_data)
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        logger.info(f"nutrition_facts table seeded with {len(seed_data)} rows")
+    except Exception as e:
+        # Log but don't fail startup if seed fails
+        logger.warning(f"Failed to seed nutrition_facts table: {e}", exc_info=True)
+
+
 # Only run schema creation if RUN_SCHEMA=1 is set (default: skip to prevent app_runtime from attempting DDL)
 # In production web runtime, schema creation must be skipped so app_runtime never attempts DDL
 RUN_SCHEMA = is_truthy(os.getenv("RUN_SCHEMA", "0"))
 if RUN_SCHEMA:
     logger.info("RUN_SCHEMA=1 executing schema creation")
     db.ensure_schema()
+    # Seed nutrition_facts table if empty (idempotent)
+    seed_nutrition_facts_if_empty()
 else:
     logger.info("RUN_SCHEMA=0 skipping schema creation (use RUN_SCHEMA=1 to enable)")
 
@@ -735,8 +798,75 @@ def health_check():
     """
     Simple health check endpoint for Render.
     Returns HTTP 200 with {"ok":true} - fast, no DB queries, no auth required.
+    
+    Example: curl -i https://<service>/__health
     """
     return jsonify({"ok": True}), 200
+
+
+# --- Readiness Check Endpoint (DB connectivity + required tables) ---
+@app.get("/__ready")
+def readiness_check():
+    # Forced failure switch for drills
+    if is_truthy(os.getenv("FORCE_READY_FAIL", "0")):
+        return jsonify({"ok": False, "reason": "forced"}), 500
+
+    required_tables = ["users", "nutrition_facts"]
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_conn()  # should already have connect_timeout=5
+        cursor = conn.cursor()
+
+        missing_tables = []
+
+        if db.USE_POSTGRES:
+            # Postgres: information_schema with correct EXISTS syntax + %s placeholder
+            for table_name in required_tables:
+                cursor.execute(
+                    """
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM information_schema.tables
+                        WHERE table_schema = 'public'
+                          AND table_name = %s
+                    );
+                    """,
+                    (table_name,),
+                )
+                exists = cursor.fetchone()[0]
+                if not exists:
+                    missing_tables.append(table_name)
+        else:
+            # SQLite: sqlite_master
+            for table_name in required_tables:
+                cursor.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1;",
+                    (table_name,),
+                )
+                if cursor.fetchone() is None:
+                    missing_tables.append(table_name)
+
+        if missing_tables:
+            return jsonify({"ok": False, "reason": f"missing_tables:{','.join(missing_tables)}"}), 500
+
+        return jsonify({"ok": True}), 200
+
+    except Exception as e:
+        return jsonify({"ok": False, "reason": "db_unreachable", "error": type(e).__name__}), 500
+
+    finally:
+        try:
+            if cursor is not None:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            if conn is not None:
+                conn.close()
+        except Exception:
+            pass
 
 # --- Debug Routes (only enabled when ENABLE_INTERNAL_ROUTES=1) ---
 if ENABLE_INTERNAL_ROUTES:
