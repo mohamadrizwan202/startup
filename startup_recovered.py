@@ -364,7 +364,7 @@ if ENABLE_INTERNAL_ROUTES:
         # Touch the Flask session so it has to set a cookie
         session["debug"] = "yes"
         return "Debug session set"
-    
+
 def init_db():
     """Initialize database with all tables"""
     conn = sqlite3.connect(get_db_path())
@@ -952,11 +952,6 @@ def load_user(user_id):
     return None
 
 
-def set_user_session_token(user_id):
-    """Generate and store active session token for a user"""
-
-
-
 # --- Session Cookie Hardening ---
 # HTTP-only: Prevents JavaScript from accessing the cookie (protects against XSS)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -1235,6 +1230,15 @@ def index():
 @limiter.limit("3 per hour", methods=["POST"])
 def register():
     """User registration route"""
+    # Clear stale flash messages from previous redirects (especially "Please log in..." messages)
+    if request.method == 'GET':
+        # Filter out error flashes that are not relevant to registration
+        flashes = session.pop('_flashes', []) if '_flashes' in session else []
+        # Only keep flashes that are relevant (registration-related errors)
+        filtered_flashes = [f for f in flashes if not (f[0] == 'error' and 'log in' in f[1].lower())]
+        if filtered_flashes:
+            session['_flashes'] = filtered_flashes
+    
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
@@ -1274,16 +1278,40 @@ def register():
             conn = get_conn()
             cursor = conn.cursor()
             if db.USE_POSTGRES:
-                # PostgreSQL: use RETURNING clause to get the id
-                query = "INSERT INTO users (email, password_hash) VALUES (%s, %s) RETURNING id"
+                # PostgreSQL: use RETURNING clause to get the id and other fields
+                query = "INSERT INTO users (email, password_hash) VALUES (%s, %s) RETURNING id, email, created_at"
                 cursor.execute(query, (email, hashed_password))
                 result = cursor.fetchone()
-                user_id = result['id'] if result else None
+                if result:
+                    # Convert result to dict if it's dict-like, otherwise extract by index
+                    if isinstance(result, dict):
+                        user_dict = {
+                            "id": result['id'], 
+                            "email": result.get('email', email), 
+                            "password_hash": hashed_password,  # Use the hash we just created
+                            "created_at": result.get('created_at')
+                        }
+                    else:
+                        user_dict = {
+                            "id": result[0], 
+                            "email": email, 
+                            "password_hash": hashed_password,  # Use the hash we just created
+                            "created_at": result[2] if len(result) > 2 else None
+                        }
+                    user_id = user_dict['id']
+                else:
+                    raise Exception("Failed to get user_id after insert")
             else:
                 # SQLite: use lastrowid
-                query = "INSERT INTO users (email, password_hash) VALUES (?, ?)"
+                query = db.prepare_query("INSERT INTO users (email, password_hash) VALUES (?, ?)")
                 cursor.execute(query, (email, hashed_password))
-            user_id = cursor.lastrowid
+                user_id = cursor.lastrowid
+                # Construct user_dict directly since we have email, user_id, and password_hash
+                user_dict = {
+                    "id": user_id, 
+                    "email": email, 
+                    "password_hash": hashed_password  # Use the hash we just created
+                }
             conn.commit()
             conn.close()
             
@@ -1299,11 +1327,15 @@ def register():
             # Set new session values
             session['user_id'] = user_id
             session['active_session_token'] = token
+            session.permanent = True  # Ensure session persists
             
-            # Log the user in
-            user_dict = get_user_by_id(user_id)
+            # Log the user in - use user_dict constructed above (not get_user_by_id which may be a route handler)
             user = User(user_dict)
             login_user(user, remember=False)
+            
+            # Debug logging
+            app.logger.info("REGISTER POST success user_id=%s", user_id)
+            app.logger.info("SESSION user_id after set=%s", session.get("user_id"))
             
             flash('Registration successful!', 'success')
             return redirect(url_for('index'))
@@ -1319,6 +1351,12 @@ def register():
 @limiter.limit("5 per minute", methods=["POST"])
 def login():
     """User login route"""
+    # Clear stale flash messages from previous redirects
+    if request.method == 'GET':
+        # Allow "Please log in..." messages on login page (they're relevant here)
+        # But clear other stale flashes if any
+        pass
+    
     if request.method == 'POST':
         email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
@@ -1357,10 +1395,15 @@ def login():
         # Set new session values
         session['user_id'] = user_id
         session['active_session_token'] = new_token
+        session.permanent = True  # Ensure session persists
         
         # Log the user in with Flask-Login
         user = User(user_dict)
         login_user(user, remember=False)
+        
+        # Debug logging
+        app.logger.info("LOGIN POST success user_id=%s", user_id)
+        app.logger.info("SESSION user_id after set=%s", session.get("user_id"))
         
         flash('Login successful!', 'success')
         
@@ -49544,9 +49587,9 @@ def get_current_user():
 
 
 @csrf.exempt
-@app.get("/api/users/<int:user_id>")
+@app.get("/api/users/<int:user_id>", endpoint="get_user_by_id")
 @login_required_single_session
-def get_user_by_id(user_id):
+def get_user_by_id_route(user_id):
     """IDOR guard test: Only allow users to access their own data (PoLP/IDOR protection)"""
     current_user_id = session.get("user_id")
     if not current_user_id:
