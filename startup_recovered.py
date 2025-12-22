@@ -50106,26 +50106,37 @@ def nlp_query():
                 minerals = nutrition_dict.get('minerals', '') or ''
                 
                 # Get health benefits from ingredient_categories table
-                # Convert sqlite3.Row to dict for safe access (Ingredient tab only)
+                # Works with both Postgres (dict rows) and SQLite (sqlite3.Row)
                 health_benefits_list = []
                 try:
-                    cursor.execute("""
-                        SELECT DISTINCT category, health_benefits, key_nutrients
+                    hb_sql = db.prepare_query("""
+                        SELECT DISTINCT category, subcategory, health_benefits, key_nutrients, description
                         FROM ingredient_categories
-                        WHERE LOWER(ingredient) = ? OR LOWER(ingredient) LIKE ? OR LOWER(ingredient) LIKE ?
-                    """, (clean_name, f'%{clean_name}%', f'{clean_name}%'))
+                        WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?)) 
+                           OR LOWER(ingredient) LIKE ? 
+                           OR LOWER(ingredient) LIKE ?
+                    """)
+                    cursor.execute(hb_sql, (clean_name, f'%{clean_name}%', f'{clean_name}%'))
                     health_data = cursor.fetchall()
                     for row in health_data:
-                        # Convert sqlite3.Row to dict for safe access
-                        row_dict = dict(row)
+                        # Convert row to dict - handle both Postgres (dict) and SQLite (sqlite3.Row)
+                        if isinstance(row, dict):
+                            row_dict = row
+                        else:
+                            row_dict = dict(row)
+                        
+                        # Only append rows where health_benefits is non-empty
                         if row_dict.get('health_benefits'):
                             health_benefits_list.append({
                                 'category': row_dict.get('category', ''),
+                                'subcategory': row_dict.get('subcategory', ''),
                                 'health_benefits': row_dict.get('health_benefits', ''),
-                                'key_nutrients': row_dict.get('key_nutrients', '') or ''
+                                'key_nutrients': row_dict.get('key_nutrients', '') or '',
+                                'description': row_dict.get('description', '') or ''
                             })
                 except Exception as e:
-                    pass
+                    app.logger.exception("Health benefits lookup failed for %s", clean_name)
+                    # Don't crash the request - continue with empty health_benefits_list
                 
                 # Use display name we retrieved earlier in the loop
                 # Build result using nutrition_dict (safe dict access)
