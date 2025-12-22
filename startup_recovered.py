@@ -978,7 +978,7 @@ ALLOWED_ORIGINS = [
 # Try to use flask_cors if available (cleaner and more feature-rich)
 cors_installed = False
 try:
-    from flask_cors import CORS
+    from flask_cors import CORS  # pyright: ignore[reportMissingModuleSource]
     # flask_cors will handle CORS independently - whitelist logic only affects manual fallback
     CORS(app)
     cors_installed = True
