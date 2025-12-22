@@ -799,11 +799,11 @@ def dbcheck_auth():
 def health_check():
     """
     Simple health check endpoint for Render.
-    Returns HTTP 200 with {"ok":true} - fast, no DB queries, no auth required.
+    Returns HTTP 200 with {"ok":true, "version":"<value>"} - fast, no DB queries, no auth required.
     
     Example: curl -i https://<service>/__health
     """
-    return jsonify({"ok": True}), 200
+    return jsonify({"ok": True, "version": _app_version()}), 200
 
 
 # --- Helper: Detect if running on Render production ---
@@ -814,6 +814,25 @@ def _is_render_prod():
     """
     render_vars = ["RENDER", "RENDER_SERVICE_ID", "RENDER_EXTERNAL_URL", "RENDER_GIT_COMMIT"]
     return any(os.getenv(var) for var in render_vars)
+
+
+# --- Helper: Get app version identifier ---
+def _app_version():
+    """
+    Returns a short version identifier (7-12 chars) from environment variables.
+    Priority: RENDER_GIT_COMMIT > GIT_SHA > COMMIT_SHA > "unknown"
+    Never raises exceptions.
+    """
+    try:
+        version_vars = ["RENDER_GIT_COMMIT", "GIT_SHA", "COMMIT_SHA"]
+        for var in version_vars:
+            value = os.getenv(var)
+            if value:
+                # Return first 12 characters (or less if shorter)
+                return value[:12] if len(value) > 12 else value
+        return "unknown"
+    except Exception:
+        return "unknown"
 
 
 # --- Readiness Check Endpoint (DB connectivity + required tables) ---
@@ -921,7 +940,8 @@ def readiness_check():
         return jsonify({
             "ok": True,
             "db": "postgres",
-            "latency_ms": latency_ms
+            "latency_ms": latency_ms,
+            "version": _app_version()
         }), 200
         
     except Exception as e:
