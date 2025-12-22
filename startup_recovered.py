@@ -860,19 +860,21 @@ def readiness_check():
             import psycopg
             from psycopg.rows import dict_row
             
-            # Normalize URL
-            normalized_url = db_url
-            if normalized_url.startswith("postgres://"):
-                normalized_url = "postgresql://" + normalized_url[len("postgres://"):]
-            sslmode_present = "sslmode=" in normalized_url
-            if not sslmode_present:
-                normalized_url += ("&" if "?" in normalized_url else "?") + "sslmode=require"
+            # Normalize URL: postgres:// -> postgresql://
+            normalized_db_url = db_url
+            if normalized_db_url.startswith("postgres://"):
+                normalized_db_url = "postgresql://" + normalized_db_url[len("postgres://"):]
+            
+            # Add sslmode=require ONLY if running on Render production AND sslmode is missing
+            render_prod = _is_render_prod()
+            if render_prod and "sslmode=" not in normalized_db_url:
+                normalized_db_url += ("&" if "?" in normalized_db_url else "?") + "sslmode=require"
             
             # Temporary diagnostic log (will be removed after verification)
-            render_prod = _is_render_prod()
+            sslmode_present = "sslmode=" in normalized_db_url
             app.logger.info("READY_SSL_GATE render_prod=%s sslmode_present=%s", render_prod, sslmode_present)
             
-            conn = psycopg.connect(normalized_url, row_factory=dict_row, connect_timeout=5)
+            conn = psycopg.connect(normalized_db_url, row_factory=dict_row, connect_timeout=5)
             cursor = conn.cursor()
             cursor.execute("SELECT 1")
             cursor.fetchone()
