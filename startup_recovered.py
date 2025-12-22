@@ -966,6 +966,98 @@ def readiness_check():
             pass
 
 
+# --- Diagnostics Endpoint (token-protected) ---
+@app.get("/__diag")
+def __diag():
+    """
+    Protected diagnostics endpoint for troubleshooting.
+    Requires X-DIAG-TOKEN header matching DIAG_TOKEN environment variable.
+    Returns 404 if token is missing or incorrect (not 401/403).
+    """
+    # Read expected token from environment
+    expected_token = os.getenv("DIAG_TOKEN")
+    if not expected_token:
+        return jsonify({"ok": False}), 404
+    
+    # Read provided token from header
+    provided_token = request.headers.get("X-DIAG-TOKEN")
+    if not provided_token or provided_token != expected_token:
+        return jsonify({"ok": False}), 404
+    
+    # Authorized - gather diagnostic information
+    try:
+        # Basic info
+        version = _app_version()
+        render_prod = _is_render_prod()
+        time_utc = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        
+        # Database environment check
+        db_url = os.getenv("DATABASE_URL") or os.getenv("DB_URL")
+        db_env_present = bool(db_url)
+        
+        # Database scheme and SSL mode check
+        db_scheme = None
+        sslmode_present = False
+        if db_url:
+            source_url = db_url
+            if source_url.startswith("postgres://"):
+                source_url = "postgresql://" + source_url[len("postgres://"):]
+            
+            parsed = urlparse(source_url)
+            db_scheme = parsed.scheme if parsed.scheme else None
+            
+            qs = dict(parse_qsl(parsed.query, keep_blank_values=True))
+            sslmode_present = "sslmode" in qs
+        
+        # Users table existence check (best-effort)
+        users_table_exists = False
+        db_error_code = None
+        
+        if not db_env_present:
+            db_error_code = "DB_URL_MISSING"
+        else:
+            try:
+                import psycopg
+                from psycopg.rows import dict_row
+                
+                # Normalize URL for connection
+                normalized_db_url = source_url
+                if render_prod and "sslmode" not in qs:
+                    qs["sslmode"] = "require"
+                    normalized_db_url = urlunparse(parsed._replace(query=urlencode(qs)))
+                
+                conn = psycopg.connect(normalized_db_url, row_factory=dict_row, connect_timeout=5)
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT to_regclass(%s) IS NOT NULL as exists",
+                    ("public.users",)
+                )
+                result = cursor.fetchone()
+                exists = result['exists'] if isinstance(result, dict) else result[0]
+                users_table_exists = bool(exists)
+                cursor.close()
+                conn.close()
+            except Exception:
+                # Best-effort: if we can't check, leave as False
+                users_table_exists = False
+        
+        return jsonify({
+            "ok": True,
+            "version": version,
+            "render_prod": render_prod,
+            "time_utc": time_utc,
+            "db_env_present": db_env_present,
+            "db_scheme": db_scheme,
+            "sslmode_present": sslmode_present,
+            "users_table_exists": users_table_exists,
+            **({"db_error_code": db_error_code} if db_error_code else {})
+        }), 200
+        
+    except Exception as e:
+        app.logger.exception("__diag: Error gathering diagnostics")
+        return jsonify({"ok": False, "error": "internal_error"}), 500
+
+
 # --- Legacy API Redirect Routes ---
 def _redirect_api(target_path: str):
     qs = request.query_string.decode()
