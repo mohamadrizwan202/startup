@@ -364,7 +364,7 @@ if ENABLE_INTERNAL_ROUTES:
         # Touch the Flask session so it has to set a cookie
         session["debug"] = "yes"
         return "Debug session set"
-
+    
 def init_db():
     """Initialize database with all tables"""
     conn = sqlite3.connect(get_db_path())
@@ -808,51 +808,109 @@ def health_check():
 # --- Readiness Check Endpoint (DB connectivity + required tables) ---
 @app.get("/__ready")
 def readiness_check():
-    # Forced failure switch for drills
-    if is_truthy(os.getenv("FORCE_READY_FAIL", "0")):
-        return jsonify({"ok": False, "reason": "forced"}), 500
-
-    required_tables = ["users", "nutrition_facts"]
+    """
+    Strict readiness check endpoint for Render/UptimeRobot monitoring.
+    FAILS (HTTP 500) if DB is not reachable, not Postgres, or required tables are missing.
+    
+    Validations:
+    1. DATABASE_URL (or fallback DB_URL) must exist
+    2. DB scheme must be postgres/postgresql (SQLite rejected)
+    3. Must be able to connect to Postgres (connect_timeout=5)
+    4. Must be able to run SELECT 1
+    5. users table must exist in public schema
+    
+    Example: curl -i https://<service>/__ready
+    """
+    import time
+    start_time = time.perf_counter()
     conn = None
     cursor = None
-
+    
     try:
-        conn = get_conn()  # should already have connect_timeout=5
-        cursor = conn.cursor()
-
-        missing_tables = []
-
-        if db.USE_POSTGRES:
-            # Postgres: use to_regclass for reliable table existence check
-            for table_name in required_tables:
-                cursor.execute(
-                    "SELECT to_regclass(%s) IS NOT NULL as exists;",
-                    (f"public.{table_name}",),
-                )
-                result = cursor.fetchone()
-                # Handle dict_row (Postgres) or tuple (fallback)
-                exists = result['exists'] if isinstance(result, dict) else result[0]
-                if not exists:
-                    missing_tables.append(table_name)
-        else:
-            # SQLite: sqlite_master
-            for table_name in required_tables:
-                cursor.execute(
-                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1;",
-                    (table_name,),
-                )
-                if cursor.fetchone() is None:
-                    missing_tables.append(table_name)
-
-        if missing_tables:
-            return jsonify({"ok": False, "reason": "missing_tables", "tables": missing_tables}), 500
-
-        return jsonify({"ok": True}), 200
-
+        # Validation 1: Check DATABASE_URL/DB_URL exists
+        db_url = os.getenv("DATABASE_URL") or os.getenv("DB_URL")
+        if not db_url:
+            app.logger.error("__ready: DATABASE_URL and DB_URL both missing")
+            return jsonify({"ok": False, "error": "DB_URL_MISSING"}), 500
+        
+        # Validation 2: Check DB scheme is postgres/postgresql (reject SQLite)
+        db_url_lower = db_url.lower().strip()
+        if not (db_url_lower.startswith("postgres://") or db_url_lower.startswith("postgresql://")):
+            scheme = db_url.split("://")[0] if "://" in db_url else "unknown"
+            app.logger.error("__ready: Invalid DB scheme '%s', expected postgres/postgresql", scheme)
+            return jsonify({
+                "ok": False,
+                "error": "DB_TYPE_MISMATCH",
+                "expected": "postgres",
+                "got": scheme
+            }), 500
+        
+        # Validation 3 & 4: Connect to Postgres and run SELECT 1
+        try:
+            import psycopg
+            from psycopg.rows import dict_row
+            
+            # Normalize URL
+            normalized_url = db_url
+            if normalized_url.startswith("postgres://"):
+                normalized_url = "postgresql://" + normalized_url[len("postgres://"):]
+            if "sslmode=" not in normalized_url:
+                normalized_url += ("&" if "?" in normalized_url else "?") + "sslmode=require"
+            
+            conn = psycopg.connect(normalized_url, row_factory=dict_row, connect_timeout=5)
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        except Exception as connect_error:
+            app.logger.exception("__ready: Failed to connect to Postgres or execute SELECT 1")
+            return jsonify({
+                "ok": False,
+                "error": "DB_CONNECT_FAILED",
+                "detail": type(connect_error).__name__
+            }), 500
+        
+        # Validation 5: Check users table exists
+        try:
+            cursor.execute(
+                "SELECT to_regclass(%s) IS NOT NULL as exists",
+                ("public.users",)
+            )
+            result = cursor.fetchone()
+            exists = result['exists'] if isinstance(result, dict) else result[0]
+            
+            if not exists:
+                app.logger.error("__ready: users table does not exist in public schema")
+                return jsonify({
+                    "ok": False,
+                    "error": "MISSING_TABLE",
+                    "table": "users"
+                }), 500
+        except Exception as table_check_error:
+            app.logger.exception("__ready: Failed to check if users table exists")
+            return jsonify({
+                "ok": False,
+                "error": "TABLE_CHECK_FAILED",
+                "detail": type(table_check_error).__name__
+            }), 500
+        
+        # All checks passed
+        latency_ms = int((time.perf_counter() - start_time) * 1000)
+        return jsonify({
+            "ok": True,
+            "db": "postgres",
+            "latency_ms": latency_ms
+        }), 200
+        
     except Exception as e:
-        return jsonify({"ok": False, "reason": "db_unreachable", "error": type(e).__name__}), 500
-
+        app.logger.exception("__ready: Unexpected error during readiness check")
+        return jsonify({
+            "ok": False,
+            "error": "UNEXPECTED_ERROR",
+            "detail": type(e).__name__
+        }), 500
+        
     finally:
+        # Clean up connections
         try:
             if cursor is not None:
                 cursor.close()
@@ -1305,13 +1363,13 @@ def register():
                 # SQLite: use lastrowid
                 query = db.prepare_query("INSERT INTO users (email, password_hash) VALUES (?, ?)")
                 cursor.execute(query, (email, hashed_password))
-                user_id = cursor.lastrowid
-                # Construct user_dict directly since we have email, user_id, and password_hash
-                user_dict = {
-                    "id": user_id, 
-                    "email": email, 
-                    "password_hash": hashed_password  # Use the hash we just created
-                }
+            user_id = cursor.lastrowid
+            # Construct user_dict directly since we have email, user_id, and password_hash
+            user_dict = {
+                "id": user_id, 
+                "email": email, 
+                "password_hash": hashed_password  # Use the hash we just created
+            }
             conn.commit()
             conn.close()
             
@@ -1519,14 +1577,14 @@ def category_hierarchy():
             """
         else:
             query = """
-                SELECT 
-                    category, 
-                    subcategory,
-                    COUNT(ingredient) as ingredient_count
-                FROM ingredient_categories 
-                WHERE category IS NOT NULL AND category != ''
-                GROUP BY category, subcategory
-                ORDER BY category, subcategory
+            SELECT 
+                category, 
+                subcategory,
+                COUNT(ingredient) as ingredient_count
+            FROM ingredient_categories 
+            WHERE category IS NOT NULL AND category != ''
+            GROUP BY category, subcategory
+            ORDER BY category, subcategory
             """
         
         cursor.execute(query)
@@ -1588,23 +1646,23 @@ def ingredient_search():
         q = (request.args.get('q', '') or '').strip()
         if not q:
             return jsonify([])
-
+        
         using_postgres = db.USE_POSTGRES
         logger.info("API /api/ingredient-search db=%s q=%s", "postgres" if using_postgres else "sqlite", q)
 
         conn = get_conn()
         cursor = conn.cursor()
-
+        
         sql = db.prepare_query("""
-            SELECT
+            SELECT 
                 ingredient AS name,
                 MIN(category) AS category,
                 MIN(subcategory) AS subcategory
             FROM ingredient_categories
             WHERE LOWER(ingredient) LIKE LOWER(?)
             GROUP BY LOWER(ingredient), ingredient
-            ORDER BY
-                CASE
+            ORDER BY 
+                CASE 
                     WHEN LOWER(ingredient) LIKE LOWER(?) THEN 1
                     WHEN LOWER(ingredient) LIKE LOWER(?) THEN 2
                     ELSE 3
@@ -1612,18 +1670,18 @@ def ingredient_search():
                 ingredient
             LIMIT 20
         """)
-
+        
         cursor.execute(sql, (f'%{q}%', f'{q}%', f'%{q}%'))
         rows = cursor.fetchall()
         conn.close()
-
+        
         # Works for both Postgres dict rows and sqlite3.Row
         suggestions = [{
             "name": (r["name"] or "").strip(),
             "category": (r["category"] or "").strip(),
             "subcategory": (r["subcategory"] or "").strip()
         } for r in rows]
-
+        
         return jsonify(suggestions)
 
     except Exception as e:
@@ -50230,6 +50288,35 @@ def nlp_query():
 # Log registered routes containing "dbcheck" for verification (after all routes are defined)
 dbcheck_routes = [str(rule) for rule in app.url_map.iter_rules() if "dbcheck" in str(rule).lower()]
 logger.warning("ROUTES_WITH_DBCHECK=%s", dbcheck_routes)
+
+
+# ============================================================================
+# VERIFICATION INSTRUCTIONS FOR /__health AND /__ready ENDPOINTS
+# ============================================================================
+# Test /__health (liveness - no DB calls):
+#   curl -i https://<render-url>/__health
+#   Expected: HTTP 200 with {"ok": true}
+#
+# Test /__ready (readiness - Postgres checks):
+#   curl -i https://<render-url>/__ready
+#   Expected when DB OK: HTTP 200 with {"ok": true, "db": "postgres", "latency_ms": <int>}
+#
+# Test /__ready with invalid DATABASE_URL:
+#   Temporarily set DATABASE_URL to invalid value
+#   Expected: HTTP 500 with {"ok": false, "error": "DB_CONNECT_FAILED", "detail": "<error_type>"}
+#
+# Test /__ready with SQLite URL (should reject):
+#   Temporarily set DATABASE_URL to sqlite:///path/to/db.db
+#   Expected: HTTP 500 with {"ok": false, "error": "DB_TYPE_MISMATCH", "expected": "postgres", "got": "sqlite"}
+#
+# Test /__ready with missing DATABASE_URL:
+#   Temporarily unset DATABASE_URL and DB_URL
+#   Expected: HTTP 500 with {"ok": false, "error": "DB_URL_MISSING"}
+#
+# Test /__ready with missing users table:
+#   Drop users table in Postgres
+#   Expected: HTTP 500 with {"ok": false, "error": "MISSING_TABLE", "table": "users"}
+# ============================================================================
 
 if __name__ == "__main__":
     # Never run the dev server in production (Render uses gunicorn)
