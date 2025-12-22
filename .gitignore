@@ -54,3 +54,8 @@ login*.html
 .pgdata_restore
 register*.html
 resp_live.html
+
+# local debug dumps
+register*.html
+resp*.html
+cookies*.txt

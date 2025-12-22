@@ -1553,21 +1553,24 @@ def category_hierarchy():
 @app.route('/api/ingredients/<category>')
 def get_ingredients(category):
     """Get ingredients for a specific category"""
+    using_postgres = db.USE_POSTGRES
+    logger.info("API /api/ingredients/%s db=%s", category, "postgres" if using_postgres else "sqlite")
     try:
-        conn = sqlite3.connect(get_db_path())
-        conn.row_factory = sqlite3.Row
+        conn = get_conn()
         cursor = conn.cursor()
-        cursor.execute("""
+        query = db.prepare_query("""
             SELECT DISTINCT ingredient 
             FROM ingredient_categories 
             WHERE category = ? 
             ORDER BY ingredient
-        """, (category,))
+        """)
+        cursor.execute(query, (category,))
         results = cursor.fetchall()
         conn.close()
+        # Both Postgres (dict) and SQLite (sqlite3.Row) support dictionary-style access
         return jsonify([{"name": row['ingredient'], "calories": 0, "serving": "100g"} for row in results])
     except Exception as e:
-        print(f"DB Error: {e}")
+        app.logger.exception("Error in /api/ingredients/%s", category)
         return jsonify({"error": str(e)}), 500
 
 
@@ -1639,13 +1642,14 @@ def ingredient_search():
 @app.route('/api/categories/<category>/<subcategory>')
 def get_category_ingredients(category, subcategory):
     """Get ingredients for a specific category and subcategory"""
+    using_postgres = db.USE_POSTGRES
+    logger.info("API /api/categories/%s/%s db=%s", category, subcategory, "postgres" if using_postgres else "sqlite")
     try:
-        conn = sqlite3.connect(get_db_path())
-        conn.row_factory = sqlite3.Row
+        conn = get_conn()
         cursor = conn.cursor()
         
         # Get ingredients for this category/subcategory combination
-        cursor.execute("""
+        query = db.prepare_query("""
             SELECT DISTINCT 
                 ingredient,
                 health_benefits,
@@ -1654,8 +1658,10 @@ def get_category_ingredients(category, subcategory):
             FROM ingredient_categories 
             WHERE category = ? AND subcategory = ?
             ORDER BY ingredient
-        """, (category, subcategory))
+        """)
+        cursor.execute(query, (category, subcategory))
         
+        # Both Postgres (dict) and SQLite (sqlite3.Row) support dictionary-style access
         ingredients = [{
             "ingredient": row['ingredient'],
             "health_benefits": row['health_benefits'] or '',
@@ -1666,6 +1672,7 @@ def get_category_ingredients(category, subcategory):
         
         return jsonify(ingredients)
     except Exception as e:
+        app.logger.exception("Error in /api/categories/%s/%s", category, subcategory)
         return jsonify({"error": str(e)}), 500
 
 def ensure_minimum_ingredients_per_subcategory():
