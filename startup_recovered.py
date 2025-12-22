@@ -881,11 +881,16 @@ def readiness_check():
             cursor.fetchone()
         except Exception as connect_error:
             app.logger.exception("__ready: Failed to connect to Postgres or execute SELECT 1")
-            return jsonify({
-                "ok": False,
-                "error": "DB_CONNECT_FAILED",
-                "detail": type(connect_error).__name__
-            }), 500
+            if _is_render_prod():
+                # Production: don't leak error details
+                return jsonify({"ok": False, "error": "DB_CONNECT_FAILED"}), 500
+            else:
+                # Local/dev: include detail for debugging
+                return jsonify({
+                    "ok": False,
+                    "error": "DB_CONNECT_FAILED",
+                    "detail": type(connect_error).__name__
+                }), 500
         
         # Validation 5: Check users table exists
         try:
@@ -50321,7 +50326,8 @@ logger.warning("ROUTES_WITH_DBCHECK=%s", dbcheck_routes)
 #
 # Test /__ready with invalid DATABASE_URL:
 #   Temporarily set DATABASE_URL to invalid value
-#   Expected: HTTP 500 with {"ok": false, "error": "DB_CONNECT_FAILED", "detail": "<error_type>"}
+#   Prod: HTTP 500 with {"ok": false, "error": "DB_CONNECT_FAILED"} (no detail)
+#   Dev: HTTP 500 with {"ok": false, "error": "DB_CONNECT_FAILED", "detail": "<error_type>"}
 #
 # Test /__ready with SQLite URL (should reject):
 #   Temporarily set DATABASE_URL to sqlite:///path/to/db.db
