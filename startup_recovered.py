@@ -805,6 +805,16 @@ def health_check():
     return jsonify({"ok": True}), 200
 
 
+# --- Helper: Detect if running on Render production ---
+def _is_render_prod():
+    """
+    Detects if the application is running on Render production environment.
+    Returns True if any Render-specific environment variables are set and non-empty.
+    """
+    render_vars = ["RENDER", "RENDER_SERVICE_ID", "RENDER_EXTERNAL_URL", "RENDER_GIT_COMMIT"]
+    return any(os.getenv(var) for var in render_vars)
+
+
 # --- Readiness Check Endpoint (DB connectivity + required tables) ---
 @app.get("/__ready")
 def readiness_check():
@@ -854,8 +864,13 @@ def readiness_check():
             normalized_url = db_url
             if normalized_url.startswith("postgres://"):
                 normalized_url = "postgresql://" + normalized_url[len("postgres://"):]
-            if "sslmode=" not in normalized_url:
+            sslmode_present = "sslmode=" in normalized_url
+            if not sslmode_present:
                 normalized_url += ("&" if "?" in normalized_url else "?") + "sslmode=require"
+            
+            # Temporary diagnostic log (will be removed after verification)
+            render_prod = _is_render_prod()
+            app.logger.info("READY_SSL_GATE render_prod=%s sslmode_present=%s", render_prod, sslmode_present)
             
             conn = psycopg.connect(normalized_url, row_factory=dict_row, connect_timeout=5)
             cursor = conn.cursor()
