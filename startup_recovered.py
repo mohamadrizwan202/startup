@@ -1585,56 +1585,49 @@ def get_ingredients(category):
 def ingredient_search():
     """Search for ingredients by name, returning up to 20 unique matches"""
     try:
-        query = request.args.get('q', '').strip()
-        if not query:
+        q = (request.args.get('q', '') or '').strip()
+        if not q:
             return jsonify([])
-        
-        conn = sqlite3.connect(get_db_path())
-        conn.row_factory = sqlite3.Row
+
+        using_postgres = db.USE_POSTGRES
+        logger.info("API /api/ingredient-search db=%s q=%s", "postgres" if using_postgres else "sqlite", q)
+
+        conn = get_conn()
         cursor = conn.cursor()
-        
-        # Search in ingredient_categories table (case-insensitive LIKE)
-        # Use GROUP BY to ensure unique ingredients only
-        cursor.execute("""
-            SELECT 
-                ingredient as name,
-                MIN(category) as category,
-                MIN(subcategory) as subcategory
+
+        sql = db.prepare_query("""
+            SELECT
+                ingredient AS name,
+                MIN(category) AS category,
+                MIN(subcategory) AS subcategory
             FROM ingredient_categories
             WHERE LOWER(ingredient) LIKE LOWER(?)
-            GROUP BY LOWER(ingredient)
-            ORDER BY 
-                CASE 
+            GROUP BY LOWER(ingredient), ingredient
+            ORDER BY
+                CASE
                     WHEN LOWER(ingredient) LIKE LOWER(?) THEN 1
                     WHEN LOWER(ingredient) LIKE LOWER(?) THEN 2
                     ELSE 3
                 END,
                 ingredient
             LIMIT 20
-        """, (f'%{query}%', f'{query}%', f'%{query}%'))
-        
-        results = cursor.fetchall()
+        """)
+
+        cursor.execute(sql, (f'%{q}%', f'{q}%', f'%{q}%'))
+        rows = cursor.fetchall()
         conn.close()
-        
-        # Convert to list of dicts and deduplicate by ingredient name (case-insensitive)
-        seen_names = set()
-        suggestions = []
-        
-        for row in results:
-            ingredient_name = row['name']
-            # Use case-insensitive comparison for deduplication
-            name_lower = ingredient_name.lower()
-            
-            if name_lower not in seen_names:
-                seen_names.add(name_lower)
-                suggestions.append({
-                    'name': ingredient_name,
-                    'category': row['category'] or '',
-                    'subcategory': row['subcategory'] or ''
-                })
-        
+
+        # Works for both Postgres dict rows and sqlite3.Row
+        suggestions = [{
+            "name": (r["name"] or "").strip(),
+            "category": (r["category"] or "").strip(),
+            "subcategory": (r["subcategory"] or "").strip()
+        } for r in rows]
+
         return jsonify(suggestions)
+
     except Exception as e:
+        app.logger.exception("Error in /api/ingredient-search")
         return jsonify({"error": str(e)}), 500
 
 
