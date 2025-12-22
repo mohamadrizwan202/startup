@@ -49764,16 +49764,22 @@ def api_analyze():
         return jsonify({"error": str(e)}), 500
 
 # INGREDIENT TAB NUTRITION HELPER
-# Converts sqlite3.Row to dict for safe .get() access
+# Converts database row (dict or sqlite3.Row) to dict for safe .get() access
 # This is ONLY used by the Ingredient tab /api/analyze endpoint, not for smoothie logic
-def row_to_nutrition_dict(row: sqlite3.Row) -> dict:
+def row_to_nutrition_dict(row) -> dict:
     """
-    Convert sqlite3.Row to dict for Ingredient tab nutrition lookup.
+    Convert database row to dict for Ingredient tab nutrition lookup.
+    Handles both Postgres (dict) and SQLite (sqlite3.Row) rows.
     This allows safe use of .get() method which sqlite3.Row doesn't support.
+    Postgres queries use column aliases to match SQLite column names (e.g., calories AS calories_per_100g).
     """
     if row is None:
         return None
-    d = dict(row)
+    # Convert to dict if needed (Postgres rows are already dicts, SQLite rows need conversion)
+    if isinstance(row, dict):
+        d = row
+    else:
+        d = dict(row)
     return {
         'ingredient': d.get('ingredient', ''),
         'calories_per_100g': d.get('calories_per_100g', 0),
@@ -49801,8 +49807,10 @@ def nlp_query():
         if isinstance(user_input, list):
             user_input = ", ".join(user_input)
         
-        conn = sqlite3.connect(get_db_path())
-        conn.row_factory = sqlite3.Row
+        using_postgres = db.USE_POSTGRES
+        logger.info("API /nlp-query db=%s", "postgres" if using_postgres else "sqlite")
+        
+        conn = get_conn()
         cursor = conn.cursor()
         
         ingredients_list = [ing.strip() for ing in re.split(r'[,;]|and|with', user_input.lower()) if ing.strip()]
@@ -49892,16 +49900,44 @@ def nlp_query():
             # INGREDIENT TAB NUTRITION LOOKUP
             # This queries the nutrition_facts table used by the Ingredient tab.
             # Table: nutrition_facts
-            # Columns: ingredient, calories_per_100g, protein, carbs, fat, fiber, sugar, sodium, serving_size, vitamins, minerals
+            # Postgres columns: ingredient, calories, protein_g, carbs_g, fat_g, fiber_g, sugar_g, sodium_g, serving_size_g, vitamins, minerals
+            # SQLite columns: ingredient, calories_per_100g, protein, carbs, fat, fiber, sugar, sodium, serving_size, vitamins, minerals
+            # The frontend expects SQLite-style column names, so we alias Postgres columns to match.
             # The frontend sends normalized names via getIngredientTabNutritionKey() which uses INGREDIENT_NUTRITION_ALIASES.
             
             # Log lookup attempt for Ingredient tab debugging
             print(f"[ingredient-nutrition-backend] Looking up: originalName='{ingredient_name}', normalizedName='{clean_name}'")
             
             # Query 1: Try exact match first (most reliable)
-            # SQL: SELECT * FROM nutrition_facts WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?))
-            sql_query_1 = "SELECT * FROM nutrition_facts WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?)) ORDER BY CASE WHEN LOWER(TRIM(ingredient)) = LOWER(TRIM(?)) THEN 1 ELSE 2 END LIMIT 1"
-            print(f"[ingredient-nutrition-backend] Executing SQL Query 1 (exact match): {sql_query_1} with params: ('{clean_name}', '{clean_name}')")
+            # Use conditional SQL based on database type to handle column name differences
+            if using_postgres:
+                sql_query_1 = """
+                    SELECT 
+                        ingredient,
+                        calories AS calories_per_100g,
+                        protein_g AS protein,
+                        carbs_g AS carbs,
+                        fat_g AS fat,
+                        fiber_g AS fiber,
+                        sugar_g AS sugar,
+                        sodium_g AS sodium,
+                        serving_size_g AS serving_size,
+                        vitamins,
+                        minerals
+                    FROM nutrition_facts 
+                    WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(%s)) 
+                    ORDER BY CASE WHEN LOWER(TRIM(ingredient)) = LOWER(TRIM(%s)) THEN 1 ELSE 2 END 
+                    LIMIT 1
+                """
+            else:
+                sql_query_1 = """
+                    SELECT * FROM nutrition_facts 
+                    WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?)) 
+                    ORDER BY CASE WHEN LOWER(TRIM(ingredient)) = LOWER(TRIM(?)) THEN 1 ELSE 2 END 
+                    LIMIT 1
+                """
+            sql_query_1 = db.prepare_query(sql_query_1)
+            print(f"[ingredient-nutrition-backend] Executing SQL Query 1 (exact match): {sql_query_1[:100]}... with params: ('{clean_name}', '{clean_name}')")
             
             cursor.execute(sql_query_1, (clean_name, clean_name))
             nutrition = cursor.fetchone()
@@ -49909,11 +49945,36 @@ def nlp_query():
             # If exact match not found, try LIKE patterns as fallback
             if not nutrition:
                 # Query 2: Try LIKE patterns
-                # SQL: SELECT * FROM nutrition_facts WHERE LOWER(ingredient) LIKE ? OR LOWER(ingredient) LIKE ?
-                sql_query_2 = "SELECT * FROM nutrition_facts WHERE LOWER(ingredient) LIKE ? OR LOWER(ingredient) LIKE ? ORDER BY CASE WHEN LOWER(ingredient) = ? THEN 1 WHEN LOWER(ingredient) LIKE ? THEN 2 ELSE 3 END LIMIT 1"
+                if using_postgres:
+                    sql_query_2 = """
+                        SELECT 
+                            ingredient,
+                            calories AS calories_per_100g,
+                            protein_g AS protein,
+                            carbs_g AS carbs,
+                            fat_g AS fat,
+                            fiber_g AS fiber,
+                            sugar_g AS sugar,
+                            sodium_g AS sodium,
+                            serving_size_g AS serving_size,
+                            vitamins,
+                            minerals
+                        FROM nutrition_facts 
+                        WHERE LOWER(ingredient) LIKE %s OR LOWER(ingredient) LIKE %s 
+                        ORDER BY CASE WHEN LOWER(ingredient) = %s THEN 1 WHEN LOWER(ingredient) LIKE %s THEN 2 ELSE 3 END 
+                        LIMIT 1
+                    """
+                else:
+                    sql_query_2 = """
+                        SELECT * FROM nutrition_facts 
+                        WHERE LOWER(ingredient) LIKE ? OR LOWER(ingredient) LIKE ? 
+                        ORDER BY CASE WHEN LOWER(ingredient) = ? THEN 1 WHEN LOWER(ingredient) LIKE ? THEN 2 ELSE 3 END 
+                        LIMIT 1
+                    """
+                sql_query_2 = db.prepare_query(sql_query_2)
                 like_param_1 = f'%{clean_name}%'
                 like_param_2 = f'{clean_name}%'
-                print(f"[ingredient-nutrition-backend] Executing SQL Query 2 (LIKE patterns): {sql_query_2} with params: ('{like_param_1}', '{like_param_2}', '{clean_name}', '{like_param_2}')")
+                print(f"[ingredient-nutrition-backend] Executing SQL Query 2 (LIKE patterns): {sql_query_2[:100]}... with params: ('{like_param_1}', '{like_param_2}', '{clean_name}', '{like_param_2}')")
                 
                 cursor.execute(sql_query_2, (like_param_1, like_param_2, clean_name, like_param_2))
                 nutrition = cursor.fetchone()
@@ -49937,10 +49998,13 @@ def nlp_query():
                 print(f"[ingredient-nutrition-backend] ✗ No nutrition profile found for: '{clean_name}'")
                 print(f"[ingredient-nutrition-backend]   -> Searched with: exact match (LOWER(TRIM(ingredient)) = LOWER(TRIM('{clean_name}'))), then LIKE patterns")
                 # Debug: Check if any similar entries exist
-                cursor.execute("SELECT ingredient FROM nutrition_facts WHERE LOWER(ingredient) LIKE ? LIMIT 5", (f'%{clean_name[:5]}%',))
+                debug_query = db.prepare_query("SELECT ingredient FROM nutrition_facts WHERE LOWER(ingredient) LIKE ? LIMIT 5")
+                cursor.execute(debug_query, (f'%{clean_name[:5]}%',))
                 similar = cursor.fetchall()
                 if similar:
-                    print(f"[ingredient-nutrition-backend]   -> Similar entries found: {[s[0] for s in similar]}")
+                    # Handle both dict (Postgres) and tuple/Row (SQLite) results
+                    similar_list = [s['ingredient'] if isinstance(s, dict) else (s[0] if hasattr(s, '__getitem__') else str(s)) for s in similar]
+                    print(f"[ingredient-nutrition-backend]   -> Similar entries found: {similar_list}")
                 else:
                     print(f"[ingredient-nutrition-backend]   -> No similar entries found in database")
             
@@ -50155,6 +50219,7 @@ def nlp_query():
         
         return jsonify(response_data)
     except Exception as e:
+        app.logger.exception("Error in /nlp-query")
         return jsonify({"error": str(e)}), 500
 
 
