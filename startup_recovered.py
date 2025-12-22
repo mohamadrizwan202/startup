@@ -969,7 +969,7 @@ def readiness_check():
 
 # --- Diagnostics Endpoint (token-protected) ---
 @app.get("/__diag")
-@limiter.limit("1 per minute")
+@limiter.limit("5 per minute")
 def __diag():
     """
     Protected diagnostics endpoint for troubleshooting.
