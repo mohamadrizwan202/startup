@@ -874,11 +874,6 @@ def readiness_check():
                 qs["sslmode"] = "require"
             
             normalized_db_url = urlunparse(parsed._replace(query=urlencode(qs)))
-            sslmode_present = "sslmode" in qs
-            
-            # Temporary diagnostic log (will be removed after verification)
-            app.logger.info("READY_SSL_GATE render_prod=%s scheme=%s query_len=%d sslmode_present=%s", 
-                          render_prod, parsed.scheme, len(parsed.query), sslmode_present)
             
             conn = psycopg.connect(normalized_db_url, row_factory=dict_row, connect_timeout=5)
             cursor = conn.cursor()
