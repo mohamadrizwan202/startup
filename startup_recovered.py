@@ -1469,20 +1469,27 @@ def browser():
 @app.route('/api/categories')
 def categories():
     """Get list of all unique categories"""
+    using_postgres = db.USE_POSTGRES
+    logger.info("API /api/categories db=%s", "postgres" if using_postgres else "sqlite")
     try:
-        conn = sqlite3.connect(get_db_path())
+        conn = get_conn()
         cursor = conn.cursor()
-        cursor.execute("""
+        query = """
             SELECT DISTINCT category 
             FROM ingredient_categories 
             WHERE category IS NOT NULL AND category != ''
             ORDER BY category
-        """)
+        """
+        cursor.execute(query)
         results = cursor.fetchall()
         conn.close()
-        categories_list = [row[0] for row in results]
+        
+        # Both Postgres (dict) and SQLite (sqlite3.Row) support dictionary-style access
+        categories_list = [row['category'] for row in results]
+        
         return jsonify(categories_list)
     except Exception as e:
+        app.logger.exception("Error in /api/categories")
         return jsonify({"error": str(e)}), 500
 
 
@@ -1491,25 +1498,43 @@ def categories():
 @app.route('/api/category-hierarchy')
 def category_hierarchy():
     """Return category hierarchy for health browser"""
+    using_postgres = db.USE_POSTGRES
+    logger.info("API /api/category-hierarchy db=%s", "postgres" if using_postgres else "sqlite")
     try:
-        conn = sqlite3.connect(get_db_path())
-        conn.row_factory = sqlite3.Row
+        conn = get_conn()
         cursor = conn.cursor()
         
         # Get all unique categories and subcategories with counts
-        cursor.execute("""
-            SELECT 
-                category, 
-                subcategory,
-                COUNT(ingredient) as ingredient_count
-            FROM ingredient_categories 
-            WHERE category IS NOT NULL AND category != ''
-            GROUP BY category, subcategory
-            ORDER BY category, subcategory
-        """)
+        # Use NULLS FIRST for Postgres to handle NULL subcategories consistently
+        if using_postgres:
+            query = """
+                SELECT 
+                    category, 
+                    subcategory,
+                    COUNT(ingredient) as ingredient_count
+                FROM ingredient_categories 
+                WHERE category IS NOT NULL AND category != ''
+                GROUP BY category, subcategory
+                ORDER BY category, subcategory NULLS FIRST
+            """
+        else:
+            query = """
+                SELECT 
+                    category, 
+                    subcategory,
+                    COUNT(ingredient) as ingredient_count
+                FROM ingredient_categories 
+                WHERE category IS NOT NULL AND category != ''
+                GROUP BY category, subcategory
+                ORDER BY category, subcategory
+            """
+        
+        cursor.execute(query)
+        rows = cursor.fetchall()
         
         hierarchy = {}
-        for row in cursor.fetchall():
+        for row in rows:
+            # Both Postgres (dict) and SQLite (sqlite3.Row) support dictionary-style access
             category = row['category']
             subcategory = row['subcategory']
             ingredient_count = row['ingredient_count']
@@ -1521,6 +1546,7 @@ def category_hierarchy():
         conn.close()
         return jsonify(hierarchy)
     except Exception as e:
+        app.logger.exception("Error in /api/category-hierarchy")
         return jsonify({"error": str(e)}), 500
 
 @csrf.exempt
