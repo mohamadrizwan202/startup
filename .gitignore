@@ -52,3 +52,5 @@ cookies*.txt
 login.html
 login*.html
 .pgdata_restore
+register*.html
+resp_live.html
