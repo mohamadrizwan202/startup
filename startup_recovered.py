@@ -44,6 +44,8 @@ ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
 IS_PROD = ENV == "production" or (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
 is_production = IS_PROD
 
+app.logger.info("DIAG_TOKEN_PRESENT=%s", bool(os.getenv("DIAG_TOKEN")))
+
 
 def is_truthy(value):
     """
@@ -360,11 +362,11 @@ def home():
     return render_template("index.html")
 
 if ENABLE_INTERNAL_ROUTES:
-    @app.route("/debug/session")
-    def debug_session():
-        # Touch the Flask session so it has to set a cookie
-        session["debug"] = "yes"
-        return "Debug session set"
+@app.route("/debug/session")
+def debug_session():
+    # Touch the Flask session so it has to set a cookie
+    session["debug"] = "yes"
+    return "Debug session set"
     
 def init_db():
     """Initialize database with all tables"""
@@ -1642,14 +1644,14 @@ def logout():
 
 
 if ENABLE_INTERNAL_ROUTES:
-    @app.route('/force-error')
-    def force_error():
-        """
-        Local test-only route to trigger a 500 error and verify the error handler.
-        This route deliberately raises an exception to test error handling.
-        WARNING: For local debugging only - should not expose stack traces to client.
-        """
-        raise RuntimeError("Test crash - this is intentional to verify error handler")
+@app.route('/force-error')
+def force_error():
+    """
+    Local test-only route to trigger a 500 error and verify the error handler.
+    This route deliberately raises an exception to test error handling.
+    WARNING: For local debugging only - should not expose stack traces to client.
+    """
+    raise RuntimeError("Test crash - this is intentional to verify error handler")
 
 
 @app.route('/browser')
@@ -49965,7 +49967,7 @@ def row_to_nutrition_dict(row) -> dict:
     if isinstance(row, dict):
         d = row
     else:
-        d = dict(row)
+    d = dict(row)
     return {
         'ingredient': d.get('ingredient', ''),
         'calories_per_100g': d.get('calories_per_100g', 0),
@@ -50309,7 +50311,7 @@ def nlp_query():
                         if isinstance(row, dict):
                             row_dict = row
                         else:
-                            row_dict = dict(row)
+                        row_dict = dict(row)
                         
                         # Only append rows where health_benefits is non-empty
                         if row_dict.get('health_benefits'):
