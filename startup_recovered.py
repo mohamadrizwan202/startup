@@ -13,6 +13,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime, timezone
 from functools import wraps
 from flask import jsonify # pyright: ignore[reportMissingImports]
+from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 
 import sqlite3
 import os
@@ -860,19 +861,24 @@ def readiness_check():
             import psycopg
             from psycopg.rows import dict_row
             
-            # Normalize URL: postgres:// -> postgresql://
-            normalized_db_url = db_url
-            if normalized_db_url.startswith("postgres://"):
-                normalized_db_url = "postgresql://" + normalized_db_url[len("postgres://"):]
+            # Normalize URL using proper parsing
+            source_url = db_url
+            if source_url.startswith("postgres://"):
+                source_url = "postgresql://" + source_url[len("postgres://"):]
             
-            # Add sslmode=require ONLY if running on Render production AND sslmode is missing
+            parsed = urlparse(source_url)
+            qs = dict(parse_qsl(parsed.query, keep_blank_values=True))
+            
             render_prod = _is_render_prod()
-            if render_prod and "sslmode=" not in normalized_db_url:
-                normalized_db_url += ("&" if "?" in normalized_db_url else "?") + "sslmode=require"
+            if render_prod and "sslmode" not in qs:
+                qs["sslmode"] = "require"
+            
+            normalized_db_url = urlunparse(parsed._replace(query=urlencode(qs)))
+            sslmode_present = "sslmode" in qs
             
             # Temporary diagnostic log (will be removed after verification)
-            sslmode_present = "sslmode=" in normalized_db_url
-            app.logger.info("READY_SSL_GATE render_prod=%s sslmode_present=%s", render_prod, sslmode_present)
+            app.logger.info("READY_SSL_GATE render_prod=%s scheme=%s query_len=%d sslmode_present=%s", 
+                          render_prod, parsed.scheme, len(parsed.query), sslmode_present)
             
             conn = psycopg.connect(normalized_db_url, row_factory=dict_row, connect_timeout=5)
             cursor = conn.cursor()
