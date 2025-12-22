@@ -18,6 +18,7 @@ from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 import sqlite3
 import os
 import sys
+import hmac
 from pathlib import Path
 from importlib import metadata
 
@@ -43,8 +44,6 @@ app = Flask(__name__)
 ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
 IS_PROD = ENV == "production" or (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
 is_production = IS_PROD
-
-app.logger.info("DIAG_TOKEN_PRESENT=%s", bool(os.getenv("DIAG_TOKEN")))
 
 
 def is_truthy(value):
@@ -970,6 +969,7 @@ def readiness_check():
 
 # --- Diagnostics Endpoint (token-protected) ---
 @app.get("/__diag")
+@limiter.limit("5 per minute")
 def __diag():
     """
     Protected diagnostics endpoint for troubleshooting.
@@ -977,13 +977,17 @@ def __diag():
     Returns 404 if token is missing or incorrect (not 401/403).
     """
     # Read expected token from environment
-    expected_token = os.getenv("DIAG_TOKEN")
+    expected_token = (os.getenv("DIAG_TOKEN") or "").strip()
     if not expected_token:
         return jsonify({"ok": False}), 404
     
     # Read provided token from header
-    provided_token = request.headers.get("X-DIAG-TOKEN")
-    if not provided_token or provided_token != expected_token:
+    provided_token = (request.headers.get("X-DIAG-TOKEN") or "").strip()
+    if not provided_token:
+        return jsonify({"ok": False}), 404
+    
+    # Timing-safe comparison
+    if not hmac.compare_digest(expected_token, provided_token):
         return jsonify({"ok": False}), 404
     
     # Authorized - gather diagnostic information
