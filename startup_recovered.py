@@ -370,6 +370,10 @@ if ENABLE_INTERNAL_ROUTES:
     
 def init_db():
     """Initialize database with all tables"""
+    # Prevent runtime DDL in production unless explicitly enabled
+    if not is_truthy(os.getenv("ENABLE_DB_MIGRATIONS", "0")):
+        return
+    
     conn = sqlite3.connect(get_db_path())
     cursor = conn.cursor()
     

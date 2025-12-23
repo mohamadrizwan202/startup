@@ -124,13 +124,30 @@ def execute_query(query, params=None):
         conn.close()
 
 
+def is_truthy(value):
+    """
+    Helper to interpret common truthy strings from the environment.
+    Returns True for: '1', 'true', 'yes', 'on' (case-insensitive).
+    """
+    if value is None:
+        return False
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+
 def ensure_schema():
     """
     Create users table if it doesn't exist (idempotent).
     Works with both PostgreSQL and SQLite.
     Always commits changes for both database types.
     Uses migrate connection if available (for schema changes).
+    
+    Only executes DDL when ENABLE_DB_MIGRATIONS is truthy.
+    When disabled, assumes tables already exist (production mode).
     """
+    # Prevent runtime DDL in production unless explicitly enabled
+    if not is_truthy(os.getenv("ENABLE_DB_MIGRATIONS", "0")):
+        return
+    
     # Use migrate connection for schema changes if available
     conn = get_migrate_conn() if DATABASE_URL_MIGRATE else get_conn()
     try:
