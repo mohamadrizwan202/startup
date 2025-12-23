@@ -627,18 +627,22 @@ else:
 csrf = CSRFProtect(app)
 
 # --- Flask-Limiter Configuration ---
-# Use Redis in production (if REDIS_URL is set), otherwise use memory storage
+# Use Redis in production (if REDIS_URL is set and redis is available), otherwise use memory storage
 # Only specific routes will be rate-limited (not all routes)
-REDIS_URL = os.getenv("REDIS_URL")
-LIMITER_STORAGE = REDIS_URL if REDIS_URL else "memory://"
+try:
+    import redis  # pyright: ignore[reportMissingImports]  # noqa: F401
+    _redis_available = True
+except Exception:
+    _redis_available = False
+
+storage_uri = os.getenv("REDIS_URL") if _redis_available else "memory://"
+
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
-    default_limits=[],   # do NOT rate limit everything
-    storage_uri=LIMITER_STORAGE,
-    headers_enabled=True
+    default_limits=[],
+    storage_uri=storage_uri,
 )
-app.logger.info("Limiter storage: %s", LIMITER_STORAGE)
 
 # --- DB Check Route (protected with token, enabled in all environments) ---
 # Usage (Header): curl -H "Authorization: Bearer $DBCHECK_TOKEN" https://your-app.onrender.com/dbcheck
