@@ -65,3 +65,11 @@ nlp_resp.json
 *~
 *.dump
 *.log
+
+# secrets
+.env
+.env.*
+
+# secrets
+.env
+.env.*
