@@ -697,20 +697,6 @@ def dbcheck():
         # Determine DB type
         db_type = "postgres" if db.USE_POSTGRES else "sqlite"
         
-        # Get current user and database name (Postgres only)
-        db_user = None
-        db_name = None
-        if db.USE_POSTGRES:
-            try:
-                cursor.execute("SELECT current_user, current_database()")
-                row = cursor.fetchone()
-                if row:
-                    db_user = row['current_user'] if isinstance(row, dict) else row[0]
-                    db_name = row['current_database'] if isinstance(row, dict) else row[1]
-            except Exception as e:
-                # If query fails, leave as None
-                logger.warning("Failed to get current_user/current_database: %s", str(e))
-        
         # Get Python version
         python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         
@@ -729,31 +715,16 @@ def dbcheck():
             parts = database_url.split(":", 1)
             database_url_scheme = parts[0] if parts else ""
         
-        # Get users count - works on both Postgres and SQLite
-        query = db.prepare_query("SELECT COUNT(*) as count FROM users")
-        cursor.execute(query)
-        row = cursor.fetchone()
-        users_count = row['count'] if isinstance(row, dict) else row[0]
-        
-        # Get table names
-        if db.USE_POSTGRES:
-            cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY table_name")
-            tables = [row['table_name'] for row in cursor.fetchall()]
-        else:
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-            tables = [row[0] for row in cursor.fetchall()]
-        
         conn.close()
         
         response = jsonify({
+            "ok": True,
             "db_type": db_type,
-            "db_user": db_user,
-            "db_name": db_name,
+            "database_url_scheme": database_url_scheme,
             "python_version": python_version,
             "psycopg_version": psycopg_version,
-            "database_url_scheme": database_url_scheme,
-            "users_count": users_count,
-            "tables": tables
+            "time_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "version": _app_version(),
         })
         # Add Cache-Control: no-store header
         response.headers["Cache-Control"] = "no-store"
