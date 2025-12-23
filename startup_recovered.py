@@ -683,6 +683,10 @@ def real_client_ip():
 @limiter.limit("10 per minute", key_func=real_client_ip)
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
+    # Production kill-switch: require ENABLE_DBCHECK=1 in production
+    if is_production and not is_truthy(os.getenv("ENABLE_DBCHECK", "0")):
+        abort(404)
+    
     # Read expected token from environment variable (single source of truth)
     expected_token = os.getenv("DBCHECK_TOKEN")
     
@@ -942,6 +946,10 @@ def __diag():
     Optional IP allowlist via DIAG_IP_ALLOWLIST env var (comma-separated IPs).
     Returns 404 if token is missing or incorrect, or if IP not in allowlist (not 401/403).
     """
+    # Production kill-switch: require ENABLE_DIAG=1 in production
+    if is_production and not is_truthy(os.getenv("ENABLE_DIAG", "0")):
+        return jsonify({"ok": False}), 404
+    
     # Optional IP allowlist check (executes before token validation)
     allowlist_str = (os.getenv("DIAG_IP_ALLOWLIST") or "").strip()
     if allowlist_str:
