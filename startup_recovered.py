@@ -8,6 +8,7 @@ from flask_wtf.csrf import CSRFProtect, CSRFError  # pyright: ignore[reportMissi
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin  # pyright: ignore[reportMissingImports]
 from flask_limiter import Limiter  # pyright: ignore[reportMissingImports]
 from flask_limiter.util import get_remote_address  # pyright: ignore[reportMissingImports]
+from flask_limiter.errors import RateLimitExceeded  # pyright: ignore[reportMissingImports]
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime, timezone
@@ -1429,6 +1430,12 @@ def handle_not_found(error):
     else:
         # Non-API routes: return simple HTML/string message
         return "Page not found.", 404
+
+
+@app.errorhandler(RateLimitExceeded)
+def handle_ratelimit(e):
+    """Handle rate limit exceeded errors - return 429 JSON response."""
+    return jsonify({"ok": False}), 429
 
 
 @app.errorhandler(CSRFError)
