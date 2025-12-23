@@ -645,6 +645,34 @@ limiter = Limiter(
     storage_uri=storage_uri,
 )
 
+
+def real_client_ip():
+    """
+    Helper function to get the real client IP address behind proxies.
+    Checks Cloudflare CF-Connecting-IP, then X-Forwarded-For, then remote_addr.
+    Returns "unknown" if all are missing.
+    """
+    # Cloudflare provides CF-Connecting-IP header
+    cf_ip = request.headers.get("CF-Connecting-IP", "").strip()
+    if cf_ip:
+        return cf_ip
+    
+    # X-Forwarded-For can contain multiple IPs (client, proxy1, proxy2, ...)
+    # Take the first one (original client)
+    xff = request.headers.get("X-Forwarded-For", "").strip()
+    if xff:
+        # X-Forwarded-For can be comma-separated list
+        first_ip = xff.split(",")[0].strip()
+        if first_ip:
+            return first_ip
+    
+    # Fallback to remote_addr (works after ProxyFix)
+    if request.remote_addr:
+        return request.remote_addr
+    
+    return "unknown"
+
+
 # --- DB Check Route (protected with token, enabled in all environments) ---
 # Usage (Header): curl -H "Authorization: Bearer $DBCHECK_TOKEN" https://your-app.onrender.com/dbcheck
 # Usage (Cookie): After visiting /__dbcheck-auth?token=TOKEN, access /dbcheck from browser
@@ -653,6 +681,7 @@ limiter = Limiter(
 # Set DBCHECK_TOKEN in Render Environment (do not hardcode).
 # Redeploy the service after setting the environment variable.
 @app.get("/dbcheck")
+@limiter.limit("10 per minute", key_func=real_client_ip)
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
     # Read expected token from environment variable (single source of truth)
@@ -944,33 +973,6 @@ def readiness_check():
 
 
 # --- Diagnostics Endpoint (token-protected) ---
-def real_client_ip():
-    """
-    Helper function to get the real client IP address behind proxies.
-    Checks Cloudflare CF-Connecting-IP, then X-Forwarded-For, then remote_addr.
-    Returns "unknown" if all are missing.
-    """
-    # Cloudflare provides CF-Connecting-IP header
-    cf_ip = request.headers.get("CF-Connecting-IP", "").strip()
-    if cf_ip:
-        return cf_ip
-    
-    # X-Forwarded-For can contain multiple IPs (client, proxy1, proxy2, ...)
-    # Take the first one (original client)
-    xff = request.headers.get("X-Forwarded-For", "").strip()
-    if xff:
-        # X-Forwarded-For can be comma-separated list
-        first_ip = xff.split(",")[0].strip()
-        if first_ip:
-            return first_ip
-    
-    # Fallback to remote_addr (works after ProxyFix)
-    if request.remote_addr:
-        return request.remote_addr
-    
-    return "unknown"
-
-
 @app.get("/__diag")
 @limiter.limit("5 per minute", key_func=real_client_ip)
 def __diag():
