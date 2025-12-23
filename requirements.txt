@@ -7,3 +7,4 @@ gunicorn==22.0.0
 psycopg[binary]==3.2.13
 
 python-dotenv>=1.0.0
+redis==5.0.8
