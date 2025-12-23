@@ -1051,7 +1051,8 @@ def __diag():
                 # Best-effort: if we can't check, leave as False
                 users_table_exists = False
         
-        return jsonify({
+        # Build success payload
+        payload = {
             "ok": True,
             "version": version,
             "render_prod": render_prod,
@@ -1062,8 +1063,44 @@ def __diag():
             "users_table_exists": users_table_exists,
             "redis_url_set": bool(os.getenv("REDIS_URL")),
             "limiter_storage": str(getattr(limiter, "storage", None)),
-            **({"db_error_code": db_error_code} if db_error_code else {})
-        }), 200
+        }
+        
+        # Add db_error_code if present
+        if db_error_code:
+            payload["db_error_code"] = db_error_code
+        
+        # Redis and Flask-Limiter diagnostics
+        redis_importable = False
+        redis_version = None
+        try:
+            import redis  # pyright: ignore[reportMissingImports]
+            redis_importable = True
+            redis_version = getattr(redis, "__version__", None)
+        except Exception:
+            redis_importable = False
+        
+        limits_redis_module_importable = False
+        try:
+            import limits.storage.redis  # pyright: ignore[reportMissingImports]
+            limits_redis_module_importable = True
+        except Exception:
+            limits_redis_module_importable = False
+        
+        # Check REDIS_URL scheme
+        redis_url_env = os.getenv("REDIS_URL") or ""
+        limiter_storage_uri_kind = "missing"
+        if redis_url_env.startswith("redis://") or redis_url_env.startswith("rediss://"):
+            limiter_storage_uri_kind = "redis"
+        
+        # Add Redis debug fields to payload
+        payload.update({
+            "redis_importable": redis_importable,
+            "redis_version": redis_version,
+            "limits_redis_module_importable": limits_redis_module_importable,
+            "limiter_storage_uri_kind": limiter_storage_uri_kind,
+        })
+        
+        return jsonify(payload), 200
         
     except Exception as e:
         app.logger.exception("__diag: Error gathering diagnostics")
