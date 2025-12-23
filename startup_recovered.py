@@ -977,8 +977,20 @@ def __diag():
     """
     Protected diagnostics endpoint for troubleshooting.
     Requires X-DIAG-TOKEN header matching DIAG_TOKEN environment variable.
-    Returns 404 if token is missing or incorrect (not 401/403).
+    Optional IP allowlist via DIAG_IP_ALLOWLIST env var (comma-separated IPs).
+    Returns 404 if token is missing or incorrect, or if IP not in allowlist (not 401/403).
     """
+    # Optional IP allowlist check (executes before token validation)
+    allowlist_str = (os.getenv("DIAG_IP_ALLOWLIST") or "").strip()
+    if allowlist_str:
+        # Get client IP using real_client_ip() helper
+        client_ip = real_client_ip()
+        
+        # Check if client IP is in allowlist
+        allowlist_ips = [ip.strip() for ip in allowlist_str.split(",") if ip.strip()]
+        if client_ip not in allowlist_ips:
+            return jsonify({"ok": False}), 404
+    
     # Read expected token from environment
     expected_token = (os.getenv("DIAG_TOKEN") or "").strip()
     if not expected_token:
