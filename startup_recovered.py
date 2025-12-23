@@ -1060,6 +1060,8 @@ def __diag():
             "db_scheme": db_scheme,
             "sslmode_present": sslmode_present,
             "users_table_exists": users_table_exists,
+            "redis_url_set": bool(os.getenv("REDIS_URL")),
+            "limiter_storage": str(getattr(limiter, "storage", None)),
             **({"db_error_code": db_error_code} if db_error_code else {})
         }), 200
         
