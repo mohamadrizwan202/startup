@@ -73,3 +73,9 @@ nlp_resp.json
 # secrets
 .env
 .env.*
+
+# local sensitive artifacts
+cookies*.txt
+backup_*.dump
+*.db
+.pgdata_restore/
