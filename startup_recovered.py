@@ -650,8 +650,8 @@ limiter = Limiter(
 # Usage (Cookie): After visiting /__dbcheck-auth?token=TOKEN, access /dbcheck from browser
 # 
 # To set up permanently:
-# 1. In Render dashboard → Environment → Add: DBCHECK_TOKEN = "yIqGqoyXI0UeoH0sklJsXjksvRHEldrewouz4vctCQU"
-# 2. Redeploy the service
+# Set DBCHECK_TOKEN in Render Environment (do not hardcode).
+# Redeploy the service after setting the environment variable.
 @app.get("/dbcheck")
 def dbcheck():
     """Database status endpoint - protected by DBCHECK_TOKEN"""
