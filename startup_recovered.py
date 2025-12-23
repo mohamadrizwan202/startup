@@ -973,8 +973,35 @@ def readiness_check():
 
 
 # --- Diagnostics Endpoint (token-protected) ---
+def real_client_ip():
+    """
+    Helper function to get the real client IP address behind proxies.
+    Checks Cloudflare CF-Connecting-IP, then X-Forwarded-For, then remote_addr.
+    Returns "unknown" if all are missing.
+    """
+    # Cloudflare provides CF-Connecting-IP header
+    cf_ip = request.headers.get("CF-Connecting-IP", "").strip()
+    if cf_ip:
+        return cf_ip
+    
+    # X-Forwarded-For can contain multiple IPs (client, proxy1, proxy2, ...)
+    # Take the first one (original client)
+    xff = request.headers.get("X-Forwarded-For", "").strip()
+    if xff:
+        # X-Forwarded-For can be comma-separated list
+        first_ip = xff.split(",")[0].strip()
+        if first_ip:
+            return first_ip
+    
+    # Fallback to remote_addr (works after ProxyFix)
+    if request.remote_addr:
+        return request.remote_addr
+    
+    return "unknown"
+
+
 @app.get("/__diag")
-@limiter.limit("5 per minute")
+@limiter.limit("5 per minute", key_func=real_client_ip)
 def __diag():
     """
     Protected diagnostics endpoint for troubleshooting.
