@@ -1801,9 +1801,17 @@
     async function loadCategories() {
       try {
         setStatus('Loading categories...');
-        const res = await fetch('/api/categories');
+        const res = await fetch('/api/categories?format=ui');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        categories = await res.json();
+        const data = await res.json();
+        // Normalize: if server returns strings (legacy), convert to objects
+        // If server returns objects (new format), use as-is
+        categories = data.map(item => {
+          if (typeof item === 'string') {
+            return { value: item, label: item };
+          }
+          return { value: item.value, label: item.label };
+        });
         renderCategories();
         // Populate smoothie health goals after categories are loaded
         populateSmoothieHealthGoals();
@@ -1822,20 +1830,26 @@
         return;
       }
 
-      categories.forEach(category => {
+      categories.forEach(categoryObj => {
+        // Handle both legacy (string) and new (object) formats
+        // Ensure value is always the DB value (fallback to categoryObj if string)
+        const categoryValue = typeof categoryObj === 'string' ? categoryObj : (categoryObj.value || categoryObj);
+        // Ensure label is used for display (fallback to value, then mapCategoryDisplayName for legacy)
+        const categoryLabel = typeof categoryObj === 'string' 
+          ? mapCategoryDisplayName(categoryObj) 
+          : (categoryObj.label || categoryObj.value || categoryObj);
+        
         const div = document.createElement('div');
         div.className = 'panel-item';
-        // Map category name for display (Weight Loss -> Weight Management)
-        const displayName = mapCategoryDisplayName(category);
         const span = document.createElement('span');
-        span.textContent = displayName;
+        span.textContent = categoryLabel;
         div.appendChild(span);
         div.addEventListener('click', () => {
           [...categoryListEl.children].forEach(c => c.classList.remove('active'));
           div.classList.add('active');
-          selectedCategory = category; // Keep original category name for API calls
-          setStatus(`Selected "${displayName}"`);
-          loadSubcategories(category);
+          selectedCategory = categoryValue; // Keep original DB value for API calls
+          setStatus(`Selected "${categoryLabel}"`);
+          loadSubcategories(categoryValue);
         });
         categoryListEl.appendChild(div);
       });
@@ -4940,7 +4954,7 @@
         "dried_raisins": {
           defaultServingGrams: 30,
           healthTags: ["energy_boost", "iron_support"],
-          cautions: ["diabetes_blood_sugar", "weight_management", "gut_stomach_health"]
+          cautions: ["diabetes_blood_sugar", "weight_management"]
         },
         "dried_dates": {
           defaultServingGrams: 28,
@@ -4954,7 +4968,7 @@
         },
         "dried_prunes": {
           defaultServingGrams: 25,
-          healthTags: ["digestive_health", "gut_stomach_health", "bone_health"],
+          healthTags: ["digestive_health", "bone_health"],
           cautions: ["loose_stools_sensitive_gut"]
         },
         "dried_apricots": {
@@ -5238,7 +5252,7 @@
       },
       dried_prunes: {
         tier: "preferred",
-        tags: ["digestive health", "gut-stomach health", "bone health"],
+        tags: ["digestive health", "bone health"],
         warning: "High fiber; may cause gas/bloating in some people. Can loosen stools if eaten in large amounts."
       },
       dried_figs: {
@@ -5298,7 +5312,7 @@
       },
       dried_apple: {
         tier: "neutral",
-        tags: ["digestive health", "gut-stomach health"],
+        tags: ["digestive health"],
         warning: null
       },
       dried_banana: {
@@ -5345,7 +5359,7 @@
         warning: "May contain sulfites; some people are sensitive."
       },
       dried_prunes: {
-        tags: ["digestive health", "gut-stomach health", "bone health"],
+        tags: ["digestive health", "bone health"],
         warning: "Can loosen stools if eaten in large amounts."
       },
       dried_figs: {
@@ -5393,7 +5407,7 @@
         warning: null
       },
       dried_apple: {
-        tags: ["digestive health", "gut-stomach health"],
+        tags: ["digestive health"],
         warning: "High sugar; caution for Diabetes–Blood Sugar goals."
       },
       dried_banana: {
@@ -5406,7 +5420,7 @@
       },
       dried_pineapple: {
         tags: ["digestion support"],
-        warning: "Very high sugar and acidity; caution for Gut–Stomach Health and Diabetes–Blood Sugar."
+        warning: "Very high sugar and acidity; caution for Diabetes–Blood Sugar."
       },
       dried_peach: {
         tags: ["heart health"],
@@ -7260,7 +7274,6 @@
       'Diabetes-Blood Sugar',
       'Joint Health',
       'Digestive Health',
-      'Gut-Stomach Health',
       'Dental Health',
       'Skin Health',
       'Blood Circulation',
@@ -7288,7 +7301,6 @@
       'Liver Health',
       'Anti-Inflammatory',
       'Digestive Health',
-      'Gut-Stomach Health',
       'Heart Health',
       'Anemia Prevention'
     ];
@@ -7312,7 +7324,6 @@
       'Skin Health',
       'Anti-Inflammatory',
       'Digestive Health',
-      'Gut-Stomach Health',
       'Joint Health',
       'Heart Health',
       'Anemia Prevention',
@@ -7331,7 +7342,6 @@
       'Muscle Health',
       'Eye Health',
       'Digestive Health',
-      'Gut-Stomach Health',
       'Energy Boost',
       'Brain Health',
       'Immune System',
@@ -7359,7 +7369,6 @@
       'Skin Health',
       'Anti-Inflammatory',
       'Digestive Health',
-      'Gut-Stomach Health',
       'Joint Health',
       'Heart Health',
       'Thyroid Health'
@@ -7387,7 +7396,6 @@
       'Muscle Health',
       'Dental Health',
       'Digestive Health',
-      'Gut-Stomach Health',
       'Heart Health'
     ];
 
@@ -7414,7 +7422,6 @@
       'Cholesterol Management',
       'Diabetes-Blood Sugar',
       'Digestive Health',
-      'Gut-Stomach Health',
       'Skin Health',
       'Blood Circulation',
       'Bone Health',
@@ -7441,7 +7448,6 @@
       'Liver Health',
       'Immune System',
       'Digestive Health',
-      'Gut-Stomach Health',
       'Energy Boost',
       'Brain Health',
       'Eye Health',
@@ -7471,7 +7477,6 @@
       'Immune System',
       'Pregnancy Support',
       'Digestive Health',
-      'Gut-Stomach Health',
       'Energy Boost',
       'Joint Health'
     ];
@@ -7539,7 +7544,6 @@
         'Digestive Health',
         'Energy Boost',
         'Eye Health',
-        'Gut-Stomach Health',
         'Immune System',
         'Muscle Health',
         'Skin Health',
@@ -7555,7 +7559,6 @@
         'Digestive Health',
         'Energy Boost',
         'Eye Health',
-        'Gut-Stomach Health',
         'Immune System',
         'Muscle Health',
         'Skin Health',
@@ -7591,41 +7594,35 @@
       // Get selected target audience
       const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
       
+      // Normalize categories to objects for consistent handling
+      const normalizedCategories = categories.map(cat => 
+        typeof cat === 'string' ? { value: cat, label: cat } : cat
+      );
+      
       // Determine which health goals to show
-      let allowedGoals = categories; // Default: show all
+      let allowedGoals = normalizedCategories; // Default: show all
       
       // Special handling for Woman 60+: show all categories
       if (selectedAudience === 'woman-60+') {
-        allowedGoals = categories; // Show all health goals
+        allowedGoals = normalizedCategories; // Show all health goals
         // Skip the healthGoalsByAudience check for woman-60+ since we're using all categories
       } else if (selectedAudience === 'man-60+') {
         // Special handling for Man 60+: show all categories except "Pregnancy Support" and "Thyroid Health"
-        allowedGoals = categories.filter(category => {
-          const categoryLower = category.toLowerCase().trim();
-          return categoryLower !== 'pregnancy support' && categoryLower !== 'thyroid health';
+        allowedGoals = normalizedCategories.filter(categoryObj => {
+          const categoryValue = categoryObj.value.toLowerCase().trim();
+          return categoryValue !== 'pregnancy support' && categoryValue !== 'thyroid health';
         });
         // Skip the healthGoalsByAudience check for man-60+ since we're using dynamic filtering
       } else if (selectedAudience && healthGoalsByAudience[selectedAudience]) {
         // Filter categories to only include allowed goals
         // Match exact category names (case-insensitive)
-        // Also check mapped display names (e.g., "Weight Loss" -> "Weight Management")
         const allowedGoalsList = healthGoalsByAudience[selectedAudience];
-        allowedGoals = categories.filter(category => {
-          // Check for exact match (case-insensitive)
-          const categoryMatch = allowedGoalsList.some(allowed => 
-            category.toLowerCase() === allowed.toLowerCase()
+        allowedGoals = normalizedCategories.filter(categoryObj => {
+          const categoryValue = categoryObj.value;
+          // Check for exact match (case-insensitive) with original value
+          return allowedGoalsList.some(allowed => 
+            categoryValue.toLowerCase() === allowed.toLowerCase()
           );
-          
-          // Also check if the mapped display name matches
-          // This handles cases where API has "Weight Loss" but allowed list has "Weight Management"
-          if (!categoryMatch) {
-            const mappedName = mapCategoryDisplayName(category);
-            return allowedGoalsList.some(allowed => 
-              mappedName.toLowerCase() === allowed.toLowerCase()
-            );
-          }
-          
-          return categoryMatch;
         });
       }
       
@@ -7639,11 +7636,13 @@
       }
       
       // Add filtered categories as options
-      allowedGoals.forEach(category => {
+      // Store original category value (not normalized) for API calls
+      allowedGoals.forEach(categoryObj => {
         const option = document.createElement('option');
-        option.value = category.toLowerCase().replace(/\s+/g, '-');
-        // Map category name for display (Weight Loss -> Weight Management)
-        option.textContent = mapCategoryDisplayName(category);
+        // Ensure value is always the DB value (fallback to categoryObj if string)
+        option.value = categoryObj.value || categoryObj; // Store original DB value for API calls
+        // Ensure label is used for display (fallback to value if label missing)
+        option.textContent = categoryObj.label || categoryObj.value || categoryObj; // Display label
         smoothieHealthGoalsEl.appendChild(option);
       });
       
@@ -7669,16 +7668,28 @@
 
     function getHealthGoalName(value) {
       if (!categories || categories.length === 0) {
+        // Fallback: if no categories loaded, try to format the value
         const name = value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         return mapCategoryDisplayName(name);
       }
       
-      // Find matching category
-      const category = categories.find(cat => 
-        cat.toLowerCase().replace(/\s+/g, '-') === value
+      // Normalize categories to objects for consistent handling
+      const normalizedCategories = categories.map(cat => 
+        typeof cat === 'string' ? { value: cat, label: cat } : cat
       );
       
-      const displayName = category || value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+      // Find matching category by value (option.value now stores original category value)
+      const categoryObj = normalizedCategories.find(cat => 
+        cat.value === value || cat.value.toLowerCase().replace(/\s+/g, '-') === value
+      );
+      
+      if (categoryObj) {
+        // Return display label (fallback to value if label missing)
+        return categoryObj.label || categoryObj.value || value;
+      }
+      
+      // Fallback: if not found, try to format the value
+      const displayName = value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
       return mapCategoryDisplayName(displayName);
     }
     
@@ -9952,7 +9963,7 @@
             const hasWeightGoal = selectedHealthGoal && (selectedHealthGoal.toLowerCase().includes('weight') || selectedHealthGoal === 'Weight Management');
             const hasDiabetesGoal = selectedHealthGoal && (selectedHealthGoal.toLowerCase().includes('diabetes') || selectedHealthGoal.toLowerCase().includes('blood sugar') || selectedHealthGoal === 'Diabetes–Blood Sugar');
             const hasHeartGoal = selectedHealthGoal && (selectedHealthGoal.toLowerCase().includes('heart') || selectedHealthGoal === 'Heart Health');
-            const hasGutGoal = selectedHealthGoal && (selectedHealthGoal.toLowerCase().includes('gut') || selectedHealthGoal.toLowerCase().includes('stomach') || selectedHealthGoal.toLowerCase().includes('digestive') || selectedHealthGoal === 'Gut–Stomach Health' || selectedHealthGoal === 'Digestive Health');
+            const hasGutGoal = selectedHealthGoal && (selectedHealthGoal.toLowerCase().includes('digestive') || selectedHealthGoal === 'Digestive Health');
             const hasDentalGoal = selectedHealthGoal && (selectedHealthGoal.toLowerCase().includes('dental') || selectedHealthGoal === 'Dental Health');
             
             // High-sugar dried fruits (for boy_14_18 and woman_19_30 with weight/diabetes/heart goals)
@@ -9961,7 +9972,7 @@
             const showSugarWarningBoy = currentAgeGroup === 'boy-14-18' && isHighSugarFruit && (hasWeightGoal || hasDiabetesGoal || hasHeartGoal);
             const showSugarWarningWoman = currentAgeGroup === 'woman-19-30' && healthFlagsWoman1930 && healthFlagsWoman1930.highSugar && (hasWeightGoal || hasDiabetesGoal);
             
-            // Gut health fruits (for boy_14_18 and woman_19_30 with gut/digestive goals)
+            // Digestive health fruits (for boy_14_18 and woman_19_30 with digestive goals)
             const gutHealthFruits = ['dried_prunes', 'dried_figs', 'dried_raisins'];
             const isGutHealthFruit = gutHealthFruits.includes(driedFruitKey);
             const showGutWarningBoy = currentAgeGroup === 'boy-14-18' && isGutHealthFruit && hasGutGoal;
@@ -10058,7 +10069,6 @@
                         'bone health': 'Bone Health',
                         'blood pressure': 'Blood Pressure',
                         'digestive health': 'Digestive Health',
-                        'gut-stomach health': 'Gut Health',
                         'heart health': 'Heart Health',
                         'energy boost': 'Energy Boost',
                         'urinary support': 'Urinary Support',
@@ -10096,7 +10106,6 @@
                       'iron_support': ['anemia', 'iron'],
                       'bone_health': ['bone'],
                       'digestive_health': ['digestive', 'gut', 'stomach'],
-                      'gut_stomach_health': ['gut', 'stomach', 'digestive'],
                       'muscle_health': ['muscle'],
                       'immune_system': ['immune'],
                       'skin_health': ['skin'],
@@ -10119,7 +10128,6 @@
                       'iron_support': 'Iron Support',
                       'bone_health': 'Bone Health',
                       'digestive_health': 'Digestive Health',
-                      'gut_stomach_health': 'Gut Health',
                       'muscle_health': 'Muscle Health',
                       'immune_system': 'Immune System',
                       'skin_health': 'Skin Health',
@@ -10144,7 +10152,6 @@
                     const cautionMap = {
                       'diabetes_blood_sugar': ['diabetes', 'blood', 'sugar'],
                       'weight_management': ['weight'],
-                      'gut_stomach_health': ['gut', 'stomach', 'digestive'],
                       'loose_stools_sensitive_gut': ['gut', 'stomach', 'digestive', 'loose'],
                       'thyroid_health_meds_interaction': ['thyroid']
                     };
@@ -10156,7 +10163,6 @@
                     const cautionMessages = {
                       'diabetes_blood_sugar': 'High in natural sugars; keep portions modest if blood sugar is a concern.',
                       'weight_management': 'High in natural sugars; keep portions modest for weight management goals.',
-                      'gut_stomach_health': 'May have a laxative effect in some people. Start with a small portion.',
                       'loose_stools_sensitive_gut': 'Can cause loose stools in sensitive individuals. Start with a small portion.',
                       'thyroid_health_meds_interaction': 'May interact with thyroid medications. Check with your clinician.'
                     };

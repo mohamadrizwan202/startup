@@ -1176,10 +1176,14 @@ def add_security_headers(response):
         "geolocation=(), microphone=(), camera=(), payment=(), usb=()",
     )
     
-    # Cache-Control & Pragma: Prevent caching of sensitive API responses
-    # This ensures that responses containing sensitive data aren't stored in browser cache
-    response.headers.setdefault("Cache-Control", "no-store, no-cache, must-revalidate")
-    response.headers.setdefault("Pragma", "no-cache")
+    # Cache-Control & Pragma: Prevent caching of HTML responses only
+    # This ensures that HTML responses aren't cached (prevents stale frontend updates)
+    # API/JSON responses are left unchanged
+    content_type = response.headers.get("Content-Type", "").lower()
+    if content_type.startswith("text/html"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
 
     # Content-Security-Policy: XSS baseline with nonce-based scripts
     nonce = getattr(g, "csp_nonce", None)
