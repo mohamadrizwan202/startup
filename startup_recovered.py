@@ -1621,7 +1621,50 @@ def categories():
             if c not in ("Gut-Stomach Health", "Gut–Stomach Health", "Gut–Stomach Health")
         ]
         
-        return jsonify(categories_list)
+        # Check if UI format is requested
+        format_ui = request.args.get('format') == 'ui'
+        
+        if format_ui:
+            # Rename map for UI display labels (value -> label)
+            category_rename_map = {
+                "Anemia Prevention": "Iron Support",
+                "Anti-Inflammatory": "Inflammation Support",
+                "Blood Circulation": "Circulation Support",
+                "Blood Pressure": "Blood Pressure Support",
+                "Bone Health": "Bone Strength",
+                "Brain Health": "Brain Focus",
+                "Cholesterol Management": "Cholesterol Support",
+                "Dental Health": "Oral Health",
+                "Diabetes–Blood Sugar": "Blood Sugar Support",  # Keep for backward compatibility
+                "Diabetes-Blood Sugar": "Blood Sugar Support",  # DB uses hyphen
+                "Digestive Health": "Digestive Support",
+                "Energy Boost": "Energy & Stamina",
+                "Eye Health": "Vision Support",
+                "Heart Health": "Heart Support",
+                "Immune System": "Immune Support",
+                "Joint Health": "Joint Mobility",
+                "Liver Health": "Liver Support",
+                "Muscle Health": "Muscle Recovery",
+                "Pregnancy Support": "Prenatal Support",
+                "Skin Health": "Skin Glow",
+                "Stress Management": "Stress Relief",
+                "Thyroid Health": "Thyroid Support",
+                "Weight Management": "Weight Balance",  # Keep for backward compatibility
+                "Weight Loss": "Weight Balance"  # DB uses "Weight Loss"
+            }
+            
+            # Return objects with value (original) and label (mapped)
+            categories_ui = [
+                {
+                    "value": cat,
+                    "label": category_rename_map.get(cat, cat)
+                }
+                for cat in categories_list
+            ]
+            return jsonify(categories_ui)
+        else:
+            # Legacy format: return list of strings
+            return jsonify(categories_list)
     except Exception as e:
         app.logger.exception("Error in /api/categories")
         return jsonify({"error": str(e)}), 500
