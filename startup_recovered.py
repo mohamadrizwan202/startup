@@ -1615,6 +1615,12 @@ def categories():
         # Both Postgres (dict) and SQLite (sqlite3.Row) support dictionary-style access
         categories_list = [row['category'] for row in results]
         
+        # Hide Gut-Stomach Health from UI dropdown (frontend pulls from /api/categories)
+        categories_list = [
+            c for c in categories_list
+            if c not in ("Gut-Stomach Health", "Gut–Stomach Health", "Gut–Stomach Health")
+        ]
+        
         return jsonify(categories_list)
     except Exception as e:
         app.logger.exception("Error in /api/categories")
