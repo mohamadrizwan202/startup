@@ -1629,7 +1629,7 @@ def categories():
         format_ui = request.args.get('format') == 'ui'
         
         if format_ui:
-            # Rename map for UI display labels (value -> label)
+            # Map DB category names to UI-friendly labels
             category_rename_map = {
                 "Anemia Prevention": "Iron Support",
                 "Anti-Inflammatory": "Inflammation Support",
@@ -1665,10 +1665,11 @@ def categories():
                 }
                 for cat in categories_list
             ]
+            
             return jsonify(categories_ui)
-        else:
-            # Legacy format: return list of strings
-            return jsonify(categories_list)
+        
+        # Legacy format: return simple array of strings
+        return jsonify(categories_list)
     except Exception as e:
         app.logger.exception("Error in /api/categories")
         return jsonify({"error": str(e)}), 500

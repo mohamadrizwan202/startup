@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 32" width="180" height="32">
+  <!-- Icon: Minimal Droplet + Leaf Fusion (All White Version) -->
+  <g id="icon">
+    <!-- Unified droplet-leaf: teardrop with subtle leaf curve -->
+    <path d="M 12 4
+             C 14 4, 16 5, 17 7
+             C 18 9, 18.5 11, 18.5 13
+             C 18.5 15, 18 17, 16.5 19
+             C 15 21, 12.5 22, 10 22
+             C 8 22, 6.5 21, 6 19.5
+             C 5.5 18, 6 16.5, 7 15
+             C 8 13.5, 9 12, 9 10.5
+             C 9 9, 8.5 7.5, 8 6.5
+             C 7.5 5.5, 8.5 5, 10 4.5
+             C 11 4, 11.5 4, 12 4 Z" 
+          fill="#FFFFFF"/>
+    
+    <!-- Leaf accent curve (right side) -->
+    <path d="M 16 8
+             C 17 7.5, 18 8, 18.5 9.5
+             C 19 11, 18.5 13, 17 14.5
+             C 16 15, 15.5 13.5, 16 12
+             C 16 10.5, 16 9, 16 8 Z" 
+          fill="#FFFFFF"/>
+  </g>
+  
+  <!-- Wordmark: PureFyul -->
+  <text x="28" y="22" 
+        font-family="system-ui, -apple-system, 'Segoe UI', 'Inter', 'Poppins', 'Satoshi', sans-serif" 
+        font-size="18" 
+        font-weight="700" 
+        letter-spacing="-0.4" 
+        fill="#FFFFFF">
+    PureFyul
+  </text>
+</svg>

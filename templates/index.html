@@ -341,6 +341,62 @@
       display: block;
     }
 
+    /* Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: -30px -20px 30px -20px;
+    }
+
+    .navbar-logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      height: 32px;
+    }
+
+    .navbar-logo img {
+      height: 32px;
+      width: auto;
+      display: block;
+    }
+
+    .navbar-logo:hover {
+      opacity: 0.9;
+    }
+
+    .navbar-auth {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 0.9rem;
+      color: white;
+    }
+
+    .navbar-auth a {
+      color: white;
+      text-decoration: none;
+      opacity: 0.9;
+      transition: opacity 0.2s ease;
+    }
+
+    .navbar-auth a:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    .navbar-auth span {
+      opacity: 0.7;
+    }
+
     /* Header */
     .header {
       text-align: center;
@@ -1264,16 +1320,25 @@
   </script>
 </head>
 <body>
-  <!-- Auth Header -->
-  <div style="background: var(--bg-secondary, #f7fafc); padding: 12px 20px; border-bottom: 1px solid var(--border, #e2e8f0); text-align: right; font-size: 0.9rem;">
-    {% if current_user.is_authenticated %}
-      <span>Logged in as <strong>{{ current_user.email }}</strong> | <a href="{{ url_for('logout') }}" style="color: var(--primary, #667eea); text-decoration: none;">Logout</a></span>
-    {% else %}
-      <span><a href="{{ url_for('login') }}" style="color: var(--primary, #667eea); text-decoration: none; margin-right: 15px;">Login</a> / <a href="{{ url_for('register') }}" style="color: var(--primary, #667eea); text-decoration: none; margin-left: 5px;">Register</a></span>
-    {% endif %}
-  </div>
-  
   <div class="container">
+    <!-- Navbar with Logo and Auth -->
+    <nav class="navbar">
+      <a href="/" class="navbar-logo">
+        <img src="{{ url_for('static', filename='img/logo-white.svg') }}" alt="PureFyul" style="height: 32px; width: auto;">
+      </a>
+      <div class="navbar-auth">
+        {% if current_user.is_authenticated %}
+          <span>Logged in as <strong>{{ current_user.email }}</strong></span>
+          <span>|</span>
+          <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}">Login</a>
+          <span>/</span>
+          <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+      </div>
+    </nav>
+
     <!-- Header -->
     <header class="header">
       <h1>🍎 Nutrition & Allergen API</h1>
@@ -1391,7 +1456,6 @@
           <div class="panel-header">Ingredients</div>
           <div class="panel-body" id="ingredient-list">
             <div class="empty-state">Select a sub-category to see ingredients</div>
-          </div>
         </div>
       </div>
       </div>
@@ -1804,14 +1868,13 @@
         const res = await fetch('/api/categories?format=ui');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        // Normalize: if server returns strings (legacy), convert to objects
-        // If server returns objects (new format), use as-is
-        categories = data.map(item => {
-          if (typeof item === 'string') {
-            return { value: item, label: item };
-          }
-          return { value: item.value, label: item.label };
-        });
+        // Handle both formats: array of objects {value, label} or array of strings (legacy)
+        if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object' && 'value' in data[0]) {
+          categories = data; // Array of objects with value/label
+        } else {
+          // Legacy format: array of strings, convert to objects
+          categories = data.map(cat => ({ value: cat, label: cat }));
+        }
         renderCategories();
         // Populate smoothie health goals after categories are loaded
         populateSmoothieHealthGoals();
@@ -1831,23 +1894,19 @@
       }
 
       categories.forEach(categoryObj => {
-        // Handle both legacy (string) and new (object) formats
-        // Ensure value is always the DB value (fallback to categoryObj if string)
-        const categoryValue = typeof categoryObj === 'string' ? categoryObj : (categoryObj.value || categoryObj);
-        // Ensure label is used for display (fallback to value, then mapCategoryDisplayName for legacy)
-        const categoryLabel = typeof categoryObj === 'string' 
-          ? mapCategoryDisplayName(categoryObj) 
-          : (categoryObj.label || categoryObj.value || categoryObj);
+        // Handle both object format {value, label} and string format (legacy)
+        const categoryValue = typeof categoryObj === 'object' && 'value' in categoryObj ? categoryObj.value : categoryObj;
+        const categoryLabel = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryObj;
         
         const div = document.createElement('div');
         div.className = 'panel-item';
         const span = document.createElement('span');
-        span.textContent = categoryLabel;
+        span.textContent = categoryLabel; // Use label for display
         div.appendChild(span);
         div.addEventListener('click', () => {
           [...categoryListEl.children].forEach(c => c.classList.remove('active'));
           div.classList.add('active');
-          selectedCategory = categoryValue; // Keep original DB value for API calls
+          selectedCategory = categoryValue; // Use value (original DB category) for API calls
           setStatus(`Selected "${categoryLabel}"`);
           loadSubcategories(categoryValue);
         });
@@ -7594,35 +7653,36 @@
       // Get selected target audience
       const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
       
-      // Normalize categories to objects for consistent handling
-      const normalizedCategories = categories.map(cat => 
-        typeof cat === 'string' ? { value: cat, label: cat } : cat
-      );
+      // Helper to extract category value (handles both object {value, label} and string format)
+      const getCategoryValue = (cat) => {
+        return typeof cat === 'object' && 'value' in cat ? cat.value : cat;
+      };
       
       // Determine which health goals to show
-      let allowedGoals = normalizedCategories; // Default: show all
+      let allowedGoals = categories; // Default: show all
       
       // Special handling for Woman 60+: show all categories
       if (selectedAudience === 'woman-60+') {
-        allowedGoals = normalizedCategories; // Show all health goals
+        allowedGoals = categories; // Show all health goals
         // Skip the healthGoalsByAudience check for woman-60+ since we're using all categories
       } else if (selectedAudience === 'man-60+') {
         // Special handling for Man 60+: show all categories except "Pregnancy Support" and "Thyroid Health"
-        allowedGoals = normalizedCategories.filter(categoryObj => {
-          const categoryValue = categoryObj.value.toLowerCase().trim();
-          return categoryValue !== 'pregnancy support' && categoryValue !== 'thyroid health';
+        allowedGoals = categories.filter(categoryObj => {
+          const categoryValue = getCategoryValue(categoryObj);
+          const categoryLower = categoryValue.toLowerCase().trim();
+          return categoryLower !== 'pregnancy support' && categoryLower !== 'thyroid health';
         });
         // Skip the healthGoalsByAudience check for man-60+ since we're using dynamic filtering
       } else if (selectedAudience && healthGoalsByAudience[selectedAudience]) {
         // Filter categories to only include allowed goals
-        // Match exact category names (case-insensitive)
+        // Match exact category names (case-insensitive) using the value field
         const allowedGoalsList = healthGoalsByAudience[selectedAudience];
-        allowedGoals = normalizedCategories.filter(categoryObj => {
-          const categoryValue = categoryObj.value;
-          // Check for exact match (case-insensitive) with original value
-          return allowedGoalsList.some(allowed => 
+        allowedGoals = categories.filter(categoryObj => {
+          const categoryValue = getCategoryValue(categoryObj);
+          // Check for exact match (case-insensitive)
+            return allowedGoalsList.some(allowed => 
             categoryValue.toLowerCase() === allowed.toLowerCase()
-          );
+            );
         });
       }
       
@@ -7636,13 +7696,16 @@
       }
       
       // Add filtered categories as options
-      // Store original category value (not normalized) for API calls
       allowedGoals.forEach(categoryObj => {
         const option = document.createElement('option');
-        // Ensure value is always the DB value (fallback to categoryObj if string)
-        option.value = categoryObj.value || categoryObj; // Store original DB value for API calls
-        // Ensure label is used for display (fallback to value if label missing)
-        option.textContent = categoryObj.label || categoryObj.value || categoryObj; // Display label
+        // Extract value and label (handle both object and string formats)
+        const categoryValue = getCategoryValue(categoryObj);
+        const categoryLabel = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryValue;
+        
+        // Use normalized value (lowercase with hyphens) for option.value
+        option.value = categoryValue.toLowerCase().replace(/\s+/g, '-');
+        // Use label for display
+        option.textContent = categoryLabel;
         smoothieHealthGoalsEl.appendChild(option);
       });
       
@@ -7668,29 +7731,24 @@
 
     function getHealthGoalName(value) {
       if (!categories || categories.length === 0) {
-        // Fallback: if no categories loaded, try to format the value
         const name = value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-        return mapCategoryDisplayName(name);
+        return name;
       }
       
-      // Normalize categories to objects for consistent handling
-      const normalizedCategories = categories.map(cat => 
-        typeof cat === 'string' ? { value: cat, label: cat } : cat
-      );
-      
-      // Find matching category by value (option.value now stores original category value)
-      const categoryObj = normalizedCategories.find(cat => 
-        cat.value === value || cat.value.toLowerCase().replace(/\s+/g, '-') === value
-      );
+      // value is normalized (e.g., "weight-loss" or "diabetes-blood-sugar")
+      // Find matching category by comparing normalized value
+      const categoryObj = categories.find(cat => {
+        const catValue = typeof cat === 'object' && 'value' in cat ? cat.value : cat;
+        return catValue.toLowerCase().replace(/\s+/g, '-') === value;
+      });
       
       if (categoryObj) {
-        // Return display label (fallback to value if label missing)
-        return categoryObj.label || categoryObj.value || value;
+        // Return label if available, otherwise return value
+        return typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryObj;
       }
       
-      // Fallback: if not found, try to format the value
-      const displayName = value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-      return mapCategoryDisplayName(displayName);
+      // Fallback: reconstruct name from normalized value
+      return value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
     
     // Function to update smoothie name from health goal
@@ -9248,23 +9306,23 @@
       // Get the range for the target audience, default to woman-19-30 if not found
       const range = servingRanges[targetAudience] || { min: 250, max: 350 };
       
-      // Categorize health goals
+      // Categorize health goals (include both original DB names and UI labels for compatibility)
       const lowEndGoals = [
-        'Weight Management',
-        'Diabetes-Blood Sugar',
-        'Cholesterol Management',
-        'Blood Pressure',
-        'Liver Health',
-        'Stress Management'
+        'Weight Management', 'Weight Loss', 'Weight Balance', // Weight goals (DB name and label)
+        'Diabetes-Blood Sugar', 'Blood Sugar Support', // Diabetes goals
+        'Cholesterol Management', 'Cholesterol Support', // Cholesterol goals
+        'Blood Pressure', 'Blood Pressure Support', // Blood pressure goals
+        'Liver Health', 'Liver Support', // Liver goals
+        'Stress Management', 'Stress Relief' // Stress goals
       ];
       
       const highEndGoals = [
-        'Muscle Health',
-        'Energy Boost',
-        'Pregnancy Support',
-        'Bone Health',
-        'Anemia Prevention',
-        'Immune System'
+        'Muscle Health', 'Muscle Recovery', // Muscle goals
+        'Energy Boost', 'Energy & Stamina', // Energy goals
+        'Pregnancy Support', 'Prenatal Support', // Pregnancy goals
+        'Bone Health', 'Bone Strength', // Bone goals
+        'Anemia Prevention', 'Iron Support', // Anemia/Iron goals
+        'Immune System', 'Immune Support' // Immune goals
       ];
       
       // Determine base serving size based on health goal category
@@ -12025,15 +12083,20 @@
       const selectedHealthGoal = smoothieHealthGoalsEl ? smoothieHealthGoalsEl.value : '';
       
       // Get the health goal name from the dropdown value
-      // The dropdown value is a slug (e.g., "weight-loss"), we need the category name
+      // The dropdown value is a slug (e.g., "weight-loss"), we need the category label
       let healthGoalName = '';
       if (selectedHealthGoal && categories) {
-        const category = categories.find(cat => 
-          cat.toLowerCase().replace(/\s+/g, '-') === selectedHealthGoal
-        );
-        const rawName = category || selectedHealthGoal;
-        // Map category name for display (Weight Loss -> Weight Management)
-        healthGoalName = mapCategoryDisplayName(rawName);
+        const categoryObj = categories.find(cat => {
+          const catValue = typeof cat === 'object' && 'value' in cat ? cat.value : cat;
+          return catValue.toLowerCase().replace(/\s+/g, '-') === selectedHealthGoal;
+        });
+        if (categoryObj) {
+          // Use label if available, otherwise use value
+          healthGoalName = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryObj;
+        } else {
+          // Fallback: reconstruct name from normalized value
+          healthGoalName = selectedHealthGoal.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
       }
       
       // Compute recommended serving if we have both audience and health goal
@@ -12672,12 +12735,17 @@
       let healthGoalName = '';
       
       if (selectedHealthGoal && categories) {
-        const category = categories.find(cat => 
-          cat.toLowerCase().replace(/\s+/g, '-') === selectedHealthGoal
-        );
-        const rawName = category || selectedHealthGoal;
-        // Map category name for display (Weight Loss -> Weight Management)
-        healthGoalName = mapCategoryDisplayName(rawName);
+        const categoryObj = categories.find(cat => {
+          const catValue = typeof cat === 'object' && 'value' in cat ? cat.value : cat;
+          return catValue.toLowerCase().replace(/\s+/g, '-') === selectedHealthGoal;
+        });
+        if (categoryObj) {
+          // Use label if available, otherwise use value
+          healthGoalName = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryObj;
+        } else {
+          // Fallback: reconstruct name from normalized value
+          healthGoalName = selectedHealthGoal.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
       }
       
       // Use recommended serving if available, otherwise use manual calculation

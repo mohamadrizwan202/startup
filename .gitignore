@@ -79,3 +79,7 @@ cookies*.txt
 backup_*.dump
 *.db
 .pgdata_restore/
+
+# Local backups
+*.bak
+* 2.bak
