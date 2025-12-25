@@ -1349,6 +1349,7 @@
       <div class="navbar-nav">
         <a href="/about">About</a>
         <a href="/pricing">Pricing</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
       </div>
       <div class="navbar-auth">
         {% if current_user.is_authenticated %}
@@ -1488,7 +1489,7 @@
     <!-- End Ingredient Analysis Tab Content -->
 
     <!-- Smoothie Builder Tab Content -->
-    <div id="smoothie-tab-content" class="main-tab-content" style="display: none;">
+    <div id="smoothie-tab-content" class="main-tab-content">
       <div class="main-content-grid">
         <!-- Left: Smoothie Builder -->
         <div class="card search-container">
@@ -12957,8 +12958,8 @@
           }
         }
         
-        // Clear Smoothie tab fields when switching away or to
-        if (targetTab === 'ingredient' || targetTab === 'smoothie') {
+        // Clear Smoothie tab fields when switching away from smoothie
+        if (targetTab === 'ingredient') {
           // Clear smoothie state when switching tabs
           clearSmoothieState();
           
@@ -13145,23 +13146,6 @@
       if (buildSmoothieBtn) buildSmoothieBtn.disabled = true;
       if (smoothieStatusTextEl) smoothieStatusTextEl.textContent = 'Ready to build';
       if (smoothieStatusDotEl) smoothieStatusDotEl.classList.remove('error');
-      
-      // Reset main tabs to Ingredient Analysis
-      const mainTabs = document.querySelectorAll('.main-tab');
-      const mainTabContents = document.querySelectorAll('.main-tab-content');
-      if (mainTabs.length > 0) {
-        mainTabs.forEach(t => t.classList.remove('active'));
-        mainTabContents.forEach(c => {
-          c.classList.remove('active');
-          c.style.display = 'none';
-        });
-        mainTabs[0].classList.add('active');
-        const ingredientContent = document.getElementById('ingredient-tab-content');
-        if (ingredientContent) {
-          ingredientContent.classList.add('active');
-          ingredientContent.style.display = 'block';
-        }
-      }
     }
 
     // Prevent browser from restoring scroll position on reload

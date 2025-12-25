@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us - PureFyul</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #667eea;
+      --primary-dark: #5568d3;
+      --secondary: #764ba2;
+      --accent: #f093fb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text-primary: #1a202c;
+      --text-secondary: #4a5568;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f7fafc;
+      --border: #e2e8f0;
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+      --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
+      --radius: 12px;
+      --radius-lg: 16px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    .about-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    /* Logo/Navbar */
+    .navbar {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .navbar-logo {
+      display: inline-block;
+      color: white;
+      text-decoration: none;
+      font-size: 1.5rem;
+      font-weight: 700;
+      opacity: 0.95;
+      transition: opacity 0.2s ease;
+    }
+
+    .navbar-logo:hover {
+      opacity: 1;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 60px 50px;
+      box-shadow: var(--shadow-xl);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .hero-section h1 {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 20px;
+      font-weight: 800;
+    }
+
+    .hero-section .subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Content Sections */
+    .content-section {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 50px;
+      box-shadow: var(--shadow-xl);
+      margin-bottom: 30px;
+    }
+
+    .content-section h2 {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .content-section p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      line-height: 1.8;
+    }
+
+    .content-section ul {
+      margin-left: 30px;
+      margin-bottom: 20px;
+    }
+
+    .content-section li {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.8;
+    }
+
+    /* Feature Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+
+    .feature-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 30px;
+      border: 2px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    .feature-card p {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-bottom: 0;
+    }
+
+    /* Health Goals Section */
+    .health-goals {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .health-goal-tag {
+      display: inline-block;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 40px;
+      text-align: center;
+      color: white;
+    }
+
+    .cta-section h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: white;
+    }
+
+    .cta-section p {
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+      opacity: 0.95;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 15px 40px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+      background: white;
+      color: var(--primary);
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero-section {
+        padding: 40px 30px;
+      }
+
+      .hero-section h1 {
+        font-size: 2rem;
+      }
+
+      .content-section {
+        padding: 30px 25px;
+      }
+
+      .content-section h2 {
+        font-size: 1.5rem;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .about-container {
+        padding: 20px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="about-container">
+    <!-- Navbar/Logo -->
+    <nav class="navbar">
+      <a href="/" class="navbar-logo">PureFyul</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+      <h1>About PureFyul</h1>
+      <p class="subtitle">
+        Empowering healthier choices through comprehensive nutrition and allergen analysis. 
+        Discover the nutritional value of ingredients and create balanced smoothies tailored to your health goals.
+      </p>
+    </div>
+
+    <!-- Mission Section -->
+    <div class="content-section">
+      <h2>Our Mission</h2>
+      <p>
+        At PureFyul, we believe that making informed food choices should be simple and accessible. 
+        Our platform provides detailed nutrition facts, allergen information, and health benefit analysis 
+        to help you understand what you're consuming and make decisions that align with your wellness goals.
+      </p>
+    </div>
+
+    <!-- What We Do Section -->
+    <div class="content-section">
+      <h2>What We Do</h2>
+      <p>
+        PureFyul offers two powerful tools to support your nutritional journey:
+      </p>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>🥗 Ingredient Analysis</h3>
+          <p>
+            Analyze multiple ingredients simultaneously to get comprehensive nutrition facts, 
+            allergen information, and health benefits. Perfect for understanding individual 
+            ingredients and their nutritional profiles.
+          </p>
+        </div>
+        
+        <div class="feature-card">
+          <h3>🥤 Smoothie Builder</h3>
+          <p>
+            Create and analyze complete smoothie recipes with multiple ingredients. Get combined 
+            nutrition data, allergen warnings, and personalized health-goal feedback for your 
+            custom smoothie creations.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Health Goals Section -->
+    <div class="content-section">
+      <h2>Supporting Your Health Goals</h2>
+      <p>
+        Our platform helps you make choices aligned with various health objectives, including:
+      </p>
+      <div class="health-goals">
+        <span class="health-goal-tag">Heart Health</span>
+        <span class="health-goal-tag">Weight Management</span>
+        <span class="health-goal-tag">Diabetes & Blood Sugar</span>
+        <span class="health-goal-tag">Pregnancy Support</span>
+        <span class="health-goal-tag">Joint Health</span>
+        <span class="health-goal-tag">Cholesterol Management</span>
+        <span class="health-goal-tag">Stress Management</span>
+        <span class="health-goal-tag">Sleep Quality</span>
+        <span class="health-goal-tag">Thyroid Health</span>
+        <span class="health-goal-tag">Anemia Prevention</span>
+        <span class="health-goal-tag">Anti-Inflammatory</span>
+        <span class="health-goal-tag">Gut Health</span>
+        <span class="health-goal-tag">Digestive Health</span>
+        <span class="health-goal-tag">Dental Health</span>
+        <span class="health-goal-tag">Liver Health</span>
+        <span class="health-goal-tag">Muscle Health</span>
+        <span class="health-goal-tag">Blood Circulation</span>
+        <span class="health-goal-tag">Blood Pressure</span>
+        <span class="health-goal-tag">Brain Health</span>
+        <span class="health-goal-tag">Bone Health</span>
+        <span class="health-goal-tag">Energy Boost</span>
+        <span class="health-goal-tag">Eye Health</span>
+        <span class="health-goal-tag">Immune System</span>
+      </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="content-section">
+      <h2>How It Works</h2>
+      <ul>
+        <li>
+          <strong>Browse Ingredients:</strong> Explore our extensive database of ingredients organized by 
+          health categories and food types.
+        </li>
+        <li>
+          <strong>Analyze Nutrition:</strong> Get detailed nutrition facts including calories, macronutrients, 
+          vitamins, and minerals for any ingredient or combination.
+        </li>
+        <li>
+          <strong>Check Allergens:</strong> Identify potential allergens in your ingredients to ensure safe 
+          consumption for you and your family.
+        </li>
+        <li>
+          <strong>Discover Benefits:</strong> Learn about the health benefits associated with specific 
+          ingredients and how they support your wellness goals.
+        </li>
+        <li>
+          <strong>Build Smoothies:</strong> Combine multiple ingredients to create smoothies and receive 
+          comprehensive analysis of the complete recipe.
+        </li>
+      </ul>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-section">
+      <h2>Ready to Get Started?</h2>
+      <p>
+        Start exploring ingredients, analyzing nutrition data, and creating healthy smoothies today.
+      </p>
+      <a href="/" class="cta-button">Explore PureFyul</a>
+    </div>
+  </div>
+</body>
+</html>
+

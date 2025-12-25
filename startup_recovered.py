@@ -1545,6 +1545,61 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/about')
+def about():
+    """About page route"""
+    return render_template('about.html')
+
+
+@app.route('/contact', methods=['GET', 'POST'])
+@limiter.limit("5 per hour", methods=["POST"])
+def contact():
+    """Contact form route"""
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        subject = request.form.get('subject', '').strip()
+        message = request.form.get('message', '').strip()
+        
+        # Validation
+        if not name:
+            flash('Name is required.', 'error')
+            return render_template('contact.html')
+        
+        if not email:
+            flash('Email is required.', 'error')
+            return render_template('contact.html')
+        
+        # Basic email validation
+        if '@' not in email or '.' not in email:
+            flash('Please enter a valid email address.', 'error')
+            return render_template('contact.html')
+        
+        if not subject:
+            flash('Please select a subject.', 'error')
+            return render_template('contact.html')
+        
+        if not message:
+            flash('Message is required.', 'error')
+            return render_template('contact.html')
+        
+        if len(message) < 10:
+            flash('Message must be at least 10 characters long.', 'error')
+            return render_template('contact.html')
+        
+        # Here you could:
+        # - Send an email notification
+        # - Store the message in a database
+        # - Integrate with a third-party service
+        
+        # For now, just show success message
+        app.logger.info(f"Contact form submission: {name} ({email}) - {subject}")
+        flash('Thank you for your message! We\'ll get back to you soon.', 'success')
+        return redirect(url_for('contact'))
+    
+    return render_template('contact.html')
+
+
 @app.route('/logout', methods=['GET'])
 def logout():
     """User logout route - token-safe: only clears DB token if session token matches"""
