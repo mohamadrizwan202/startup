@@ -12,19 +12,19 @@
     }
 
     :root {
-      --primary: #667eea;
-      --primary-dark: #5568d3;
-      --secondary: #764ba2;
-      --accent: #f093fb;
+      --primary: #0EA5A4;
+      --primary-dark: #0B7F7E;
+      --secondary: #0EA5A4;
+      --accent: #0EA5A4;
       --success: #10b981;
       --danger: #ef4444;
       --warning: #f59e0b;
-      --text-primary: #1a202c;
-      --text-secondary: #4a5568;
-      --bg-primary: #ffffff;
-      --bg-secondary: #f7fafc;
-      --bg-tertiary: #edf2f7;
-      --border: #e2e8f0;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F8FAFC;
+      --bg-tertiary: #EDF2F7;
+      --border: #E2E8F0;
       --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
       --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
       --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -274,11 +274,30 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 50%, #0EA5A4 100%);
       background-attachment: fixed;
       min-height: 100vh;
       color: var(--text-primary);
       line-height: 1.6;
+      position: relative;
+    }
+
+    /* Premium subtle noise overlay (keeps gradient colors unchanged) */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.035; /* subtle grain */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+    }
+
+    /* Make sure all visible content stays above the overlay */
+    body > * {
+      position: relative;
+      z-index: 1;
     }
 
     .container {
@@ -351,9 +370,16 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.2);
       padding: 12px 20px;
       display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin: -30px -20px 30px -20px;
+    }
+
+    .navbar-top {
+      width: 100%;
+      display: flex;
       align-items: center;
       justify-content: space-between;
-      margin: -30px -20px 30px -20px;
     }
 
     .navbar-logo {
@@ -372,6 +398,7 @@
     .navbar-logo:hover {
       opacity: 0.9;
     }
+
 
     .navbar-nav {
       display: flex;
@@ -453,40 +480,91 @@
       margin-bottom: 25px;
     }
     
-    /* Main Content Grid: Search & Results Side by Side */
-    .main-content-grid {
+    /* Search Area Container - Centered */
+    .search-area-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .search-area-container .search-container {
+      max-width: 800px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 15px 20px; /* Reduced from 25px */
+    }
+    
+    .search-area-container .search-container .card-header {
+      flex-shrink: 0;
+      margin-bottom: 12px; /* Reduced from 20px */
+      padding-bottom: 8px; /* Reduced from 15px */
+    }
+
+    .search-area-container .search-container .card-title {
+      font-size: 1.1rem; /* Reduced from 1.3rem */
+    }
+
+    .search-area-container .search-container .card-subtitle {
+      font-size: 0.85rem; /* Reduced from 0.9rem */
+      margin-top: 3px; /* Reduced from 5px */
+    }
+    
+    .search-area-container .search-container .search-section {
+      flex-shrink: 0;
+    }
+    
+    .search-area-container .search-container .ingredients-textarea-section {
+      margin-top: 8px; /* Reduced from 15px */
+      margin-bottom: 10px; /* Added to control spacing */
+    }
+
+    .search-area-container .search-container .ingredients-textarea-section {
+      margin-top: 8px; /* Reduced from 15px */
+      margin-bottom: 8px; /* Added to control spacing */
+    }
+
+    .search-area-container .search-container .textarea-label {
+      margin-bottom: 5px; /* Reduced from 8px */
+      font-size: 0.9rem; /* Slightly smaller */
+    }
+
+    .search-area-container .search-container .ingredients-textarea {
+      min-height: 60px !important; /* Constrain height - reduced from 100px */
+      padding: 10px 15px !important; /* Reduced padding from 15px */
+      font-size: 0.95rem; /* Slightly smaller font */
+    }
+    
+    .search-area-container .search-container #analyze-btn {
+      margin-top: 12px; /* Reduced spacing */
+      flex-shrink: 0;
+      padding: 12px 24px; /* Reduced from default */
+    }
+
+    /* Browse & Results Grid - Side by Side */
+    .browse-results-grid {
       display: grid;
-      grid-template-columns: 1fr 1.5fr;
+      grid-template-columns: minmax(0, 1fr) 725px;
       gap: 25px;
       margin-bottom: 30px;
-      align-items: stretch;
+      align-items: start;
     }
     
-    .search-container {
-      position: sticky;
-      top: 20px;
+    /* Force Analysis Results container to exactly 725px width */
+    .browse-results-grid > .card.results-container {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      width: 725px !important;
+      max-width: 725px !important;
+      min-width: 725px !important;
+      box-sizing: border-box;
     }
     
-    .search-container .card-header {
-      flex-shrink: 0;
-    }
-    
-    .search-container .search-section {
-      flex-shrink: 0;
-    }
-    
-    .search-container #analyze-btn {
-      margin-top: auto;
-      flex-shrink: 0;
-    }
-    
-    .results-container {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
+    /* Ensure grid column doesn't expand beyond 725px */
+    .browse-results-grid > :nth-child(2) {
+      width: 725px !important;
+      max-width: 725px !important;
+      min-width: 725px !important;
     }
     
     .results-container .results-header {
@@ -503,6 +581,15 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
       align-items: start;
+    }
+
+    /* Main Content Grid: Search & Results Side by Side (for Smoothie tab) */
+    .main-content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 25px;
+      margin-bottom: 30px;
+      align-items: stretch;
     }
 
     /* Cards */
@@ -561,7 +648,7 @@
     .search-input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.35);
       background: white;
       transition: all 0.3s ease;
     }
@@ -627,7 +714,7 @@
     .ingredients-textarea:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.35);
       background: white;
     }
 
@@ -695,7 +782,7 @@
       align-items: center;
       gap: 8px;
       padding: 10px 16px;
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      background: linear-gradient(135deg, rgba(14, 165, 164, 0.10) 0%, rgba(14, 165, 164, 0.10) 100%);
       border: 2px solid var(--primary);
       border-radius: var(--radius);
       font-size: 0.9rem;
@@ -843,7 +930,7 @@
     }
 
     .panel-item:hover {
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      background: linear-gradient(135deg, rgba(14, 165, 164, 0.10) 0%, rgba(14, 165, 164, 0.10) 100%);
       border-color: var(--primary);
       transform: translateX(5px);
     }
@@ -969,7 +1056,7 @@
     }
 
     .tab:hover:not(.active) {
-      background: rgba(102, 126, 234, 0.1);
+      background: rgba(14, 165, 164, 0.10);
     }
 
     .tab-pane {
@@ -1060,7 +1147,7 @@
     
     .smoothie-nutrition-tab:hover {
       color: var(--primary) !important;
-      background: rgba(102, 126, 234, 0.05) !important;
+      background: rgba(14, 165, 164, 0.10) !important;
     }
     
     .smoothie-nutrition-tab-content {
@@ -1170,7 +1257,7 @@
 
     /* Individual nutrition tiles with specific colors */
     .nutrition-tile.calories {
-      --tile-color: #667eea;
+      --tile-color: #0EA5A4;
     }
 
     .nutrition-tile.protein {
@@ -1186,7 +1273,7 @@
     }
 
     .nutrition-tile.fiber {
-      --tile-color: #8b5cf6;
+      --tile-color: #0EA5A4;
     }
 
     .nutrition-tile.sugar {
@@ -1232,12 +1319,12 @@
 
     /* Responsive */
     @media (max-width: 1200px) {
-      .main-content-grid {
+      .browse-results-grid {
         grid-template-columns: 1fr !important;
       }
       
-      .search-container {
-        position: static;
+      .main-content-grid {
+        grid-template-columns: 1fr !important;
       }
       
       .browse-ingredients-grid {
@@ -1250,13 +1337,14 @@
         padding: 20px 15px;
       }
       
-      .main-content-grid {
+      .browse-results-grid {
         grid-template-columns: 1fr !important;
         gap: 20px;
       }
       
-      .search-container {
-        position: static;
+      .main-content-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px;
       }
       
       .browse-ingredients-grid {
@@ -1269,6 +1357,12 @@
 
       .card {
         padding: 20px;
+      }
+
+      /* Hide desktop nav on mobile */
+      .navbar-top .navbar-nav,
+      .navbar-top .navbar-auth {
+        display: none;
       }
     }
 
@@ -1343,32 +1437,33 @@
   <div class="container">
     <!-- Navbar with Logo, Navigation, and Auth -->
     <nav class="navbar">
-      <a href="/" class="navbar-logo">
-        <img src="{{ url_for('static', filename='img/logo-white.svg') }}" alt="PureFyul" style="height: 32px; width: auto;">
-      </a>
-      <div class="navbar-nav">
-        <a href="/about">About</a>
-        <a href="/pricing">Pricing</a>
-        <a href="{{ url_for('contact') }}">Contact</a>
-      </div>
-      <div class="navbar-auth">
-        {% if current_user.is_authenticated %}
-          <span>Logged in as <strong>{{ current_user.email }}</strong></span>
-          <span>|</span>
-          <a href="{{ url_for('logout') }}">Logout</a>
-        {% else %}
-          <a href="{{ url_for('login') }}">Login</a>
-          <span>/</span>
-          <a href="{{ url_for('register') }}">Register</a>
-        {% endif %}
+      <div class="navbar-top">
+        <a href="/" class="navbar-logo">
+          <img src="{{ url_for('static', filename='img/logo-white.svg') }}" alt="PureFyul" style="height: 32px; width: auto;">
+        </a>
+        <div class="navbar-nav">
+          <a href="/about">About</a>
+          <a href="/pricing">Pricing</a>
+          <a href="{{ url_for('contact') }}">Contact</a>
+        </div>
+        <div class="navbar-auth">
+          {% if current_user.is_authenticated %}
+            <span>Logged in as <strong>{{ current_user.email }}</strong></span>
+            <span>|</span>
+            <a href="{{ url_for('logout') }}">Logout</a>
+          {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <span>/</span>
+            <a href="{{ url_for('register') }}">Register</a>
+          {% endif %}
+        </div>
       </div>
     </nav>
 
     <!-- Header -->
     <header class="header">
-      <h1>🍎 Nutrition & Allergen API</h1>
+      <h1>Nutrition & Allergen</h1>
       <p class="subtitle">Explore health categories, discover ingredients, and analyze nutrition data</p>
-      <div class="badge">Server Time: {{ time.strftime('%Y-%m-%d %H:%M:%S') }}</div>
     </header>
 
     <!-- Main App Tabs: Ingredient vs Smoothie -->
@@ -1385,9 +1480,8 @@
 
     <!-- Ingredient Analysis Tab Content -->
     <div id="ingredient-tab-content" class="main-tab-content active">
-      <!-- Main Content Area: Search & Results Side by Side -->
-    <div class="main-content-grid">
-      <!-- Left Container: Search Area -->
+      <!-- Search Area - Centered -->
+      <div class="search-area-container">
       <div class="card search-container">
         <div class="card-header">
           <div>
@@ -1403,7 +1497,7 @@
             id="ingredients-input"
             class="ingredients-textarea"
             placeholder="Enter ingredients separated by commas (e.g., mango, spinach, chicken breast)..."
-            rows="4"
+              rows="2"
           ></textarea>
           <!-- Error Message Container -->
           <div id="ingredient-error-message" class="error-message" style="display: none;"></div>
@@ -1416,41 +1510,11 @@
           ⚡ Analyze Ingredients
         </button>
       </div>
-
-      <!-- Right Container: Analysis Results -->
-      <div class="card results-container">
-        <div class="results-header">
-          <h2 class="card-title">Analysis Results</h2>
-          <div class="status-indicator">
-            <span class="status-dot" id="status-dot"></span>
-            <span id="status-text">Ready to analyze</span>
-          </div>
-        </div>
-        <div class="tabs">
-          <button class="tab active" data-tab="nutrition">Nutrition</button>
-          <button class="tab" data-tab="allergens">Allergens</button>
-          <button class="tab" data-tab="health-benefits">Health Benefits</button>
-        </div>
-        <!-- Separate scrollable containers for each tab -->
-        <div class="tab-pane active" id="nutrition-tab-pane" data-tab="nutrition">
-          <div class="results-body" id="nutrition-results-body">
-            When you analyze ingredients, the results will appear here. Select ingredients from the panels below and click "Analyze Ingredients" to get started.
-          </div>
-        </div>
-        <div class="tab-pane" id="allergens-tab-pane" data-tab="allergens" style="display: none;">
-          <div class="results-body" id="allergens-results-body">
-            When you analyze ingredients, allergen information will appear here.
-          </div>
-        </div>
-        <div class="tab-pane" id="health-benefits-tab-pane" data-tab="health-benefits" style="display: none;">
-          <div class="results-body" id="health-benefits-results-body">
-            When you analyze ingredients, health benefits will appear here.
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- Browse Ingredients - 3 Columns -->
+      <!-- Browse Ingredients & Analysis Results Side by Side -->
+      <div class="browse-results-grid">
+        <!-- Left: Browse Ingredients -->
     <div class="card">
       <div class="card-header">
         <div>
@@ -1481,11 +1545,47 @@
           <div class="panel-header">Ingredients</div>
           <div class="panel-body" id="ingredient-list">
             <div class="empty-state">Select a sub-category to see ingredients</div>
+          </div>
         </div>
       </div>
       </div>
-    </div>
-    </div>
+
+      <!-- Right: Analysis Results -->
+      <div class="card results-container">
+        <div class="results-header">
+          <h2 class="card-title">Analysis Results</h2>
+          <div class="status-indicator">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-text">Ready to analyze</span>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab active" data-tab="nutrition">Nutrition</button>
+          <button class="tab" data-tab="allergens">Allergens</button>
+          <button class="tab" data-tab="health-benefits">Health Benefits</button>
+        </div>
+                <!-- Separate scrollable containers for each tab -->
+        <div class="tab-pane active" id="nutrition-tab-pane" data-tab="nutrition">
+          <div class="results-body" id="nutrition-results-body">
+            When you analyze ingredients, the results will appear here. Select ingredients from the panels below and click "Analyze Ingredients" to get started.
+          </div>
+        </div>
+
+        <div class="tab-pane" id="allergens-tab-pane" data-tab="allergens" style="display: none;">
+          <div class="results-body" id="allergens-results-body">
+            When you analyze ingredients, allergen information will appear here.
+          </div>
+        </div>
+
+        <div class="tab-pane" id="health-benefits-tab-pane" data-tab="health-benefits" style="display: none;">
+          <div class="results-body" id="health-benefits-results-body">
+            When you analyze ingredients, health benefits will appear here.
+          </div>
+        </div>
+      </div> <!-- /.card.results-container -->
+    </div> <!-- /.main-content-grid -->
+  </div> <!-- /#ingredient-tab-content -->
+
     <!-- End Ingredient Analysis Tab Content -->
 
     <!-- Smoothie Builder Tab Content -->
@@ -1504,7 +1604,7 @@
           <input type="hidden" id="smoothie-name" value="" />
 
           <!-- Smoothie Name Display Bar -->
-          <div id="smoothie-name-bar" style="display: none; margin-bottom: 20px; padding: 18px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: var(--radius); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);">
+          <div id="smoothie-name-bar" style="display: none; margin-bottom: 20px; padding: 18px 24px; background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 100%); border-radius: var(--radius); box-shadow: 0 4px 12px rgba(14, 165, 164, 0.2);">
             <div style="display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
               <span style="font-size: 1.8rem; flex-shrink: 0; margin-top: 2px;">🥤</span>
               <div style="flex: 1; min-width: 0;">
@@ -2711,7 +2811,7 @@
           <!-- Header Section -->
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; flex-wrap: wrap; gap: 4px;">
             <div style="display: flex; align-items: center; gap: 4px;">
-              <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(102, 126, 234, 0.3);">
+              <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(14, 165, 164, 0.3);">
                 <span style="font-size: 0.7rem; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">📊</span>
               </div>
               <div>
@@ -2759,12 +2859,12 @@
                 ${total.fat.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
               </div>
             </div>
-            <div class="nutrition-tile fiber" style="background: white; border-left: 2px solid #8b5cf6; box-shadow: 0 1px 1px rgba(139, 92, 246, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
+            <div class="nutrition-tile fiber" style="background: white; border-left: 2px solid #0EA5A4; box-shadow: 0 1px 1px rgba(14, 165, 164, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
               <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
                 <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🌿</span>
                 <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">FIBER</div>
               </div>
-              <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #8b5cf6; line-height: 1.2;">
+              <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #0EA5A4; line-height: 1.2;">
                 ${total.fiber.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
               </div>
             </div>
@@ -2849,7 +2949,7 @@
                 ${safeDisplayName}
                 ${allZeros ? '<span style="font-size: 0.7rem; color: #dc2626; background: #fee2e2; padding: 2px 6px; border-radius: 3px; margin-left: 4px;">⚠️ No nutrition data</span>' : ''}
                 ${isPlantBasedMilk(ing.ingredient || '') ? '<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px;">🌱 Vegan</span>' : ''}
-                ${isUnsweetenedMilk(ing.ingredient || '') && isPlantBasedMilk(ing.ingredient || '') ? '<span style="font-size: 0.7rem; color: #7c3aed; background: #ede9fe; padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
+                ${isUnsweetenedMilk(ing.ingredient || '') && isPlantBasedMilk(ing.ingredient || '') ? '<span style="font-size: 0.7rem; color: #0EA5A4; background: rgba(14, 165, 164, 0.10); padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
               </div>
               
               <!-- Serving Size -->
@@ -2869,7 +2969,7 @@
                   }
                   
                   const safeDisplayServing = escapeHTML(displayServing);
-                  return `<span style="font-size: 0.85rem; color: var(--primary); background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); padding: 5px 12px; border-radius: 6px; font-weight: 600; border: 1px solid var(--primary); display: inline-block;">
+                  return `<span style="font-size: 0.85rem; color: var(--primary); background: rgba(14, 165, 164, 0.10); padding: 5px 12px; border-radius: 6px; font-weight: 600; border: 1px solid var(--primary); display: inline-block;">
                   📏 ${safeDisplayServing}
                 </span>`;
                 })()}
@@ -2906,11 +3006,11 @@
                 }
                 
                 return `
-              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #667eea;">${calories.toFixed(1)}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;"> kcal</span></div>
+              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #0EA5A4;">${calories.toFixed(1)}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;"> kcal</span></div>
               <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #10b981;">${protein.toFixed(1)}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;"> g</span></div>
               <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #f59e0b;">${carbs.toFixed(1)}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;"> g</span></div>
               <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #ef4444;">${fat.toFixed(1)}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;"> g</span></div>
-              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #8b5cf6;">${(ing.fiber !== undefined ? fiber.toFixed(1) : '-')}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;">${ing.fiber !== undefined ? ' g' : ''}</span></div>
+              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #0EA5A4;">${(ing.fiber !== undefined ? fiber.toFixed(1) : '-')}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;">${ing.fiber !== undefined ? ' g' : ''}</span></div>
               <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #ec4899;">${(ing.sugar !== undefined ? sugar.toFixed(1) : '-')}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;">${ing.sugar !== undefined ? ' g' : ''}</span></div>
               <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #06b6d4;">${(ing.sodium !== undefined ? sodium.toFixed(1) : '-')}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;">${ing.sodium !== undefined ? ' mg' : ''}</span></div>
                 `;
@@ -9878,7 +9978,7 @@
             badges.push('<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px; margin-left: 6px;">🌱 Vegan</span>');
           }
           if (isUnsweetened && isVegan) {
-            badges.push('<span style="font-size: 0.7rem; color: #7c3aed; background: #ede9fe; padding: 2px 6px; border-radius: 3px; margin-left: 6px;">Unsweetened</span>');
+            badges.push('<span style="font-size: 0.7rem; color: #0EA5A4; background: rgba(14, 165, 164, 0.10); padding: 2px 6px; border-radius: 3px; margin-left: 6px;">Unsweetened</span>');
           }
           const badge = badges.join('');
           
@@ -11753,7 +11853,7 @@
 
       addTile({
         className: 'fiber',
-        borderColor: '#8b5cf6',
+        borderColor: '#0EA5A4',
         icon: '🌿',
         label: 'FIBER',
         value: Number(nutritionData.fiber || 0),
@@ -12397,7 +12497,7 @@
                 <div style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #fbbf24; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
                   <span style="font-size: 0.9rem; font-weight: 600; color: #78350f;">${ing.name}</span>
                   ${isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px;">🌱 Vegan</span>' : ''}
-                  ${isUnsweetenedMilk(ing.originalName || ing.name) && isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #7c3aed; background: #ede9fe; padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
+                  ${isUnsweetenedMilk(ing.originalName || ing.name) && isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #0EA5A4; background: rgba(14, 165, 164, 0.10); padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
                   <span style="font-size: 0.75rem; color: #92400e; opacity: 0.7;">•</span>
                   <span style="font-size: 0.75rem; color: #92400e; font-weight: 500;">${ing.serving}</span>
                 </div>
@@ -12899,7 +12999,7 @@
     function loadSmoothiePresets() {
       smoothiePresetsEl.innerHTML = smoothiePresets.map(preset => `
         <div style="background: white; border-radius: var(--radius); padding: 20px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s ease; hover:border-color: var(--primary);" 
-             onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.15)'"
+             onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 4px 12px rgba(14, 165, 164, 0.15)'"
              onmouseout="this.style.borderColor='var(--border)'; this.style.boxShadow='none'"
              onclick="loadSmoothiePreset('${preset.name}')">
           <div style="font-size: 1.1rem; font-weight: 600; color: var(--primary); margin-bottom: 8px;">${preset.name}</div>
@@ -13211,6 +13311,7 @@
 
     // Check session validity on page load (detect if session was invalidated) - backup check
     // This runs after DOM loads as a backup to the early check in <head>
+
     document.addEventListener('DOMContentLoaded', function() {
       console.log('[SESSION CHECK] DOMContentLoaded - running backup session check...');
       (async function checkSession() {
