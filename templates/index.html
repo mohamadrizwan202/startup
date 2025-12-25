@@ -373,6 +373,26 @@
       opacity: 0.9;
     }
 
+    .navbar-nav {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      font-size: 0.95rem;
+    }
+
+    .navbar-nav a {
+      color: white;
+      text-decoration: none;
+      opacity: 0.9;
+      transition: opacity 0.2s ease;
+      font-weight: 500;
+    }
+
+    .navbar-nav a:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
     .navbar-auth {
       display: flex;
       align-items: center;
@@ -1321,11 +1341,15 @@
 </head>
 <body>
   <div class="container">
-    <!-- Navbar with Logo and Auth -->
+    <!-- Navbar with Logo, Navigation, and Auth -->
     <nav class="navbar">
       <a href="/" class="navbar-logo">
         <img src="{{ url_for('static', filename='img/logo-white.svg') }}" alt="PureFyul" style="height: 32px; width: auto;">
       </a>
+      <div class="navbar-nav">
+        <a href="/about">About</a>
+        <a href="/pricing">Pricing</a>
+      </div>
       <div class="navbar-auth">
         {% if current_user.is_authenticated %}
           <span>Logged in as <strong>{{ current_user.email }}</strong></span>
