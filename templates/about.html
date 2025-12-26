@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us - PureFyul</title>
   <style>
@@ -36,33 +37,14 @@
       min-height: 100vh;
       color: var(--text-primary);
       line-height: 1.6;
-      padding: 20px;
+      padding: 0;
+      margin: 0;
     }
 
     .about-container {
       max-width: 1000px;
       margin: 0 auto;
       padding: 40px 20px;
-    }
-
-    /* Logo/Navbar */
-    .navbar {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    .navbar-logo {
-      display: inline-block;
-      color: white;
-      text-decoration: none;
-      font-size: 1.5rem;
-      font-weight: 700;
-      opacity: 0.95;
-      transition: opacity 0.2s ease;
-    }
-
-    .navbar-logo:hover {
-      opacity: 1;
     }
 
     /* Hero Section */
@@ -248,12 +230,9 @@
   </style>
 </head>
 <body>
-  <div class="about-container">
-    <!-- Navbar/Logo -->
-    <nav class="navbar">
-      <a href="/" class="navbar-logo">PureFyul</a>
-    </nav>
+  {% include "_navbar.html" %}
 
+  <div class="about-container">
     <!-- Hero Section -->
     <div class="hero-section">
       <h1>About PureFyul</h1>

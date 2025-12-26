@@ -1,0 +1,21 @@
+<nav class="navbar">
+  <a href="/" class="navbar-logo">
+    <img src="{{ url_for('static', filename='img/logo-white.svg') }}" alt="PureFyul" style="height: 32px; width: auto;">
+  </a>
+  <div class="navbar-nav">
+    <a href="/about">About</a>
+    <a href="/pricing">Pricing</a>
+    <a href="{{ url_for('contact') }}">Contact</a>
+  </div>
+  <div class="navbar-auth">
+    {% if current_user.is_authenticated %}
+      <span>Logged in as <strong>{{ current_user.email }}</strong></span>
+      <span>|</span>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}">Login</a>
+      <span>/</span>
+      <a href="{{ url_for('register') }}">Register</a>
+    {% endif %}
+  </div>
+</nav>

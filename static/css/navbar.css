@@ -1,0 +1,111 @@
+/* Ensure no default browser margins interfere with navbar */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  width: 100%;
+  margin: 0;
+  border-radius: 0;
+
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  box-sizing: border-box;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.navbar-logo img {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+.navbar-logo:hover {
+  opacity: 0.9;
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  font-size: 0.95rem;
+  flex-wrap: wrap;
+}
+
+.navbar-nav a {
+  color: white;
+  text-decoration: none;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+  font-weight: 500;
+}
+
+.navbar-nav a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.navbar-auth {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 0.9rem;
+  color: white;
+  flex-wrap: wrap;
+}
+
+.navbar-auth a {
+  color: white;
+  text-decoration: none;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.navbar-auth a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.navbar-auth span {
+  opacity: 0.7;
+}
+
+/* Mobile: 2-line layout via flex-wrap */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .navbar-logo {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .navbar-nav,
+  .navbar-auth {
+    width: 100%;
+    justify-content: center;
+  }
+}

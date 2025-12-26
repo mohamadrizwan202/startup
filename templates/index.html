@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nutrition & Allergen API - Interactive Dashboard</title>
   <style>
@@ -360,90 +361,7 @@
       display: block;
     }
 
-    /* Navbar */
-    .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 12px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      margin: -30px -20px 30px -20px;
-    }
-
-    .navbar-top {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .navbar-logo {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-      height: 32px;
-    }
-
-    .navbar-logo img {
-      height: 32px;
-      width: auto;
-      display: block;
-    }
-
-    .navbar-logo:hover {
-      opacity: 0.9;
-    }
-
-
-    .navbar-nav {
-      display: flex;
-      align-items: center;
-      gap: 25px;
-      font-size: 0.95rem;
-    }
-
-    .navbar-nav a {
-      color: white;
-      text-decoration: none;
-      opacity: 0.9;
-      transition: opacity 0.2s ease;
-      font-weight: 500;
-    }
-
-    .navbar-nav a:hover {
-      opacity: 1;
-      text-decoration: underline;
-    }
-
-    .navbar-auth {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      font-size: 0.9rem;
-      color: white;
-    }
-
-    .navbar-auth a {
-      color: white;
-      text-decoration: none;
-      opacity: 0.9;
-      transition: opacity 0.2s ease;
-    }
-
-    .navbar-auth a:hover {
-      opacity: 1;
-      text-decoration: underline;
-    }
-
-    .navbar-auth span {
-      opacity: 0.7;
-    }
-
+    
     /* Header */
     .header {
       text-align: center;
@@ -1359,11 +1277,6 @@
         padding: 20px;
       }
 
-      /* Hide desktop nav on mobile */
-      .navbar-top .navbar-nav,
-      .navbar-top .navbar-auth {
-        display: none;
-      }
     }
 
     /* Scrollbar */
@@ -1434,32 +1347,9 @@
   </script>
 </head>
 <body>
-  <div class="container">
-    <!-- Navbar with Logo, Navigation, and Auth -->
-    <nav class="navbar">
-      <div class="navbar-top">
-        <a href="/" class="navbar-logo">
-          <img src="{{ url_for('static', filename='img/logo-white.svg') }}" alt="PureFyul" style="height: 32px; width: auto;">
-        </a>
-        <div class="navbar-nav">
-          <a href="/about">About</a>
-          <a href="/pricing">Pricing</a>
-          <a href="{{ url_for('contact') }}">Contact</a>
-        </div>
-        <div class="navbar-auth">
-          {% if current_user.is_authenticated %}
-            <span>Logged in as <strong>{{ current_user.email }}</strong></span>
-            <span>|</span>
-            <a href="{{ url_for('logout') }}">Logout</a>
-          {% else %}
-            <a href="{{ url_for('login') }}">Login</a>
-            <span>/</span>
-            <a href="{{ url_for('register') }}">Register</a>
-          {% endif %}
-        </div>
-      </div>
-    </nav>
+  {% include "_navbar.html" %}
 
+  <div class="container">
     <!-- Header -->
     <header class="header">
       <h1>Nutrition & Allergen</h1>
@@ -1749,6 +1639,7 @@
       </div>
     </div>
     <!-- End Smoothie Builder Tab Content -->
+  </div> <!-- /.container -->
 
   <script nonce="{{ csp_nonce }}">
     // DOM Elements
