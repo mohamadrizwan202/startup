@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pricing.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing - PureFyul</title>
+</head>
+<body>
+  {% include "_navbar.html" %}
+
+  <main class="pricing-page">
+    <!-- Hero Section -->
+    <section class="pricing-hero">
+      <h1 class="pricing-hero-title">PureFyul is free during Beta</h1>
+      <p class="pricing-hero-subtitle">
+        Comprehensive nutrition and allergen analysis to help you make healthier choices. 
+        Build smarter smoothies tailored to your health goals.
+      </p>
+      <a href="{{ url_for('register') }}" class="pricing-cta-primary">Start Free</a>
+      <div class="trust-badges" aria-label="Pricing assurances">
+        <span class="trust-badge"><span class="trust-badge-icon">✓</span> Free during Beta</span>
+        <span class="trust-badge"><span class="trust-badge-icon">💳</span> No credit card required</span>
+        <span class="trust-badge"><span class="trust-badge-icon">↻</span> Cancel anytime</span>
+      </div>
+    </section>
+
+    <!-- What You Get Today Section -->
+    <section class="pricing-section">
+      <h2 class="pricing-section-title">What you get today</h2>
+      <div class="pricing-features-grid">
+        <div class="pricing-feature-card">
+          <h3 class="pricing-feature-title">Ingredient Analysis</h3>
+          <p class="pricing-feature-text">
+            Analyze multiple ingredients simultaneously with comprehensive nutrition facts, 
+            allergen information, and health benefits.
+          </p>
+        </div>
+        <div class="pricing-feature-card">
+          <h3 class="pricing-feature-title">Smoothie Builder</h3>
+          <p class="pricing-feature-text">
+            Create and analyze complete smoothie recipes with combined nutrition data 
+            and personalized health-goal feedback.
+          </p>
+        </div>
+        <div class="pricing-feature-card">
+          <h3 class="pricing-feature-title">Allergen Information (ingredient-based)</h3>
+          <p class="pricing-feature-text">
+            Get instant allergen warnings and detailed information about potential 
+            allergens in your ingredients.
+          </p>
+        </div>
+        <div class="pricing-feature-card">
+          <h3 class="pricing-feature-title">Goal-based Ingredient Discovery</h3>
+          <p class="pricing-feature-text">
+            Receive personalized recommendations based on your health goals and 
+            dietary preferences.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- What's Coming Soon Section -->
+    <section class="pricing-section">
+      <div class="section-header">
+        <h2 class="section-title">What's coming soon</h2>
+        <p class="section-note">
+          <span class="section-note__icon" aria-hidden="true">⏳</span>
+          Planned features — timelines may change.
+        </p>
+      </div>
+      <div class="pricing-coming-soon-grid">
+        <div class="pricing-coming-soon-item">
+          <span class="pricing-coming-soon-pill">Planned</span>
+          <h3 class="pricing-coming-soon-title">Smoothie Presets</h3>
+          <p class="pricing-coming-soon-text">Save your favorite smoothie recipes for quick access.</p>
+        </div>
+        <div class="pricing-coming-soon-item">
+          <span class="pricing-coming-soon-pill">Planned</span>
+          <h3 class="pricing-coming-soon-title">Advanced Analytics</h3>
+          <p class="pricing-coming-soon-text">Track your nutrition trends and health progress over time.</p>
+        </div>
+        <div class="pricing-coming-soon-item">
+          <span class="pricing-coming-soon-pill">Planned</span>
+          <h3 class="pricing-coming-soon-title">Meal Planning</h3>
+          <p class="pricing-coming-soon-text">Plan complete meals with comprehensive nutrition analysis.</p>
+        </div>
+        <div class="pricing-coming-soon-item">
+          <span class="pricing-coming-soon-pill">Planned</span>
+          <h3 class="pricing-coming-soon-title">Export Recipes</h3>
+          <p class="pricing-coming-soon-text">Export your recipes and nutrition data in multiple formats.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Supporter Card (Optional) -->
+    <section class="pricing-section">
+      <div class="pricing-supporter-card">
+        <h3 class="pricing-supporter-title">Supporter (optional)</h3>
+        <p class="pricing-supporter-text">
+          Love PureFyul? Support our mission to make nutrition information accessible to everyone. 
+          This is completely optional and not required to use the platform. Your support helps us 
+          continue improving and adding new features.
+        </p>
+        <p class="pricing-supporter-note">
+          <strong>Note:</strong> This is not required. PureFyul remains free during Beta regardless of support.
+        </p>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="pricing-section">
+      <h2 class="pricing-section-title">Frequently Asked Questions</h2>
+      <div class="pricing-faq">
+        <div class="pricing-faq-item">
+          <h3 class="pricing-faq-question">Is PureFyul really free during Beta?</h3>
+          <p class="pricing-faq-answer">
+            Yes! PureFyul is completely free during our Beta period. You get full access to all current 
+            features including ingredient analysis, smoothie building, allergen information (ingredient-based), and Goal-based ingredient discovery. 
+            No credit card required, no hidden fees.
+          </p>
+        </div>
+        <div class="pricing-faq-item">
+          <h3 class="pricing-faq-question">How long will the Beta last?</h3>
+          <p class="pricing-faq-answer">
+            We're committed to keeping PureFyul free during Beta as we continue to improve and add features. 
+            We'll provide advance notice before any changes to our pricing model, and Beta users will be 
+            grandfathered into special benefits.
+          </p>
+        </div>
+        <div class="pricing-faq-item">
+          <h3 class="pricing-faq-question">Is my data private and secure?</h3>
+          <p class="pricing-faq-answer">
+            Absolutely. We take privacy seriously. Your recipes, health goals, and personal information 
+            are never shared or sold. We don't track your personal data beyond what's necessary to provide 
+            the service. Everything you create is private and secure.
+          </p>
+        </div>
+        <div class="pricing-faq-item">
+          <h3 class="pricing-faq-question">How accurate is the nutrition data?</h3>
+          <p class="pricing-faq-answer">
+            Our nutrition values are compiled from referenced databases and sources we list. Values can vary by brand 
+            and preparation, so treat them as estimates.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="pricing-cta">
+      <h2 class="pricing-cta-title">Ready to get started?</h2>
+      <a href="{{ url_for('register') }}" class="pricing-cta-button">Start Free</a>
+    </section>
+
+    <!-- Disclaimer Card -->
+    <div class="pricing-disclaimer-card" role="note" aria-label="Disclaimer">
+      <p class="pricing-disclaimer-text">Information only — not medical advice. For medical decisions, consult a qualified professional.</p>
+    </div>
+  </main>
+</body>
+</html>
+
