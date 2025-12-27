@@ -27,21 +27,49 @@ html, body {
   box-sizing: border-box;
 }
 
-.navbar-logo {
+.navbar-brand {
   display: flex;
   align-items: center;
   text-decoration: none;
   height: 32px;
   flex-shrink: 0;
+  gap: 10px;
 }
 
-.navbar-logo img {
-  height: 32px;
-  width: auto;
-  display: block;
+.brand-name {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
 }
 
-.navbar-logo:hover {
+/* Tiny, non-invasive Beta tag (won't push the logo) */
+.beta-badge {
+  display: inline-block;
+  margin-left: 6px;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1;
+
+  padding: 1px 5px;
+  border-radius: 999px;
+
+  /* subtle on teal */
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+
+  /* make it feel like a small "sup" tag */
+  vertical-align: super;
+  position: relative;
+  top: -2px;
+}
+
+.navbar-brand:hover {
   opacity: 0.9;
 }
 
@@ -98,7 +126,7 @@ html, body {
     flex-wrap: wrap;
   }
   
-  .navbar-logo {
+  .navbar-brand {
     width: 100%;
     margin-bottom: 10px;
   }
