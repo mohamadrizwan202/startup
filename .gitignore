@@ -83,3 +83,6 @@ backup_*.dump
 # Local backups
 *.bak
 * 2.bak
+
+# backups
+*.bak
