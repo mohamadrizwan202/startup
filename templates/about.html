@@ -3,231 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us - PureFyul</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      --primary: #0EA5A4;
-      --primary-dark: #0B7F7E;
-      --secondary: #0B7F7E;
-      --accent: #0EA5A4;
-      --success: #10b981;
-      --danger: #ef4444;
-      --text-primary: #1a202c;
-      --text-secondary: #4a5568;
-      --bg-primary: #ffffff;
-      --bg-secondary: #f7fafc;
-      --border: #e2e8f0;
-      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-      --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
-      --radius: 12px;
-      --radius-lg: 16px;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 50%, #0EA5A4 100%);
-      background-attachment: fixed;
-      min-height: 100vh;
-      color: var(--text-primary);
-      line-height: 1.6;
-      padding: 0;
-      margin: 0;
-    }
-
-    .about-container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-
-    /* Hero Section */
-    .hero-section {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 60px 50px;
-      box-shadow: var(--shadow-xl);
-      margin-bottom: 30px;
-      text-align: center;
-    }
-
-    .hero-section h1 {
-      font-size: 3rem;
-      color: var(--primary);
-      margin-bottom: 20px;
-      font-weight: 800;
-    }
-
-    .hero-section .subtitle {
-      font-size: 1.25rem;
-      color: var(--text-secondary);
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    /* Content Sections */
-    .content-section {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 50px;
-      box-shadow: var(--shadow-xl);
-      margin-bottom: 30px;
-    }
-
-    .content-section h2 {
-      font-size: 2rem;
-      color: var(--primary);
-      margin-bottom: 20px;
-      font-weight: 700;
-    }
-
-    .content-section p {
-      font-size: 1.1rem;
-      color: var(--text-secondary);
-      margin-bottom: 20px;
-      line-height: 1.8;
-    }
-
-    .content-section ul {
-      margin-left: 30px;
-      margin-bottom: 20px;
-    }
-
-    .content-section li {
-      font-size: 1.1rem;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
-      line-height: 1.8;
-    }
-
-    /* Feature Grid */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 25px;
-      margin-top: 30px;
-    }
-
-    .feature-card {
-      background: var(--bg-secondary);
-      border-radius: var(--radius);
-      padding: 30px;
-      border: 2px solid var(--border);
-      transition: all 0.3s ease;
-    }
-
-    .feature-card:hover {
-      border-color: var(--primary);
-      box-shadow: var(--shadow-lg);
-      transform: translateY(-2px);
-    }
-
-    .feature-card h3 {
-      font-size: 1.5rem;
-      color: var(--primary);
-      margin-bottom: 15px;
-      font-weight: 600;
-    }
-
-    .feature-card p {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      margin-bottom: 0;
-    }
-
-    /* Health Goals Section */
-    .health-goals {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .health-goal-tag {
-      display: inline-block;
-      padding: 8px 16px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    /* CTA Section */
-    .cta-section {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 40px;
-      text-align: center;
-      color: white;
-    }
-
-    .cta-section h2 {
-      font-size: 2rem;
-      margin-bottom: 20px;
-      color: white;
-    }
-
-    .cta-section p {
-      font-size: 1.1rem;
-      margin-bottom: 30px;
-      opacity: 0.95;
-    }
-
-    .cta-button {
-      display: inline-block;
-      padding: 15px 40px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: white;
-      background: white;
-      color: var(--primary);
-      border-radius: var(--radius);
-      text-decoration: none;
-      transition: all 0.3s ease;
-      box-shadow: var(--shadow-lg);
-    }
-
-    .cta-button:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-xl);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .hero-section {
-        padding: 40px 30px;
-      }
-
-      .hero-section h1 {
-        font-size: 2rem;
-      }
-
-      .content-section {
-        padding: 30px 25px;
-      }
-
-      .content-section h2 {
-        font-size: 1.5rem;
-      }
-
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .about-container {
-        padding: 20px 10px;
-      }
-    }
-  </style>
 </head>
 <body>
   {% include "_navbar.html" %}
@@ -280,6 +58,33 @@
       </div>
     </div>
 
+    <!-- Why PureFyul Section -->
+    <div class="content-section why-section">
+      <h2>Why PureFyul</h2>
+      <div class="why-grid">
+        <div class="why-item">
+          <span class="icon">📊</span>
+          <h3>Data-Driven</h3>
+          <p>Comprehensive nutrition data from trusted sources to help you make informed decisions.</p>
+        </div>
+        <div class="why-item">
+          <span class="icon">🎯</span>
+          <h3>Goal-Oriented</h3>
+          <p>Personalized recommendations aligned with your specific health and wellness objectives.</p>
+        </div>
+        <div class="why-item">
+          <span class="icon">🔒</span>
+          <h3>Allergen-Safe</h3>
+          <p>Detailed allergen information to keep you and your family safe from potential reactions.</p>
+        </div>
+        <div class="why-item">
+          <span class="icon">⚡</span>
+          <h3>Easy to Use</h3>
+          <p>Intuitive interface designed for quick analysis and smoothie creation without complexity.</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Health Goals Section -->
     <div class="content-section">
       <h2>Supporting Your Health Goals</h2>
@@ -318,24 +123,19 @@
       <h2>How It Works</h2>
       <ul>
         <li>
-          <strong>Browse Ingredients:</strong> Explore our extensive database of ingredients organized by 
-          health categories and food types.
+          <strong>Browse Ingredients:</strong> Explore ingredients by category and health goal.
         </li>
         <li>
-          <strong>Analyze Nutrition:</strong> Get detailed nutrition facts including calories, macronutrients, 
-          vitamins, and minerals for any ingredient or combination.
+          <strong>Analyze Nutrition:</strong> See calories, macros, vitamins, and minerals instantly.
         </li>
         <li>
-          <strong>Check Allergens:</strong> Identify potential allergens in your ingredients to ensure safe 
-          consumption for you and your family.
+          <strong>Check Allergens:</strong> Identify allergens and potential triggers for safer choices.
         </li>
         <li>
-          <strong>Discover Benefits:</strong> Learn about the health benefits associated with specific 
-          ingredients and how they support your wellness goals.
+          <strong>Build Smoothies:</strong> Combine ingredients and view the full recipe breakdown.
         </li>
         <li>
-          <strong>Build Smoothies:</strong> Combine multiple ingredients to create smoothies and receive 
-          comprehensive analysis of the complete recipe.
+          <strong>Save & Reuse:</strong> Save your best blends as presets for faster planning (coming next).
         </li>
       </ul>
     </div>
@@ -351,4 +151,3 @@
   </div>
 </body>
 </html>
-
