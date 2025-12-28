@@ -1477,6 +1477,194 @@
       --tile-color: #06b6d4;
     }
 
+    /* Compact Nutrition Summary Grid - removed duplicate, see below */
+
+    /* === Compact Nutrition Results (v2 - no wasted whitespace) === */
+    .nutrition-results-card {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 16px;
+      padding: 14px;
+      margin: 0;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 12px;
+    }
+
+    .nutrition-results-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0;
+    }
+
+    .nutrition-title {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .nutrition-title .badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(14,165,164,0.12);
+      border: 1px solid rgba(14,165,164,0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+    }
+
+    .nutrition-title h3 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.15;
+    }
+
+    .nutrition-title p {
+      margin: 4px 0 0 0;
+      font-size: 0.85rem;
+      color: rgba(15, 23, 42, 0.65);
+      line-height: 1.25;
+    }
+
+    .nutrition-count {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #0b7f7e;
+      background: rgba(14,165,164,0.10);
+      border: 1px solid rgba(14,165,164,0.22);
+      padding: 6px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .nutrition-selected-chip {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(14,165,164,0.22);
+      background: rgba(14,165,164,0.08);
+      white-space: nowrap;
+    }
+
+    .nutrition-selected-chip .name {
+      font-weight: 900;
+      font-size: 0.92rem;
+      color: #0f172a;
+    }
+
+    .nutrition-selected-chip .serving {
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: rgba(15, 23, 42, 0.60);
+    }
+
+    /* Ingredient chips directly under header */
+    .nutrition-ingredients-list {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 0 6px 0;
+      margin: 0 0 10px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .nutrition-ingredients-list::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .nutrition-ingredients-list::-webkit-scrollbar-thumb {
+      background: rgba(14,165,164,0.25);
+      border-radius: 999px;
+    }
+
+    .nutrition-ing-pill {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(14,165,164,0.22);
+      background: rgba(14,165,164,0.07);
+      white-space: nowrap;
+    }
+
+    .nutrition-ing-pill .name {
+      font-weight: 800;
+      font-size: 0.92rem;
+      color: #0f172a;
+    }
+
+    .nutrition-ing-pill .serving {
+      font-weight: 700;
+      font-size: 0.82rem;
+      color: rgba(15, 23, 42, 0.60);
+    }
+
+    /* Calm, brand-consistent tiles (no rainbow borders) */
+    .nutrition-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      min-height: 0;
+      align-content: start;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .nutrition-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .nutrition-tile-compact {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nutrition-tile-compact .top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nutrition-tile-compact .label {
+      font-size: 0.74rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: rgba(15, 23, 42, 0.62);
+    }
+
+    .nutrition-tile-compact .value {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: #0b7f7e;
+    }
+
+    .nutrition-tile-compact .unit {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: rgba(15, 23, 42, 0.55);
+      margin-left: 4px;
+    }
+
     /* Allergen Display */
     .allergen-list {
       display: flex;
@@ -1612,6 +1800,71 @@
     .panel-body::-webkit-scrollbar-thumb:hover,
     .results-body::-webkit-scrollbar-thumb:hover {
       background: var(--secondary);
+    }
+
+    /* === Nutrition Results Override (force no whitespace) === */
+    .nutrition-results-card {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      align-items: stretch !important;
+      gap: 12px !important;
+      min-height: 0 !important;
+      height: auto !important;
+    }
+
+    .nutrition-results-top {
+      margin: 0 0 10px 0 !important;
+    }
+
+    .nutrition-summary-grid {
+      margin: 0 !important;
+      padding: 0 !important;
+      min-height: 0 !important;
+      align-content: start !important;
+    }
+
+    .nutrition-title p {
+      margin: 4px 0 0 0 !important;
+    }
+
+    /* ---------- Allergen tab: compact "no allergens" state ---------- */
+    .pf-allergen-inline {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: #fff;
+      max-width: 980px;
+      margin: 14px auto 0;
+    }
+
+    .pf-success {
+      border-left: 6px solid #22a06b;
+    }
+
+    .pf-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #22a06b;
+      margin-top: 5px;
+      flex: 0 0 auto;
+    }
+
+    .pf-title {
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .pf-sub {
+      margin-top: 3px;
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.35;
     }
   </style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
@@ -2378,28 +2631,33 @@
       console.log('[addIngredient] Called with:', ingredient);
       console.log('[addIngredient] Current selectedIngredients:', selectedIngredients);
       
-      if (!selectedIngredients.includes(ingredient)) {
-        selectedIngredients.push(ingredient);
-        console.log('[addIngredient] Added ingredient. New array:', selectedIngredients);
-        
-        renderSelectedIngredients();
-        syncTextareaFromSelected(); // Sync textarea immediately
-        updateSelectedSummary(); // Update summary
-        setStatus(`Added "${ingredient}"`);
-        
-        // Refresh button states for this ingredient (updates both Recommended and All Ingredients)
-        refreshIngredientButtons(ingredient);
-        
-        // Debounced: if user adds multiple ingredients quickly, scroll once after 2s
-        if (scrollToSearchTimer) clearTimeout(scrollToSearchTimer);
-        scrollToSearchTimer = setTimeout(() => {
-          requestAnimationFrame(() => requestAnimationFrame(scrollToSearchArea));
-        }, 2000);
-        
-        console.log('[addIngredient] After renderSelectedIngredients, selectedIngredientsEl.innerHTML length:', selectedIngredientsEl.innerHTML.length);
-      } else {
-        console.log('[addIngredient] Ingredient already in list, skipping');
+      // Ingredient tab: single-ingredient only - replace previous selection
+      const previousSelected = selectedIngredients.length > 0 ? selectedIngredients[0] : null;
+      
+      // Replace with new ingredient (single selection only)
+      selectedIngredients = [ingredient];
+      console.log('[addIngredient] Replaced selection. New array:', selectedIngredients);
+      
+      renderSelectedIngredients();
+      syncTextareaFromSelected(); // Sync textarea immediately
+      updateSelectedSummary(); // Update summary
+      setStatus(`Added "${ingredient}"`);
+      
+      // Refresh button states for the newly added ingredient
+      refreshIngredientButtons(ingredient);
+      
+      // If there was a previous selection and it's different, revert its button state
+      if (previousSelected && previousSelected !== ingredient) {
+        refreshIngredientButtons(previousSelected);
       }
+      
+      // Debounced: if user adds multiple ingredients quickly, scroll once after 2s
+      if (scrollToSearchTimer) clearTimeout(scrollToSearchTimer);
+      scrollToSearchTimer = setTimeout(() => {
+        requestAnimationFrame(() => requestAnimationFrame(scrollToSearchArea));
+      }, 2000);
+      
+      console.log('[addIngredient] After renderSelectedIngredients, selectedIngredientsEl.innerHTML length:', selectedIngredientsEl.innerHTML.length);
     }
 
     // Load Categories
@@ -3038,6 +3296,25 @@
         ingredientsToAnalyze = [...new Set([...ingredientsToAnalyze, ...selectedIngredients])];
       }
       
+      // Ingredient tab: single-ingredient only - keep only the first ingredient
+      if (ingredientsToAnalyze.length > 1) {
+        const firstIngredient = ingredientsToAnalyze[0];
+        ingredientsToAnalyze = [firstIngredient];
+        
+        // Show user-facing message
+        const message = 'Ingredient Analysis supports 1 ingredient at a time. Use Smoothie Builder for multiple.';
+        if (typeof showToast === 'function') {
+          showToast(message, 'info', 5000);
+        } else {
+          setStatus(message, false);
+        }
+        
+        // Optionally normalize textarea to show only the first ingredient
+        if (ingredientsInputEl && textareaValue.length > 0) {
+          ingredientsInputEl.value = firstIngredient;
+        }
+      }
+      
       // Filter out blocked ingredients (Ingredient tab only)
       const blockedIngredients = [];
       const allowedIngredients = [];
@@ -3359,225 +3636,61 @@
         total.sodium += sodium;
       });
 
-      // Build HTML with redesigned Total Nutrition Summary
+      // Build HTML (compact, user-friendly)
+      const formatServingLabel = (ing) => {
+        const grams = Number(ing?.serving_size_g);
+        if (!Number.isNaN(grams) && grams > 0) {
+          // show clean grams, not huge decimals
+          const g = grams % 1 === 0 ? grams.toFixed(0) : grams.toFixed(1);
+          return `${g}g`;
+        }
+        const raw = (ing?.serving_size || '').toString().trim();
+        return raw;
+      };
+
+      const ingredientPills = ingredients.map((ing) => {
+        const displayName = ing.display_name || ing.ingredient || 'Unknown';
+        const safeName = escapeHTML(displayName);
+        const servingText = formatServingLabel(ing);
+        const safeServing = servingText ? escapeHTML(servingText) : '—';
+        return `<span class="nutrition-ing-pill"><span class="name">${safeName}</span><span class="serving">${safeServing}</span></span>`;
+      }).join('');
+
+      const isSingle = ingredients.length === 1;
+      const first = ingredients[0] || {};
+      const firstName = escapeHTML(first.display_name || first.ingredient || 'Unknown');
+      const firstServingRaw = formatServingLabel(first);
+      const firstServing = escapeHTML(firstServingRaw || '—');
+
+      // Ingredient tab: always single ingredient, so always show chip with name • serving
+      const headerRight = `<div class="nutrition-selected-chip"><span class="name">${firstName}</span><span style="color: rgba(15, 23, 42, 0.40); margin: 0 4px;">•</span><span class="serving">${firstServing}</span></div>`;
+
       let html = `
-        <div style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); border-radius: 8px; padding: 4px 8px; margin: 0 0 4px 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1); border: 1px solid rgba(0, 0, 0, 0.06);">
-          <!-- Header Section -->
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; flex-wrap: wrap; gap: 4px;">
-            <div style="display: flex; align-items: center; gap: 4px;">
-              <div style="width: 20px; height: 20px; background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(14, 165, 164, 0.3);">
-                <span style="font-size: 0.7rem; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">📊</span>
-              </div>
+        <div class="nutrition-results-card">
+          <div class="nutrition-results-top">
+            <div class="nutrition-title">
+              <div class="badge">📊</div>
               <div>
-                <h3 style="color: #1e293b; font-size: 0.75rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; line-height: 1;">Total Nutrition Summary</h3>
-                <p style="color: #64748b; font-size: 0.5rem; margin: 0; line-height: 1;">Complete nutritional breakdown</p>
+                <h3>Nutrition Summary</h3>
+                <p>Totals across selected ingredients</p>
               </div>
             </div>
+            ${headerRight}
           </div>
-          
-          <!-- Nutrition Tiles Grid -->
-          <div class="nutrition-grid" style="gap: 8px; margin: 0; padding: 0; display: flex; flex-direction: column; flex-wrap: nowrap; overflow-y: auto; width: 100%;">
-            <div class="nutrition-tile calories" style="background: white; border-left: 2px solid #3b82f6; box-shadow: 0 1px 1px rgba(59, 130, 246, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-              <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-                <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🔥</span>
-                <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">CALORIES</div>
+
+          <div class="nutrition-summary-grid">
+            <div class="nutrition-tile-compact"><div class="top"><span>🔥</span><span class="label">Calories</span></div><div class="value">${total.calories.toFixed(1)}<span class="unit">kcal</span></div></div>
+            <div class="nutrition-tile-compact"><div class="top"><span>💪</span><span class="label">Protein</span></div><div class="value">${total.protein.toFixed(1)}<span class="unit">g</span></div></div>
+            <div class="nutrition-tile-compact"><div class="top"><span>🌾</span><span class="label">Carbs</span></div><div class="value">${total.carbs.toFixed(1)}<span class="unit">g</span></div></div>
+            <div class="nutrition-tile-compact"><div class="top"><span>🥑</span><span class="label">Fat</span></div><div class="value">${total.fat.toFixed(1)}<span class="unit">g</span></div></div>
+            <div class="nutrition-tile-compact"><div class="top"><span>🌿</span><span class="label">Fiber</span></div><div class="value">${total.fiber.toFixed(1)}<span class="unit">g</span></div></div>
+            <div class="nutrition-tile-compact"><div class="top"><span>🍬</span><span class="label">Sugar</span></div><div class="value">${total.sugar.toFixed(1)}<span class="unit">g</span></div></div>
+            <div class="nutrition-tile-compact"><div class="top"><span>🧂</span><span class="label">Sodium</span></div><div class="value">${total.sodium.toFixed(1)}<span class="unit">mg</span></div></div>
               </div>
-              <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #3b82f6; line-height: 1.2;">
-                ${total.calories.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">kcal</span>
               </div>
-            </div>
-            <div class="nutrition-tile protein" style="background: white; border-left: 2px solid #10b981; box-shadow: 0 1px 1px rgba(16, 185, 129, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-              <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-                <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">💪</span>
-                <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">PROTEIN</div>
-              </div>
-              <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #10b981; line-height: 1.2;">
-                ${total.protein.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-              </div>
-            </div>
-            <div class="nutrition-tile carbs" style="background: white; border-left: 2px solid #f59e0b; box-shadow: 0 1px 1px rgba(245, 158, 11, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-              <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-                <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🌾</span>
-                <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">CARBS</div>
-              </div>
-              <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #f59e0b; line-height: 1.2;">
-                ${total.carbs.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-              </div>
-            </div>
-            <div class="nutrition-tile fat" style="background: white; border-left: 2px solid #ef4444; box-shadow: 0 1px 1px rgba(239, 68, 68, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-              <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-                <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🥑</span>
-                <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">FAT</div>
-              </div>
-              <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #ef4444; line-height: 1.2;">
-                ${total.fat.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-              </div>
-            </div>
-            <div class="nutrition-tile fiber" style="background: white; border-left: 2px solid #0EA5A4; box-shadow: 0 1px 1px rgba(14, 165, 164, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-              <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-                <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🌿</span>
-                <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">FIBER</div>
-              </div>
-              <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #0EA5A4; line-height: 1.2;">
-                ${total.fiber.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-              </div>
-            </div>
-            <div class="nutrition-tile sugar" style="background: white; border-left: 2px solid #ec4899; box-shadow: 0 1px 1px rgba(236, 72, 153, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-              <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-                <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🍬</span>
-                <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">SUGAR</div>
-              </div>
-              <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #ec4899; line-height: 1.2;">
-                ${total.sugar.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">g</span>
-              </div>
-            </div>
-            <div class="nutrition-tile sodium" style="background: white; border-left: 2px solid #06b6d4; box-shadow: 0 1px 1px rgba(6, 182, 212, 0.05); padding: 8px 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px;">
-              <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; flex: 1;">
-                <span class="icon" style="font-size: 1rem; line-height: 1.2; margin: 0;">🧂</span>
-                <div class="label" style="font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; line-height: 1.2;">SODIUM</div>
-              </div>
-              <div class="value" style="font-size: 0.95rem; font-weight: 700; color: #06b6d4; line-height: 1.2;">
-                ${total.sodium.toFixed(1)}<span class="unit" style="font-size: 0.6rem; color: #94a3b8; font-weight: 500; margin-left: 3px;">mg</span>
-              </div>
-            </div>
-          </div>
-        </div>
       `;
 
-      // Individual ingredient breakdown - Row format with serving size on top
-      if (ingredients.length > 0) {
-        html += `
-          <div style="margin-top: 30px; padding-top: 30px; border-top: 3px solid var(--border);">
-            <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
-              <span>🥗</span> Individual Ingredient Breakdown
-            </h3>
-            <div style="background: white; border-radius: var(--radius); border: 2px solid var(--border); overflow: hidden;">
-              <!-- Table Header -->
-              <div style="display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr; gap: 8px; padding: 12px 15px; background: var(--bg-secondary); border-bottom: 2px solid var(--border); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); align-items: center;">
-                <div>Ingredient</div>
-                <div style="text-align: center;">Serving Size</div>
-                <div style="text-align: center;">🔥 Calories</div>
-                <div style="text-align: center;">💪 Protein</div>
-                <div style="text-align: center;">🌾 Carbs</div>
-                <div style="text-align: center;">🥑 Fat</div>
-                <div style="text-align: center;">🌿 Fiber</div>
-                <div style="text-align: center;">🍬 Sugar</div>
-                <div style="text-align: center;">🧂 Sodium</div>
-              </div>
-        `;
-
-        ingredients.forEach((ing, idx) => {
-          const hasData = ing.calories > 0 || ing.protein > 0 || ing.carbs > 0 || ing.fat > 0;
-          
-          // Use display_name if available (user's original input), otherwise fall back to ingredient (DB key)
-          const displayName = ing.display_name || ing.ingredient || 'Unknown';
-          
-          // Check if nutrition data is missing (all zeros)
-          const allZeros = (ing.calories === 0 || ing.calories === null || ing.calories === undefined) &&
-                          (ing.protein === 0 || ing.protein === null || ing.protein === undefined) &&
-                          (ing.carbs === 0 || ing.carbs === null || ing.carbs === undefined) &&
-                          (ing.fat === 0 || ing.fat === null || ing.fat === undefined);
-          
-          // Log warning if nutrition profile is missing (with detailed info for debugging)
-          if (allZeros) {
-            const ingredientName = displayName;
-            console.warn('[ingredient-nutrition] Missing profile for:', ingredientName, {
-              receivedFromAPI: {
-                ingredient: ing.ingredient,
-                display_name: ing.display_name,
-                calories: ing.calories,
-                protein: ing.protein,
-                carbs: ing.carbs,
-                fat: ing.fat,
-                serving_size: ing.serving_size,
-                serving_size_g: ing.serving_size_g
-              }
-            });
-          }
-          
-          const safeDisplayName = escapeHTML(displayName);
-          html += `
-            <div style="display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr; gap: 8px; padding: 15px; border-bottom: 1px solid var(--bg-tertiary); align-items: center; ${hasData ? '' : 'opacity: 0.7;'} ${idx === ingredients.length - 1 ? 'border-bottom: none;' : ''}">
-              <!-- Ingredient Name -->
-              <div style="font-weight: 600; color: var(--text-primary); font-size: 0.95rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                ${safeDisplayName}
-                ${allZeros ? '<span style="font-size: 0.7rem; color: #dc2626; background: #fee2e2; padding: 2px 6px; border-radius: 3px; margin-left: 4px;">⚠️ No nutrition data</span>' : ''}
-                ${isPlantBasedMilk(ing.ingredient || '') ? '<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px;">🌱 Vegan</span>' : ''}
-                ${isUnsweetenedMilk(ing.ingredient || '') && isPlantBasedMilk(ing.ingredient || '') ? '<span style="font-size: 0.7rem; color: #0EA5A4; background: rgba(14, 165, 164, 0.10); padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
-              </div>
-              
-              <!-- Serving Size -->
-              <div style="text-align: center;">
-                ${(() => {
-                  // Get USDA standard serving size if available, otherwise use API response
-                  // Use ingredient (DB key) for USDA serving lookup, not display_name
-                  const lookupName = ing.ingredient || '';
-                  const usdaServing = getUSDAStandardServingSize(lookupName);
-                  let displayServing = ing.serving_size || '100g';
-                  let servingSizeGrams = ing.serving_size_g || 100;
-                  
-                  // If USDA standard serving is available, use it and recalculate nutrition
-                  if (usdaServing) {
-                    displayServing = usdaServing.display;
-                    servingSizeGrams = usdaServing.grams;
-                  }
-                  
-                  const safeDisplayServing = escapeHTML(displayServing);
-                  return `<span style="font-size: 0.85rem; color: var(--primary); background: rgba(14, 165, 164, 0.10); padding: 5px 12px; border-radius: 6px; font-weight: 600; border: 1px solid var(--primary); display: inline-block;">
-                  📏 ${safeDisplayServing}
-                </span>`;
-                })()}
-              </div>
-              
-              <!-- Nutrition Values -->
-              ${(() => {
-                // Recalculate nutrition values if USDA standard serving size is different from API serving
-                const usdaServing = getUSDAStandardServingSize(ing.ingredient || '');
-                let calories = ing.calories || 0;
-                let protein = ing.protein || 0;
-                let carbs = ing.carbs || 0;
-                let fat = ing.fat || 0;
-                let fiber = ing.fiber || 0;
-                let sugar = ing.sugar || 0;
-                let sodium = ing.sodium || 0;
-                
-                // If USDA standard serving is available and different from API serving, recalculate
-                if (usdaServing && ing.serving_size_g) {
-                  const apiServingGrams = ing.serving_size_g;
-                  const usdaServingGrams = usdaServing.grams;
-                  
-                  if (apiServingGrams !== usdaServingGrams && apiServingGrams > 0) {
-                    // Recalculate: newValue = oldValue * (usdaServingGrams / apiServingGrams)
-                    const ratio = usdaServingGrams / apiServingGrams;
-                    calories = (calories * ratio);
-                    protein = (protein * ratio);
-                    carbs = (carbs * ratio);
-                    fat = (fat * ratio);
-                    fiber = (fiber * ratio);
-                    sugar = (sugar * ratio);
-                    sodium = (sodium * ratio);
-                  }
-                }
-                
-                return `
-              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #0EA5A4;">${calories.toFixed(1)}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;"> kcal</span></div>
-              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #10b981;">${protein.toFixed(1)}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;"> g</span></div>
-              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #f59e0b;">${carbs.toFixed(1)}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;"> g</span></div>
-              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #ef4444;">${fat.toFixed(1)}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;"> g</span></div>
-              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #0EA5A4;">${(ing.fiber !== undefined ? fiber.toFixed(1) : '-')}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;">${ing.fiber !== undefined ? ' g' : ''}</span></div>
-              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #ec4899;">${(ing.sugar !== undefined ? sugar.toFixed(1) : '-')}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;">${ing.sugar !== undefined ? ' g' : ''}</span></div>
-              <div style="text-align: center; font-size: 0.9rem; font-weight: 600; color: #06b6d4;">${(ing.sodium !== undefined ? sodium.toFixed(1) : '-')}<span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 500;">${ing.sodium !== undefined ? ' mg' : ''}</span></div>
-                `;
-              })()}
-            </div>
-          `;
-        });
-
-        html += `
-            </div>
-          </div>
-        `;
-      }
+      // Note: Per-ingredient breakdown intentionally removed to reduce scrolling and avoid duplicate presentation.
 
       if (message) {
         html += `<div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: var(--radius); color: var(--text-secondary); font-size: 0.9rem;">${escapeHTML(message)}</div>`;
@@ -3845,23 +3958,23 @@
       `;
 
       if (uniqueAllergens.length === 0) {
-        const emptyHtml = ingredientSummaryHtml + `
-          <div style="padding: 24px 20px; text-align: center; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: var(--radius); border: 1px solid #a7f3d0;">
-            <div style="width: 48px; height: 48px; margin: 0 auto 12px; background: #10b981; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);">
-              <span style="font-size: 1.5rem; color: white;">✓</span>
-            </div>
-            <h3 style="color: var(--success); font-size: 1.1rem; margin-bottom: 6px; font-weight: 700;">All Clear!</h3>
-            <p style="color: #065f46; font-size: 0.85rem; max-width: 400px; margin: 0 auto; line-height: 1.5;">
-              All analyzed ingredients appear to be allergen-free. Safe to consume!
-            </p>
-          </div>
-        `;
-        // Use the allergens-specific results body
-        if (targetBody) {
-          targetBody.innerHTML = emptyHtml;
-        }
-        return;
-      }
+  const emptyHtml = ingredientSummaryHtml + `
+    <div class="pf-allergen-inline pf-success">
+      <span class="pf-dot" aria-hidden="true"></span>
+      <div class="pf-inline-text">
+        <div class="pf-title">No common allergens detected</div>
+        <div class="pf-sub">
+          Results depend on ingredient naming and data. Cross-contamination is possible—verify labels if you have severe allergies.
+        </div>
+      </div>
+    </div>
+  `;
+  if (targetBody) {
+    targetBody.innerHTML = emptyHtml;
+  }
+  return;
+}
+
 
       // Build compact allergen display
       let html = ingredientSummaryHtml + `
