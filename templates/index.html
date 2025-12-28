@@ -1866,6 +1866,347 @@
       color: #64748b;
       line-height: 1.35;
     }
+
+    /* ---------- Allergen tab: compact redesign (pf-a-*) ---------- */
+    .pf-a-wrap {
+      max-width: 980px;
+      margin: 12px auto 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .pf-a-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .pf-a-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+
+    .pf-a-subtitle {
+      margin-top: 4px;
+      color: #64748b;
+      font-size: 13.5px;
+      line-height: 1.35;
+      max-width: 720px;
+    }
+
+    .pf-a-subchips {
+      margin-top: 8px;
+    }
+
+    .pf-a-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.10);
+      background: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .pf-a-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
+
+    .pf-a-pill--ok {
+      border-left: 6px solid #22a06b;
+    }
+
+    .pf-a-pill--ok .pf-a-pill-dot {
+      background: #22a06b;
+    }
+
+    .pf-a-pill--bad {
+      border-left: 6px solid #ef4444;
+    }
+
+    .pf-a-pill--bad .pf-a-pill-dot {
+      background: #ef4444;
+    }
+
+    .pf-a-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .pf-a-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      min-height: 0;
+      height: auto;
+    }
+
+    .pf-a-card-title {
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 10px;
+    }
+
+    /* Detected allergens header: centered title + chip on same row */
+    .pf-a-card-head {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .pf-a-card-title--center {
+      margin: 0 !important;
+      text-align: center;
+    }
+    .pf-a-chip--head {
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .pf-a-muted {
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .pf-a-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pf-a-chip {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 23, 42, 0.10);
+      background: rgba(15, 23, 42, 0.02);
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .pf-a-chip--danger {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: rgba(239, 68, 68, 0.06);
+    }
+
+    .pf-a-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pf-a-tag {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px dashed rgba(15, 23, 42, 0.16);
+      background: transparent;
+      font-size: 13px;
+      color: #0f172a;
+    }
+
+    .pf-a-acc {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .pf-a-acc-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      border: 0;
+      text-align: left;
+      cursor: pointer;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .pf-a-acc-btn:focus {
+      outline: 2px solid rgba(47, 158, 153, 0.35);
+      outline-offset: 2px;
+    }
+
+    .pf-a-acc-panel {
+      padding: 10px 14px 12px 14px;
+      height: auto;
+      min-height: 0;
+      color: #334155;
+    }
+
+    .pf-a-acc-panel .pf-a-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .pf-a-acc-panel .pf-a-list li {
+      margin: 6px 0;
+      line-height: 1.45;
+    }
+
+    .pf-a-acc-panel[hidden] {
+      display: none !important;
+    }
+
+    .pf-a-acc-panel:not([hidden]) {
+      display: block !important;
+      height: auto !important;
+      min-height: 0 !important;
+    }
+
+    .pf-a-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #0f172a;
+    }
+
+    .pf-a-list li {
+      margin: 6px 0;
+      color: #334155;
+    }
+
+    .pf-a-chipClamp {
+      max-height: 72px;
+      overflow: hidden;
+      height: auto;
+      min-height: 0;
+    }
+
+    .pf-a-chipClamp.is-expanded {
+      max-height: none;
+    }
+
+    .pf-a-toggleRow {
+      margin-top: 8px;
+    }
+
+    .pf-a-toggleBtn {
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      background: #fff;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-weight: 800;
+      font-size: 13px;
+      color: #0f172a;
+      cursor: pointer;
+    }
+
+    .pf-a-toggleBtn:hover {
+      background: rgba(15, 23, 42, 0.03);
+    }
+
+    /* Scoped override for Notes accordion panel (fix vertical gaps) */
+    #pf-a-notes {
+      display: block;
+      height: auto !important;
+      min-height: 0 !important;
+      padding: 10px 14px 12px 14px !important;
+      align-content: flex-start;
+      justify-content: flex-start;
+    }
+
+    #pf-a-notes .pf-a-list {
+      display: block !important;
+      height: auto !important;
+      min-height: 0 !important;
+      margin: 0 !important;
+      padding: 0 0 0 18px !important;
+    }
+
+    #pf-a-notes .pf-a-list li {
+      display: list-item !important;
+      margin: 0 0 12px 0 !important;
+      line-height: 1.45 !important;
+    }
+
+    #pf-a-notes .pf-a-list li:last-child {
+      margin-bottom: 0 !important;
+    }
+
+    /* FINAL FIX: Notes must start at top and never space-distribute */
+#pf-a-notes.pf-a-acc-panel:not([hidden]){
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  padding: 10px 14px 12px 14px !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+#pf-a-notes .pf-a-list{
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  gap: 14px !important;
+
+  margin: 0 !important;
+  padding-left: 18px !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+#pf-a-notes .pf-a-list li{
+  display: list-item !important;
+  margin: 0 !important;
+  line-height: 1.45 !important;
+}
+
+    /* Match Groups panel spacing to Notes */
+    #pf-a-groups.pf-a-acc-panel:not([hidden]){
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      align-items: flex-start !important;
+      padding: 10px 14px 12px 14px !important;
+      height: auto !important;
+      min-height: 0 !important;
+    }
+
+    #pf-a-groups .pf-a-tags{
+      display: flex !important;
+      flex-wrap: wrap !important;
+      justify-content: flex-start !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+
+    #pf-a-notes .pf-a-list li {
+      display: list-item !important;
+      margin: 0 0 12px 0 !important;
+      line-height: 1.45 !important;
+    }
+
+    #pf-a-notes .pf-a-list li:last-child {
+      margin-bottom: 0 !important;
+    }
   </style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
   <script nonce="{{ csp_nonce }}">
@@ -2637,14 +2978,14 @@
       // Replace with new ingredient (single selection only)
       selectedIngredients = [ingredient];
       console.log('[addIngredient] Replaced selection. New array:', selectedIngredients);
-      
-      renderSelectedIngredients();
-      syncTextareaFromSelected(); // Sync textarea immediately
-      updateSelectedSummary(); // Update summary
-      setStatus(`Added "${ingredient}"`);
-      
+        
+        renderSelectedIngredients();
+        syncTextareaFromSelected(); // Sync textarea immediately
+        updateSelectedSummary(); // Update summary
+        setStatus(`Added "${ingredient}"`);
+        
       // Refresh button states for the newly added ingredient
-      refreshIngredientButtons(ingredient);
+        refreshIngredientButtons(ingredient);
       
       // If there was a previous selection and it's different, revert its button state
       if (previousSelected && previousSelected !== ingredient) {
@@ -2656,8 +2997,8 @@
       scrollToSearchTimer = setTimeout(() => {
         requestAnimationFrame(() => requestAnimationFrame(scrollToSearchArea));
       }, 2000);
-      
-      console.log('[addIngredient] After renderSelectedIngredients, selectedIngredientsEl.innerHTML length:', selectedIngredientsEl.innerHTML.length);
+        
+        console.log('[addIngredient] After renderSelectedIngredients, selectedIngredientsEl.innerHTML length:', selectedIngredientsEl.innerHTML.length);
     }
 
     // Load Categories
@@ -3649,7 +3990,7 @@
       };
 
       const ingredientPills = ingredients.map((ing) => {
-        const displayName = ing.display_name || ing.ingredient || 'Unknown';
+          const displayName = ing.display_name || ing.ingredient || 'Unknown';
         const safeName = escapeHTML(displayName);
         const servingText = formatServingLabel(ing);
         const safeServing = servingText ? escapeHTML(servingText) : '—';
@@ -3674,9 +4015,9 @@
                 <h3>Nutrition Summary</h3>
                 <p>Totals across selected ingredients</p>
               </div>
-            </div>
+              </div>
             ${headerRight}
-          </div>
+            </div>
 
           <div class="nutrition-summary-grid">
             <div class="nutrition-tile-compact"><div class="top"><span>🔥</span><span class="label">Calories</span></div><div class="value">${total.calories.toFixed(1)}<span class="unit">kcal</span></div></div>
@@ -3686,9 +4027,9 @@
             <div class="nutrition-tile-compact"><div class="top"><span>🌿</span><span class="label">Fiber</span></div><div class="value">${total.fiber.toFixed(1)}<span class="unit">g</span></div></div>
             <div class="nutrition-tile-compact"><div class="top"><span>🍬</span><span class="label">Sugar</span></div><div class="value">${total.sugar.toFixed(1)}<span class="unit">g</span></div></div>
             <div class="nutrition-tile-compact"><div class="top"><span>🧂</span><span class="label">Sodium</span></div><div class="value">${total.sodium.toFixed(1)}<span class="unit">mg</span></div></div>
-              </div>
-              </div>
-      `;
+            </div>
+          </div>
+        `;
 
       // Note: Per-ingredient breakdown intentionally removed to reduce scrolling and avoid duplicate presentation.
 
@@ -3895,189 +4236,139 @@
 
       const uniqueAllergens = Array.from(allergenMap.values());
 
-      // Build compact ingredient summary table
-      let ingredientSummaryHtml = `
-        <div style="margin-bottom: 20px;">
-          <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 700; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
-            <span style="width: 4px; height: 18px; background: var(--primary); border-radius: 2px;"></span>
-            Ingredients (${ingredients.length})
-          </h3>
-          <div style="background: white; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border);">
-            <div style="overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                <thead>
-                  <tr style="background: var(--bg-secondary); border-bottom: 2px solid var(--border);">
-                    <th style="padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-primary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Ingredient</th>
-                    <th style="padding: 10px 14px; text-align: center; font-weight: 600; color: var(--text-primary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
-                    <th style="padding: 10px 14px; text-align: center; font-weight: 600; color: var(--text-primary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Serving</th>
-                  </tr>
-                </thead>
-                <tbody>
-      `;
+      // Helper function for escaping HTML
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[c]));
+      }
 
-      ingredients.forEach((ing, idx) => {
-        // Use display_name if available (user's original input), otherwise fall back to ingredient (DB key)
-        const displayName = ing.display_name || ing.ingredient || 'Unknown';
-        const safeDisplayName = escapeHTML(displayName);
-        
-        const hasAllergen = ing.allergens && typeof ing.allergens === 'object' && !Array.isArray(ing.allergens) && ing.allergens.name;
-        const servingText = ing.serving_size || '100g';
-        const safeServingText = escapeHTML(servingText.replace(' (estimated)', ''));
-        const rowBg = idx % 2 === 0 ? 'white' : 'var(--bg-secondary)';
-        
-        ingredientSummaryHtml += `
-                  <tr style="background: ${rowBg}; border-bottom: 1px solid var(--bg-tertiary);">
-                    <td style="padding: 10px 14px;">
-                      <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-weight: 600; color: var(--text-primary);">${safeDisplayName}</span>
-                        ${ing.is_usda ? `<span style="font-size: 0.65rem; color: #059669; background: #d1fae5; padding: 2px 5px; border-radius: 3px; font-weight: 600; border: 1px solid #10b981;" title="USDA Verified">✓</span>` : ''}
-                      </div>
-                    </td>
-                    <td style="padding: 10px 14px; text-align: center;">
-                      ${hasAllergen ? `
-                        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #fee2e2; color: #991b1b; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: 1px solid #ef4444;">
-                          <span>⚠</span> Allergen
-                        </span>
-                      ` : `
-                        <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #d1fae5; color: #065f46; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: 1px solid #10b981;">
-                          <span>✓</span> Safe
-                        </span>
-                      `}
-                    </td>
-                    <td style="padding: 10px 14px; text-align: center; font-size: 0.8rem; color: var(--text-secondary);">${safeServingText}</td>
-                  </tr>
-        `;
-      });
+      // Build single ingredient chip for header (1-ingredient mode)
+      const formatServingLabel = (ing) => {
+        const grams = Number(ing?.serving_size_g);
+        if (!Number.isNaN(grams) && grams > 0) {
+          const g = grams % 1 === 0 ? grams.toFixed(0) : grams.toFixed(1);
+          return `${g}g`;
+        }
+        const raw = (ing?.serving_size || '').toString().trim();
+        return raw || '100g';
+      };
 
-      ingredientSummaryHtml += `
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      `;
+      // Use only first ingredient for single-ingredient mode
+      const firstIngredient = ingredients[0] || {};
+      const displayName = firstIngredient.display_name || firstIngredient.ingredient || 'Unknown';
+      const safeName = escapeHtml(displayName);
+      const servingText = formatServingLabel(firstIngredient);
+      const safeServing = escapeHtml(servingText);
+      const headerIngredientChip = `<span class="pf-a-chip">${safeName} • ${safeServing}</span>`;
 
-      if (uniqueAllergens.length === 0) {
-  const emptyHtml = ingredientSummaryHtml + `
-    <div class="pf-allergen-inline pf-success">
-      <span class="pf-dot" aria-hidden="true"></span>
-      <div class="pf-inline-text">
-        <div class="pf-title">No common allergens detected</div>
-        <div class="pf-sub">
-          Results depend on ingredient naming and data. Cross-contamination is possible—verify labels if you have severe allergies.
-        </div>
-      </div>
-    </div>
-  `;
-  if (targetBody) {
-    targetBody.innerHTML = emptyHtml;
-  }
-  return;
-}
+      // Extract allergen names
+      const groupsChecked = ['Milk', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts', 'Peanuts', 'Wheat', 'Soy', 'Sesame'];
+      const allergenNames = uniqueAllergens.map(a => {
+        if (typeof a === 'string') return a;
+        if (a && typeof a === 'object') return a.name || a.allergen || a.label || '';
+        return String(a);
+      }).filter(Boolean);
 
+      // Status pill
+      const statusPill = allergenNames.length === 0
+        ? `<div class="pf-a-pill pf-a-pill--ok"><span class="pf-a-pill-dot"></span>No common allergens detected</div>`
+        : `<div class="pf-a-pill pf-a-pill--bad"><span class="pf-a-pill-dot"></span>Potential allergens detected</div>`;
 
-      // Build compact allergen display
-      let html = ingredientSummaryHtml + `
-        <div style="margin-bottom: 20px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid #fee2e2;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <div style="width: 28px; height: 28px; background: #ef4444; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.85rem; font-weight: 700;">⚠</div>
-              <div>
-                <h3 style="color: var(--danger); font-size: 1rem; font-weight: 700; margin: 0; line-height: 1.2;">
-                  Allergens Detected
-                </h3>
-                <p style="color: var(--text-secondary); font-size: 0.75rem; margin: 2px 0 0 0;">
-                  ${uniqueAllergens.length} ${uniqueAllergens.length === 1 ? 'allergen found' : 'allergens found'}
-                </p>
+      // Allergen panel - exclude first allergen if shown in header
+      const remainingAllergens = allergenNames.length > 0 ? allergenNames.slice(1) : [];
+      const needsToggle = remainingAllergens.length > 5; // simple threshold to avoid showing button for small lists
+
+const allergenPanel = allergenNames.length === 0
+  ? `<div class="pf-a-muted">None detected from common allergen groups.</div>`
+  : remainingAllergens.length === 0
+  ? `` // No remaining allergens to show (first one is in header)
+  : `
+    <div id="pf-a-allClamp" class="pf-a-chipClamp">
+      <div class="pf-a-chips">
+        ${remainingAllergens.map(n => `<span class="pf-a-chip pf-a-chip--danger">${escapeHtml(n)}</span>`).join('')}
               </div>
             </div>
-            <div style="padding: 4px 12px; background: #fee2e2; border-radius: 6px; border: 1px solid #fecaca;">
-              <div style="font-size: 1.1rem; font-weight: 700; color: #ef4444; text-align: center; line-height: 1;">${uniqueAllergens.length}</div>
+    ${needsToggle ? `
+      <div class="pf-a-toggleRow">
+        <button type="button" class="pf-a-toggleBtn" data-pf-toggle="pf-a-allClamp">Show all</button>
             </div>
-          </div>
-          
-          <div style="background: white; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border);">
-            <div style="overflow-x: auto;">
-              <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                <thead>
-                  <tr style="background: var(--bg-secondary); border-bottom: 2px solid var(--border);">
-                    <th style="padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-primary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Allergen</th>
-                    <th style="padding: 10px 14px; text-align: center; font-weight: 600; color: var(--text-primary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Severity</th>
-                    <th style="padding: 10px 14px; text-align: left; font-weight: 600; color: var(--text-primary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Found In</th>
-                  </tr>
-                </thead>
-                <tbody>
-      `;
+    ` : ``}
+  `;
 
-      uniqueAllergens.forEach((allergen, idx) => {
-        const severityConfig = {
-          'High': { color: '#ef4444', bg: '#fee2e2', border: '#fecaca', textColor: '#991b1b' },
-          'Medium': { color: '#f59e0b', bg: '#fef3c7', border: '#fde68a', textColor: '#92400e' },
-          'Low': { color: '#10b981', bg: '#d1fae5', border: '#a7f3d0', textColor: '#065f46' },
-          'Unknown': { color: '#6b7280', bg: '#f3f4f6', border: '#e5e7eb', textColor: '#374151' }
-        };
+      // Group tags
+      const groupTags = groupsChecked.map(g => `<span class="pf-a-tag">${escapeHtml(g)}</span>`).join('');
 
-        const config = severityConfig[allergen.severity] || severityConfig['Unknown'];
-        const rowBg = idx % 2 === 0 ? 'white' : 'var(--bg-secondary)';
-        const ingredientsListRaw = allergen.ingredients.slice(0, 3).join(', ') + (allergen.ingredients.length > 3 ? ` +${allergen.ingredients.length - 3} more` : '');
-        const ingredientsList = escapeHTML(ingredientsListRaw);
-        const safeAllergenName = escapeHTML(allergen.name || '');
-        const desc = allergen.description || '';
-        const descSnippet = desc.length > 80 ? desc.substring(0, 80) + '...' : desc;
-        const safeDescription = escapeHTML(descSnippet);
-        const safeSeverity = escapeHTML(allergen.severity || '');
+      // Notes list
+      const notesList = `
+  <ul class="pf-a-list">
+    <li>Results depend on ingredient naming and available data.</li>
+    <li>Cross-contamination can occur during processing.</li>
+    <li>If severe allergies, verify packaging and consult a clinician.</li>
+  </ul>
+`;
 
-        html += `
-                  <tr style="background: ${rowBg}; border-bottom: 1px solid var(--bg-tertiary);">
-                    <td style="padding: 10px 14px;">
-                      <div style="font-weight: 600; color: var(--text-primary);">${safeAllergenName}</div>
-                      ${allergen.description ? `
-                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.4;">
-                          ${safeDescription}
-                        </div>
-                      ` : ''}
-                    </td>
-                    <td style="padding: 10px 14px; text-align: center;">
-                      <span style="display: inline-block; padding: 4px 10px; background: ${config.bg}; color: ${config.textColor}; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: 1px solid ${config.border};">
-                        ${safeSeverity}
-                      </span>
-                    </td>
-                    <td style="padding: 10px 14px; font-size: 0.85rem; color: var(--text-primary);">
-                      ${ingredientsList}
-                    </td>
-                  </tr>
-        `;
-      });
-
-      html += `
-                </tbody>
-              </table>
+      // Build HTML
+      const redesignedHtml = `
+        <div class="pf-a-wrap">
+          <div class="pf-a-header">
+            <div>
+              <div class="pf-a-title">Allergen Report</div>
+              <div class="pf-a-subtitle">Checks selected ingredient(s) against common allergen groups. Always verify labels if you have severe allergies.</div>
+              <div class="pf-a-subchips">${headerIngredientChip}</div>
             </div>
+            ${statusPill}
           </div>
+          <div class="pf-a-grid">
+            <section class="pf-a-card">
+              <div class="pf-a-card-head">
+                <div class="pf-a-card-title pf-a-card-title--center">Detected allergens</div>
+                ${allergenNames.length > 0 ? `<span class="pf-a-chip pf-a-chip--danger pf-a-chip--head">${escapeHtml(allergenNames[0])}</span>` : ``}
+              </div>
+              ${allergenPanel}
+            </section>
         </div>
-        
-        <!-- Safety Notice -->
-        <div style="margin-top: 16px; padding: 12px 14px; background: #fef2f2; border-radius: var(--radius); border: 1px solid #fecaca;">
-          <div style="display: flex; align-items: start; gap: 10px;">
-            <div style="width: 20px; height: 20px; background: #ef4444; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;">
-              <span style="font-size: 0.7rem; color: white; font-weight: 700;">!</span>
+          <section class="pf-a-acc">
+            <button class="pf-a-acc-btn" type="button" aria-expanded="false" aria-controls="pf-a-groups">
+              <span>Allergen groups checked</span><span aria-hidden="true">▾</span>
+            </button>
+            <div id="pf-a-groups" class="pf-a-acc-panel" hidden>
+              <div class="pf-a-tags">${groupTags}</div>
             </div>
-            <div style="flex: 1;">
-              <h4 style="color: #991b1b; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem;">
-                Safety Notice
-              </h4>
-              <p style="color: #7f1d1d; line-height: 1.5; margin: 0; font-size: 0.8rem;">
-                Consult a healthcare professional if you have known allergies. This information is for reference only and does not replace medical advice.
-              </p>
+          </section>
+          <section class="pf-a-acc">
+            <button class="pf-a-acc-btn" type="button" aria-expanded="false" aria-controls="pf-a-notes">
+              <span>Notes</span><span aria-hidden="true">▾</span>
+            </button>
+            <div id="pf-a-notes" class="pf-a-acc-panel" hidden>
+              ${notesList}
             </div>
-          </div>
+          </section>
         </div>
       `;
 
-      // Use the allergens-specific results body
       if (targetBody) {
-        targetBody.innerHTML = html;
+        targetBody.innerHTML = redesignedHtml;
+        initAllergenAccordions(targetBody);
       }
+    }
+
+    function initAllergenAccordions(scope) {
+      if (!scope) return;
+      const btns = scope.querySelectorAll('.pf-a-acc-btn');
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const expanded = btn.getAttribute('aria-expanded') === 'true';
+          const panelId = btn.getAttribute('aria-controls');
+          const panel = panelId ? scope.querySelector('#' + CSS.escape(panelId)) : null;
+          btn.setAttribute('aria-expanded', String(!expanded));
+          if (panel) panel.hidden = expanded;
+        });
+      });
     }
 
     // Track scroll position for each tab continuously - attach to each tab pane
