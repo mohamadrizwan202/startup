@@ -2207,6 +2207,11 @@
     #pf-a-notes .pf-a-list li:last-child {
       margin-bottom: 0 !important;
     }
+
+    /* HB pills (filter/info) */
+    .pf-hb-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(15,23,42,.10);background:#fff;font-weight:900;font-size:13px;color:#0f172a;white-space:nowrap}
+    .pf-hb-pill--filter{border-style:dashed}
+    .pf-hb-pill--note{background:#f8fafc}
   </style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
   <script nonce="{{ csp_nonce }}">
@@ -2601,6 +2606,19 @@
     const healthBenefitsResultsBodyEl = document.getElementById('health-benefits-results-body');
     const tabs = document.querySelectorAll('.tab');
     const tabPanes = document.querySelectorAll('.tab-pane');
+
+    /* Health Benefits selection context */
+    window.pfHBContext = window.pfHBContext || { source: 'search', goal: null, goalLabel: null };
+    function pfSetHBContext(source, goal, goalLabel) {
+      window.pfHBContext = { source: source || 'search', goal: goal || null, goalLabel: goalLabel || null, ts: Date.now() };
+      console.log('[HB_CTX]', window.pfHBContext);
+    }
+    function pfGetHBContext() {
+      return window.pfHBContext || { source: 'search', goal: null, goalLabel: null };
+    }
+    window.pfInHealthBrowserFlow = window.pfInHealthBrowserFlow || false;
+    window.pfActiveHealthGoalLabel = window.pfActiveHealthGoalLabel || null;
+    window.pfActiveHealthGoalValue = window.pfActiveHealthGoalValue || null;
 
     // State
     let categories = [];
@@ -3046,6 +3064,17 @@
           [...categoryListEl.children].forEach(c => c.classList.remove('active'));
           chip.classList.add('active');
           selectedCategory = categoryValue; // Use value (original DB category) for API calls
+          // Track active health goal (label for UI, value for backend filtering)
+          window.pfActiveHealthGoalLabel = categoryLabel;
+          window.pfActiveHealthGoalValue = categoryValue;
+          
+          console.log('[HB_GOAL_SET]', {
+            label: window.pfActiveHealthGoalLabel,
+            value: window.pfActiveHealthGoalValue,
+            ctx: pfGetHBContext()
+          });
+          
+          window.pfInHealthBrowserFlow = true;
           updateSelectedSummary();
           setStatus(`Selected "${categoryLabel}"`);
           loadSubcategories(categoryValue);
@@ -3099,13 +3128,24 @@
         subcatListEl.classList.add('expanded');
       }
 
-      subcategories.forEach(subcat => {
-        const count = hierarchy[category][subcat];
+      subcategories.forEach(subcatObj => {
+        // Handle both object format {value, label} and string format (legacy)
+        const subcatValue =
+          (typeof subcatObj === 'object' && subcatObj && 'value' in subcatObj)
+            ? subcatObj.value
+            : subcatObj;
+
+        const subcatLabel =
+          (typeof subcatObj === 'object' && subcatObj && 'label' in subcatObj)
+            ? subcatObj.label
+            : subcatObj;
+
+        const count = hierarchy[category][subcatObj]; // Use original subcatObj key for hierarchy lookup
         const chip = document.createElement('div');
         chip.className = 'subcategory-chip';
         
         const nameSpan = document.createElement('span');
-        nameSpan.textContent = subcat;
+        nameSpan.textContent = subcatLabel; // Use label for display
 
         const countSpan = document.createElement('span');
         countSpan.className = 'count';
@@ -3118,12 +3158,21 @@
             if (c.classList) c.classList.remove('active');
           });
           chip.classList.add('active');
-          selectedSubcategory = subcat;
+          // IMPORTANT: use subcatValue (exists now)
+          selectedSubcategory = subcatValue;
+          
+          // show ingredients section
+          const ingSec = document.getElementById('ingredients-section');
+          if (ingSec) ingSec.style.display = ''; // let CSS decide
+          
+          // clear search box safely
+          const s = document.getElementById('ingredient-search');
+          if (s) s.value = '';
+
           updateSelectedSummary();
-          setStatus(`Loading ingredients for "${subcat}"...`);
-          loadIngredients(category, subcat);
-          // Show ingredients section
-          document.getElementById('ingredients-section').style.display = 'block';
+          setStatus(`Loading ingredients for "${subcatLabel}"...`);
+          // load ingredients using VALUES (not labels)
+          loadIngredients(selectedCategory, subcatValue);
           // Smoothly guide user to the next step
           requestAnimationFrame(() => requestAnimationFrame(scrollToIngredients));
         });
@@ -3228,6 +3277,15 @@
           
           console.log('[renderIngredients] Click detected on ingredient:', ingredient);
           
+        // Set context based on selectedCategory, selectedSubcategory, empty search query, and active goal
+        const q = (document.getElementById('ingredient-search')?.value || '').trim();
+        const isBrowserPick = !!selectedCategory && !!selectedSubcategory && q.length === 0 && !!window.pfActiveHealthGoalValue;
+        if (isBrowserPick) {
+          pfSetHBContext('browser', window.pfActiveHealthGoalValue || null, window.pfActiveHealthGoalLabel || null);
+        } else {
+          pfSetHBContext('search', null, null);
+        }
+        
         // Visual feedback
         item.style.transform = 'scale(0.95)';
           setTimeout(() => {
@@ -3251,11 +3309,9 @@
       const subcatDisplay = document.getElementById('selected-subcat-display');
       const countDisplay = document.getElementById('selected-count-display');
       
-      // Always update goal: prefer active chip text, fallback to state, then 'None'
+      // Always update goal: prefer window.pfActiveHealthGoalLabel (UI label), fallback to selectedCategory (backend value), then 'None'
       if (goalDisplay) {
-        const activeGoalChip = document.querySelector('.goal-chip.active');
-        const goalText = activeGoalChip?.textContent?.trim();
-        goalDisplay.textContent = goalText || selectedCategory || 'None';
+        goalDisplay.textContent = window.pfActiveHealthGoalLabel || selectedCategory || 'None';
       }
       
       // Always update subcategory: prefer active chip text, fallback to state, then 'None'
@@ -3293,6 +3349,12 @@
       const ingredientSearchEl = document.getElementById('ingredient-search');
       if (ingredientSearchEl) {
         ingredientSearchEl.addEventListener('input', (e) => {
+          const q = (ingredientSearchEl.value || '').trim();
+          if (q.length > 0) {
+            pfSetHBContext('search', null, null);
+            window.pfActiveHealthGoalLabel = null;
+            window.pfActiveHealthGoalValue = null;
+          }
           const query = e.target.value.toLowerCase().trim();
           const items = ingredientListEl.querySelectorAll('.ingredient-item-compact');
           const recommendedListEl = document.getElementById('recommended-list');
@@ -3326,6 +3388,7 @@
     // Note: When ingredients are added via browser, syncTextareaFromSelected() updates the textarea
     // When textarea is manually edited, this handler updates the button state
     ingredientsInputEl.addEventListener('input', () => {
+      // When user types in search bar, set context to 'search' to show all benefits
       const hasText = ingredientsInputEl.value.trim().length > 0;
       analyzeBtn.disabled = !hasText && selectedIngredients.length === 0;
       // Clear error message when user starts typing
@@ -4045,6 +4108,19 @@
     }
 
     function displayHealthBenefitsResults(data) {
+      console.log('[HB_RENDER_CTX]', pfGetHBContext());
+      // Helper function for escaping HTML
+      function escapeHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/[&<>"']/g, c => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[c]));
+      }
+      
       // Parse exact API response structure
       const ingredients = data.ingredients || [];
       const message = data.message || '';
@@ -4059,8 +4135,8 @@
         return;
       }
 
-      // Collect all health benefits
-      const allHealthBenefits = [];
+      // Collect all health benefits - flatten into array for filtering
+      const allBenefits = [];
       ingredients.forEach(ing => {
         // Use display_name if available (user's original input), otherwise fall back to ingredient (DB key)
         const displayName = ing.display_name || ing.ingredient || 'Unknown';
@@ -4069,16 +4145,60 @@
         if (ing.health_benefits && Array.isArray(ing.health_benefits) && ing.health_benefits.length > 0) {
           ing.health_benefits.forEach(hb => {
             if (hb.health_benefits) {
-              allHealthBenefits.push({
+              allBenefits.push({
                 ingredient: safeDisplayName,  // Use display name for UI
                 category: hb.category || '',
+                type: hb.type || '',
+                benefit: hb.benefit || '',
+                name: hb.name || '',
+                title: hb.title || '',
                 health_benefits: hb.health_benefits,
+                description: hb.description || '',
+                summary: hb.summary || '',
                 key_nutrients: hb.key_nutrients || ''
               });
             }
           });
         }
       });
+
+      // Apply filtering based on context
+      const ctx = pfGetHBContext();
+      const displayGoal = (ctx && ctx.goalLabel) ? ctx.goalLabel : (ctx && ctx.goal) ? ctx.goal : '';
+      const safeDisplayGoal = escapeHtml(displayGoal);
+      
+      // Helper function to map backend category value to UI label
+      function getCategoryLabel(backendValue) {
+        if (!backendValue) return null;
+        const normalizedBackend = String(backendValue).trim().toLowerCase();
+        // Find matching category in categories array
+        for (const cat of categories) {
+          const catValue = typeof cat === 'object' && 'value' in cat ? cat.value : cat;
+          if (String(catValue).trim().toLowerCase() === normalizedBackend) {
+            return typeof cat === 'object' && 'label' in cat ? cat.label : catValue;
+          }
+        }
+        return null; // No match found
+      }
+      
+      let benefits = allBenefits;
+      
+      // If browser flow with goal selected, filter to show only matching benefit (use ctx.goal for filtering - backend value)
+      if (ctx.source === 'browser' && ctx.goal && Array.isArray(benefits) && benefits.length) {
+        const goalName = String(ctx.goal).trim().toLowerCase();
+        benefits = benefits.filter(b => {
+          const category = String(b.category || b.type || '').trim().toLowerCase();
+          return category === goalName;
+        });
+      }
+
+      // Convert back to old structure for compatibility
+      const allHealthBenefits = benefits.map(b => ({
+        ingredient: b.ingredient,
+        category: b.category || '',
+        health_benefits: b.health_benefits,
+        key_nutrients: b.key_nutrients || ''
+      }));
 
       if (allHealthBenefits.length === 0) {
         const emptyHtml = `
@@ -4148,14 +4268,25 @@
         `;
 
         benefits.forEach((hb, idx) => {
-          const safeCategory = hb.category ? escapeHTML(hb.category) : '';
+          // Determine category label to display:
+          // 1. If browser flow with selected goal, use the UI label from context
+          // 2. Otherwise, try to map backend category value to UI label
+          // 3. Fall back to backend category value if no mapping found
+          let categoryToDisplay = '';
+          if (ctx.source === 'browser' && safeDisplayGoal) {
+            categoryToDisplay = safeDisplayGoal;
+          } else if (hb.category) {
+            const uiLabel = getCategoryLabel(hb.category);
+            categoryToDisplay = uiLabel ? escapeHtml(uiLabel) : escapeHtml(hb.category);
+          }
+          
           const safeBenefitsText = hb.health_benefits ? escapeHTML(hb.health_benefits) : '';
           const safeKeyNutrients = hb.key_nutrients ? escapeHTML(hb.key_nutrients) : '';
           html += `
             <div style="background: #f9fafb; border-radius: 6px; padding: 12px; border-left: 3px solid #22c55e;">
-              ${hb.category ? `
+              ${categoryToDisplay ? `
                 <div style="display: inline-block; background: #22c55e; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
-                  ${safeCategory}
+                  ${categoryToDisplay}
                 </div>
               ` : ''}
               <div style="font-size: 0.9rem; color: #374151; line-height: 1.6; margin-bottom: ${hb.key_nutrients ? '8px' : '0'};">
