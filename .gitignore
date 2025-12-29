@@ -86,3 +86,6 @@ backup_*.dump
 
 # backups
 *.bak
+
+# local backup files
+*.bak_goal_*
