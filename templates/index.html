@@ -3591,13 +3591,27 @@
       'kefir': 'kefir',
       
       // Nuts & Nut Butters
-      'brazil nuts': 'brazil nuts',
+      // IMPORTANT: Explicit mappings prevent fuzzy matching to nut milks
+      // Standalone nuts must map to exact nut names, NOT nut milks
+      'almond': 'almond',  // Must NOT match 'almond milk'
+      'almonds': 'almond',
+      'cashew': 'cashew',  // Must NOT match 'cashew milk'
+      'cashews': 'cashew',
+      'walnut': 'walnut',  // Must NOT match 'walnut milk'
+      'walnuts': 'walnut',
+      'pecan': 'pecan',  // Must NOT match 'pecan milk'
+      'pecans': 'pecan',
       'hazelnut': 'hazelnut',  // Must match exactly - do not confuse with 'hazelnut milk'
-      'pine nuts': 'pine nuts',
+      'hazelnuts': 'hazelnut',
+      'pistachio': 'pistachios',  // Must NOT match 'pistachio milk'
       'pistachios': 'pistachios',
-      'pistachio': 'pistachios',
-      'macadamia nuts': 'macadamia nuts',
+      'macadamia': 'macadamia nuts',  // Must NOT match 'macadamia milk'
       'macadamia nut': 'macadamia nuts',
+      'macadamia nuts': 'macadamia nuts',
+      'brazil nut': 'brazil nuts',
+      'brazil nuts': 'brazil nuts',
+      'pine nut': 'pine nuts',
+      'pine nuts': 'pine nuts',
       'almond butter': 'almond butter',
       
       // Fermented Foods
@@ -3664,8 +3678,29 @@
       'cranberry': { grams: 50, display: '50g (1/2 cup) USDA standard' },
       'cranberries': { grams: 50, display: '50g (1/2 cup) USDA standard' },
       
+      // Tree Nuts - USDA standard is 28g (1 oz)
+      'almond': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'almonds': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'cashew': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'cashews': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'walnut': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'walnuts': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'pecan': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'pecans': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'hazelnut': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'hazelnuts': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'pistachio': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'pistachios': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'macadamia': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'macadamia nut': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'macadamia nuts': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'brazil nut': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'brazil nuts': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'pine nut': { grams: 28, display: '28g (1 oz) USDA standard' },
+      'pine nuts': { grams: 28, display: '28g (1 oz) USDA standard' },
+      
       // Other ingredients - keep as null to use API response
-      // Only berries have explicit USDA standard overrides
+      // Only berries and tree nuts have explicit USDA standard overrides
     };
     
     // Helper function to get USDA standard serving size for Ingredient tab display
@@ -3757,6 +3792,15 @@
       const ingredientMappings = ingredientsToAnalyze.map(uiName => {
         const originalKey = uiName.toLowerCase().trim();
         const canonName = getIngredientTabNutritionKey(uiName);
+        
+        // CRITICAL: For standalone nuts, ensure we're NOT sending a name that could match nut milks
+        const standaloneNuts = ['almond', 'almonds', 'cashew', 'cashews', 'walnut', 'walnuts', 
+                               'pecan', 'pecans', 'hazelnut', 'hazelnuts', 'pistachio', 'pistachios',
+                               'macadamia'];
+        if (standaloneNuts.includes(originalKey) && canonName !== originalKey) {
+          console.warn(`[ingredient-nutrition] Standalone nut "${uiName}" mapped to "${canonName}" - this may cause backend to match nut milk!`);
+        }
+        
         if (canonName !== originalKey) {
           console.log(`[ingredient-nutrition] Mapping UI name "${uiName}" → canonical key "${canonName}"`);
         } else {
@@ -3829,6 +3873,49 @@
         }
 
         const data = await res.json();
+        
+        // Validate ingredient matching: prevent standalone nuts from matching to nut milks
+        // Check if backend returned wrong ingredient (e.g., "almond milk" when we sent "almond")
+        if (data.ingredients && Array.isArray(data.ingredients) && ingredientMappings.length > 0) {
+          const nutMilkPhrases = ['almond milk', 'cashew milk', 'walnut milk', 'pistachio milk', 
+                                  'pistachios milk', 'hazelnut milk', 'pecan milk', 'macadamia milk'];
+          const standaloneNuts = ['almond', 'almonds', 'cashew', 'cashews', 'walnut', 'walnuts', 
+                                  'pecan', 'pecans', 'hazelnut', 'hazelnuts', 'pistachio', 'pistachios',
+                                  'macadamia'];
+          
+          let hasMismatch = false;
+          data.ingredients.forEach((ing, idx) => {
+            const originalName = ingredientMappings[idx]?.originalName?.toLowerCase().trim();
+            const normalizedName = ingredientMappings[idx]?.normalizedName?.toLowerCase().trim();
+            const returnedIngredient = (ing.ingredient || ing.display_name || '').toLowerCase().trim();
+            
+            // Check if we sent a standalone nut but got back a nut milk
+            if (originalName && standaloneNuts.includes(originalName) && 
+                nutMilkPhrases.some(milk => returnedIngredient.includes(milk))) {
+              hasMismatch = true;
+              console.error(`[ingredient-match-error] Sent "${originalName}" but got "${returnedIngredient}". Backend fuzzy matching issue.`);
+              
+              // Show user-facing error
+              const errorMsg = `Ingredient matching error: "${ingredientMappings[idx]?.originalName}" was matched to "${returnedIngredient}". Please be more specific (e.g., use "almond" for the nut or "almond milk" for the milk).`;
+              setStatus(errorMsg, true);
+              showIngredientError(errorMsg);
+              
+              // Try to fix: replace the ingredient name in the response
+              if (ing.ingredient) {
+                ing.ingredient = normalizedName || originalName;
+              }
+              if (ing.display_name) {
+                ing.display_name = originalName;
+              }
+            }
+          });
+          
+          if (hasMismatch) {
+            // Show warning but still display results
+            console.warn('[ingredient-match-warning] Backend matched standalone nut to nut milk. Results may show incorrect serving sizes.');
+          }
+        }
+        
         lastAnalysisResult = data;
         setStatus('Analysis complete!');
         
@@ -4004,7 +4091,9 @@
       };
       
       ingredients.forEach(ing => {
-        const usdaServing = getUSDAStandardServingSize(ing.ingredient || '');
+        // Try both ingredient name and display_name for USDA lookup
+        const usdaServing = getUSDAStandardServingSize(ing.ingredient || '') || 
+                           getUSDAStandardServingSize(ing.display_name || '');
         let calories = ing.calories || 0;
         let protein = ing.protein || 0;
         let carbs = ing.carbs || 0;
@@ -4028,6 +4117,9 @@
             fiber = (fiber * ratio);
             sugar = (sugar * ratio);
             sodium = (sodium * ratio);
+            
+            // Update serving_size_g to USDA standard for consistent display
+            ing.serving_size_g = usdaServingGrams;
           }
         }
         
@@ -4042,6 +4134,16 @@
 
       // Build HTML (compact, user-friendly)
       const formatServingLabel = (ing) => {
+        // Check for USDA standard serving size first (for tree nuts and berries)
+        // Try both ingredient name and display_name for lookup
+        const usdaServing = getUSDAStandardServingSize(ing.ingredient || '') || 
+                           getUSDAStandardServingSize(ing.display_name || '');
+        if (usdaServing && usdaServing.grams) {
+          const g = usdaServing.grams % 1 === 0 ? usdaServing.grams.toFixed(0) : usdaServing.grams.toFixed(1);
+          return `${g}g`;
+        }
+        
+        // Fallback to API serving size (which may have been updated to USDA standard above)
         const grams = Number(ing?.serving_size_g);
         if (!Number.isNaN(grams) && grams > 0) {
           // show clean grams, not huge decimals
@@ -4332,6 +4434,133 @@
       // Use the allergens-specific results body
       const targetBody = allergensResultsBodyEl || resultsBodyEl;
       
+      /**
+       * Normalize ingredient text for matching
+       */
+      function normalizeIngredient(text) {
+        if (!text) return '';
+        return String(text)
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, ' ')  // Collapse multiple spaces
+          .replace(/-/g, ' ');    // Treat hyphens as spaces
+      }
+      
+      /**
+       * Detect allergens from ingredient name (client-side correction)
+       * Returns { milk: boolean, treeNuts: boolean, reason: string }
+       */
+      function detectAllergensFromName(ingredientName) {
+        const normalized = normalizeIngredient(ingredientName);
+        let milk = false;
+        let treeNuts = false;
+        let reason = '';
+        
+        // Nut milk phrases (MUST NOT trigger Milk, but DO trigger Tree Nuts)
+        const nutMilkPhrases = [
+          'almond milk', 'cashew milk', 'walnut milk', 'pistachio milk',
+          'pistachios milk', 'hazelnut milk', 'pecan milk', 'macadamia milk'
+        ];
+        
+        // Plant milk phrases (MUST NOT trigger Milk)
+        const plantMilkPhrases = [
+          'oat milk', 'soy milk', 'coconut milk', 'rice milk',
+          'pea milk', 'hemp milk', 'flax milk',
+          // Include all nut milks in plant milks to prevent Milk trigger
+          ...nutMilkPhrases
+        ];
+        
+        // Dairy indicators (trigger Milk allergen)
+        const dairyIndicators = [
+          'whey', 'casein', 'lactose', 'butter', 'ghee', 'cream', 'cheese',
+          'yogurt', 'kefir', 'curd'
+        ];
+        
+        // Tree nut indicators (trigger Tree Nuts allergen)
+        const treeNutIndicators = [
+          'almond', 'cashew', 'walnut', 'pecan', 'hazelnut', 'pistachio',
+          'macadamia', 'brazil nut', 'pine nut'
+        ];
+        
+        // Check for nut milk phrases first (highest priority for exclusion from Milk)
+        const isNutMilk = nutMilkPhrases.some(phrase => normalized.includes(phrase));
+        
+        // Check for plant milk phrases
+        const hasPlantMilk = plantMilkPhrases.some(phrase => normalized.includes(phrase));
+        
+        // Check for dairy indicators (even if plant milk is present, dairy takes priority)
+        const hasDairyIndicator = dairyIndicators.some(indicator => {
+          const regex = new RegExp(`\\b${indicator}\\b`, 'i');
+          return regex.test(normalized);
+        });
+        
+        // Check for standalone "milk" (not part of plant milk phrase)
+        let hasStandaloneMilk = false;
+        if (normalized.includes('milk')) {
+          // Check if "milk" is part of a plant milk phrase
+          const isInPlantMilk = plantMilkPhrases.some(phrase => {
+            const milkIndex = normalized.indexOf('milk');
+            const phraseIndex = normalized.indexOf(phrase);
+            return phraseIndex !== -1 && milkIndex >= phraseIndex && milkIndex < phraseIndex + phrase.length;
+          });
+          hasStandaloneMilk = !isInPlantMilk;
+        }
+        
+        // Matching priority: 
+        // 1. Dairy indicators take precedence (even in plant milks)
+        // 2. Nut milks NEVER trigger any allergens (show green - no allergens)
+        // 3. Other plant milks don't trigger Milk
+        // 4. Standalone milk triggers Milk
+        if (hasDairyIndicator) {
+          milk = true;
+          const matched = dairyIndicators.find(ind => normalized.includes(ind));
+          reason = `dairy indicator: ${matched}`;
+        } else if (isNutMilk) {
+          // Nut milk found - explicitly do NOT set Milk or Tree Nuts (show green - no allergens)
+          milk = false; // Explicitly prevent Milk allergen
+          treeNuts = false; // Explicitly prevent Tree Nuts allergen
+          const matched = nutMilkPhrases.find(phrase => normalized.includes(phrase));
+          reason = `nut milk: ${matched} (no allergens - green)`;
+        } else if (hasPlantMilk) {
+          // Non-nut plant milk found - do NOT set Milk
+          milk = false; // Explicitly prevent Milk allergen
+          reason = 'plant milk (non-nut)';
+        } else if (hasStandaloneMilk) {
+          milk = true;
+          reason = 'standalone milk';
+        }
+        
+        // Check for tree nuts separately (even if not in milk form)
+        // IMPORTANT: Only skip if it's a nut MILK (not just the nut name)
+        // Standalone nuts (like "almond") should trigger Tree Nuts allergen
+        if (!treeNuts) {
+          // Only check for tree nuts if it's NOT a nut milk
+          // If it's a nut milk, we already set treeNuts = false above
+          if (!isNutMilk) {
+            const hasTreeNut = treeNutIndicators.some(nut => {
+              const regex = new RegExp(`\\b${nut}\\b`, 'i');
+              return regex.test(normalized);
+            });
+            if (hasTreeNut) {
+              treeNuts = true;
+              const matched = treeNutIndicators.find(nut => {
+                const regex = new RegExp(`\\b${nut}\\b`, 'i');
+                return regex.test(normalized);
+              });
+              reason = reason ? `${reason} + tree nut: ${matched}` : `tree nut: ${matched}`;
+            }
+          }
+        }
+        
+        // Special case: coconut milk should NOT trigger Tree Nuts (coconut is not a tree nut in labeling context)
+        if (normalized.includes('coconut milk')) {
+          treeNuts = false; // Explicitly exclude coconut milk from Tree Nuts
+          if (!reason) reason = 'coconut milk (not tree nut)';
+        }
+        
+        return { milk, treeNuts, reason: reason || 'none' };
+      }
+      
       // Collect all allergens from all ingredients
       const allergenMap = new Map();
       const ingredientsWithAllergens = [];
@@ -4339,6 +4568,13 @@
       ingredients.forEach(ing => {
         // Use display_name if available (user's original input), otherwise fall back to ingredient (DB key)
         const displayName = ing.display_name || ing.ingredient || 'Unknown';
+        const rawIngredient = ing.ingredient || displayName;
+        
+        // Detect allergens from ingredient name
+        const detected = detectAllergensFromName(rawIngredient);
+        
+        // Log detection result
+        console.log(`[ALLERGEN_MATCH] ingredient="${rawIngredient}" milk=${detected.milk} treeNuts=${detected.treeNuts} reason="${detected.reason}"`);
         
         const allergenData = ing.allergens;
         
@@ -4346,22 +4582,101 @@
         if (allergenData && typeof allergenData === 'object' && !Array.isArray(allergenData) && Object.keys(allergenData).length > 0 && allergenData.name) {
           const allergenKey = allergenData.name || 'Unknown Allergen';
           
-          if (!allergenMap.has(allergenKey)) {
-            allergenMap.set(allergenKey, {
-              name: allergenData.name || 'Unknown',
-              severity: allergenData.severity || 'Unknown',
-              description: allergenData.description || '',
-              aliases: allergenData.aliases || '',
-              common_in: allergenData.common_in || '',
-              ingredients: []
-            });
+          // Filter allergens based on detection logic
+          let shouldInclude = true;
+          
+          // CRITICAL: Nut milks NEVER trigger Milk allergen (red flag)
+          // If backend says "Milk" but our detection says it's a nut milk or plant milk, exclude it
+          if (allergenKey === 'Milk' && !detected.milk) {
+            shouldInclude = false;
           }
           
-          allergenMap.get(allergenKey).ingredients.push(displayName);  // Use display name for UI
-          ingredientsWithAllergens.push({
-            ingredient: displayName,  // Use display name for UI
-            allergen: allergenData
-          });
+          // If backend says "Tree Nuts" but our detection says it's not a tree nut, exclude it
+          // (But if we detected tree nuts, include it even if backend didn't)
+          if (allergenKey === 'Tree Nuts' && !detected.treeNuts) {
+            shouldInclude = false;
+          }
+          
+          // If we detected Milk but backend didn't report it, add it
+          if (detected.milk && allergenKey !== 'Milk') {
+            // Check if Milk already exists in map
+            if (!allergenMap.has('Milk')) {
+              allergenMap.set('Milk', {
+                name: 'Milk',
+                severity: 'Unknown',
+                description: 'Dairy milk allergen detected',
+                aliases: '',
+                common_in: '',
+                ingredients: []
+              });
+            }
+            allergenMap.get('Milk').ingredients.push(displayName);
+          }
+          
+          // If we detected Tree Nuts but backend didn't report it, add it
+          if (detected.treeNuts && allergenKey !== 'Tree Nuts') {
+            // Check if Tree Nuts already exists in map
+            if (!allergenMap.has('Tree Nuts')) {
+              allergenMap.set('Tree Nuts', {
+                name: 'Tree Nuts',
+                severity: 'Unknown',
+                description: 'Tree nuts allergen detected',
+                aliases: '',
+                common_in: '',
+                ingredients: []
+              });
+            }
+            allergenMap.get('Tree Nuts').ingredients.push(displayName);
+          }
+          
+          // Include the allergen if it passed our filter
+          if (shouldInclude) {
+            if (!allergenMap.has(allergenKey)) {
+              allergenMap.set(allergenKey, {
+                name: allergenData.name || 'Unknown',
+                severity: allergenData.severity || 'Unknown',
+                description: allergenData.description || '',
+                aliases: allergenData.aliases || '',
+                common_in: allergenData.common_in || '',
+                ingredients: []
+              });
+            }
+            
+            allergenMap.get(allergenKey).ingredients.push(displayName);  // Use display name for UI
+            ingredientsWithAllergens.push({
+              ingredient: displayName,  // Use display name for UI
+              allergen: allergenData
+            });
+          }
+        } else {
+          // No allergen data from backend, but check if we detected any
+          if (detected.milk) {
+            if (!allergenMap.has('Milk')) {
+              allergenMap.set('Milk', {
+                name: 'Milk',
+                severity: 'Unknown',
+                description: 'Dairy milk allergen detected',
+                aliases: '',
+                common_in: '',
+                ingredients: []
+              });
+            }
+            allergenMap.get('Milk').ingredients.push(displayName);
+          }
+          
+          if (detected.treeNuts) {
+            if (!allergenMap.has('Tree Nuts')) {
+              allergenMap.set('Tree Nuts', {
+                name: 'Tree Nuts',
+                severity: 'Unknown',
+                description: 'Tree nuts allergen detected',
+                aliases: '',
+                common_in: '',
+                ingredients: []
+              });
+            }
+            allergenMap.get('Tree Nuts').ingredients.push(displayName);
+          }
         }
       });
 
