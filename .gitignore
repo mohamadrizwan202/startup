@@ -89,3 +89,10 @@ backup_*.dump
 
 # local backup files
 *.bak_goal_*
+
+# local dev
+server.pid
+server.log
+.env.local
+render_latest.dump
+*.dump
