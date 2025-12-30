@@ -96,3 +96,10 @@ server.log
 .env.local
 render_latest.dump
 *.dump
+
+# local dev
+server.pid
+server.log
+.env.local
+render_latest.dump
+*.dump
