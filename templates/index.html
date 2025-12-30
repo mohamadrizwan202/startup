@@ -2277,6 +2277,33 @@
     .pf-hb2-nutr{font-size:.8rem;padding:6px 10px;border-radius:999px;background:#f8fafc;border:1px solid rgba(15,23,42,.08);color:#0f172a}
     .pf-hb2-list{margin:0;padding-left:18px}
     .pf-hb2-list li{margin:6px 0;color:#334155;line-height:1.45;font-size:.9rem}
+
+    /* Feedback Modal */
+    #feedback-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+    #feedback-modal[style*="display: flex"] {
+      display: flex !important;
+    }
+    #feedback-open:hover {
+      background: #f8fafc;
+      border-color: rgba(15,23,42,0.25);
+    }
+    #feedback-modal button[type="submit"]:hover {
+      background: #0b7f7e;
+    }
+    #feedback-modal button[type="button"]:hover {
+      background: #f8fafc;
+    }
   </style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
   <script nonce="{{ csp_nonce }}">
@@ -2372,9 +2399,14 @@
         <div id="selected-ingredients" class="selected-ingredients" style="display: none;">
         </div>
 
-        <button id="analyze-btn" class="btn-primary" disabled>
-          ⚡ Analyze Ingredients
-        </button>
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+          <button id="analyze-btn" class="btn-primary" disabled>
+            ⚡ Analyze Ingredients
+          </button>
+          <button id="feedback-open" class="btn-secondary" style="padding: 12px 24px; border: 1px solid rgba(15,23,42,0.15); background: #fff; color: #0f172a; border-radius: 8px; font-weight: 600; cursor: pointer;">
+            Feedback
+          </button>
+        </div>
       </div>
     </div>
 
@@ -2491,6 +2523,37 @@
   </div> <!-- /#ingredient-tab-content -->
 
     <!-- End Ingredient Analysis Tab Content -->
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+      <div style="background: #fff; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+        <h3 style="margin: 0 0 20px 0; font-size: 1.25rem; font-weight: 700; color: #0f172a;">Send Feedback</h3>
+        <form id="feedback-form">
+          <div style="margin-bottom: 16px;">
+            <label for="feedback-category" style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #334155;">Category</label>
+            <select id="feedback-category" style="width: 100%; padding: 10px; border: 1px solid rgba(15,23,42,0.15); border-radius: 8px; font-size: 0.95rem;">
+              <option value="bug">Bug</option>
+              <option value="idea">Idea</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <label for="feedback-email" style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #334155;">Email (optional)</label>
+            <input type="email" id="feedback-email" style="width: 100%; padding: 10px; border: 1px solid rgba(15,23,42,0.15); border-radius: 8px; font-size: 0.95rem; box-sizing: border-box;">
+          </div>
+          <div style="margin-bottom: 16px;">
+            <label for="feedback-message" style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #334155;">Message <span style="color: #ef4444;">*</span></label>
+            <textarea id="feedback-message" required rows="5" placeholder="Describe your feedback..." style="width: 100%; padding: 10px; border: 1px solid rgba(15,23,42,0.15); border-radius: 8px; font-size: 0.95rem; font-family: inherit; resize: vertical; box-sizing: border-box;"></textarea>
+            <div style="margin-top: 4px; font-size: 0.8rem; color: #64748b;">5–1500 characters</div>
+          </div>
+          <div id="feedback-status" style="margin-bottom: 16px; font-size: 0.9rem;"></div>
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" id="feedback-cancel" style="padding: 10px 20px; border: 1px solid rgba(15,23,42,0.15); background: #fff; color: #0f172a; border-radius: 8px; font-weight: 600; cursor: pointer;">Cancel</button>
+            <button type="submit" id="feedback-send" style="padding: 10px 20px; border: none; background: #0EA5A4; color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer;">Send</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <!-- Smoothie Builder Tab Content -->
     <div id="smoothie-tab-content" class="main-tab-content">
