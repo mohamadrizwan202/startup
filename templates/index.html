@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Nutrition & Allergen API - Interactive Dashboard</title>
   <style>
     * {
@@ -3831,6 +3832,30 @@
       return USDA_STANDARD_SERVING_SIZES[key] || null;
     }
 
+    // CSRF Protection Helpers
+    function getCSRFToken() {
+      const meta = document.querySelector('meta[name="csrf-token"]');
+      return meta ? meta.getAttribute('content') : null;
+    }
+
+    function apiFetch(url, options = {}) {
+      const token = getCSRFToken(); 
+      const method = (options.method || 'GET').toUpperCase();
+      
+      // Set credentials if not already set
+      if (!options.credentials) {
+        options.credentials = 'same-origin';
+      }
+      
+      // Add CSRF token for non-GET/HEAD/OPTIONS methods
+      if (token && !['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+        options.headers = options.headers || {};
+        options.headers['X-CSRFToken'] = token;
+      }
+      
+      return fetch(url, options);
+    }
+
     // Analyze Ingredients
     async function analyzeIngredients() {
       console.log('Analyze button clicked');
@@ -3964,7 +3989,7 @@
       setStatus('Analyzing ingredients...');
 
       try {
-        const res = await fetch('/api/analyze', {
+        const res = await apiFetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -13155,7 +13180,7 @@ const allergenPanel = allergenNames.length === 0
             .map(item => item.nutritionLookupName)
             .filter(name => name); // Remove empty names
           
-          const response = await fetch('/api/analyze', {
+          const response = await apiFetch('/api/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ingredients: formattedIngredients })
