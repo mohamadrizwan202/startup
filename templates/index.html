@@ -617,6 +617,33 @@
       box-shadow: var(--shadow-md);
     }
 
+    /* Goal search and browse toggle */
+    .pf-goal-browse-toggle {
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pf-goal-browse-toggle:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(14, 165, 164, 0.05);
+    }
+
+    .pf-goal-empty {
+      padding: 12px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
     /* Subcategories Section - Chip Grid */
     .subcategories-section {
       margin-bottom: 0;
@@ -1591,10 +1618,10 @@
       display: inline-flex;
       align-items: baseline;
       gap: 8px;
-      padding: 7px 10px;
+      padding: 6px 10px;
       border-radius: 999px;
       border: 1px solid rgba(14,165,164,0.22);
-      background: rgba(14,165,164,0.07);
+      background: rgba(14,165,164,0.08);
       white-space: nowrap;
     }
 
@@ -1995,12 +2022,24 @@
     }
 
     .pf-a-chip {
-      padding: 7px 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      width: auto;
+      padding: 0 12px;
       border-radius: 999px;
-      border: 1px solid rgba(15, 23, 42, 0.10);
-      background: rgba(15, 23, 42, 0.02);
-      font-size: 13px;
+      border: 1px solid rgba(14,165,164,0.22);
+      background: rgba(14,165,164,0.08);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
       color: #0f172a;
+      white-space: nowrap;
+    }
+    
+    .pf-a-chip .serving {
+      color: #0F172A99;
     }
 
     .pf-a-chip--danger {
@@ -2015,7 +2054,7 @@
     }
 
     .pf-a-tag {
-      padding: 7px 10px;
+      padding: 6px 10px;
       border-radius: 999px;
       border: 1px dashed rgba(15, 23, 42, 0.16);
       background: transparent;
@@ -2219,14 +2258,15 @@
     .pf-hb2-title{font-size:18px;font-weight:900;color:#0f172a;line-height:1.2;margin:0}
     .pf-hb2-subtitle{color:#64748b;font-size:13.5px;line-height:1.35}
     .pf-hb2-header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .pf-hb2-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(15,23,42,.10);background:#fff;font-weight:700;font-size:13px;color:#0f172a;white-space:nowrap}
+    .pf-hb2-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(14,165,164,0.22);background:rgba(14,165,164,0.08);font-weight:700;font-size:14px;color:#0f172a;white-space:nowrap}
+    .pf-hb2-chip .serving{color:#0F172A99}
     .pf-hb2-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(15,23,42,.10);background:#fff;font-weight:700;font-size:12px;color:#64748b;white-space:nowrap}
     .pf-hb2-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     @media (max-width:768px){.pf-hb2-grid{grid-template-columns:1fr}}
     .pf-hb2-card{background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
     .pf-hb2-cardHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
     .pf-hb2-name{font-weight:900;color:#0f172a;font-size:14px;line-height:1.3}
-    .pf-hb2-tag{font-size:.75rem;padding:4px 8px;border-radius:999px;border:1px dashed rgba(15,23,42,.25);color:#0f172a;white-space:nowrap}
+    .pf-hb2-tag{font-size:.75rem;padding:5px 10px;border-radius:999px;border:1px solid rgba(14,165,164,.25);background:linear-gradient(135deg,rgba(14,165,164,.08) 0%,rgba(14,165,164,.04) 100%);color:#0ea5a9;font-weight:700;white-space:nowrap;box-shadow:0 1px 2px rgba(14,165,164,.1)}
     .pf-hb2-desc{color:#334155;font-size:.9rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .pf-hb2-acc{background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:12px;overflow:hidden}
     .pf-hb2-acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;font-weight:700;color:#0f172a;background:transparent;border:0;cursor:pointer;font-size:13px}
@@ -2375,6 +2415,7 @@
           <div class="goals-chips" id="category-list">
             <div class="empty-state">Loading categories...</div>
           </div>
+          <button type="button" class="pf-goal-browse-toggle" id="pf-goal-browse-toggle" style="display: none;" aria-expanded="false">Browse all goals</button>
         </div>
 
         <!-- Step 2: Sub-categories (Chip Grid) -->
@@ -3069,13 +3110,43 @@
     }
 
     function renderCategories() {
+      // Initialize state if not exists
+      window.pfGoalSearchTerm = window.pfGoalSearchTerm || '';
+      window.pfGoalBrowseAllOpen = window.pfGoalBrowseAllOpen || false;
+      
+      const searchTerm = (window.pfGoalSearchTerm || '').trim().toLowerCase();
+      const isExpanded = window.pfGoalBrowseAllOpen || false;
+      
+      // Filter categories based on search
+      let filteredCategories = categories;
+      if (searchTerm) {
+        filteredCategories = categories.filter(categoryObj => {
+          const categoryLabel = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryObj;
+          return categoryLabel.toLowerCase().includes(searchTerm);
+        });
+      }
+      
+      // Determine which categories to show
+      const showAll = isExpanded || filteredCategories.length <= 10;
+      const categoriesToShow = showAll ? filteredCategories : filteredCategories.slice(0, 10);
+      const hasMore = filteredCategories.length > 10 && !showAll;
+      
+      // Clear container
       categoryListEl.innerHTML = '';
-      if (categories.length === 0) {
-        categoryListEl.innerHTML = '<div class="empty-state">No categories available</div>';
+      
+      if (filteredCategories.length === 0) {
+        categoryListEl.innerHTML = '<div class="pf-goal-empty">No goals found.</div>';
+        // Hide browse toggle when no results
+        const browseToggle = document.getElementById('pf-goal-browse-toggle');
+        if (browseToggle) browseToggle.style.display = 'none';
         return;
       }
-
-      categories.forEach(categoryObj => {
+      
+      // Get currently selected category value for highlighting
+      const activeCategoryValue = selectedCategory || window.pfActiveHealthGoalValue;
+      
+      // Render chips
+      categoriesToShow.forEach(categoryObj => {
         // Handle both object format {value, label} and string format (legacy)
         const categoryValue = typeof categoryObj === 'object' && 'value' in categoryObj ? categoryObj.value : categoryObj;
         const categoryLabel = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryObj;
@@ -3084,8 +3155,14 @@
         chip.className = 'goal-chip';
         chip.textContent = categoryLabel; // Use label for display
         chip.dataset.categoryValue = categoryValue;
+        
+        // Preserve active state if this is the selected category
+        if (activeCategoryValue && categoryValue === activeCategoryValue) {
+          chip.classList.add('active');
+        }
+        
         chip.addEventListener('click', () => {
-          [...categoryListEl.children].forEach(c => c.classList.remove('active'));
+          [...categoryListEl.querySelectorAll('.goal-chip')].forEach(c => c.classList.remove('active'));
           chip.classList.add('active');
           selectedCategory = categoryValue; // Use value (original DB category) for API calls
           // Track active health goal (label for UI, value for backend filtering)
@@ -3109,6 +3186,18 @@
         });
         categoryListEl.appendChild(chip);
       });
+      
+      // Show/hide browse toggle
+      const browseToggle = document.getElementById('pf-goal-browse-toggle');
+      if (browseToggle) {
+        if (hasMore || (isExpanded && filteredCategories.length > 10)) {
+          browseToggle.style.display = 'block';
+          browseToggle.setAttribute('aria-expanded', String(isExpanded));
+          browseToggle.textContent = isExpanded ? 'Hide all goals' : 'Browse all goals';
+        } else {
+          browseToggle.style.display = 'none';
+        }
+      }
     }
 
     // Load Hierarchy
@@ -3359,13 +3448,28 @@
       // Goal search
       const goalSearchEl = document.getElementById('goal-search');
       if (goalSearchEl) {
+        // Sync input value with state
+        if (window.pfGoalSearchTerm) {
+          goalSearchEl.value = window.pfGoalSearchTerm;
+        }
+        
         goalSearchEl.addEventListener('input', (e) => {
-          const query = e.target.value.toLowerCase().trim();
-          const chips = categoryListEl.querySelectorAll('.goal-chip');
-          chips.forEach(chip => {
-            const text = chip.textContent.toLowerCase();
-            chip.style.display = text.includes(query) ? '' : 'none';
-          });
+          const query = e.target.value.trim();
+          window.pfGoalSearchTerm = query;
+          // If search is cleared, collapse browse all
+          if (!query) {
+            window.pfGoalBrowseAllOpen = false;
+          }
+          renderCategories();
+        });
+      }
+      
+      // Browse all goals toggle
+      const browseToggle = document.getElementById('pf-goal-browse-toggle');
+      if (browseToggle) {
+        browseToggle.addEventListener('click', () => {
+          window.pfGoalBrowseAllOpen = !window.pfGoalBrowseAllOpen;
+          renderCategories();
         });
       }
 
@@ -3564,6 +3668,10 @@
       'red grapes': 'grapes',
       'grapes': 'grapes',
       'pineapple': 'pineapple',
+      'strawberry': 'strawberries',  // Map singular to plural DB key
+      'strawberries': 'strawberries',
+      'blueberry': 'blueberries',  // Map singular to plural DB key
+      'blueberries': 'blueberries',
       'blackberry': 'blackberries',  // Map singular to plural DB key
       'blackberries': 'blackberries',
       'raspberry': 'raspberries',  // Map singular to plural DB key
@@ -3690,38 +3798,24 @@
     // These are the official USDA serving sizes, not health-goal-specific servings
     // This is ONLY for the Ingredient tab, not for smoothie logic
     const USDA_STANDARD_SERVING_SIZES = {
-      // Berries - USDA standard is 1/2 cup
-      'blueberry': { grams: 40, display: '40g (1/2 cup) USDA standard' },
-      'blueberries': { grams: 40, display: '40g (1/2 cup) USDA standard' },
-      'strawberry': { grams: 72, display: '72g (1/2 cup) USDA standard' },
-      'strawberries': { grams: 72, display: '72g (1/2 cup) USDA standard' },
-      'blackberry': { grams: 72, display: '72g (1/2 cup) USDA standard' },
-      'blackberries': { grams: 72, display: '72g (1/2 cup) USDA standard' },
+      // Berries - USDA standard is 1 cup fresh
+      'blueberry': { grams: 148, display: '148g (1 cup) USDA standard' },
+      'strawberry': { grams: 152, display: '152g (1 cup) USDA standard' },
+      'blackberry': { grams: 144, display: '144g (1 cup) USDA standard' },
       'raspberry': { grams: 62, display: '62g (1/2 cup) USDA standard' },
-      'raspberries': { grams: 62, display: '62g (1/2 cup) USDA standard' },
       'cranberry': { grams: 50, display: '50g (1/2 cup) USDA standard' },
-      'cranberries': { grams: 50, display: '50g (1/2 cup) USDA standard' },
       
       // Tree Nuts - USDA standard is 28g (1 oz)
       'almond': { grams: 28, display: '28g (1 oz) USDA standard' },
-      'almonds': { grams: 28, display: '28g (1 oz) USDA standard' },
       'cashew': { grams: 28, display: '28g (1 oz) USDA standard' },
-      'cashews': { grams: 28, display: '28g (1 oz) USDA standard' },
       'walnut': { grams: 28, display: '28g (1 oz) USDA standard' },
-      'walnuts': { grams: 28, display: '28g (1 oz) USDA standard' },
       'pecan': { grams: 28, display: '28g (1 oz) USDA standard' },
-      'pecans': { grams: 28, display: '28g (1 oz) USDA standard' },
       'hazelnut': { grams: 28, display: '28g (1 oz) USDA standard' },
-      'hazelnuts': { grams: 28, display: '28g (1 oz) USDA standard' },
       'pistachio': { grams: 28, display: '28g (1 oz) USDA standard' },
-      'pistachios': { grams: 28, display: '28g (1 oz) USDA standard' },
       'macadamia': { grams: 28, display: '28g (1 oz) USDA standard' },
       'macadamia nut': { grams: 28, display: '28g (1 oz) USDA standard' },
-      'macadamia nuts': { grams: 28, display: '28g (1 oz) USDA standard' },
       'brazil nut': { grams: 28, display: '28g (1 oz) USDA standard' },
-      'brazil nuts': { grams: 28, display: '28g (1 oz) USDA standard' },
       'pine nut': { grams: 28, display: '28g (1 oz) USDA standard' },
-      'pine nuts': { grams: 28, display: '28g (1 oz) USDA standard' },
       
       // Other ingredients - keep as null to use API response
       // Only berries and tree nuts have explicit USDA standard overrides
@@ -4356,7 +4450,7 @@
                 <div class="pf-hb2-title">Health Benefits</div>
                 <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
                 <div class="pf-hb2-header-row">
-                  <span class="pf-hb2-chip">${safeName} • ${safeServing}</span>
+                  <span class="pf-hb2-chip">${safeName} • <span class="serving">${safeServing}</span></span>
                   <span class="pf-hb2-pill">${pillText}</span>
                 </div>
               </div>
@@ -4386,7 +4480,7 @@
                 <div class="pf-hb2-title">Health Benefits</div>
                 <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
                 <div class="pf-hb2-header-row">
-                  <span class="pf-hb2-chip">${safeName} • ${safeServing}</span>
+                  <span class="pf-hb2-chip">${safeName} • <span class="serving">${safeServing}</span></span>
                   <span class="pf-hb2-pill">${pillText}</span>
                 </div>
               </div>
@@ -4426,12 +4520,12 @@
         return;
       }
 
-      // Split into top 3 and remaining
-      const top3 = benefits.slice(0, 3);
-      const remaining = benefits.slice(3);
+      // Split into top 2 and remaining
+      const top2 = benefits.slice(0, 2);
+      const remaining = benefits.slice(2);
 
-      // Build top 3 cards
-      const top3Cards = top3.map(b => {
+      // Build top 2 cards
+      const top2Cards = top2.map(b => {
         const name = escapeHtml(b.benefit || b.name || b.title || 'Health Benefit');
         const desc = escapeHtml(b.description || b.summary || b.health_benefits || '');
         const category = (ctx.source === 'browser' && safeDisplayGoal) ? safeDisplayGoal : 
@@ -4495,12 +4589,12 @@
             <div class="pf-hb2-title">Health Benefits</div>
             <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
             <div class="pf-hb2-header-row">
-              <span class="pf-hb2-chip">${safeName} • ${safeServing}</span>
+              <span class="pf-hb2-chip">${safeName} • <span class="serving">${safeServing}</span></span>
               <span class="pf-hb2-pill">${pillText}</span>
             </div>
           </div>
           <div class="pf-hb2-grid">
-            ${top3Cards}
+            ${top2Cards}
           </div>
           ${remaining.length > 0 ? `
             <div class="pf-hb2-acc">
@@ -4522,18 +4616,6 @@
               </div>
             </div>
           ` : ''}
-          <div class="pf-hb2-acc">
-            <button class="pf-hb2-acc-btn" type="button" aria-expanded="false" aria-controls="pf-hb2-notes">
-              <span>Notes</span><span aria-hidden="true">▾</span>
-            </button>
-            <div id="pf-hb2-notes" class="pf-hb2-acc-panel" hidden>
-              <ul class="pf-hb2-list">
-                <li>Results depend on ingredient naming and available data.</li>
-                <li>Health benefits may vary based on preparation and serving size.</li>
-                <li>Consult a healthcare provider for personalized nutrition advice.</li>
-              </ul>
-            </div>
-          </div>
         </div>
       `;
       
@@ -4848,7 +4930,7 @@
       const safeName = escapeHtml(displayName);
       const servingText = formatServingLabel(firstIngredient);
       const safeServing = escapeHtml(servingText);
-      const headerIngredientChip = `<span class="pf-a-chip">${safeName} • ${safeServing}</span>`;
+      const headerIngredientChip = `<span class="pf-a-chip">${safeName} • <span class="serving">${safeServing}</span></span>`;
 
       // Extract allergen names
       const groupsChecked = ['Milk', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts', 'Peanuts', 'Wheat', 'Soy', 'Sesame'];
