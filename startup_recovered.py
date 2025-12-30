@@ -635,9 +635,22 @@ except metadata.PackageNotFoundError:
 def _normalize_pg_url(url: str) -> str:
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://"):]
-    if "sslmode=" not in url:
-        url += ("&" if "?" in url else "?") + "sslmode=require"
-    return url
+    
+    parsed = urlparse(url)
+    query_params = dict(parse_qsl(parsed.query))
+    
+    # If sslmode is already set, don't change it
+    if "sslmode" not in query_params:
+        hostname = parsed.hostname or ""
+        if hostname in ("localhost", "127.0.0.1", "::1"):
+            query_params["sslmode"] = "disable"
+        else:
+            query_params["sslmode"] = "require"
+    
+    # Reconstruct URL with updated query params
+    new_query = urlencode(query_params)
+    new_parsed = parsed._replace(query=new_query)
+    return urlunparse(new_parsed)
 
 if not db_url or not (db_url.startswith("postgres://") or db_url.startswith("postgresql://")):
     logger.info("POSTGRES_PROBE=skip reason=no_DATABASE_URL_or_not_postgres")
@@ -50588,15 +50601,13 @@ logger.warning("ROUTES_WITH_DBCHECK=%s", dbcheck_routes)
 # ============================================================================
 
 if __name__ == "__main__":
-    import sys, os
+    import os
+
     port = int(os.getenv("PORT", "8000"))
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
 
-    # Only enable debug in real dev sessions
-    debug = (os.getenv("FLASK_DEBUG") == "1") or (os.getenv("ENVIRONMENT") in ("dev", "development", "local"))
+    # IMPORTANT: no reloader in nohup/background mode
+    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=False, threaded=True)
 
-    # The reloader breaks under nohup/background (no TTY)
-    use_reloader = debug and sys.stdin.isatty()
-
-    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=use_reloader)
 
 
