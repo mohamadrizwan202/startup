@@ -1371,9 +1371,11 @@ def handle_csrf_error(error):
     # Return appropriate response based on whether this is an API endpoint
     if request.path.startswith('/api/'):
         # API endpoints: return JSON error response
+        error_message = getattr(error, 'description', None) or str(error) or "CSRF validation failed"
         return jsonify({
+            "ok": False,
             "error": "csrf_failed",
-            "message": "Security check failed. Please try again."
+            "message": error_message
         }), 400
     else:
         # Non-API routes: return simple text/HTML message
@@ -50034,7 +50036,7 @@ def api_analyze():
 def api_feedback():
     """Feedback API endpoint - stores user feedback in PostgreSQL."""
     if not db.USE_POSTGRES:
-        return jsonify({"ok": False, "error": "server_error"}), 500
+        return jsonify({"ok": False, "error": "postgres_disabled"}), 503
     
     if not request.is_json:
         return jsonify({"ok": False, "error": "Content-Type must be application/json"}), 415
@@ -50060,14 +50062,13 @@ def api_feedback():
         # Insert into database
         conn = get_conn()
         cursor = conn.cursor()
-        query = db.prepare_query("""
-            INSERT INTO feedback (user_id, page, category, message, email, user_agent, ip)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+        query = """
+            INSERT INTO public.feedback (user_id, page, category, message, email, user_agent, ip)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             RETURNING id
-        """)
+        """
         cursor.execute(query, (user_id, page, category, message, email, user_agent, ip))
-        result = cursor.fetchone()
-        feedback_id = result['id'] if isinstance(result, dict) else result[0]
+        feedback_id = cursor.fetchone()[0]
         conn.commit()
         cursor.close()
         conn.close()
@@ -50076,7 +50077,10 @@ def api_feedback():
         
     except Exception as e:
         logger.error(f"Error in /api/feedback: {e}", exc_info=True)
-        return jsonify({"ok": False, "error": "server_error"}), 500
+        response = {"ok": False, "error": "server_error"}
+        if app.debug:
+            response["details"] = str(e)
+        return jsonify(response), 500
 
 
 # INGREDIENT TAB NUTRITION HELPER
@@ -50584,9 +50588,15 @@ logger.warning("ROUTES_WITH_DBCHECK=%s", dbcheck_routes)
 # ============================================================================
 
 if __name__ == "__main__":
-    # Never run the dev server in production (Render uses gunicorn)
-    if is_production:
-        raise RuntimeError("Do not start with python startup_recovered.py in production. Use gunicorn.")
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")), debug=True)
+    import sys, os
+    port = int(os.getenv("PORT", "8000"))
+
+    # Only enable debug in real dev sessions
+    debug = (os.getenv("FLASK_DEBUG") == "1") or (os.getenv("ENVIRONMENT") in ("dev", "development", "local"))
+
+    # The reloader breaks under nohup/background (no TTY)
+    use_reloader = debug and sys.stdin.isatty()
+
+    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=use_reloader)
 
 
