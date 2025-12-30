@@ -344,6 +344,34 @@ def seed_nutrition_facts_if_empty():
         logger.warning(f"Failed to seed nutrition_facts table: {e}", exc_info=True)
 
 
+def init_feedback_table():
+    """Create feedback table in PostgreSQL if it doesn't exist (idempotent)."""
+    if not db.USE_POSTGRES:
+        return
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS feedback (
+                id BIGSERIAL PRIMARY KEY,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                user_id TEXT NULL,
+                page TEXT NULL,
+                category TEXT NULL,
+                message TEXT NOT NULL,
+                email TEXT NULL,
+                user_agent TEXT NULL,
+                ip TEXT NULL
+            )
+        """)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        logger.info("feedback table initialized")
+    except Exception as e:
+        logger.warning(f"Failed to initialize feedback table: {e}", exc_info=True)
+
+
 # Only run schema creation if RUN_SCHEMA=1 is set (default: skip to prevent app_runtime from attempting DDL)
 # In production web runtime, schema creation must be skipped so app_runtime never attempts DDL
 RUN_SCHEMA = is_truthy(os.getenv("RUN_SCHEMA", "0"))
@@ -353,6 +381,8 @@ if RUN_SCHEMA:
         db.ensure_schema()
     # Seed nutrition_facts table if empty (idempotent)
     seed_nutrition_facts_if_empty()
+    # Initialize feedback table (idempotent)
+    init_feedback_table()
 else:
     logger.info("RUN_SCHEMA=0 skipping schema creation (use RUN_SCHEMA=1 to enable)")
 
@@ -49997,6 +50027,57 @@ def api_analyze():
         return nlp_query()
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/feedback', methods=['POST'])
+@limiter.limit("5 per minute")
+def api_feedback():
+    """Feedback API endpoint - stores user feedback in PostgreSQL."""
+    if not db.USE_POSTGRES:
+        return jsonify({"ok": False, "error": "server_error"}), 500
+    
+    if not request.is_json:
+        return jsonify({"ok": False, "error": "Content-Type must be application/json"}), 415
+    
+    try:
+        data = request.get_json(force=True) or {}
+        
+        # Validate message (required, 5-1500 chars)
+        message = data.get("message", "").strip()
+        if not message or len(message) < 5 or len(message) > 1500:
+            return jsonify({"ok": False, "error": "message required (5-1500 chars)"}), 400
+        
+        # Validate optional fields
+        page = data.get("page", "").strip()[:50] if data.get("page") else None
+        category = data.get("category", "").strip()[:30] if data.get("category") else None
+        email = data.get("email", "").strip()[:254] if data.get("email") else None
+        user_id = data.get("user_id", "").strip()[:100] if data.get("user_id") else None
+        
+        # Get user agent and IP
+        user_agent = request.headers.get("User-Agent", "")[:500] if request.headers.get("User-Agent") else None
+        ip = request.remote_addr or None
+        
+        # Insert into database
+        conn = get_conn()
+        cursor = conn.cursor()
+        query = db.prepare_query("""
+            INSERT INTO feedback (user_id, page, category, message, email, user_agent, ip)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            RETURNING id
+        """)
+        cursor.execute(query, (user_id, page, category, message, email, user_agent, ip))
+        result = cursor.fetchone()
+        feedback_id = result['id'] if isinstance(result, dict) else result[0]
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"ok": True, "id": feedback_id}), 200
+        
+    except Exception as e:
+        logger.error(f"Error in /api/feedback: {e}", exc_info=True)
+        return jsonify({"ok": False, "error": "server_error"}), 500
+
 
 # INGREDIENT TAB NUTRITION HELPER
 # Converts database row (dict or sqlite3.Row) to dict for safe .get() access
