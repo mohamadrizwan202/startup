@@ -50081,7 +50081,9 @@ def api_feedback():
             RETURNING id
         """
         cursor.execute(query, (user_id, page, category, message, email, user_agent, ip))
-        feedback_id = cursor.fetchone()[0]
+        row = cursor.fetchone()
+        feedback_id = row["id"] if isinstance(row, dict) else row[0]
+
         conn.commit()
         cursor.close()
         conn.close()
