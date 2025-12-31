@@ -50611,6 +50611,44 @@ if __name__ == "__main__":
 
     # IMPORTANT: no reloader in nohup/background mode
     app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=False, threaded=True)
+    
+# ---------------------------
+# ADMIN: Feedback viewer
+# ---------------------------
+import os, hmac
 
+def _row_to_dict(row, description):
+    # row can be dict-like or tuple-like depending on cursor factory
+    if isinstance(row, dict):
+        return row
+    cols = [d[0] for d in (description or [])]
+    return {cols[i]: row[i] for i in range(min(len(cols), len(row)))}
 
+@app.get("/admin/feedback")
+@limiter.limit("30 per minute")
+def admin_feedback():
+    expected = os.environ.get("ADMIN_TOKEN", "")
+    provided = request.headers.get("X-Admin-Token") or request.args.get("token", "")
 
+    # Hide endpoint if not configured / wrong token
+    if not expected or not provided or not hmac.compare_digest(provided, expected):
+        abort(404)
+
+    if not db.USE_POSTGRES:
+        return "Postgres disabled", 503, {"Cache-Control": "no-store"}
+
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, created_at, page, category, email, message, ip, user_agent
+        FROM public.feedback
+        ORDER BY created_at DESC
+        LIMIT 200
+    """)
+    rows = cur.fetchall()
+    desc = cur.description
+    cur.close()
+    conn.close()
+
+    out = [_row_to_dict(r, desc) for r in rows]
+    return render_template("admin_feedback.html", rows=out), 200, {"Cache-Control": "no-store"}

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — Feedback</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
+    h1 { margin: 0 0 10px; }
+    .hint { color: #555; margin: 0 0 18px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #e6e6e6; padding: 10px 8px; vertical-align: top; font-size: 14px; }
+    th { text-align: left; background: #fafafa; position: sticky; top: 0; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+    .wrap { white-space: pre-wrap; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <h1>Feedback</h1>
+  <p class="hint">Latest {{ rows|length }} entries (newest first).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Created</th>
+        <th>Page</th>
+        <th>Category</th>
+        <th>Email</th>
+        <th>Message</th>
+        <th>IP</th>
+        <th>User Agent</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td class="mono">{{ r.id }}</td>
+        <td class="mono">{{ r.created_at }}</td>
+        <td class="wrap">{{ r.page }}</td>
+        <td>{{ r.category }}</td>
+        <td class="wrap">{{ r.email }}</td>
+        <td class="wrap">{{ r.message }}</td>
+        <td class="mono">{{ r.ip }}</td>
+        <td class="wrap">{{ r.user_agent }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
