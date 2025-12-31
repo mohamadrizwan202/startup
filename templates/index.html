@@ -1895,7 +1895,77 @@
       line-height: 1.35;
     }
 
-    /* ---------- Allergen tab: compact redesign (pf-a-*) ---------- */
+    
+    /* ---------- Allergen Profile (pf-ap-*) ---------- */
+    .pf-ap{
+      margin: 12px 0 14px;
+      padding: 14px;
+      border: 1px solid rgba(15,23,42,0.10);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+    }
+    .pf-ap-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .pf-ap-title{
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .pf-ap-sub{
+      margin-top: 2px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .pf-ap-clear{
+      border: 1px solid rgba(15,23,42,0.15);
+      background: #fff;
+      color: var(--text-primary);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .pf-ap-clear:hover{ filter: brightness(0.98); }
+    .pf-ap-chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 8px;
+    }
+    .pf-ap-chip{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(15,23,42,0.12);
+      background: #fff;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.92rem;
+      line-height: 1;
+    }
+    .pf-ap-chip-dot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(100,116,139,0.7);
+    }
+    .pf-ap-chip[aria-pressed="true"]{
+      border-color: rgba(239,68,68,0.35);
+      background: rgba(239,68,68,0.08);
+    }
+    .pf-ap-chip[aria-pressed="true"] .pf-ap-chip-dot{
+      background: rgba(239,68,68,0.85);
+    }
+
+
+/* ---------- Allergen tab: compact redesign (pf-a-*) ---------- */
     .pf-a-wrap {
       max-width: 980px;
       margin: 12px auto 0;
@@ -2523,7 +2593,20 @@
         </div>
 
         <div class="tab-pane" id="allergens-tab-pane" data-tab="allergens" style="display: none;">
-          <div class="results-body" id="allergens-results-body">
+          
+          <!-- My Allergen Profile (saved on this device) -->
+          <div class="pf-ap" id="allergen-profile">
+            <div class="pf-ap-head">
+              <div>
+                <div class="pf-ap-title">My Allergen Profile</div>
+                <div class="pf-ap-sub">Saved on this device. No account needed.</div>
+              </div>
+              <button type="button" class="pf-ap-clear" id="pf-ap-clear">Clear</button>
+            </div>
+            <div class="pf-ap-chips" id="pf-ap-chips"></div>
+          </div>
+
+<div class="results-body" id="allergens-results-body">
             When you analyze ingredients, allergen information will appear here.
           </div>
         </div>
