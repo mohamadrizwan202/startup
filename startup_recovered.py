@@ -50045,6 +50045,7 @@ def api_analyze():
 
 
 @app.route('/api/feedback', methods=['POST'])
+@csrf.exempt
 @limiter.limit("5 per minute")
 def api_feedback():
     """Feedback API endpoint - stores user feedback in PostgreSQL."""
