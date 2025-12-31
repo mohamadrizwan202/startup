@@ -344,6 +344,34 @@ def seed_nutrition_facts_if_empty():
         logger.warning(f"Failed to seed nutrition_facts table: {e}", exc_info=True)
 
 
+def init_feedback_table():
+    """Create feedback table in PostgreSQL if it doesn't exist (idempotent)."""
+    if not db.USE_POSTGRES:
+        return
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS feedback (
+                id BIGSERIAL PRIMARY KEY,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                user_id TEXT NULL,
+                page TEXT NULL,
+                category TEXT NULL,
+                message TEXT NOT NULL,
+                email TEXT NULL,
+                user_agent TEXT NULL,
+                ip TEXT NULL
+            )
+        """)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        logger.info("feedback table initialized")
+    except Exception as e:
+        logger.warning(f"Failed to initialize feedback table: {e}", exc_info=True)
+
+
 # Only run schema creation if RUN_SCHEMA=1 is set (default: skip to prevent app_runtime from attempting DDL)
 # In production web runtime, schema creation must be skipped so app_runtime never attempts DDL
 RUN_SCHEMA = is_truthy(os.getenv("RUN_SCHEMA", "0"))
@@ -353,6 +381,8 @@ if RUN_SCHEMA:
         db.ensure_schema()
     # Seed nutrition_facts table if empty (idempotent)
     seed_nutrition_facts_if_empty()
+    # Initialize feedback table (idempotent)
+    init_feedback_table()
 else:
     logger.info("RUN_SCHEMA=0 skipping schema creation (use RUN_SCHEMA=1 to enable)")
 
@@ -605,9 +635,22 @@ except metadata.PackageNotFoundError:
 def _normalize_pg_url(url: str) -> str:
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://"):]
-    if "sslmode=" not in url:
-        url += ("&" if "?" in url else "?") + "sslmode=require"
-    return url
+    
+    parsed = urlparse(url)
+    query_params = dict(parse_qsl(parsed.query))
+    
+    # If sslmode is already set, don't change it
+    if "sslmode" not in query_params:
+        hostname = parsed.hostname or ""
+        if hostname in ("localhost", "127.0.0.1", "::1"):
+            query_params["sslmode"] = "disable"
+        else:
+            query_params["sslmode"] = "require"
+    
+    # Reconstruct URL with updated query params
+    new_query = urlencode(query_params)
+    new_parsed = parsed._replace(query=new_query)
+    return urlunparse(new_parsed)
 
 if not db_url or not (db_url.startswith("postgres://") or db_url.startswith("postgresql://")):
     logger.info("POSTGRES_PROBE=skip reason=no_DATABASE_URL_or_not_postgres")
@@ -1341,9 +1384,11 @@ def handle_csrf_error(error):
     # Return appropriate response based on whether this is an API endpoint
     if request.path.startswith('/api/'):
         # API endpoints: return JSON error response
+        error_message = getattr(error, 'description', None) or str(error) or "CSRF validation failed"
         return jsonify({
+            "ok": False,
             "error": "csrf_failed",
-            "message": "Security check failed. Please try again."
+            "message": error_message
         }), 400
     else:
         # Non-API routes: return simple text/HTML message
@@ -49998,6 +50043,59 @@ def api_analyze():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+@app.route('/api/feedback', methods=['POST'])
+@limiter.limit("5 per minute")
+def api_feedback():
+    """Feedback API endpoint - stores user feedback in PostgreSQL."""
+    if not db.USE_POSTGRES:
+        return jsonify({"ok": False, "error": "postgres_disabled"}), 503
+    
+    if not request.is_json:
+        return jsonify({"ok": False, "error": "Content-Type must be application/json"}), 415
+    
+    try:
+        data = request.get_json(force=True) or {}
+        
+        # Validate message (required, 5-1500 chars)
+        message = data.get("message", "").strip()
+        if not message or len(message) < 5 or len(message) > 1500:
+            return jsonify({"ok": False, "error": "message required (5-1500 chars)"}), 400
+        
+        # Validate optional fields
+        page = data.get("page", "").strip()[:50] if data.get("page") else None
+        category = data.get("category", "").strip()[:30] if data.get("category") else None
+        email = data.get("email", "").strip()[:254] if data.get("email") else None
+        user_id = data.get("user_id", "").strip()[:100] if data.get("user_id") else None
+        
+        # Get user agent and IP
+        user_agent = request.headers.get("User-Agent", "")[:500] if request.headers.get("User-Agent") else None
+        ip = request.remote_addr or None
+        
+        # Insert into database
+        conn = get_conn()
+        cursor = conn.cursor()
+        query = """
+            INSERT INTO public.feedback (user_id, page, category, message, email, user_agent, ip)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            RETURNING id
+        """
+        cursor.execute(query, (user_id, page, category, message, email, user_agent, ip))
+        feedback_id = cursor.fetchone()[0]
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"ok": True, "id": feedback_id}), 200
+        
+    except Exception as e:
+        logger.error(f"Error in /api/feedback: {e}", exc_info=True)
+        response = {"ok": False, "error": "server_error"}
+        if app.debug:
+            response["details"] = str(e)
+        return jsonify(response), 500
+
+
 # INGREDIENT TAB NUTRITION HELPER
 # Converts database row (dict or sqlite3.Row) to dict for safe .get() access
 # This is ONLY used by the Ingredient tab /api/analyze endpoint, not for smoothie logic
@@ -50503,9 +50601,13 @@ logger.warning("ROUTES_WITH_DBCHECK=%s", dbcheck_routes)
 # ============================================================================
 
 if __name__ == "__main__":
-    # Never run the dev server in production (Render uses gunicorn)
-    if is_production:
-        raise RuntimeError("Do not start with python startup_recovered.py in production. Use gunicorn.")
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "8000")), debug=True)
+    import os
+
+    port = int(os.getenv("PORT", "8000"))
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
+
+    # IMPORTANT: no reloader in nohup/background mode
+    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=False, threaded=True)
+
 
 

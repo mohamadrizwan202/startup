@@ -5,6 +5,7 @@ Supports both PostgreSQL (production) and SQLite (local dev).
 import os
 import sqlite3
 from pathlib import Path
+from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 
 # Detect database type
 # Support for runtime vs migrate roles (least-privilege)
@@ -33,13 +34,26 @@ def normalize_pg_url(url: str) -> str:
     """
     Normalize PostgreSQL URL:
     - Convert postgres:// to postgresql://
-    - Append sslmode=require if missing
+    - Set sslmode based on hostname (disable for localhost, require for remote)
     """
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://"):]
-    if "sslmode=" not in url:
-        url += ("&" if "?" in url else "?") + "sslmode=require"
-    return url
+    
+    parsed = urlparse(url)
+    query_params = dict(parse_qsl(parsed.query))
+    
+    # If sslmode is already set, don't change it
+    if "sslmode" not in query_params:
+        hostname = parsed.hostname or ""
+        if hostname in ("localhost", "127.0.0.1", "::1"):
+            query_params["sslmode"] = "disable"
+        else:
+            query_params["sslmode"] = "require"
+    
+    # Reconstruct URL with updated query params
+    new_query = urlencode(query_params)
+    new_parsed = parsed._replace(query=new_query)
+    return urlunparse(new_parsed)
 
 
 def get_conn():
