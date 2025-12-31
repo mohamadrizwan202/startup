@@ -2294,14 +2294,34 @@
     #feedback-modal[style*="display: flex"] {
       display: flex !important;
     }
-    #feedback-open:hover {
+    .feedback-open:hover {
       background: #f8fafc;
       border-color: rgba(15,23,42,0.25);
+    }
+    /* Keep only the floating feedback FAB. Hide any other Feedback opener button. */
+    button.feedback-open:not(.feedback-fab) {
+      display: none !important;
     }
     #feedback-modal button[type="submit"]:hover {
       background: #0b7f7e;
     }
     #feedback-modal button[type="button"]:hover {
+      background: #f8fafc;
+    }
+    .feedback-fab {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 10001;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(15,23,42,0.18);
+      background: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+    .feedback-fab:hover {
       background: #f8fafc;
     }
   </style>
@@ -2399,14 +2419,9 @@
         <div id="selected-ingredients" class="selected-ingredients" style="display: none;">
         </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 12px;">
-          <button id="analyze-btn" class="btn-primary" disabled>
-            ⚡ Analyze Ingredients
-          </button>
-          <button id="feedback-open" class="btn-secondary" style="padding: 12px 24px; border: 1px solid rgba(15,23,42,0.15); background: #fff; color: #0f172a; border-radius: 8px; font-weight: 600; cursor: pointer;">
-            Feedback
-          </button>
-        </div>
+        <button id="analyze-btn" class="btn-primary" disabled>
+          ⚡ Analyze Ingredients
+        </button>
       </div>
     </div>
 
@@ -3918,6 +3933,175 @@
       
       return fetch(url, options);
     }
+
+    // Feedback Modal
+    function getActivePage() {
+  const ingredientTab = document.getElementById('ingredient-tab-content');
+  const smoothieTab = document.getElementById('smoothie-tab-content');
+  const allergensTab = document.getElementById('allergens-tab-pane');
+
+  const isActive = (el) => {
+    if (!el) return false;
+    if (el.classList.contains('active')) return true;
+    const cs = window.getComputedStyle(el);
+    return cs && cs.display !== 'none' && cs.visibility !== 'hidden';
+  };
+
+  if (isActive(ingredientTab)) return 'ingredient';
+  if (isActive(smoothieTab)) return 'smoothie';
+  if (isActive(allergensTab)) return 'allergens';
+
+  return 'unknown';
+}
+
+
+    function openFeedbackModal() {
+      const modal = document.getElementById('feedback-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function closeFeedbackModal() {
+      const modal = document.getElementById('feedback-modal');
+      if (modal) {
+        modal.style.display = 'none';
+        const form = document.getElementById('feedback-form');
+        if (form) {
+          form.reset();
+        }
+        const status = document.getElementById('feedback-status');
+        if (status) {
+          status.textContent = '';
+          status.style.color = '';
+        }
+      }
+    }
+
+    function showFeedbackStatus(message, isError = false) {
+      const status = document.getElementById('feedback-status');
+      if (status) {
+        status.textContent = message;
+        status.style.color = isError ? '#ef4444' : '#10b981';
+      }
+    }
+
+    async function submitFeedback(e) {
+      e.preventDefault();
+      
+      const messageEl = document.getElementById('feedback-message');
+      const emailEl = document.getElementById('feedback-email');
+      const categoryEl = document.getElementById('feedback-category');
+      const submitBtn = document.getElementById('feedback-send');
+      const statusEl = document.getElementById('feedback-status');
+      
+      if (!messageEl || !categoryEl || !submitBtn) return;
+      
+      // Clear previous status
+      if (statusEl) {
+        statusEl.textContent = '';
+        statusEl.style.color = '';
+      }
+      
+      // Validate message
+      const message = messageEl.value.trim();
+      if (message.length < 5 || message.length > 1500) {
+        showFeedbackStatus('Message must be 5–1500 characters', true);
+        return;
+      }
+      
+      // Validate email if provided
+      const email = emailEl ? emailEl.value.trim() : '';
+      if (email) {
+        if (email.length > 254 || !email.includes('@') || !email.includes('.')) {
+          showFeedbackStatus('Please enter a valid email address', true);
+          return;
+        }
+      }
+      
+      // Get category and page
+      const category = categoryEl.value || 'other';
+      const page = getActivePage();
+      
+      // Build payload
+      const payload = {
+        message: message,
+        category: category,
+        page: page
+      };
+      if (email) {
+        payload.email = email;
+      }
+      
+      // Disable submit button
+      submitBtn.disabled = true;
+      
+      try {
+        const response = await apiFetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (response.status === 200 && data.ok === true) {
+          showFeedbackStatus('Thank you! Your feedback has been sent.', false);
+          messageEl.value = '';
+          if (emailEl) emailEl.value = '';
+          setTimeout(() => {
+            closeFeedbackModal();
+          }, 800);
+        } else if (response.status === 400) {
+          const errorMsg = data.error || data.message || 'Invalid request';
+          showFeedbackStatus(errorMsg, true);
+        } else if (response.status === 429) {
+          showFeedbackStatus('Too many requests — please wait and try again.', true);
+        } else {
+          showFeedbackStatus('Server error — please try again.', true);
+        }
+      } catch (error) {
+        showFeedbackStatus('Server error — please try again.', true);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    // Initialize feedback modal handlers
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('button[data-feedback-open]').forEach((b) => {
+    if (b.id !== 'feedback-open') b.remove();
+  });
+      document.querySelectorAll('[data-feedback-open]').forEach((btn) => {
+        btn.addEventListener('click', openFeedbackModal);
+      });
+      
+      const cancelBtn = document.getElementById('feedback-cancel');
+      const modal = document.getElementById('feedback-modal');
+      const form = document.getElementById('feedback-form');
+      
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeFeedbackModal);
+      }
+      
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeFeedbackModal();
+          }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && modal.style.display === 'flex') {
+            closeFeedbackModal();
+          }
+        });
+      }
+      
+      if (form) {
+        form.addEventListener('submit', submitFeedback);
+      }
+    });
 
     // Analyze Ingredients
     async function analyzeIngredients() {
@@ -15089,6 +15273,9 @@ const allergenPanel = allergenNames.length === 0
   </script>
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
+    <button id="feedback-open" class="feedback-fab feedback-open" data-feedback-open type="button">
+      Feedback
+    </button>
   </body>
 </html>
 
