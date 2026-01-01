@@ -1217,6 +1217,7 @@
     .results-container .results-body {
       height: 100%;
       overflow-y: auto;
+      
     }
     
     .search-container .card-body,
@@ -1306,6 +1307,153 @@
       height: 100%;
     }
 
+    /* Smoothie tab: stop giant results container */
+    #smoothie-tab-content .results-container .results-body,
+    #smoothie-tab-content .results-body {
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      overflow: visible !important;
+
+      /* Smoothie results should look like normal UI, not terminal output */
+      font-family: inherit !important;
+      white-space: normal !important;
+      line-height: 1.5 !important;
+      padding: 16px !important;
+    }
+
+    /* Smoothie tab: make results look like a modern card (not a log panel) */
+    #smoothie-tab-content .results-body {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      font-size: 0.95rem !important;
+    }
+
+    /* Smoothie Nutrition: clean tabs (scoped) */
+    #smoothie-tab-content .sn-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-top: 8px;
+    }
+
+    #smoothie-tab-content .sn-tab {
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--text-secondary);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    #smoothie-tab-content .sn-tab:hover {
+      color: var(--text-primary);
+      background: rgba(0,0,0,0.03);
+      border-radius: 10px 10px 0 0;
+    }
+
+    #smoothie-tab-content .sn-tab.active {
+      border-bottom-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Smoothie Nutrition: clean header + badge */
+    #smoothie-tab-content .sn-nutrition-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      margin: 8px 0 10px;
+    }
+
+    #smoothie-tab-content .sn-nutrition-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    #smoothie-tab-content .sn-emoji{ font-size: 1.2rem; }
+
+    #smoothie-tab-content .sn-title{
+      color: var(--primary);
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    #smoothie-tab-content .sn-subtitle{
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      margin-top: 2px;
+    }
+
+    #smoothie-tab-content .sn-usda-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #6ee7b7;
+      background: #ecfdf5;
+      font-size: 0.75rem;
+      color: #047857;
+    }
+
+    /* Smoothie Nutrition: servings control */
+    #smoothie-tab-content .sn-controls{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+
+    #smoothie-tab-content .sn-qty{
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      display:flex;
+      align-items:center;
+    }
+
+    #smoothie-tab-content .sn-qty-btn{
+      border: none;
+      background: transparent;
+      padding: 8px 12px;
+      font-weight: 900;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+
+    #smoothie-tab-content .sn-qty-btn:hover{
+      background: rgba(0,0,0,0.04);
+    }
+
+    #smoothie-tab-content .sn-qty-btn.decrement{
+      border-right: 1px solid var(--border);
+    }
+
+    #smoothie-tab-content .sn-qty-btn.increment{
+      border-left: 1px solid var(--border);
+    }
+
+    #smoothie-tab-content .sn-qty-input{
+      width: 64px;
+      padding: 6px;
+      border: none;
+      outline: none;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
     /* Nutrition Display - Compact Tile Grid With Icons */
     .nutrition-grid {
       display: flex;
@@ -1336,6 +1484,12 @@
     
     .nutrition-grid::-webkit-scrollbar-thumb:hover {
       background: var(--text-secondary);
+    }
+
+    /* Smoothie: prevent the left accent from bleeding into next rows (fixes "double tile" look) */
+    #smoothie-tab-content .nutrition-grid > * {
+      position: relative;
+      overflow: hidden;
     }
 
     .nutrition-tile {
@@ -1423,6 +1577,85 @@
       gap: 8px;
       margin-top: 8px;
     }
+
+    /* Smoothie Nutrition redesign (scoped + safe) */
+    .sn-wrap { padding: 12px 0; }
+
+    .sn-grid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    @media (max-width: 920px){
+      .sn-grid{ grid-template-columns: 1fr; }
+    }
+
+    .sn-card{
+      border-radius: 18px;
+      border: 2px solid rgba(0,0,0,0.08);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+      overflow: hidden;
+
+      /* CRITICAL: prevents giant empty blocks */
+      height: auto !important;
+      min-height: 0 !important;
+    }
+
+    .sn-card--warm{
+      background: linear-gradient(180deg, #fff1b8 0%, #ffefc9 100%);
+      border-color: rgba(245, 158, 11, 0.55);
+    }
+
+    .sn-card--cool{
+      background: linear-gradient(180deg, #e9f5ff 0%, #eef8ff 100%);
+      border-color: rgba(59, 130, 246, 0.55);
+    }
+
+    .sn-card--neutral{
+      background: #ffffff;
+      border-color: rgba(0,0,0,0.10);
+    }
+
+    .sn-head{
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .sn-title{
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    .sn-meta{
+      font-size: 13px;
+      opacity: 0.75;
+    }
+
+    .sn-body{
+      padding: 14px 16px;
+    }
+
+    /* Collapsible nutrition card */
+    .sn-details{
+      margin-top: 16px;
+    }
+
+    .sn-summary{
+      cursor: pointer;
+      list-style: none;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .sn-summary::-webkit-details-marker{ display:none; }
 
     .smoothie-tile {
       background: transparent;
@@ -1965,7 +2198,7 @@
     }
 
 
-/* ---------- Allergen tab: compact redesign (pf-a-*) ---------- */
+    /* ---------- Allergen tab: compact redesign (pf-a-*) ---------- */
     .pf-a-wrap {
       max-width: 980px;
       margin: 12px auto 0;
@@ -2338,7 +2571,7 @@
     .pf-hb2-cardHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
     .pf-hb2-name{font-weight:900;color:#0f172a;font-size:14px;line-height:1.3}
     .pf-hb2-tag{font-size:.75rem;padding:5px 10px;border-radius:999px;border:1px solid rgba(14,165,164,.25);background:linear-gradient(135deg,rgba(14,165,164,.08) 0%,rgba(14,165,164,.04) 100%);color:#0ea5a9;font-weight:700;white-space:nowrap;box-shadow:0 1px 2px rgba(14,165,164,.1)}
-    .pf-hb2-desc{color:#334155;font-size:.9rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .pf-hb2-desc{color:#334155;font-size:.9rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .pf-hb2-acc{background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:12px;overflow:hidden}
     .pf-hb2-acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;font-weight:700;color:#0f172a;background:transparent;border:0;cursor:pointer;font-size:13px}
     .pf-hb2-acc-panel{padding:12px 14px;border-top:1px solid rgba(15,23,42,.08)}
@@ -2606,7 +2839,7 @@
             <div class="pf-ap-chips" id="pf-ap-chips"></div>
           </div>
 
-<div class="results-body" id="allergens-results-body">
+          <div class="results-body" id="allergens-results-body">
             When you analyze ingredients, allergen information will appear here.
           </div>
         </div>
@@ -2694,7 +2927,8 @@
             <label for="smoothie-for" class="textarea-label">Who is this smoothie for?</label>
             <select id="smoothie-for" class="search-input" style="cursor: pointer;">
               <option value="">Select Target Audience...</option>
-              <option value="child-4-8">Child 4–8</option>
+              <option value="child-4-6">Child 4–6</option>
+              <option value="child-7-8">Child 7–8</option>
               <option value="girl-9-13">Girl 9-13</option>
               <option value="boy-9-13">Boy 9-13</option>
               <option value="girl-14-18">Girl 14-18</option>
@@ -3303,7 +3537,7 @@
         if (browseToggle) browseToggle.style.display = 'none';
         return;
       }
-      
+
       // Get currently selected category value for highlighting
       const activeCategoryValue = selectedCategory || window.pfActiveHealthGoalValue;
       
@@ -3560,7 +3794,7 @@
         } else {
           pfSetHBContext('search', null, null);
         }
-        
+          
         // Visual feedback
         item.style.transform = 'scale(0.95)';
           setTimeout(() => {
@@ -4798,8 +5032,8 @@
           const name = escapeHtml(primaryBenefit.benefit || primaryBenefit.name || primaryBenefit.title || 'Health Benefit');
           const desc = escapeHtml(primaryBenefit.description || primaryBenefit.summary || primaryBenefit.health_benefits || '');
           const categoryLabel = ctx.goalLabel ? escapeHtml(ctx.goalLabel) : '';
-          
-          let html = `
+
+      let html = `
             <div class="pf-hb2-wrap">
               <div class="pf-hb2-header">
                 <div class="pf-hb2-title">Health Benefits</div>
@@ -4807,16 +5041,16 @@
                 <div class="pf-hb2-header-row">
                   <span class="pf-hb2-chip">${safeName} • <span class="serving">${safeServing}</span></span>
                   <span class="pf-hb2-pill">${pillText}</span>
-                </div>
+              </div>
               </div>
               <div class="pf-hb2-card">
                 <div class="pf-hb2-cardHead">
                   <div class="pf-hb2-name">${name}</div>
                   ${categoryLabel ? `<span class="pf-hb2-tag">${categoryLabel}</span>` : ''}
-                </div>
-                ${desc ? `<div class="pf-hb2-desc">${desc}</div>` : ''}
-              </div>
             </div>
+                ${desc ? `<div class="pf-hb2-desc">${desc}</div>` : ''}
+            </div>
+          </div>
           `;
           
           if (message) {
@@ -4837,11 +5071,11 @@
                 <div class="pf-hb2-header-row">
                   <span class="pf-hb2-chip">${safeName} • <span class="serving">${safeServing}</span></span>
                   <span class="pf-hb2-pill">${pillText}</span>
-                </div>
+              </div>
               </div>
               <div class="pf-hb2-card">
                 <div style="color:#64748b;font-size:.9rem;line-height:1.45">No specific benefit found for this goal for this ingredient.</div>
-              </div>
+            </div>
             </div>
           `;
           
@@ -4863,11 +5097,11 @@
             <div class="pf-hb2-header">
               <div class="pf-hb2-title">Health Benefits</div>
               <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
-            </div>
+                </div>
             <div class="pf-hb2-card">
               <div style="color:#64748b;font-size:.9rem;line-height:1.45">No health benefits data available for this ingredient.</div>
-            </div>
-          </div>
+              </div>
+                  </div>
         `;
         if (targetBody) {
           targetBody.innerHTML = emptyHtml;
@@ -4892,10 +5126,10 @@
             <div class="pf-hb2-cardHead">
               <div class="pf-hb2-name">${name}</div>
               ${safeCategory ? `<span class="pf-hb2-tag">${safeCategory}</span>` : ''}
-            </div>
+                </div>
             ${desc ? `<div class="pf-hb2-desc">${desc}</div>` : ''}
-          </div>
-        `;
+            </div>
+          `;
       }).join('');
 
       // Build remaining benefits (for accordion)
@@ -4946,7 +5180,7 @@
             <div class="pf-hb2-header-row">
               <span class="pf-hb2-chip">${safeName} • <span class="serving">${safeServing}</span></span>
               <span class="pf-hb2-pill">${pillText}</span>
-            </div>
+          </div>
           </div>
           <div class="pf-hb2-grid">
             ${top2Cards}
@@ -4973,7 +5207,7 @@
           ` : ''}
         </div>
       `;
-      
+
       if (message) {
         html += `<div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: var(--radius); color: var(--text-secondary); font-size: 0.9rem;">${escapeHtml(message)}</div>`;
       }
@@ -5206,23 +5440,23 @@
           
           // Include the allergen if it passed our filter
           if (shouldInclude) {
-            if (!allergenMap.has(allergenKey)) {
-              allergenMap.set(allergenKey, {
-                name: allergenData.name || 'Unknown',
-                severity: allergenData.severity || 'Unknown',
-                description: allergenData.description || '',
-                aliases: allergenData.aliases || '',
-                common_in: allergenData.common_in || '',
-                ingredients: []
-              });
-            }
-            
-            allergenMap.get(allergenKey).ingredients.push(displayName);  // Use display name for UI
-            ingredientsWithAllergens.push({
-              ingredient: displayName,  // Use display name for UI
-              allergen: allergenData
+          if (!allergenMap.has(allergenKey)) {
+            allergenMap.set(allergenKey, {
+              name: allergenData.name || 'Unknown',
+              severity: allergenData.severity || 'Unknown',
+              description: allergenData.description || '',
+              aliases: allergenData.aliases || '',
+              common_in: allergenData.common_in || '',
+              ingredients: []
             });
           }
+          
+          allergenMap.get(allergenKey).ingredients.push(displayName);  // Use display name for UI
+          ingredientsWithAllergens.push({
+            ingredient: displayName,  // Use display name for UI
+            allergen: allergenData
+          });
+        }
         } else {
           // No allergen data from backend, but check if we detected any
           if (detected.milk) {
@@ -6079,8 +6313,8 @@ const allergenPanel = allergenNames.length === 0
     function isVeganMilkRecommended(ingredientName, ageGroup) {
       if (!ingredientName || !ageGroup) return null;
       
-      // Check for kids 4-8
-      if (ageGroup === 'child-4-8') {
+      // Check for kids 4-6 and 7-8
+      if (ageGroup === 'child-4-6' || ageGroup === 'child-7-8' || ageGroup === 'child-4-8') {
         return getRecommendedVeganMilkForKids(ingredientName);
       }
       
@@ -8581,7 +8815,9 @@ const allergenPanel = allergenNames.length === 0
      * @returns {boolean} - True if the age group is a child or teen
      */
     function isChildOrTeenAge(uiAgeGroup) {
-      return uiAgeGroup === "child-4-8" ||
+      return uiAgeGroup === "child-4-6" ||
+             uiAgeGroup === "child-7-8" ||
+             uiAgeGroup === "child-4-8" || // backward compatibility
              uiAgeGroup === "girl-9-13" ||
              uiAgeGroup === "boy-9-13" ||
              uiAgeGroup === "girl-14-18" ||
@@ -8599,7 +8835,7 @@ const allergenPanel = allergenNames.length === 0
       if (!smoothieHasSweetener(ingredients)) return null;
       
       // Gender and age-specific messages
-      if (uiAgeGroup === "child-4-8") {
+      if (uiAgeGroup === "child-4-6" || uiAgeGroup === "child-7-8" || uiAgeGroup === "child-4-8") {
         return "For kids, added sweeteners like honey, maple syrup, coconut sugar or date syrup should stay small. " +
                "Try to let most of the sweetness come from fruit.";
       }
@@ -8833,6 +9069,8 @@ const allergenPanel = allergenNames.length === 0
      */
     function getMaxTotalSweetenerGrams(uiAgeGroup) {
       switch (uiAgeGroup) {
+        case "child-4-6":
+        case "child-7-8":
         case "child-4-8":
           return 10;  // up to ~1 tsp honey + a bit of date syrup
         case "girl-9-13":
@@ -9501,7 +9739,6 @@ const allergenPanel = allergenNames.length === 0
      * Official list of 10 health goals
      */
     const CHILD_4_8_HEALTH_GOALS = [
-      'Heart Health',
       'Muscle Health',
       'Eye Health',
       'Digestive Health',
@@ -9700,7 +9937,9 @@ const allergenPanel = allergenNames.length === 0
     // Health goals allowed for each target audience
     // Maps target audience values to allowed health goal category names
     const healthGoalsByAudience = {
-      'child-4-8': CHILD_4_8_HEALTH_GOALS, // Official 10 health goals for Child 4-8
+      'child-4-6': CHILD_4_8_HEALTH_GOALS, // same restricted kid goals
+      'child-7-8': CHILD_4_8_HEALTH_GOALS, // same restricted kid goals
+      'child-4-8': CHILD_4_8_HEALTH_GOALS, // backward compatibility
       'child-9-13': [
         'Bone Health',
         'Dental Health',
@@ -10205,6 +10444,10 @@ const allergenPanel = allergenNames.length === 0
     // Smoothie servings state (for nutrition tabs)
     let smoothieServings = 1;
     let currentSmoothieData = null; // Store current smoothie data for recalculation
+    let smoothieBatchMlOverride = null; // null = auto
+    let manualServingsOverride = false; // user touched the servings control
+    let smoothieServingMode = 'recommended'; // 'recommended' | 'manual'
+
     
     // Smoothie weight servings state (for per-serving weight display)
     // This is separate from nutrition servings and can be hooked to age/target audience later
@@ -10212,6 +10455,8 @@ const allergenPanel = allergenNames.length === 0
     let totalSmoothieWeightGrams = 0; // Store total smoothie weight for per-serving calculation
     let recommendedPerServingG = 0; // Recommended per-serving weight in grams (calculated by computeRecommendedServing)
     let recommendedServings = 1; // Recommended number of servings (calculated by computeRecommendedServing)
+    let smoothieComputedTotals = null; // {calories, protein, carbs, fat, fiber, sugar, sodium}
+    let lastSmoothieTotals = null; // { totalNutrients: {...}, totalWeightG: number }
     
     // ============================================
     // AGE-SPECIFIC SERVING SIZE MAP (Frontend Only)
@@ -11187,6 +11432,15 @@ const allergenPanel = allergenNames.length === 0
      */
     function normalizeAgeGroupKey(ageGroup) {
       if (!ageGroup) return null;
+     
+      // Treat child-4-6 and child-7-8 as child_4_8 for all existing serving-size logic/maps
+
+      if (ageGroup === 'child-4-6' || ageGroup === 'child-7-8' || ageGroup === 'child-4-8') {
+        return 'child_4_8';
+      }
+
+
+
       
       // Map girl-9-13 and boy-9-13 to child_9_13
       if (ageGroup === 'girl-9-13' || ageGroup === 'boy-9-13') {
@@ -11394,7 +11648,9 @@ const allergenPanel = allergenNames.length === 0
       
       // Define serving ranges by audience (in grams)
       const servingRanges = {
-        'child-4-8': { min: 150, max: 200 },
+        'child-4-6': { min: 150, max: 200 },
+        'child-7-8': { min: 150, max: 200 },
+        'child-4-8': { min: 150, max: 200 }, // backward compatibility
         'girl-9-13': { min: 200, max: 250 },
         'boy-9-13': { min: 200, max: 250 },
         'girl-14-18': { min: 250, max: 300 },
@@ -12844,8 +13100,10 @@ const allergenPanel = allergenNames.length === 0
       // Get selected target audience
       const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
       
-      // Only show for kids 4-8, girls 9-13, boys 9-13, girls 14-18, boys 14-18, women 19-30, and men 19-30
-      const isChild48 = selectedAudience === 'child-4-8';
+      // Only show for kids 4-6, 7-8, girls 9-13, boys 9-13, girls 14-18, boys 14-18, women 19-30, and men 19-30
+      const isChild46 = selectedAudience === 'child-4-6';
+      const isChild78 = selectedAudience === 'child-7-8';
+      const isChild48 = selectedAudience === 'child-4-8'; // backward compatibility
       const isGirl913 = selectedAudience === 'girl-9-13';
       const isBoy913 = selectedAudience === 'boy-9-13';
       const isGirl1418 = selectedAudience === 'girl-14-18';
@@ -12853,7 +13111,7 @@ const allergenPanel = allergenNames.length === 0
       const isWoman1930 = selectedAudience === 'woman-19-30';
       const isMan1930 = selectedAudience === 'man-19-30';
       
-      if (!isChild48 && !isGirl913 && !isBoy913 && !isGirl1418 && !isBoy1418 && !isWoman1930 && !isMan1930) {
+      if (!isChild46 && !isChild78 && !isChild48 && !isGirl913 && !isBoy913 && !isGirl1418 && !isBoy1418 && !isWoman1930 && !isMan1930) {
         veganMilkRecommendationContainerEl.style.display = 'none';
         veganMilkRecommendationContainerEl.innerHTML = '';
         return;
@@ -12878,7 +13136,7 @@ const allergenPanel = allergenNames.length === 0
         let ageGroupText;
         let servingText;
         
-        if (isChild48) {
+        if (isChild46 || isChild78 || isChild48) {
           recommendedMilksObj = KID_4_8_RECOMMENDED_VEGAN_MILKS;
           ageGroupText = 'children 4-8 years';
           servingText = '4–8 smoothie serving (ml)';
@@ -12953,7 +13211,9 @@ const allergenPanel = allergenNames.length === 0
       
       const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
       const ageGroupKey = normalizeAgeGroupKey(selectedAudience);
-      const isChild48 = selectedAudience === 'child-4-8';
+      const isChild46 = selectedAudience === 'child-4-6';
+      const isChild78 = selectedAudience === 'child-7-8';
+      const isChild48 = selectedAudience === 'child-4-8'; // backward compatibility
       const isGirl913 = selectedAudience === 'girl-9-13';
       const isBoy913 = selectedAudience === 'boy-9-13';
       
@@ -12964,7 +13224,7 @@ const allergenPanel = allergenNames.length === 0
           const ingredientName = ing.name;
           
           if (isPlantBasedMilk(ingredientName)) {
-            if (isChild48) {
+            if (isChild46 || isChild78 || isChild48) {
               // For kids 4-8, set to 120ml (same for ALL vegan milks, recommended or not)
               if (ing.quantity !== 120 || ing.unit !== 'ml') {
                 ing.quantity = 120;
@@ -13217,7 +13477,7 @@ const allergenPanel = allergenNames.length === 0
                     defaultQuantity = portion.amount;
                   } else {
                     // Fallback based on age group
-                    defaultQuantity = selectedAudience === 'child-4-8' ? 120 : 150;
+                    defaultQuantity = (selectedAudience === 'child-4-6' || selectedAudience === 'child-7-8' || selectedAudience === 'child-4-8') ? 120 : 150;
                   }
                   defaultUnit = 'ml';
                 } else if (isFreshFruit(ingredient)) {
@@ -14137,6 +14397,32 @@ const allergenPanel = allergenNames.length === 0
         totalNutrients.sodium += ing.sodium || 0;
       });
 
+      // ✅ Single source of truth for BOTH Whole + Per-serving
+      lastSmoothieTotals = {
+        totalNutrients: { ...totalNutrients },
+        totalWeightG: totalSmoothieWeightGrams
+      };
+
+      // Also sync currentSmoothieData so any other code stays consistent
+      currentSmoothieData = currentSmoothieData || {};
+      currentSmoothieData.total_nutrition = { ...totalNutrients };
+      currentSmoothieData.total_smoothie_weight_grams = totalSmoothieWeightGrams;
+
+      const sumIngredientCalories = ingredients.reduce((a, ing) => a + (ing.calories || 0), 0);
+
+      console.log('[A] displaySmoothieResults totalNutrients', {
+        totalCalories: totalNutrients.calories,
+        sumIngredientCalories,
+        totalSmoothieWeightGrams
+      });
+
+      console.log('[B-before-sync] currentSmoothieData.total_nutrition', {
+        totalCalories: currentSmoothieData?.total_nutrition?.calories,
+        totalSmoothieWeightGrams: currentSmoothieData?.total_smoothie_weight_grams
+      });
+
+      smoothieComputedTotals = totalNutrients;
+
       // Helper function to format weight in grams and ounces
       // Returns { gramsDisplay, ouncesDisplay }
       function formatWeight(grams) {
@@ -14213,17 +14499,25 @@ const allergenPanel = allergenNames.length === 0
         
         // Update smoothieWeightServings to use recommended servings
         smoothieWeightServings = recommendedServings;
+        
+        // Set serving mode to recommended and calculate full servings
+        smoothieServingMode = 'recommended';
+        const full = Math.max(1, Math.floor(totalSmoothieWeightGrams / recommendedPerServingG));
+        smoothieServings = full;
       } else {
         // Fallback: use manual servings if no audience/goal selected
         recommendedPerServingG = totalSmoothieWeightGrams / smoothieWeightServings;
         recommendedServings = smoothieWeightServings;
+        smoothieServingMode = 'recommended';
+        const full = Math.max(1, Math.floor(totalSmoothieWeightGrams / recommendedPerServingG));
+        smoothieServings = full;
       }
       
       // Calculate per serving nutrients using recommended serving ratio
       // This ensures all per-serving nutrient cards use the recommended serving size
       // Formula: perServingNutrients = totalNutrients * (recommendedPerServingG / totalWeightGrams)
       let perServingNutrients;
-      if (recommendedPerServingG > 0 && totalSmoothieWeightGrams > 0) {
+      if (!manualServingsOverride && recommendedPerServingG > 0 && totalSmoothieWeightGrams > 0) {
         const servingRatio = recommendedPerServingG / totalSmoothieWeightGrams;
         perServingNutrients = {
           calories: (totalNutrients.calories || 0) * servingRatio,
@@ -14235,9 +14529,9 @@ const allergenPanel = allergenNames.length === 0
           sodium: (totalNutrients.sodium || 0) * servingRatio
         };
       } else {
-        // Fallback to manual servings calculation
         perServingNutrients = divideNutrients(totalNutrients, smoothieServings);
       }
+
       
       // Calculate per serving weight using recommended per-serving grams
       // This ensures the per-serving display uses the recommended serving size
@@ -14397,7 +14691,7 @@ const allergenPanel = allergenNames.length === 0
       // Get selected audience for fruit portion check (reuse logic from above)
       const audienceForFruitCheck = smoothieForEl ? smoothieForEl.value : '';
       
-      if (audienceForFruitCheck === 'child-4-8') {
+      if (audienceForFruitCheck === 'child-4-6' || audienceForFruitCheck === 'child-7-8' || audienceForFruitCheck === 'child-4-8') {
         const { totalFruitGrams, totalPortions } = computeChild48FruitPortions(ingredients);
         
         if (totalPortions > CHILD_4_8_MAX_FRUIT_PORTIONS_PER_SMOOTHIE) {
@@ -14460,19 +14754,8 @@ const allergenPanel = allergenNames.length === 0
         </div>
       ` : '';
       
-      let html = `
-        <div style="margin-bottom: 16px;">
-          ${childFruitWarningHtml}
-          ${sweetenerWarningHtml}
-          ${bloodSugarGoalTipHtml}
-          ${weightManagementTipHtml}
-          ${bloodPressureTipHtml}
-          <!-- Ingredients List -->
-          <div style="padding: 16px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: var(--radius); margin-bottom: 16px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-              <span style="font-size: 1.2rem;">🥗</span>
-              <div style="font-size: 0.75rem; color: #92400e; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Smoothie Ingredients</div>
-            </div>
+      // Build ingredients HTML for panel
+      const ingredientsHtml = `
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
               ${ingredientsList.map(ing => `
                 <div style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #fbbf24; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
@@ -14484,29 +14767,61 @@ const allergenPanel = allergenNames.length === 0
                 </div>
               `).join('')}
             </div>
-          </div>
-          
-          <!-- Total Smoothie Yield Card -->
-          <div style="padding: 10px 16px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 2px solid #0ea5e9; border-radius: var(--radius); margin-bottom: 16px; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                <span style="font-size: 1.1rem;">📏</span>
-                <div style="flex: 1;">
-                  <div style="font-size: 0.65rem; color: #0369a1; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; font-weight: 700;">Total Smoothie Yield</div>
+      `;
+
+      // Build yield HTML for panel
+      const yieldHtml = `
                   <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
                     <div style="font-size: 1.1rem; font-weight: 800; color: #0c4a6e; line-height: 1.1;">${totalWeightFormatted.gramsDisplay}</div>
                     <div style="font-size: 0.85rem; font-weight: 600; color: #0369a1; line-height: 1.1; opacity: 0.85;">
                       (${totalWeightFormatted.ouncesDisplay})
                     </div>
                   </div>
+      `;
+
+      // Build calories meta for nutrition accordion
+      const caloriesMeta = totalNutrients.calories ? `${Math.round(totalNutrients.calories)} cal` : '—';
+
+      let html = `
+        <div class="sn-wrap">
+          ${childFruitWarningHtml}
+          ${sweetenerWarningHtml}
+          ${bloodSugarGoalTipHtml}
+          ${weightManagementTipHtml}
+          ${bloodPressureTipHtml}
+          
+          <div class="sn-grid">
+            <!-- Ingredients -->
+            <section class="sn-card sn-card--warm">
+              <div class="sn-head">
+                <div class="sn-title">🥗 Smoothie Ingredients</div>
+                <div class="sn-meta" id="sn-ingredient-count">${ingredients.length} ingredient${ingredients.length > 1 ? 's' : ''}</div>
                 </div>
+              <div class="sn-body">
+                <div id="smoothie-ingredients-panel">${ingredientsHtml}</div>
               </div>
-              <div style="font-size: 0.75rem; color: #0369a1; font-weight: 600; padding: 4px 10px; background: rgba(14, 165, 233, 0.1); border-radius: 6px;">
-                ${ingredients.length} ingredient${ingredients.length > 1 ? 's' : ''}
+            </section>
+
+            <!-- Yield -->
+            <section class="sn-card sn-card--cool">
+              <div class="sn-head">
+                <div class="sn-title">🥤 Total Smoothie Yield</div>
+                <div class="sn-meta" id="sn-yield-meta">${ingredients.length} ingredient${ingredients.length > 1 ? 's' : ''}</div>
               </div>
+              <div class="sn-body">
+                <div id="smoothie-yield-panel">${yieldHtml}</div>
             </div>
+            </section>
           </div>
           
+          <!-- Nutrition (collapsible) -->
+          <details class="sn-card sn-card--neutral sn-details" open>
+            <summary class="sn-summary">
+              <span class="sn-title">📊 Nutrition Breakdown</span>
+              <span class="sn-meta" id="sn-calories-meta">${caloriesMeta}</span>
+            </summary>
+
+            <div class="sn-body">
           <!-- Per Serving Card -->
           <div style="padding: 8px 12px; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12); position: relative; overflow: hidden;">
             <!-- Decorative accent -->
@@ -14548,45 +14863,62 @@ const allergenPanel = allergenNames.length === 0
           
           <!-- Servings Control and Tabs -->
           <div style="margin-bottom: 16px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius); border: 1px solid var(--border);">
-            <!-- Servings Input -->
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                <!-- Servings Input (ONLY for Per Serving tab) -->
+                <div id="smoothie-servings-control" style="display:none; margin-bottom: 16px;">
+                  <!-- Batch size selector (ml) -->
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom: 12px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="font-size:1.1rem;">🧪</span>
+                      <label style="font-size:0.9rem; font-weight:600; color: var(--text-primary);">
+                        Batch size (ml):
+                      </label>
+                    </div>
+
+                    <select id="smoothie-batch-ml" style="padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:#fff; font-weight:700;">
+                      <option value="auto" selected>Auto (from ingredients)</option>
+                      <option value="500">500 ml</option>
+                      <option value="750">750 ml</option>
+                      <option value="1000">1000 ml</option>
+                      <option value="1250">1250 ml</option>
+                    </select>
+                  </div>
+
+                  <div id="smoothie-serving-message" style="margin-bottom: 10px; font-size: 0.85rem; color: var(--text-secondary);"></div>
+
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 1.1rem;">🍽️</span>
-                <label style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">Number of Servings:</label>
+                      <label style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
+                        Servings (for per-serving values):
+                      </label>
               </div>
+
               <div style="display: flex; align-items: center; gap: 8px;">
-                <div class="quantity-control" style="border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: white;">
-                  <button class="quantity-btn decrement" id="smoothie-servings-decrement" type="button" style="border-right: 1px solid var(--border);">−</button>
+                      <div class="quantity-control sn-qty">
+                        <button class="quantity-btn sn-qty-btn decrement" id="smoothie-servings-decrement" type="button">−</button>
+
                   <input 
                     type="number" 
                     id="smoothie-servings-input" 
+                          class="sn-qty-input"
                     value="${smoothieServings}" 
                     min="1" 
                     max="10" 
                     step="1"
-                    style="width: 60px; padding: 6px; border: none; outline: none; text-align: center; font-size: 0.9rem; font-weight: 600;"
                   />
-                  <button class="quantity-btn increment" id="smoothie-servings-increment" type="button" style="border-left: 1px solid var(--border);">+</button>
+
+                        <button class="quantity-btn sn-qty-btn increment" id="smoothie-servings-increment" type="button">+</button>
+                      </div>
                 </div>
               </div>
             </div>
             
             <!-- Tabs -->
-            <div style="display: flex; gap: 8px; border-bottom: 2px solid var(--border);">
-              <button 
-                id="smoothie-tab-whole" 
-                class="smoothie-nutrition-tab active" 
-                data-tab="whole"
-                style="padding: 10px 20px; background: transparent; border: none; border-bottom: 3px solid var(--primary); color: var(--primary); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;"
-              >
+                <div class="sn-tabs">
+                  <button id="smoothie-tab-whole" class="sn-tab active" data-tab="whole" type="button">
                 Whole Smoothie
               </button>
-              <button 
-                id="smoothie-tab-serving" 
-                class="smoothie-nutrition-tab" 
-                data-tab="serving"
-                style="padding: 10px 20px; background: transparent; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;"
-              >
+                  <button id="smoothie-tab-serving" class="sn-tab" data-tab="serving" type="button">
                 Per Serving
               </button>
             </div>
@@ -14595,17 +14927,18 @@ const allergenPanel = allergenNames.length === 0
           <!-- Tab Content -->
           <div id="smoothie-nutrition-whole" class="smoothie-nutrition-tab-content" style="display: block;">
             <!-- Header with USDA badge -->
-            <div style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1.2rem;">🥤</span>
+                <div class="sn-nutrition-head">
+                  <div class="sn-nutrition-title">
+                    <span class="sn-emoji">🥤</span>
                 <div>
-                  <div style="color: var(--primary); font-size: 1.1rem; font-weight: 700;">Smoothie Nutrition</div>
-                  <div style="color: var(--text-secondary); font-size: 0.8rem;">Whole smoothie • complete recipe</div>
+                      <div class="sn-title">Smoothie Nutrition</div>
+                      <div class="sn-subtitle">Whole smoothie • complete recipe</div>
                 </div>
               </div>
+
               ${hasUSDA ? `
-                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: #ecfdf5; border-radius: 999px; border: 1px solid #6ee7b7; font-size: 0.75rem; color: #047857;">
-                  <span style="font-size: 0.9rem;">✓</span>
+                    <div class="sn-usda-pill">
+                      <span>✓</span>
                   <span>USDA verified ingredients</span>
                 </div>
               ` : ''}
@@ -14615,27 +14948,40 @@ const allergenPanel = allergenNames.length === 0
           
           <div id="smoothie-nutrition-serving" class="smoothie-nutrition-tab-content" style="display: none;">
             <!-- Header with USDA badge -->
-            <div style="margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1.2rem;">🥤</span>
+                <div class="sn-nutrition-head">
+                  <div class="sn-nutrition-title">
+                    <span class="sn-emoji">🥤</span>
                 <div>
-                  <div style="color: var(--primary); font-size: 1.1rem; font-weight: 700;">Smoothie Nutrition</div>
-                  <div style="color: var(--text-secondary); font-size: 0.8rem;">Per serving • ${smoothieServings} serving${smoothieServings > 1 ? 's' : ''}</div>
+                      <div class="sn-title">Smoothie Nutrition</div>
+                      <div class="sn-subtitle">Per serving • ${smoothieServings} serving${smoothieServings > 1 ? 's' : ''}</div>
                 </div>
               </div>
+
               ${hasUSDA ? `
-                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: #ecfdf5; border-radius: 999px; border: 1px solid #6ee7b7; font-size: 0.75rem; color: #047857;">
-                  <span style="font-size: 0.9rem;">✓</span>
+                    <div class="sn-usda-pill">
+                      <span>✓</span>
                   <span>USDA verified ingredients</span>
                 </div>
               ` : ''}
             </div>
             <div id="smoothie-metrics-serving"></div>
           </div>
+            </div>
+          </details>
         </div>
       `;
+      smoothieBatchMlOverride = null;
 
       smoothieResultsBodyEl.innerHTML = html;
+      const batchSel = document.getElementById('smoothie-batch-ml');
+if (batchSel) batchSel.value = 'auto';
+
+
+      // Ensure the servings input shows the current smoothieServings value
+      const servingsInputEl = document.getElementById('smoothie-servings-input');
+      if (servingsInputEl) {
+        servingsInputEl.value = smoothieServings;
+      }
 
       // Render nutrition metrics into their containers using DOM nodes
       const wholeMetricsContainer = document.getElementById('smoothie-metrics-whole');
@@ -14644,11 +14990,8 @@ const allergenPanel = allergenNames.length === 0
         wholeMetricsContainer.appendChild(renderSmoothieNutritionMetrics(totalNutrients, false));
       }
 
-      const servingMetricsContainer = document.getElementById('smoothie-metrics-serving');
-      if (servingMetricsContainer) {
-        servingMetricsContainer.innerHTML = '';
-        servingMetricsContainer.appendChild(renderSmoothieNutritionMetrics(perServingNutrients, true));
-      }
+      // Don't render serving metrics here - let updatePerServingDisplay() handle it
+      // This prevents double rendering and ensures correct calculation
       
       // Set up tab switching
       setupSmoothieNutritionTabs();
@@ -14656,40 +14999,42 @@ const allergenPanel = allergenNames.length === 0
       // Set up servings control (for nutrition tabs)
       setupSmoothieServingsControl();
       
+      // ✅ NEW: Set up batch size selector (ml)
+      setupSmoothieBatchSizeControl();
+      
       // Set up weight servings control (for per-serving weight display)
       setupSmoothieWeightServingsControl();
+      
+      // Initialize per-serving display (only if serving tab is active)
+      const servingTab = document.getElementById('smoothie-tab-serving');
+      if (servingTab && servingTab.classList.contains('active')) {
+        updatePerServingDisplay();
+      }
     }
     
-    // Function to setup smoothie nutrition tabs
     function setupSmoothieNutritionTabs() {
       const wholeTab = document.getElementById('smoothie-tab-whole');
       const servingTab = document.getElementById('smoothie-tab-serving');
       const wholeContent = document.getElementById('smoothie-nutrition-whole');
       const servingContent = document.getElementById('smoothie-nutrition-serving');
+      const servingsBox = document.getElementById('smoothie-servings-control');
       
       if (!wholeTab || !servingTab || !wholeContent || !servingContent) return;
       
       wholeTab.addEventListener('click', () => {
         wholeTab.classList.add('active');
-        wholeTab.style.borderBottomColor = 'var(--primary)';
-        wholeTab.style.color = 'var(--primary)';
         servingTab.classList.remove('active');
-        servingTab.style.borderBottomColor = 'transparent';
-        servingTab.style.color = 'var(--text-secondary)';
         wholeContent.style.display = 'block';
         servingContent.style.display = 'none';
+        if (servingsBox) servingsBox.style.display = 'none';
       });
       
       servingTab.addEventListener('click', () => {
         servingTab.classList.add('active');
-        servingTab.style.borderBottomColor = 'var(--primary)';
-        servingTab.style.color = 'var(--primary)';
         wholeTab.classList.remove('active');
-        wholeTab.style.borderBottomColor = 'transparent';
-        wholeTab.style.color = 'var(--text-secondary)';
         wholeContent.style.display = 'none';
         servingContent.style.display = 'block';
-        // Update per serving display when switching to this tab
+        if (servingsBox) servingsBox.style.display = 'block';
         updatePerServingDisplay();
       });
     }
@@ -14706,6 +15051,8 @@ const allergenPanel = allergenNames.length === 0
       servingsInput.addEventListener('change', (e) => {
         const newServings = parseInt(e.target.value) || 1;
         if (newServings >= 1 && newServings <= 10) {
+          smoothieServingMode = 'manual';
+          manualServingsOverride = true;
           smoothieServings = newServings;
           updatePerServingDisplay();
         } else {
@@ -14716,6 +15063,8 @@ const allergenPanel = allergenNames.length === 0
       // Handle decrement button
       decrementBtn.addEventListener('click', () => {
         if (smoothieServings > 1) {
+          smoothieServingMode = 'manual';
+          manualServingsOverride = true;
           smoothieServings--;
           servingsInput.value = smoothieServings;
           updatePerServingDisplay();
@@ -14725,6 +15074,8 @@ const allergenPanel = allergenNames.length === 0
       // Handle increment button
       incrementBtn.addEventListener('click', () => {
         if (smoothieServings < 10) {
+          smoothieServingMode = 'manual';
+          manualServingsOverride = true;
           smoothieServings++;
           servingsInput.value = smoothieServings;
           updatePerServingDisplay();
@@ -14732,11 +15083,53 @@ const allergenPanel = allergenNames.length === 0
       });
     }
     
+    function setupSmoothieBatchSizeControl() {
+      const sel = document.getElementById('smoothie-batch-ml');
+      if (!sel) return;
+
+      // IMPORTANT: sync the JS variable to what the dropdown currently shows
+      // Otherwise the UI can show "Auto" while smoothieBatchMlOverride still holds an old number.
+      const apply = () => {
+        const v = sel.value;
+        smoothieBatchMlOverride = (v === 'auto') ? null : (parseInt(v, 10) || null);
+      };
+
+      apply(); // <-- THIS LINE is the fix
+
+      sel.addEventListener('change', () => {
+        apply();
+        // user is choosing batch sizing, keep recommended mode unless they manually edit servings
+        smoothieServingMode = 'recommended';
+        updatePerServingDisplay();
+      });
+    }
+    
     // Function to update per serving display
     function updatePerServingDisplay() {
       if (!currentSmoothieData) return;
       
-      const totalNutrition = currentSmoothieData.total_nutrition || {};
+      console.log('[SERVING DEBUG]', {
+        totalSmoothieWeightGrams,
+        smoothieBatchMlOverride,
+        batchG: (smoothieBatchMlOverride != null) ? smoothieBatchMlOverride : totalSmoothieWeightGrams,
+        recommendedPerServingG,
+        smoothieServings,
+        smoothieServingMode
+      });
+      
+      // Always sync batch override with the dropdown UI.
+      // If UI says "auto", override must be null.
+      const batchSel = document.getElementById('smoothie-batch-ml');
+      if (batchSel && batchSel.value === 'auto') {
+        smoothieBatchMlOverride = null;
+        smoothieServingMode = 'recommended';
+      }
+
+      
+      const totalNutrition =
+        (lastSmoothieTotals && lastSmoothieTotals.totalNutrients)
+          ? lastSmoothieTotals.totalNutrients
+          : (currentSmoothieData.total_nutrition || {});
       const totalNutrients = {
         calories: totalNutrition.calories || 0,
         protein: totalNutrition.protein || 0,
@@ -14747,43 +15140,88 @@ const allergenPanel = allergenNames.length === 0
         sodium: totalNutrition.sodium || 0
       };
       
-      // Use recommended serving ratio if available, otherwise use manual servings
+      console.log('[PER-SERVING TOTALS]', totalNutrients);
+      
+      const autoBatchG = (lastSmoothieTotals && lastSmoothieTotals.totalWeightG)
+  ? lastSmoothieTotals.totalWeightG
+  : (totalSmoothieWeightGrams || 0);
+
+const batchG = (smoothieBatchMlOverride != null)
+  ? smoothieBatchMlOverride
+  : autoBatchG;
+
+
+      // Use recommended ratio ONLY if mode is 'recommended' AND we have the required values
       let perServingNutrients;
-      if (recommendedPerServingG > 0 && totalSmoothieWeightGrams > 0) {
-        // Use recommended serving size: multiply nutrients by (recommendedPerServingG / totalWeightGrams)
-        const servingRatio = recommendedPerServingG / totalSmoothieWeightGrams;
+      if (smoothieServingMode === 'recommended' && recommendedPerServingG > 0 && batchG > 0) {
+        const servingG = recommendedPerServingG;
+        // ratio for one recommended serving (cap at 1 so we never exceed whole batch)
+        const ratio = (batchG > 0 && servingG > 0) ? Math.min(1, servingG / batchG) : 1;
+        
+        console.log('[PER SERVING CALC]', {
+          mode: 'recommended',
+          totalCalories: totalNutrients.calories,
+          ratio: ratio,
+          servingG: servingG,
+          batchG: batchG,
+          calculatedCalories: (totalNutrients.calories || 0) * ratio
+        });
+        
         perServingNutrients = {
-          calories: (totalNutrients.calories || 0) * servingRatio,
-          protein: (totalNutrients.protein || 0) * servingRatio,
-          carbs: (totalNutrients.carbs || 0) * servingRatio,
-          fat: (totalNutrients.fat || 0) * servingRatio,
-          fiber: (totalNutrients.fiber || 0) * servingRatio,
-          sugar: (totalNutrients.sugar || 0) * servingRatio,
-          sodium: (totalNutrients.sodium || 0) * servingRatio
+          calories: (totalNutrients.calories || 0) * ratio,
+          protein: (totalNutrients.protein || 0) * ratio,
+          carbs:   (totalNutrients.carbs   || 0) * ratio,
+          fat:     (totalNutrients.fat     || 0) * ratio,
+          fiber:   (totalNutrients.fiber   || 0) * ratio,
+          sugar:   (totalNutrients.sugar   || 0) * ratio,
+          sodium:  (totalNutrients.sodium  || 0) * ratio
         };
       } else {
-        // Fallback to manual servings calculation
+        // Manual mode: compute per-serving by dividing by servings count
+        console.log('[PER SERVING CALC]', {
+          mode: 'manual',
+          totalCalories: totalNutrients.calories,
+          servings: smoothieServings,
+          calculatedCalories: (totalNutrients.calories || 0) / smoothieServings
+        });
         perServingNutrients = divideNutrients(totalNutrients, smoothieServings);
       }
       
       const servingContent = document.getElementById('smoothie-nutrition-serving');
       
       if (servingContent) {
-        // Update the subtitle - find the div with the text-secondary style
-        const headerDiv = servingContent.querySelector('div[style*="margin-bottom: 8px"]');
-        if (headerDiv) {
-          const subtitleDiv = headerDiv.querySelector('div > div[style*="color: var(--text-secondary)"]');
-          if (subtitleDiv) {
-            const servingsToShow = recommendedServings || smoothieServings;
-            subtitleDiv.textContent = `Per serving • ${servingsToShow} serving${servingsToShow > 1 ? 's' : ''}`;
+        const subtitleDiv = servingContent.querySelector('.sn-subtitle');
+        if (subtitleDiv) {
+          if (smoothieServingMode === 'recommended' && recommendedPerServingG > 0) {
+            subtitleDiv.textContent = `Per serving • ${Math.round(recommendedPerServingG)}g recommended`;
+          } else {
+            subtitleDiv.textContent = `Per serving • ${smoothieServings} manual serving${smoothieServings > 1 ? 's' : ''}`;
           }
         }
-        
-        // Update the metrics by replacing the row's contents with a newly rendered node
-        const metricsRow = servingContent.querySelector('.smoothie-metrics-row') || document.getElementById('smoothie-metrics-serving');
-        if (metricsRow) {
-          metricsRow.innerHTML = '';
-          metricsRow.appendChild(renderSmoothieNutritionMetrics(perServingNutrients, true));
+
+        const msg = document.getElementById('smoothie-serving-message');
+        if (msg && batchG > 0) {
+          if (smoothieServingMode === 'recommended' && recommendedPerServingG > 0) {
+            const servingG = recommendedPerServingG;
+            const full = Math.floor(batchG / servingG);
+            const extra = Math.max(0, Math.round(batchG - full * servingG));
+
+            if (full >= 1) {
+              msg.textContent = `This batch is ~${Math.round(batchG)}g → ${full} full serving${full>1?'s':''} (${Math.round(servingG)}g each)` +
+                (extra > 0 ? ` + ${extra}g extra.` : '.');
+            } else {
+              msg.textContent = `This batch is ~${Math.round(batchG)}g which is smaller than the recommended ${Math.round(servingG)}g serving. Per-serving equals the whole batch.`;
+            }
+          } else {
+            // Manual mode: show simple message
+            msg.textContent = `Per-serving values are based on splitting the batch into ${smoothieServings} serving${smoothieServings > 1 ? 's' : ''}.`;
+          }
+        }
+
+        const servingMetricsContainer = document.getElementById('smoothie-metrics-serving');
+        if (servingMetricsContainer) {
+          servingMetricsContainer.innerHTML = '';
+          servingMetricsContainer.appendChild(renderSmoothieNutritionMetrics(perServingNutrients, true));
         }
       }
     }
