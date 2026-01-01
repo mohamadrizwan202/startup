@@ -103,3 +103,4 @@ server.log
 .env.local
 render_latest.dump
 *.dump
+server*.pid
