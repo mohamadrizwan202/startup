@@ -11641,12 +11641,15 @@ const allergenPanel = allergenNames.length === 0
      * @returns {Object} { perServingG: number, servings: number }
      */
     function computeRecommendedServing(targetAudience, healthGoal, totalWeightG) {
-      // Handle edge case: if totalWeightG is 0 or invalid, return default
       if (!totalWeightG || totalWeightG <= 0) {
         return { perServingG: 250, servings: 1 };
       }
-      
-      // Define serving ranges by audience (in grams)
+
+      // IMPORTANT: UI values already match servingRanges keys. Do NOT normalize here.
+      const audienceKey = targetAudience;
+
+      const goal = (healthGoal || '').trim();
+
       const servingRanges = {
         'child-4-6': { min: 150, max: 200 },
         'child-7-8': { min: 150, max: 200 },
@@ -11662,9 +11665,8 @@ const allergenPanel = allergenNames.length === 0
         'woman-60+': { min: 250, max: 350 },
         'man-60+': { min: 300, max: 400 }
       };
-      
-      // Get the range for the target audience, default to woman-19-30 if not found
-      const range = servingRanges[targetAudience] || { min: 250, max: 350 };
+
+      const range = servingRanges[audienceKey] || { min: 250, max: 350 };
       
       // Categorize health goals (include both original DB names and UI labels for compatibility)
       const lowEndGoals = [
@@ -11687,10 +11689,10 @@ const allergenPanel = allergenNames.length === 0
       
       // Determine base serving size based on health goal category
       let base;
-      if (lowEndGoals.includes(healthGoal)) {
+      if (lowEndGoals.includes(goal)) {
         // Use minimum of range for low-end goals (e.g., weight loss, diabetes)
         base = range.min;
-      } else if (highEndGoals.includes(healthGoal)) {
+      } else if (highEndGoals.includes(goal)) {
         // Use maximum of range for high-end goals (e.g., muscle health, energy boost)
         base = range.max;
       } else {
@@ -14491,26 +14493,27 @@ const allergenPanel = allergenNames.length === 0
         }
       }
       
-      // Compute recommended serving if we have both audience and health goal
-      if (selectedAudience && healthGoalName && totalSmoothieWeightGrams > 0) {
-        const recommended = computeRecommendedServing(selectedAudience, healthGoalName, totalSmoothieWeightGrams);
+      // Compute recommended serving if we have audience (health goal optional)
+      if (selectedAudience && totalSmoothieWeightGrams > 0) {
+        const recommended = computeRecommendedServing(
+          selectedAudience,
+          healthGoalName || null,
+          totalSmoothieWeightGrams
+        );
+
         recommendedPerServingG = recommended.perServingG;
         recommendedServings = recommended.servings;
         
-        // Update smoothieWeightServings to use recommended servings
         smoothieWeightServings = recommendedServings;
-        
-        // Set serving mode to recommended and calculate full servings
+
         smoothieServingMode = 'recommended';
-        const full = Math.max(1, Math.floor(totalSmoothieWeightGrams / recommendedPerServingG));
-        smoothieServings = full;
+        smoothieServings = Math.max(1, Math.floor(totalSmoothieWeightGrams / recommendedPerServingG));
       } else {
-        // Fallback: use manual servings if no audience/goal selected
+        // Fallback only when NO audience is selected
         recommendedPerServingG = totalSmoothieWeightGrams / smoothieWeightServings;
         recommendedServings = smoothieWeightServings;
         smoothieServingMode = 'recommended';
-        const full = Math.max(1, Math.floor(totalSmoothieWeightGrams / recommendedPerServingG));
-        smoothieServings = full;
+        smoothieServings = Math.max(1, Math.floor(totalSmoothieWeightGrams / recommendedPerServingG));
       }
       
       // Calculate per serving nutrients using recommended serving ratio
@@ -15191,7 +15194,7 @@ const batchG = (smoothieBatchMlOverride != null)
       
       if (servingContent) {
         const subtitleDiv = servingContent.querySelector('.sn-subtitle');
-        if (subtitleDiv) {
+          if (subtitleDiv) {
           if (smoothieServingMode === 'recommended' && recommendedPerServingG > 0) {
             subtitleDiv.textContent = `Per serving • ${Math.round(recommendedPerServingG)}g recommended`;
           } else {
