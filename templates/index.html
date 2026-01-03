@@ -13437,6 +13437,12 @@ const allergenPanel = allergenNames.length === 0
               return String(x.name || x.label || x.title || x.food || x.text || "").trim();
             }
 
+            // Meat blocking regex (pork, beef, lamb, poultry, etc.)
+            const MEAT_RE = /\b(pork|bacon|ham|prosciutto|salami|pepperoni|pancetta|sausage|chorizo|lard|beef|lamb|chicken|turkey|liver)\b/;
+            
+            // Seafood blocking regex (fish, shellfish, general seafood terms)
+            const SEAFOOD_RE = /\b(clam|clams|oyster|oysters|mussel|mussels|scallop|scallops|shrimp|prawn|crab|lobster|octopus|squid|seafood|fish|shellfish|anchov|anchovy|haddock|halibut|herring|mackerel|salmon|sardine|sardines|trout|tuna)\b/;
+
             function isSmoothieAllowed(name) {
               const n = (name || "").toLowerCase().trim();
               if (!n) return false;
@@ -13454,8 +13460,8 @@ const allergenPanel = allergenNames.length === 0
               ]);
               if (bannedLabels.has(n)) return false;
 
-              // hard bans: meat/seafood
-              if (/(beef|lamb|chicken|turkey|liver|anchov|haddock|halibut|herring|lobster|mackerel|oyster|salmon|sardine|scallop|shrimp|trout|tuna|fish\b)/.test(n)) return false;
+              // hard bans: meat/seafood (using word-boundary regex)
+              if (MEAT_RE.test(n) || SEAFOOD_RE.test(n)) return false;
 
               // hard bans: savory ferments/condiments
               if (/(kimchi|sauerkraut|pickles?|miso|natto|vinegar)/.test(n)) return false;
@@ -13488,12 +13494,13 @@ const allergenPanel = allergenNames.length === 0
             // Self-test function (debug only)
             if (location.hostname === "localhost" || location.search.includes("debug=1")) {
               window.smoothieFilterSelfTest = async function() {
-                const queries = ["oil","butter","mayo","beef","fish","chicken","rice","quinoa","barley","beans","lentils","kimchi","sauerkraut","vinegar","miso","cheese"];
+                const queries = ["oil","butter","mayo","beef","fish","chicken","pork","bacon","ham","clam","clams","shrimp","salmon","rice","quinoa","barley","beans","lentils","kimchi","sauerkraut","vinegar","miso","cheese"];
                 for (const q of queries) {
                   const result = await window.auditSmoothieFilter(q);
                   const leaksLen = result.leaks.length;
                   console.log(`${q}, rawLen=${result.raw.length}, keptLen=${result.filtered.length}, leaksLen=${leaksLen}`);
                   if (leaksLen > 0) {
+                    console.log(`LEAKS (should be empty) for "${q}":`);
                     console.table(result.leaks);
                   }
                 }
