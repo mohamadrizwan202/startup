@@ -9249,26 +9249,106 @@ const allergenPanel = allergenNames.length === 0
      * @param {string} ageGroup - The age group (e.g., "child-4-8", "girl-9-13", "woman-19-30")
      * @returns {object} - { amount: number, unit: "g" | "ml", source: string }
      */
+    // ============================================
+    // Smoothie ZERO portion audit (global)
+    // ============================================
+    window.__smoothieZeroPortions = window.__smoothieZeroPortions || new Map();
+
+    window.__recordSmoothieZeroPortion = function ({ ingredient, age, source, unit }) {
+      try {
+        const key = `${age || 'no-age'} | ${ingredient || 'unknown'} | ${source || 'unknown'} | ${unit || ''}`;
+        const row = window.__smoothieZeroPortions.get(key) || {
+          ingredient, age, source, unit, count: 0
+        };
+        row.count += 1;
+        window.__smoothieZeroPortions.set(key, row);
+      } catch (e) {}
+    };
+
+    window.printSmoothieZeroPortions = function () {
+      const rows = Array.from(window.__smoothieZeroPortions.values())
+        .sort((a, b) => (b.count - a.count) || String(a.ingredient).localeCompare(String(b.ingredient)));
+      console.table(rows);
+      return rows;
+    };
+
+    window.clearSmoothieZeroPortions = function () {
+      window.__smoothieZeroPortions.clear();
+      console.log("Cleared __smoothieZeroPortions");
+    };
+
+    // ===============================
+    // NUTS / SEEDS (smoothie portions)
+    // ===============================
+    function isNutOrSeed(name) {
+      if (!name) return false;
+      const s = String(name).toLowerCase().trim();
+
+      // Avoid misclassifying milks like "almond milk"
+      if (typeof isPlantBasedMilk === 'function' && isPlantBasedMilk(s)) return false;
+      if (s.includes('milk')) return false;
+
+      const keys = [
+        'almond','almonds',
+        'walnut','walnuts',
+        'cashew','cashews',
+        'peanut','peanuts',
+        'pistachio','pistachios',
+        'hazelnut','hazelnuts',
+        'pecan','pecans',
+        'chia','flax',
+        'pumpkin seed','pumpkin seeds',
+        'sunflower seed','sunflower seeds',
+        'hemp','sesame','tahini'
+      ];
+
+      return keys.some(k => s.includes(k));
+    }
+
+    function getNutSeedPortionGrams(ageGroup, ingredientKey) {
+      const k = typeof normalizeAgeGroupKey === 'function' ? normalizeAgeGroupKey(ageGroup) : null;
+
+      // Conservative smoothie portions (can refine later)
+      if (k === 'child_4_8') return 10;
+      if (k === 'child_9_13') return 15;
+      if (k === 'teen_14_18') return 20;
+
+      return 28; // adults default (≈ 1 oz)
+    }
+
     function getIngredientPortion(ingredientKey, ageGroup) {
+      const __final = (res) => {
+        const amt = Number(res?.amount);
+        if (!Number.isFinite(amt) || amt === 0) {
+          window.__recordSmoothieZeroPortion({
+            ingredient: ingredientKey,
+            age: ageGroup,
+            source: res?.source,
+            unit: res?.unit
+          });
+        }
+        return res;
+      };
+
       if (!ingredientKey) {
-        return { amount: 0, unit: 'g', source: 'fallback' };
+        return __final({ amount: 0, unit: 'g', source: 'fallback' });
       }
 
       // If no age group is selected, use default adult portions
       if (!ageGroup) {
         // For vegan milks, use default 240ml (1 cup)
         if (isPlantBasedMilk(ingredientKey)) {
-          return { amount: 240, unit: 'ml', source: 'milkMap' };
+          return __final({ amount: 240, unit: 'ml', source: 'milkMap' });
         }
         // For dried fruits, use default 30g
         if (isDriedFruit(ingredientKey)) {
-          return { amount: 30, unit: 'g', source: 'driedFruitMap' };
+          return __final({ amount: 30, unit: 'g', source: 'driedFruitMap' });
         }
         // For fresh fruits, use default 100g
         if (isFreshFruit(ingredientKey)) {
-          return { amount: 100, unit: 'g', source: 'fruitMap' };
+          return __final({ amount: 100, unit: 'g', source: 'fruitMap' });
         }
-        return { amount: 0, unit: 'g', source: 'fallback' };
+        return __final({ amount: 0, unit: 'g', source: 'fallback' });
       }
 
       const ageGroupKey = normalizeAgeGroupKey(ageGroup);
@@ -9293,7 +9373,7 @@ const allergenPanel = allergenNames.length === 0
           });
         }
         
-        return { amount: mlValue, unit: 'ml', source: 'milkMap' };
+        return __final({ amount: mlValue, unit: 'ml', source: 'milkMap' });
       }
       
       // 2. Check if it's a dried fruit
@@ -9346,11 +9426,11 @@ const allergenPanel = allergenNames.length === 0
             });
           }
           
-          return { amount: gramsValue, unit: 'g', source: 'driedFruitMap' };
+          return __final({ amount: gramsValue, unit: 'g', source: 'driedFruitMap' });
         }
         
         // Fallback for dried fruits - use adult default
-        return { amount: 30, unit: 'g', source: 'driedFruitFallback' };
+        return __final({ amount: 30, unit: 'g', source: 'driedFruitFallback' });
       }
       
       // 3. Check if it's a sweetener (before vegetables to prioritize)
@@ -9365,7 +9445,7 @@ const allergenPanel = allergenNames.length === 0
             gramsUsed: sweetenerGrams
           });
           
-          return { amount: sweetenerGrams, unit: 'g', source: 'sweetenerMap' };
+          return __final({ amount: sweetenerGrams, unit: 'g', source: 'sweetenerMap' });
         }
         
         // Fallback for sweeteners - use default adult serving sizes
@@ -9378,7 +9458,7 @@ const allergenPanel = allergenNames.length === 0
           defaultGrams = 4;
         }
         
-        return { amount: defaultGrams, unit: 'g', source: 'sweetenerFallback' };
+        return __final({ amount: defaultGrams, unit: 'g', source: 'sweetenerFallback' });
       }
       
       // 4. Check if it's a vegetable
@@ -9400,11 +9480,15 @@ const allergenPanel = allergenNames.length === 0
         });
         
         if (vegGrams > 0) {
-          return { amount: vegGrams, unit: 'g', source: 'vegMap' };
+          return __final({ amount: vegGrams, unit: 'g', source: 'vegMap' });
         }
+
+        const key = JSON.stringify({ ageGroup, ingredientKey, normalizedKey });
+        window.__smoothieZeroVeg.add(key);
+        console.warn('[ZERO-VEG-PORTION]', { ageGroup, ingredientKey, normalizedKey });
         
         // Fallback for vegetables - use 0 if no age-specific portion found
-        return { amount: 0, unit: 'g', source: 'vegFallback' };
+        return __final({ amount: 0, unit: 'g', source: 'vegFallback' });
       }
       
       // 5. Check if it's a fresh fruit
@@ -9427,15 +9511,21 @@ const allergenPanel = allergenNames.length === 0
         });
         
         if (gramsValue > 0) {
-          return { amount: gramsValue, unit: 'g', source: 'fruitMap' };
+          return __final({ amount: gramsValue, unit: 'g', source: 'fruitMap' });
         }
         
         // Fallback for fresh fruits - use default from API if available, otherwise 0
-        return { amount: 0, unit: 'g', source: 'fruitFallback' };
+        return __final({ amount: 0, unit: 'g', source: 'fruitFallback' });
+      }
+      
+      // 6) Nuts / seeds (almonds etc.)
+      if (isNutOrSeed(ingredientKey)) {
+        const grams = getNutSeedPortionGrams(ageGroup, ingredientKey);
+        return __final({ amount: grams, unit: 'g', source: 'nutSeedMap' });
       }
       
       // 5. Fallback for other ingredients
-      return { amount: 0, unit: 'g', source: 'fallback' };
+      return __final({ amount: 0, unit: 'g', source: 'fallback' });
     }
 
     /**
@@ -11644,7 +11734,7 @@ const allergenPanel = allergenNames.length === 0
       if (!totalWeightG || totalWeightG <= 0) {
         return { perServingG: 250, servings: 1 };
       }
-
+      
       // IMPORTANT: UI values already match servingRanges keys. Do NOT normalize here.
       const audienceKey = targetAudience;
 
@@ -11665,7 +11755,7 @@ const allergenPanel = allergenNames.length === 0
         'woman-60+': { min: 250, max: 350 },
         'man-60+': { min: 300, max: 400 }
       };
-
+      
       const range = servingRanges[audienceKey] || { min: 250, max: 350 };
       
       // Categorize health goals (include both original DB names and UI labels for compatibility)
@@ -13333,6 +13423,87 @@ const allergenPanel = allergenNames.length === 0
             const res = await fetch(`/api/ingredient-search?q=${encodeURIComponent(query)}`);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             let suggestions = await res.json();
+            const rawSuggestions = suggestions;
+            if (location.hostname === "localhost" || location.search.includes("debug=1")) {
+              window.__lastSmoothieSuggestionsRaw = rawSuggestions;
+            }
+            window.__smoothieSearchHit = (window.__smoothieSearchHit || 0) + 1;
+            console.log("[smoothie-search hit]", window.__smoothieSearchHit, "len=", Array.isArray(suggestions) ? suggestions.length : suggestions);
+            
+            // Filter out inappropriate ingredients for smoothies
+            function smoothieName(x) {
+              if (typeof x === "string") return x;
+              if (!x || typeof x !== "object") return "";
+              return String(x.name || x.label || x.title || x.food || x.text || "").trim();
+            }
+
+            function isSmoothieAllowed(name) {
+              const n = (name || "").toLowerCase().trim();
+              if (!n) return false;
+
+              // Explicitly ALLOW yogurt, greek yogurt, kefir, and cottage cheese (including low-fat variants)
+              if (/\byogurt\b/.test(n) || /\bkefir\b/.test(n) || /\bcottage\s+cheese\b/.test(n) || /low[\s-]?fat.*(cottage|yogurt)/.test(n)) return true;
+
+              // Block ALL oils generically (must be near top)
+              if (/\boil\b/.test(n)) return false;
+
+              // kill category/taxonomy labels
+              const bannedLabels = new Set([
+                "fresh fruits","fresh vegetables","whole grains","legumes",
+                "herbs","spices","nuts","raw nuts","unsalted nuts"
+              ]);
+              if (bannedLabels.has(n)) return false;
+
+              // hard bans: meat/seafood
+              if (/(beef|lamb|chicken|turkey|liver|anchov|haddock|halibut|herring|lobster|mackerel|oyster|salmon|sardine|scallop|shrimp|trout|tuna|fish\b)/.test(n)) return false;
+
+              // hard bans: savory ferments/condiments
+              if (/(kimchi|sauerkraut|pickles?|miso|natto|vinegar)/.test(n)) return false;
+
+              // hard bans: hard cheeses (yogurt/kefir/cottage already allowed above)
+              if (/(blue cheese|cheddar|mozzarella|monterey jack|\bage[d]?\s*cheddar\b|\bcheese\b)/.test(n)) return false;
+
+              // grains/legumes: allow only oats/oatmeal/wheat germ
+              if (/(barley|bulgur|buckwheat|amaranth|millet|rice|quinoa|whole wheat|whole wheat bread|beans|lentils|peas|soybeans|edamame)/.test(n)) {
+                return /(oats|oatmeal|wheat germ)/.test(n);
+              }
+
+              return true;
+            }
+
+            // Audit helper for testing filter behavior
+            window.auditSmoothieFilter = async function (query) {
+              const raw = await fetch(`/api/ingredient-search?q=${encodeURIComponent(query)}`).then(r => r.json());
+              const removed = raw.filter(x => !isSmoothieAllowed(smoothieName(x))).map(x => smoothieName(x));
+              const filtered = raw.filter(x => isSmoothieAllowed(smoothieName(x)));
+              const leaks = filtered.filter(x => !isSmoothieAllowed(smoothieName(x))).map(x => smoothieName(x));
+
+              console.log("REMOVED:", removed);
+              console.log("LEAKS (should be empty):", leaks);
+              console.log({ rawLen: raw.length, filteredLen: filtered.length });
+              console.table(filtered.slice(0, 20));
+              return { raw, filtered, removed, leaks };
+            };
+
+            // Self-test function (debug only)
+            if (location.hostname === "localhost" || location.search.includes("debug=1")) {
+              window.smoothieFilterSelfTest = async function() {
+                const queries = ["oil","butter","mayo","beef","fish","chicken","rice","quinoa","barley","beans","lentils","kimchi","sauerkraut","vinegar","miso","cheese"];
+                for (const q of queries) {
+                  const result = await window.auditSmoothieFilter(q);
+                  const leaksLen = result.leaks.length;
+                  console.log(`${q}, rawLen=${result.raw.length}, keptLen=${result.filtered.length}, leaksLen=${leaksLen}`);
+                  if (leaksLen > 0) {
+                    console.table(result.leaks);
+                  }
+                }
+              };
+            }
+
+            const filteredSuggestions = rawSuggestions.filter(item => isSmoothieAllowed(smoothieName(item)));
+            if (location.hostname === "localhost" || location.search.includes("debug=1")) {
+              window.__lastSmoothieSuggestionsFiltered = filteredSuggestions;
+            }
             
             // Ensure coconut sugar and date syrup appear in search results if query matches
             // These are important sweeteners that should be easily findable
@@ -13341,7 +13512,7 @@ const allergenPanel = allergenNames.length === 0
             
             // Check if query matches "coconut" or "coco" - add coconut sugar if not already present
             if ((queryLower.includes('coco') || queryLower.includes('sugar')) && 
-                !suggestions.some(s => s.name.toLowerCase() === 'coconut sugar')) {
+                !filteredSuggestions.some(s => s.name.toLowerCase() === 'coconut sugar')) {
               prioritySweeteners.push({
                 name: 'coconut sugar',
                 category: 'Energy Boost',
@@ -13351,7 +13522,7 @@ const allergenPanel = allergenNames.length === 0
             
             // Check if query matches "date" or "syrup" - add date syrup if not already present
             if ((queryLower.includes('date') || queryLower.includes('syrup')) && 
-                !suggestions.some(s => s.name.toLowerCase() === 'date syrup')) {
+                !filteredSuggestions.some(s => s.name.toLowerCase() === 'date syrup')) {
               prioritySweeteners.push({
                 name: 'date syrup',
                 category: 'Energy Boost',
@@ -13359,10 +13530,14 @@ const allergenPanel = allergenNames.length === 0
               });
             }
             
-            // Prepend priority sweeteners to suggestions (they appear first)
-            suggestions = [...prioritySweeteners, ...suggestions];
+            // Prepend priority sweeteners to filteredSuggestions (they appear first)
+            let finalSuggestions = filteredSuggestions;
+            finalSuggestions = [...prioritySweeteners, ...finalSuggestions];
+            if (location.hostname === "localhost" || location.search.includes("debug=1")) {
+              window.__lastSmoothieSuggestionsFinal = finalSuggestions;
+            }
             
-            if (suggestions.length === 0) {
+            if (finalSuggestions.length === 0) {
               smoothieIngredientSuggestionsEl.innerHTML = '';
               smoothieIngredientSuggestionsEl.style.display = 'none';
               return;
@@ -13371,7 +13546,7 @@ const allergenPanel = allergenNames.length === 0
             // Build suggestion items using DOM APIs and textContent to avoid XSS
             smoothieIngredientSuggestionsEl.innerHTML = '';
             const frag = document.createDocumentFragment();
-            suggestions.forEach(sug => {
+            finalSuggestions.forEach(sug => {
               const item = document.createElement('div');
               item.className = 'suggestion-item';
               item.dataset.ingredient = sug.name;
