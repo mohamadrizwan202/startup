@@ -5718,7 +5718,7 @@ const allergenPanel = allergenNames.length === 0
         'mango', 'pineapple', 'papaya', 'kiwi', 'peach', 'pear', 'plum', 'cherry', 'watermelon',
         'cantaloupe', 'honeydew', 'grapefruit', 'lemon', 'lime', 'coconut', 'avocado', 'pomegranate',
         'cranberry', 'acai', 'goji', 'elderberry', 'mulberry', 'currant', 'date', 'fig', 'prune',
-        'apricot', 'raisin', 'dried', 'berry', 'citrus', 'tropical', 'stone fruit', 'dragon', 'guava'
+        'apricot', 'raisin', 'dried', 'berry', 'citrus', 'tropical', 'stone fruit', 'dragon', 'guava', 'tangelo', 'passion fruit', 'nectarine', 
       ];
       const nameLower = ingredientName.toLowerCase();
       return fruitKeywords.some(keyword => nameLower.includes(keyword));
@@ -6091,6 +6091,42 @@ const allergenPanel = allergenNames.length === 0
         return false;
       }
       return isFruit(ingredientName) && !isDriedFruit(ingredientName);
+    }
+
+    function isMicroDoseIngredient(name) {
+      if (!name) return false;
+      const nameLower = String(name).toLowerCase().trim();
+      
+      // Tokenize: extract all alphabetic words
+      const tokens = (nameLower.match(/[a-z]+/g) || []);
+      if (tokens.length === 0) return false;
+      
+      // Category tokens that indicate micro-dose ingredients
+      const categoryTokens = new Set([
+        'tea', 'herbal', 'herb', 'infusion', 'extract', 'tincture',
+        'flower', 'flowers', 'leaf', 'leaves', 'spice', 'spices',
+        'seasoning', 'powder', 'ground'
+      ]);
+      
+      // Check if any token matches a category
+      if (tokens.some(t => categoryTokens.has(t))) {
+        return true;
+      }
+      
+      // Common herb/spice names (small general list, not single-ingredient special cases)
+      const commonHerbSpiceNames = new Set([
+        'sage', 'basil', 'mint', 'parsley', 'cilantro', 'oregano', 'thyme', 'rosemary',
+        'dill', 'chive', 'tarragon', 'marjoram', 'cinnamon', 'turmeric', 'ginger',
+        'nutmeg', 'clove', 'cardamom', 'cumin', 'coriander', 'paprika', 'pepper',
+        'allspice', 'chamomile', 'peppermint', 'spearmint', 'vanilla', 'cocoa',
+        'cacao', 'matcha', 'spirulina', 'moringa', 'wheatgrass', 'echinacea',
+        'ginkgo', 'ginseng', 'ashwagandha', 'rhodiola', 'valerian', 'licorice',
+        'burdock', 'nettle', 'elderberry', 'hawthorn', 'schisandra', 'reishi',
+        'chaga', 'dandelion', 'passionflower'
+      ]);
+      
+      // Check if any token matches a common herb/spice name
+      return tokens.some(t => commonHerbSpiceNames.has(t));
     }
     
     // ============================================
@@ -9266,13 +9302,24 @@ const allergenPanel = allergenNames.length === 0
     };
 
     window.printSmoothieZeroPortions = function () {
+      if (!window.__smoothieZeroPortions || !(window.__smoothieZeroPortions instanceof Map)) {
+        console.log("No zero portions recorded yet");
+        return [];
+      }
       const rows = Array.from(window.__smoothieZeroPortions.values())
         .sort((a, b) => (b.count - a.count) || String(a.ingredient).localeCompare(String(b.ingredient)));
-      console.table(rows);
+      if (rows.length > 0) {
+        console.table(rows);
+      } else {
+        console.log("No zero portions recorded");
+      }
       return rows;
     };
 
     window.clearSmoothieZeroPortions = function () {
+      if (!window.__smoothieZeroPortions || !(window.__smoothieZeroPortions instanceof Map)) {
+        return;
+      }
       window.__smoothieZeroPortions.clear();
       console.log("Cleared __smoothieZeroPortions");
     };
@@ -9514,8 +9561,25 @@ const allergenPanel = allergenNames.length === 0
           return __final({ amount: gramsValue, unit: 'g', source: 'fruitMap' });
         }
         
-        // Fallback for fresh fruits - use default from API if available, otherwise 0
-        return __final({ amount: 0, unit: 'g', source: 'fruitFallback' });
+        // Fallback for fresh fruits - use age-appropriate default instead of 0
+        // Apply age group scaling to defaultAdultGrams
+        const ageGroupKey = normalizeAgeGroupKey(ageGroup);
+        let fallbackGrams = defaultAdultGrams;
+        
+        // Scale down for children
+        if (ageGroupKey === 'child_4_8') {
+          fallbackGrams = Math.round(defaultAdultGrams * 0.6); // ~60% of adult
+        } else if (ageGroupKey === 'child_9_13') {
+          fallbackGrams = Math.round(defaultAdultGrams * 0.8); // ~80% of adult
+        } else if (ageGroupKey === 'teen_14_18') {
+          // Teens can use adult portions
+          fallbackGrams = defaultAdultGrams;
+        }
+        
+        // Ensure minimum of 50g for any age group
+        fallbackGrams = Math.max(50, fallbackGrams);
+        
+        return __final({ amount: fallbackGrams, unit: 'g', source: 'fruitFallback' });
       }
       
       // 6) Nuts / seeds (almonds etc.)
@@ -9524,8 +9588,46 @@ const allergenPanel = allergenNames.length === 0
         return __final({ amount: grams, unit: 'g', source: 'nutSeedMap' });
       }
       
-      // 5. Fallback for other ingredients
-      return __final({ amount: 0, unit: 'g', source: 'fallback' });
+      // 7) Micro-dose ingredients (herbs, spices, teas, extracts, botanicals)
+      if (isMicroDoseIngredient(ingredientKey)) {
+        return __final({ amount: 1, unit: 'g', source: 'microDoseDefault' });
+      }
+      
+      // 8. Fallback for other ingredients - mark as missing portion
+      return __final({ amount: 0, unit: 'g', source: 'missingPortion' });
+    }
+
+    // ============================================
+    // SINGLE SOURCE OF TRUTH: getSmoothiePortion
+    // ============================================
+    // This function is the ONLY way to get portion sizes in the Smoothie tab.
+    // All chips rendering, pre-build validation, and post-build display MUST use this.
+    function getSmoothiePortion(ingredientName, ageGroup) {
+      if (!ingredientName) {
+        return { amount: 0, unit: 'g', source: 'missingPortion', isMissing: true };
+      }
+
+      // Call the existing getIngredientPortion function
+      const portion = getIngredientPortion(ingredientName, ageGroup);
+      const amount = Number(portion?.amount) || 0;
+      const isMissing = !Number.isFinite(amount) || amount <= 0 || portion?.source === 'missingPortion';
+
+      // Record missing portions in tracker
+      if (isMissing) {
+        window.__recordSmoothieZeroPortion({
+          ingredient: ingredientName,
+          age: ageGroup,
+          source: portion?.source || 'missingPortion',
+          unit: portion?.unit || 'g'
+        });
+      }
+
+      return {
+        amount: amount,
+        unit: portion?.unit || 'g',
+        source: portion?.source || 'missingPortion',
+        isMissing: isMissing
+      };
     }
 
     /**
@@ -12180,13 +12282,11 @@ const allergenPanel = allergenNames.length === 0
           // Get portion info early so we can use portionUnit in calculations
           const currentAgeGroup = smoothieForEl ? smoothieForEl.value : '';
           
-          // For vegetables and sweeteners, always use getIngredientPortion to get age-specific grams
-          // This ensures vegetables use the correct veg portion map, and sweeteners use SWEETENER_PROFILE
+          // SINGLE SOURCE OF TRUTH: Use getSmoothiePortion() for all ingredients
+          // This ensures consistent portion calculation across chips, validation, and display
           let portion;
-          if (isVegetable(ingredientName)) {
-            // For vegetables, check for stored portionGrams first (from when ingredient was added)
-            // If stored, use it; otherwise call getIngredientPortion which uses getVegPortionGrams
-            // This ensures avocado and all vegetables use age-specific portions
+          try {
+            // Check for stored portionGrams first (from when ingredient was added)
             let storedGrams = 0;
             if (typeof ing === 'object') {
               storedGrams = ing.portionGrams || ing.quantityInGrams || ing.gramsUsed || 0;
@@ -12194,51 +12294,14 @@ const allergenPanel = allergenNames.length === 0
             
             if (storedGrams > 0) {
               // Use stored portion grams (calculated when ingredient was added)
-              portion = { amount: storedGrams, unit: 'g', source: 'stored' };
+              portion = { amount: storedGrams, unit: 'g', source: 'stored', isMissing: false };
             } else {
-              // Calculate using getIngredientPortion (which uses getVegPortionGrams for vegetables)
-              try {
-                portion = getIngredientPortion(ingredientName, currentAgeGroup);
-                // If getIngredientPortion returned 0, it means no age-specific portion was found
-                // In that case, we should still use 0 rather than falling back to adult defaults
-              } catch (err) {
-                console.error('[renderSmoothieIngredients] Error getting portion for vegetable:', ingredientName, err);
-                portion = { amount: 0, unit: 'g', source: 'error' };
-              }
+              // Use the single source of truth function
+              portion = getSmoothiePortion(ingredientName, currentAgeGroup);
             }
-          } else if (isSweet) {
-            // For sweeteners, check for stored portionGrams first, then use getSweetenerPortionGrams
-            let storedGrams = 0;
-            if (typeof ing === 'object') {
-              storedGrams = ing.portionGrams || ing.quantityInGrams || ing.gramsUsed || 0;
-            }
-            
-            if (storedGrams > 0) {
-              // Use stored portion grams (calculated when ingredient was added)
-              portion = { amount: storedGrams, unit: 'g', source: 'stored-sweetener' };
-            } else {
-              // Calculate using getSweetenerPortionGrams
-              const sweetenerGrams = getSweetenerPortionGrams(ingredientName, currentAgeGroup);
-              if (sweetenerGrams != null && sweetenerGrams > 0) {
-                portion = { amount: sweetenerGrams, unit: 'g', source: 'sweetenerMap' };
-              } else {
-                // Fallback to getIngredientPortion (which has its own sweetener fallback)
-                try {
-                  portion = getIngredientPortion(ingredientName, currentAgeGroup);
-                } catch (err) {
-                  console.error('[renderSmoothieIngredients] Error getting portion for sweetener:', ingredientName, err);
-                  portion = { amount: 0, unit: 'g', source: 'error' };
-                }
-              }
-            }
-          } else {
-            // For non-vegetables, non-sweeteners, calculate normally
-            try {
-              portion = getIngredientPortion(ingredientName, currentAgeGroup);
-            } catch (err) {
-              console.error('[renderSmoothieIngredients] Error getting portion for', ingredientName, err);
-              portion = { amount: 0, unit: 'g', source: 'error' };
-            }
+          } catch (err) {
+            console.error('[renderSmoothieIngredients] Error getting portion for', ingredientName, err);
+            portion = { amount: 0, unit: 'g', source: 'error', isMissing: true };
           }
           const portionUnit = portion.unit || 'g';
           
@@ -12313,6 +12376,16 @@ const allergenPanel = allergenNames.length === 0
           // Note: portion and portionUnit are already defined above
           const portionAmount = portion.amount || 0;
           const totalAmount = portionAmount * quantity;
+          
+          // Record zero portions in tracker (for chips rendering)
+          if (!Number.isFinite(portionAmount) || portionAmount <= 0) {
+            window.__recordSmoothieZeroPortion({
+              ingredient: ingredientName,
+              age: currentAgeGroup,
+              source: portion.source || 'renderSmoothieIngredients',
+              unit: portionUnit
+            });
+          }
           
           // Format serving size display based on quantity
           let servingDisplay = '';
@@ -13763,6 +13836,121 @@ const allergenPanel = allergenNames.length === 0
       buildSmoothieBtn.addEventListener('click', async () => {
         if (smoothieIngredients.length === 0) return;
         
+        // Check if building anyway (bypass validation)
+        if (window.__smoothieBuildAnyway) {
+          window.__smoothieBuildAnyway = false;
+          // Continue to build logic below (skip validation)
+        } else {
+          // Pre-build validation: Check for ingredients with missing portion sizes
+          const selectedAgeGroup = smoothieForEl ? smoothieForEl.value : '';
+          const missingPortions = [];
+          
+          smoothieIngredients.forEach(ing => {
+            const ingredientName = typeof ing === 'string' ? ing : (ing && ing.name ? ing.name : '');
+            if (!ingredientName) return;
+            
+            // SINGLE SOURCE OF TRUTH: Use getSmoothiePortion() for validation
+            const portion = getSmoothiePortion(ingredientName, selectedAgeGroup);
+            
+            if (portion.isMissing || !Number.isFinite(portion.amount) || portion.amount <= 0) {
+              missingPortions.push(ingredientName);
+            }
+          });
+          
+          // If any ingredients have missing portions, show warning with options
+          if (missingPortions.length > 0) {
+            setSmoothieStatus('Missing portion sizes detected', true);
+            
+            // Get age group label for display
+            const ageGroupOption = smoothieForEl ? smoothieForEl.options[smoothieForEl.selectedIndex] : null;
+            const ageGroupLabel = ageGroupOption ? ageGroupOption.textContent : selectedAgeGroup;
+            
+            // Show warning box above Build button
+            const warningId = 'smoothie-portion-warning';
+            let warningEl = document.getElementById(warningId);
+            if (!warningEl) {
+              warningEl = document.createElement('div');
+              warningEl.id = warningId;
+              warningEl.style.cssText = 'margin-bottom: 12px; padding: 12px 16px; background: #fef3c7; border: 2px solid #d97706; border-radius: 8px; font-size: 0.9rem;';
+              buildSmoothieBtn.parentElement.insertBefore(warningEl, buildSmoothieBtn);
+            }
+            
+            // Store missing portions in data attribute for "Build anyway" button
+            warningEl.dataset.missingPortions = JSON.stringify(missingPortions);
+            warningEl.dataset.ageGroup = ageGroupLabel;
+            
+            warningEl.innerHTML = `
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                  <div style="flex: 1;">
+                    <strong style="color: #78350f;">⚠️ Missing portion sizes for ${ageGroupLabel}:</strong>
+                    <div style="margin-top: 8px; color: #92400e; font-family: monospace; font-size: 0.85rem; line-height: 1.6;">
+                      ${missingPortions.map(name => `• ${name}`).join('<br>')}
+                    </div>
+                  </div>
+                  <button id="copy-missing-list" style="padding: 6px 12px; background: #fff; border: 1px solid #d97706; border-radius: 6px; color: #78350f; cursor: pointer; font-size: 0.85rem; white-space: nowrap; height: fit-content;">
+                    Copy list
+                  </button>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                  <button id="build-anyway-btn" style="padding: 8px 16px; background: #d97706; border: 1px solid #d97706; border-radius: 6px; color: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                    Build using API serving sizes (age-based portions missing)
+                  </button>
+                </div>
+              </div>
+            `;
+            
+            // Copy button handler
+            const copyBtn = document.getElementById('copy-missing-list');
+            if (copyBtn) {
+              copyBtn.addEventListener('click', () => {
+                const json = JSON.stringify(missingPortions);
+                navigator.clipboard.writeText(json).then(() => {
+                  const originalText = copyBtn.textContent;
+                  copyBtn.textContent = 'Copied!';
+                  copyBtn.style.background = '#d1fae5';
+                  setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '#fff';
+                  }, 2000);
+                }).catch(err => {
+                  console.error('Failed to copy:', err);
+                });
+              });
+            }
+            
+            // "Build anyway" button handler - allows build but keeps warning visible
+            const buildAnywayBtn = document.getElementById('build-anyway-btn');
+            if (buildAnywayBtn) {
+              // Remove old listeners by cloning and replacing
+              const newBuildAnywayBtn = buildAnywayBtn.cloneNode(true);
+              buildAnywayBtn.parentNode.replaceChild(newBuildAnywayBtn, buildAnywayBtn);
+              
+              newBuildAnywayBtn.addEventListener('click', async () => {
+                // Hide the button but keep the warning visible
+                newBuildAnywayBtn.style.display = 'none';
+                
+                // Set flag to bypass validation and trigger build
+                window.__smoothieBuildAnyway = true;
+                
+                // Trigger build by clicking the button again
+                setTimeout(() => {
+                  buildSmoothieBtn.click();
+                }, 100);
+              });
+            }
+            
+            // Default behavior: cancel build (user must click "Build anyway" to proceed)
+            return;
+          }
+        } // End of else block (validation check)
+        
+        // Remove warning if it exists and validation passed
+        const warningEl = document.getElementById('smoothie-portion-warning');
+        if (warningEl && !window.__smoothieBuildAnyway) {
+          warningEl.remove();
+        }
+        
         setSmoothieStatus('Building smoothie...');
         try {
           // Helper function to extract ingredient name from "quantity unit name" format
@@ -14764,85 +14952,52 @@ const allergenPanel = allergenNames.length === 0
         const isFresh = isFreshFruit(name);
         let effectiveGrams = 0;
         
-        if (isVeg) {
-          // For vegetables (including avocado), use getIngredientPortion which uses getVegPortionGrams
-          const portion = getIngredientPortion(name, selectedAgeGroup);
-          effectiveGrams = portion.amount || 0;
-          
-          // Debug logging for vegetables
-          console.log('[ingredientsList] Vegetable portion lookup:', {
-            name,
-            selectedAgeGroup,
-            effectiveGrams,
-            source: portion.source
-          });
-        } else if (isDried || isFresh) {
-          // For fruits (not vegetables), use getPortionGrams
-          // Normalize ingredient key - remove "dried_" prefix for lookup
-          let fruitKey = name.toLowerCase().trim();
-          if (fruitKey.startsWith('dried_')) {
-            fruitKey = fruitKey.replace(/^dried_/, '');
-          } else if (fruitKey.startsWith('dried ')) {
-            fruitKey = fruitKey.replace(/^dried /, '');
-          }
-          
-          // Get default adult grams as fallback
-          let defaultAdultGrams = isDried ? 30 : 150;
-          if (isFresh) {
-            const normalizedKey = normalizeIngredientNameForServing(fruitKey);
-            if (normalizedKey && recommendedServingGrams.adult_19_30 && recommendedServingGrams.adult_19_30[normalizedKey]) {
-              defaultAdultGrams = recommendedServingGrams.adult_19_30[normalizedKey];
-            }
-          }
-          
-          // Normalize the fruit key to match the structure (e.g., "strawberry" → "strawberries")
-          const normalizedFruitKey = normalizeIngredientNameForServing(fruitKey) || fruitKey;
-          
-          effectiveGrams = getPortionGrams({
-            ageGroup: selectedAgeGroup,
-            ingredientKey: normalizedFruitKey,
-            isDried: isDried,
-            defaultAdultGrams: defaultAdultGrams
-          });
-          
-          // Debug logging to help diagnose issues
-          console.log('[ingredientsList] Portion lookup:', {
-            name,
-            selectedAgeGroup,
-            fruitKey,
-            normalizedFruitKey,
-            isDried,
-            isFresh,
-            effectiveGrams,
-            defaultAdultGrams,
-            usingFallback: effectiveGrams === defaultAdultGrams
-          });
-        }
+        // SINGLE SOURCE OF TRUTH: Use getSmoothiePortion() for all ingredients
+        const portion = getSmoothiePortion(name, selectedAgeGroup);
+        effectiveGrams = portion.amount || 0;
+        const isMissing = portion.isMissing;
         
         // Formula: totalGrams = baseServingGrams * quantity
         const totalGrams = effectiveGrams * quantity;
         
         // Format serving display string
         let serving = '';
-        if (effectiveGrams > 0) {
-          // Format as "95g" or "95g (½ medium)" style
-          // For child servings, show just the grams; for adult, try to preserve original format if available
-          if (selectedAgeGroup === 'child-4-8' && effectiveGrams !== baseGrams) {
-            // Child serving - show simplified format
-            serving = `${totalGrams}g`;
-            if (quantity > 1) {
-              serving = `${effectiveGrams}g × ${quantity} = ${totalGrams}g`;
+        if (isMissing || effectiveGrams <= 0) {
+          // If portion is missing, show API serving size (if available) but clearly mark it
+          const ageGroupOption = smoothieForEl ? smoothieForEl.options[smoothieForEl.selectedIndex] : null;
+          const ageGroupLabel = ageGroupOption ? ageGroupOption.textContent : selectedAgeGroup;
+          
+          // Get API serving size from ing.serving_size or baseGrams
+          let apiGrams = 0;
+          if (baseGrams && baseGrams > 0) {
+            apiGrams = baseGrams;
+          } else if (ing.serving_size && typeof ing.serving_size === 'string') {
+            // Try to extract grams from serving_size string (e.g., "100g" or "100 g")
+            const match = String(ing.serving_size).match(/(\d+(?:\.\d+)?)\s*g(?:rams?)?/i);
+            if (match) {
+              apiGrams = parseFloat(match[1]);
             }
+          }
+          
+          if (apiGrams > 0) {
+            // Show API serving size but clearly mark it as API-based and missing age mapping
+            serving = `${Math.round(apiGrams)}g (API) — missing age-based portion for ${ageGroupLabel}`;
           } else {
-            // Adult serving - use original format or create new one
-            if (ing.serving_size && typeof ing.serving_size === 'string') {
-              // Try to preserve original format but replace the grams value
-              serving = String(ing.serving_size).replace(/(\d+(?:\.\d+)?)\s*g(?:rams?)?/i, `${totalGrams}g`);
-              serving = serving.replace(/\s*\(?USDA\s+standard\)?/gi, '').trim();
-              serving = serving.replace(/\s*\(\s*\)/g, '').trim();
-            } else {
-              serving = `${totalGrams}g`;
-            }
+            // No API serving size available
+            serving = `0g — missing portion for ${ageGroupLabel}`;
+          }
+        } else if (effectiveGrams > 0) {
+          // Use the portion from getSmoothiePortion() - this is the single source of truth
+          // Do NOT use API serving_size when we have a valid age-based portion
+          if (quantity > 1) {
+            serving = `${effectiveGrams}g × ${quantity} = ${totalGrams}g`;
+          } else {
+            serving = `${totalGrams}g`;
+          }
+          
+          // Add source indicator for micro-dose ingredients (optional, for clarity)
+          if (portion.source === 'microDoseDefault') {
+            serving += ' (micro-dose)';
           }
         } else {
           serving = ing.serving_size || 'N/A';
