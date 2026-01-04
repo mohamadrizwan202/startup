@@ -10170,12 +10170,15 @@ const allergenPanel = allergenNames.length === 0
       ],
       'girl-14-18': GIRL_14_18_HEALTH_GOALS, // Official 16 health goals for Girl 14-18
       'boy-14-18': BOY_14_18_HEALTH_GOALS, // Official 16 health goals for Boy 14-18
-      'woman-19-30': WOMAN_19_30_HEALTH_GOALS, // Official 16 health goals for Woman 19-30
-      'man-19-30': MAN_19_30_HEALTH_GOALS, // Official 16 health goals for Man 19-30
-      'woman-31-59': WOMAN_31_59_HEALTH_GOALS, // Official 18 health goals for Woman 31-59
-      'man-31-59': MAN_31_59_HEALTH_GOALS, // Official 16 health goals for Man 31-59
-      'woman-60+': null, // Special case: show all health goals (handled in populateSmoothieHealthGoals)
-      'man-60+': null, // Special case: show all health goals except "Pregnancy Support" and "Thyroid Health" (handled in populateSmoothieHealthGoals)
+      // Note: Adult age groups (woman-19-30, man-19-30, woman-31-59, man-31-59, woman-60+, man-60+)
+      // are handled specially in populateSmoothieHealthGoals() to show ALL health goals
+      // (with Thyroid Health filtered for men only)
+      'woman-19-30': null, // Show all health goals (handled in populateSmoothieHealthGoals)
+      'man-19-30': null, // Show all health goals except Thyroid Health (handled in populateSmoothieHealthGoals)
+      'woman-31-59': null, // Show all health goals (handled in populateSmoothieHealthGoals)
+      'man-31-59': null, // Show all health goals except Thyroid Health (handled in populateSmoothieHealthGoals)
+      'woman-60+': null, // Show all health goals (handled in populateSmoothieHealthGoals)
+      'man-60+': null, // Show all health goals except "Pregnancy Support" and "Thyroid Health" (handled in populateSmoothieHealthGoals)
       // Add more mappings as needed
       // For now, if not specified, show all categories
     };
@@ -10193,24 +10196,94 @@ const allergenPanel = allergenNames.length === 0
         return typeof cat === 'object' && 'value' in cat ? cat.value : cat;
       };
       
+      // Helper to normalize goal names using aliases
+      const normalizeGoalName = (goalName) => {
+        const aliases = {
+          'Prenatal': 'Pregnancy Support',
+          'Prenatal Support': 'Pregnancy Support',
+          'Pregnancy': 'Pregnancy Support',
+          'Thyroid': 'Thyroid Health',
+          'Thyroid support': 'Thyroid Health',
+          'Thyroid Support': 'Thyroid Health',
+          'Thyroid Health': 'Thyroid Health',
+          'Thyroid Healtsupport': 'Thyroid Health', // Handle typo from user config
+          'Weight balance': 'Weight Management',
+          'Weight Balance': 'Weight Management',
+          'Weight management': 'Weight Management',
+          'Weight Management': 'Weight Management'
+        };
+        const normalized = goalName.trim();
+        return aliases[normalized] || normalized;
+      };
+      
+      // Helper to check if a category matches a goal name (with alias handling)
+      const matchesGoal = (categoryObj, goalName) => {
+        const categoryValue = getCategoryValue(categoryObj);
+        const categoryLower = categoryValue.toLowerCase().trim();
+        const goalLower = goalName.toLowerCase().trim();
+        const normalizedGoal = normalizeGoalName(goalName).toLowerCase().trim();
+        return categoryLower === goalLower || categoryLower === normalizedGoal || 
+               categoryLower.includes(goalLower) || categoryLower.includes(normalizedGoal);
+      };
+      
       // Determine which health goals to show
       let allowedGoals = categories; // Default: show all
       
-      // Special handling for Woman 60+: show all categories
-      if (selectedAudience === 'woman-60+') {
-        allowedGoals = categories; // Show all health goals
-        // Skip the healthGoalsByAudience check for woman-60+ since we're using all categories
-      } else if (selectedAudience === 'man-60+') {
-        // Special handling for Man 60+: show all categories except "Pregnancy Support" and "Thyroid Health"
-        allowedGoals = categories.filter(categoryObj => {
-          const categoryValue = getCategoryValue(categoryObj);
-          const categoryLower = categoryValue.toLowerCase().trim();
-          return categoryLower !== 'pregnancy support' && categoryLower !== 'thyroid health';
+      // Audiences that should show ALL health goals
+      const showAllAudiences = ['girl-14-18', 'boy-14-18', 'woman-19-30', 'man-19-30', 
+                                'woman-31-59', 'man-31-59', 'woman-60+', 'man-60+'];
+      
+      // Required goals for each audience (using aliases)
+      // Note: Aliases will handle variations like "Prenatal Support" -> "Pregnancy Support",
+      // "Weight Balance" -> "Weight Management", "Thyroid support" -> "Thyroid Health"
+      const ensureGoalsByAudience = {
+        'girl-14-18': ['Thyroid Health', 'Weight Management'], // "Thyroid Healtsupport" typo handled via alias
+        'boy-14-18': ['Weight Management'],
+        'woman-19-30': ['Pregnancy Support', 'Thyroid Health', 'Weight Management'],
+        'woman-31-59': ['Pregnancy Support', 'Thyroid Health', 'Weight Management'],
+        'woman-60+': ['Pregnancy Support', 'Thyroid Health', 'Weight Management'],
+        'man-19-30': ['Weight Management'],
+        'man-31-59': ['Weight Management'],
+        'man-60+': ['Weight Management']
+      };
+      
+      if (showAllAudiences.includes(selectedAudience)) {
+        // For these audiences, show ALL health goals from categories
+        allowedGoals = Array.isArray(categories) ? [...categories] : [];
+        
+        // For men, filter out "Thyroid Health" and "Pregnancy Support"
+        if (selectedAudience.startsWith('man-')) {
+          allowedGoals = allowedGoals.filter(categoryObj => {
+            const categoryValue = getCategoryValue(categoryObj);
+            const categoryLower = categoryValue.toLowerCase().trim();
+            const isPregnancy = categoryLower.includes('pregnancy') || categoryLower.includes('prenatal');
+            const isThyroid = categoryLower.includes('thyroid');
+            return !isPregnancy && !isThyroid;
+          });
+        }
+        
+        // Ensure required goals are present (add them if missing)
+        const requiredGoals = ensureGoalsByAudience[selectedAudience] || [];
+        const existingGoalValues = allowedGoals.map(cat => {
+          const val = getCategoryValue(cat);
+          return normalizeGoalName(val);
         });
-        // Skip the healthGoalsByAudience check for man-60+ since we're using dynamic filtering
+        
+        requiredGoals.forEach(requiredGoal => {
+          const normalizedRequired = normalizeGoalName(requiredGoal);
+          // Check if this goal already exists (with alias matching)
+          const exists = allowedGoals.some(cat => matchesGoal(cat, requiredGoal));
+          
+          if (!exists) {
+            // Try to find a category that matches (with aliases)
+            const matchingCategory = categories.find(cat => matchesGoal(cat, requiredGoal));
+            if (matchingCategory) {
+              allowedGoals.push(matchingCategory);
+            }
+          }
+        });
       } else if (selectedAudience && healthGoalsByAudience[selectedAudience]) {
-        // Filter categories to only include allowed goals
-        // Match exact category names (case-insensitive) using the value field
+        // For non-adult age groups, use the restricted lists
         const allowedGoalsList = healthGoalsByAudience[selectedAudience];
         allowedGoals = categories.filter(categoryObj => {
           const categoryValue = getCategoryValue(categoryObj);
@@ -10453,6 +10526,46 @@ const allergenPanel = allergenNames.length === 0
     /**
      * Update the blood sugar goal warning display based on current health goal and age group
      */
+    /**
+     * Generate compact goal guidance card HTML with expand/collapse
+     */
+    function createGoalGuidanceCard(title, icon, summary, avoidItems, preferItems, fullText) {
+      const avoid = Array.isArray(avoidItems) ? avoidItems : [];
+      const prefer = Array.isArray(preferItems) ? preferItems : [];
+      const detailsHtml = fullText || '';
+      
+      // One-line format for collapsed state (max 3 items each)
+      const avoidLine = avoid.slice(0, 3).join(' • ');
+      const preferLine = prefer.slice(0, 3).join(' • ');
+      
+      // Bullet lists for expanded details
+      const avoidList = avoid.slice(0, 3).map(item => `<li>${item}</li>`).join('');
+      const preferList = prefer.slice(0, 3).map(item => `<li>${item}</li>`).join('');
+      
+      return `
+        <div class="goal-guidance-card" style="background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
+          <div style="display: flex; align-items: flex-start; gap: 10px;">
+            <span style="font-size: 1.2rem; flex-shrink: 0;">${icon}</span>
+            <div style="flex: 1;">
+              <div style="font-size: 0.95rem; font-weight: 700; color: #075985; margin-bottom: 4px;">${title}</div>
+              <div style="font-size: 0.85rem; color: #075985; line-height: 1.4; margin-bottom: 6px;">${summary}</div>
+              ${avoidLine ? `<div style="font-size: 0.8rem; color: #075985; margin-bottom: 4px;"><strong>Avoid:</strong> ${avoidLine}</div>` : ''}
+              ${preferLine ? `<div style="font-size: 0.8rem; color: #075985; margin-bottom: 4px;"><strong>Prefer:</strong> ${preferLine}</div>` : ''}
+            </div>
+          </div>
+          <details style="margin-top: 8px;">
+            <summary style="font-size: 0.8rem; color: #0284c7; cursor: pointer; font-weight: 600; user-select: none;">Show details</summary>
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(2, 132, 199, 0.2); font-size: 0.85rem; color: #075985; line-height: 1.6;">
+              ${avoidList ? `<div style="margin-bottom: 10px;"><strong>Avoid:</strong><ul style="margin: 4px 0 0 18px; padding: 0;">${avoidList}</ul></div>` : ''}
+              ${preferList ? `<div style="margin-bottom: 10px;"><strong>Prefer:</strong><ul style="margin: 4px 0 0 18px; padding: 0;">${preferList}</ul></div>` : ''}
+              ${detailsHtml}
+              <div style="margin-top: 12px; font-size: 0.75rem; color: #64748b; font-style: italic;">Educational guidance only — not medical advice.</div>
+            </div>
+          </details>
+        </div>
+      `;
+    }
+
     function updateBloodSugarGoalWarning() {
       const warningContainer = document.getElementById('blood-sugar-goal-warning-container');
       if (!warningContainer) return;
@@ -10462,10 +10575,10 @@ const allergenPanel = allergenNames.length === 0
       
       // Show warning only if: adult age group AND Diabetes–Blood Sugar goal
       if (isAdultAgeGroup(selectedAgeGroup) && isDiabetesBloodSugarGoal(selectedHealthGoal)) {
-        const warningText = "We're here to help you manage your blood sugar with confidence.<br><br>" +
-                           "You've chosen <strong>Diabetes–Blood Sugar</strong> management, and we take that seriously. " +
-                           "Every ingredient we recommend will help keep your glucose levels steady.<br><br>" +
-                           "<strong>Here's what we'll help you avoid:</strong><br>" +
+        const fullText = "Guidance for managing blood sugar with confidence.<br><br>" +
+                         "You've chosen <strong>Diabetes–Blood Sugar</strong> management. " +
+                         "Guidance for choosing ingredients that help keep glucose levels steady.<br><br>" +
+                         "<strong>Here's what to avoid:</strong><br>" +
                            "❌ Added sweeteners (honey, maple syrup, date syrup—they spike blood sugar)<br>" +
                            "❌ Large fruit portions (even natural sugar affects glucose)<br>" +
                            "❌ High-sugar fruits (tropical fruits like mango, pineapple)<br>" +
@@ -10476,14 +10589,26 @@ const allergenPanel = allergenNames.length === 0
                            "🎯 Healthy fats (avocado, chia seeds)<br>" +
                            "🎯 Leafy greens (spinach, kale—fiber is your friend)<br>" +
                            "🎯 Small portions (½ cup fruit max)<br><br>" +
-                           "We'll guide every choice to support stable glucose levels. You're in good hands. 💚<br><br>" +
-                           "<em>Always consult your healthcare provider for personalized advice</em>";
+                         "Guidance for supporting stable glucose levels. 💚";
         
-        warningContainer.innerHTML = `
-          <div id="blood-sugar-goal-warning" class="info-warning" style="display: block; padding: 16px 20px; background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
-            <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${warningText}</div>
-          </div>
-        `;
+        const cardHtml = createGoalGuidanceCard(
+          'Blood Sugar Support',
+          '💚',
+          'Guidance for avoiding blood sugar spikes and choosing ingredients that stabilize glucose levels.',
+          [
+            'Added sweeteners (honey, maple syrup)',
+            'Large fruit portions',
+            'High-sugar fruits (mango, pineapple)'
+          ],
+          [
+            'Berries (lowest glycemic impact)',
+            'Protein sources (Greek yogurt, soy milk)',
+            'Healthy fats (avocado, chia seeds)'
+          ],
+          fullText
+        );
+        
+        warningContainer.innerHTML = cardHtml;
         warningContainer.style.display = 'block';
       } else {
         // Hide warning if conditions are not met
@@ -10515,11 +10640,23 @@ const allergenPanel = allergenNames.length === 0
       const weightMgmtTip = getWeightManagementTip(selectedAgeGroup, selectedHealthGoal);
       console.log('[weight-mgmt-warning] Tip result:', weightMgmtTip);
       if (weightMgmtTip) {
-        warningContainer.innerHTML = `
-          <div id="weight-management-goal-warning" class="info-warning" style="display: block; padding: 16px 20px; background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
-            <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${weightMgmtTip}</div>
-          </div>
-        `;
+        const cardHtml = createGoalGuidanceCard(
+          'Weight Management',
+          '💙',
+          'Guidance for choosing ingredients that support weight goals without sabotaging progress.',
+          [
+            'Large fruit portions (natural sugar adds up)',
+            'Dried fruits (concentrated calories)',
+            'Added sweeteners (empty calories)'
+          ],
+          [
+            'Fresh vegetables (bulk without calories)',
+            'Berries & moderate fruit (satisfying)',
+            'Unsweetened bases (protein keeps you full)'
+          ],
+          weightMgmtTip.replace(/We're here to help you succeed\./g, '').replace(/we're going to make/g, 'guidance for').replace(/Your success matters to us\./g, '').replace(/Let's build a smoothie that helps you reach your goals\./g, '')
+        );
+        warningContainer.innerHTML = cardHtml;
         warningContainer.style.display = 'block';
       } else {
         // Hide warning if conditions are not met
@@ -10540,11 +10677,23 @@ const allergenPanel = allergenNames.length === 0
       // Show warning for all age groups when Blood Pressure goal is selected
       const bloodPressureTip = getBloodPressureTip(selectedHealthGoal);
       if (bloodPressureTip) {
-        warningContainer.innerHTML = `
-          <div id="blood-pressure-goal-warning" class="info-warning" style="display: block; padding: 16px 20px; background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
-            <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${bloodPressureTip}</div>
-          </div>
-        `;
+        const cardHtml = createGoalGuidanceCard(
+          'Blood Pressure Support',
+          '❤️',
+          'Guidance for avoiding ingredients that raise blood pressure and choosing foods that support healthy levels.',
+          [
+            'Added sodium/salt (even small amounts add up)',
+            'Added sugars (raises blood pressure over time)',
+            'High-sodium ingredients (some cheeses, powders)'
+          ],
+          [
+            'Potassium-rich foods (bananas, oranges, berries)',
+            'Magnesium sources (spinach, kale, pumpkin seeds)',
+            'Beets (natural nitrates relax blood vessels)'
+          ],
+          bloodPressureTip.replace(/We're watching out for your blood pressure/g, 'Guidance for blood pressure').replace(/we're here to guide you/g, 'guidance for').replace(/we're honored to help/g, '').replace(/Your heart health matters.*?to us\./g, '').replace(/Every smoothie you make with us is a step toward better control\./g, '')
+        );
+        warningContainer.innerHTML = cardHtml;
         warningContainer.style.display = 'block';
       } else {
         // Hide warning if conditions are not met
@@ -12299,8 +12448,8 @@ const allergenPanel = allergenNames.length === 0
               // Use the single source of truth function
               portion = getSmoothiePortion(ingredientName, currentAgeGroup);
             }
-          } catch (err) {
-            console.error('[renderSmoothieIngredients] Error getting portion for', ingredientName, err);
+            } catch (err) {
+              console.error('[renderSmoothieIngredients] Error getting portion for', ingredientName, err);
             portion = { amount: 0, unit: 'g', source: 'error', isMissing: true };
           }
           const portionUnit = portion.unit || 'g';
@@ -14238,8 +14387,7 @@ const allergenPanel = allergenNames.length === 0
                                "🎯 Healthy fats (avocado, chia seeds)<br>" +
                                "🎯 Leafy greens (spinach, kale—fiber is your friend)<br>" +
                                "🎯 Small portions (½ cup fruit max)<br><br>" +
-                               "We'll guide every choice to support stable glucose levels. You're in good hands. 💚<br><br>" +
-                               "<em>Always consult your healthcare provider for personalized advice</em>";
+                               "We'll guide every choice to support stable glucose levels. You're in good hands. 💚";
           }
           currentSmoothie.bloodSugarGoalTip = bloodSugarGoalTip;
           
@@ -14954,7 +15102,7 @@ const allergenPanel = allergenNames.length === 0
         
         // SINGLE SOURCE OF TRUTH: Use getSmoothiePortion() for all ingredients
         const portion = getSmoothiePortion(name, selectedAgeGroup);
-        effectiveGrams = portion.amount || 0;
+          effectiveGrams = portion.amount || 0;
         const isMissing = portion.isMissing;
         
         // Formula: totalGrams = baseServingGrams * quantity
@@ -14989,11 +15137,11 @@ const allergenPanel = allergenNames.length === 0
         } else if (effectiveGrams > 0) {
           // Use the portion from getSmoothiePortion() - this is the single source of truth
           // Do NOT use API serving_size when we have a valid age-based portion
-          if (quantity > 1) {
-            serving = `${effectiveGrams}g × ${quantity} = ${totalGrams}g`;
-          } else {
-            serving = `${totalGrams}g`;
-          }
+            if (quantity > 1) {
+              serving = `${effectiveGrams}g × ${quantity} = ${totalGrams}g`;
+            } else {
+              serving = `${totalGrams}g`;
+            }
           
           // Add source indicator for micro-dose ingredients (optional, for clarity)
           if (portion.source === 'microDoseDefault') {
@@ -15070,27 +15218,33 @@ const allergenPanel = allergenNames.length === 0
         </div>
       ` : '';
       
-      // Get blood sugar goal tip from currentSmoothie
+      // Get goal tips from currentSmoothie - show small links instead of full cards
+      // Full cards are shown in warning containers above the build button
       const bloodSugarGoalTip = currentSmoothie && currentSmoothie.bloodSugarGoalTip ? currentSmoothie.bloodSugarGoalTip : null;
-      const bloodSugarGoalTipHtml = bloodSugarGoalTip ? `
-        <div id="blood-sugar-goal-warning" class="info-warning" style="display: block; padding: 16px 20px; background: #e0f2fe; border: 2px solid #0284c7; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
-          <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${bloodSugarGoalTip}</div>
-        </div>
-      ` : '';
-      
-      // Get weight management tip from currentSmoothie
       const weightManagementTip = currentSmoothie && currentSmoothie.weightManagementTip ? currentSmoothie.weightManagementTip : null;
-      const weightManagementTipHtml = weightManagementTip ? `
-        <div id="smoothie-weight-management-warning" class="smoothie-tip smoothie-tip-weight-management" style="background-color: #e0f2fe; border: 2px solid #0284c7; padding: 16px 20px; margin-bottom: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
-          <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${weightManagementTip}</div>
-        </div>
-      ` : '';
-      
-      // Get blood pressure tip from currentSmoothie
       const bloodPressureTip = currentSmoothie && currentSmoothie.bloodPressureTip ? currentSmoothie.bloodPressureTip : null;
-      const bloodPressureTipHtml = bloodPressureTip ? `
-        <div id="smoothie-blood-pressure-warning" class="smoothie-tip smoothie-tip-blood-pressure" style="background-color: #e0f2fe; border: 2px solid #0284c7; padding: 16px 20px; margin-bottom: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15);">
-          <div style="font-size: 0.9rem; color: #075985; line-height: 1.6;">${bloodPressureTip}</div>
+      
+      // Helper to check if container has content and is visible
+      const hasContent = (id) => {
+        const el = document.getElementById(id);
+        return el && el.style.display !== 'none' && (el.textContent || '').trim().length > 0;
+      };
+      
+      // Build small links to scroll to goal guidance cards (only if containers have content)
+      const goalLinks = [];
+      if (bloodSugarGoalTip && hasContent('blood-sugar-goal-warning-container')) {
+        goalLinks.push('<a href="#blood-sugar-goal-warning-container" style="font-size: 0.75rem; color: #0284c7; text-decoration: underline; cursor: pointer;" onclick="document.getElementById(\'blood-sugar-goal-warning-container\')?.scrollIntoView({behavior:\'smooth\',block:\'center\'}); return false;">View Blood Sugar guidance</a>');
+      }
+      if (weightManagementTip && hasContent('weight-management-goal-warning-container')) {
+        goalLinks.push('<a href="#weight-management-goal-warning-container" style="font-size: 0.75rem; color: #0284c7; text-decoration: underline; cursor: pointer;" onclick="document.getElementById(\'weight-management-goal-warning-container\')?.scrollIntoView({behavior:\'smooth\',block:\'center\'}); return false;">View Weight Management guidance</a>');
+      }
+      if (bloodPressureTip && hasContent('blood-pressure-goal-warning-container')) {
+        goalLinks.push('<a href="#blood-pressure-goal-warning-container" style="font-size: 0.75rem; color: #0284c7; text-decoration: underline; cursor: pointer;" onclick="document.getElementById(\'blood-pressure-goal-warning-container\')?.scrollIntoView({behavior:\'smooth\',block:\'center\'}); return false;">View Blood Pressure guidance</a>');
+      }
+      
+      const goalGuidanceLinksHtml = goalLinks.length > 0 ? `
+        <div style="margin-bottom: 12px; padding: 8px 12px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; font-size: 0.8rem; color: #075985;">
+          <strong>Goal guidance:</strong> ${goalLinks.join(' • ')}
         </div>
       ` : '';
       
@@ -15126,9 +15280,7 @@ const allergenPanel = allergenNames.length === 0
         <div class="sn-wrap">
           ${childFruitWarningHtml}
           ${sweetenerWarningHtml}
-          ${bloodSugarGoalTipHtml}
-          ${weightManagementTipHtml}
-          ${bloodPressureTipHtml}
+          ${goalGuidanceLinksHtml}
           
           <div class="sn-grid">
             <!-- Ingredients -->
