@@ -1454,6 +1454,101 @@
       font-weight: 800;
     }
 
+    /* Vegan Milk Recommendation: compact collapsible card */
+    #smoothie-tab-content .vmr-card{
+      padding: 10px 12px;
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border: 2px solid #ef4444;
+      border-radius: var(--radius);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
+    }
+
+    #smoothie-tab-content .vmr-summary-row{
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #7f1d1d;
+      line-height: 1.4;
+    }
+
+    #smoothie-tab-content .vmr-summary-row::-webkit-details-marker{
+      display: none;
+    }
+
+    #smoothie-tab-content .vmr-summary-row::before{
+      content: '▶';
+      font-size: 0.7rem;
+      transition: transform 0.2s ease;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    #smoothie-tab-content .vmr-card[open] .vmr-summary-row::before{
+      transform: rotate(90deg);
+    }
+
+    #smoothie-tab-content .vmr-title{
+      font-size: 0.75rem;
+      color: #991b1b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+
+    #smoothie-tab-content .vmr-table-wrapper{
+      max-height: 220px;
+      overflow-y: auto;
+      margin-top: 10px;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #smoothie-tab-content .vmr-table-wrapper table{
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #smoothie-tab-content .vmr-table-wrapper thead tr{
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    #smoothie-tab-content .vmr-table-wrapper th{
+      padding: 10px 12px;
+      font-size: 0.75rem;
+      color: white;
+      text-align: left;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #smoothie-tab-content .vmr-table-wrapper th:last-child{
+      text-align: center;
+    }
+
+    #smoothie-tab-content .vmr-table-wrapper tbody tr{
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #smoothie-tab-content .vmr-table-wrapper tbody tr:last-child{
+      border-bottom: none;
+    }
+
+    #smoothie-tab-content .vmr-table-wrapper td{
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      color: white;
+    }
+
+    #smoothie-tab-content .vmr-table-wrapper td:last-child{
+      text-align: center;
+      font-weight: 600;
+    }
+
     /* Nutrition Display - Compact Tile Grid With Icons */
     .nutrition-grid {
       display: flex;
@@ -13708,20 +13803,18 @@ const allergenPanel = allergenNames.length === 0
           }).join('');
         
         veganMilkRecommendationContainerEl.innerHTML = `
-          <div style="padding: 16px; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #ef4444; border-radius: var(--radius); box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-              <span style="font-size: 1.2rem;">💡</span>
-              <div style="font-size: 0.75rem; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Vegan Milk Recommendation</div>
-            </div>
-            <div style="font-size: 0.9rem; color: #7f1d1d; margin-bottom: 12px; line-height: 1.5;">
-              For ${escapeHTML(ageGroupText)}, we recommend using the following vegan milk types (unsweetened, fortified when possible):
-            </div>
-            <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-              <table style="width: 100%; border-collapse: collapse;">
+          <details class="vmr-card">
+            <summary class="vmr-summary-row">
+              <span style="font-size: 1.1rem;">💡</span>
+              <span class="vmr-title">Vegan Milk Recommendation</span>
+              <span>Recommended for ${escapeHTML(ageGroupText)} (unsweetened, fortified when possible).</span>
+            </summary>
+            <div class="vmr-table-wrapper">
+              <table>
                 <thead>
-                  <tr style="background: rgba(0, 0, 0, 0.2);">
-                    <th style="padding: 10px 12px; font-size: 0.75rem; color: white; text-align: left; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Vegan milk type (unsweetened, fortified when possible)</th>
-                    <th style="padding: 10px 12px; font-size: 0.75rem; color: white; text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">${escapeHTML(servingText)}</th>
+                  <tr>
+                    <th>Vegan milk type (unsweetened, fortified when possible)</th>
+                    <th>${escapeHTML(servingText)}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -13729,7 +13822,7 @@ const allergenPanel = allergenNames.length === 0
                 </tbody>
               </table>
             </div>
-          </div>
+          </details>
         `;
         veganMilkRecommendationContainerEl.style.display = 'block';
       } else {
