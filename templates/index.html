@@ -1486,6 +1486,196 @@
       background: var(--text-secondary);
     }
 
+    /* Smoothie Selected Ingredients: Compact Row Layout */
+    #smoothie-tab-content #smoothie-selected-ingredients {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 15px;
+      padding: 0;
+      background: transparent;
+      border-radius: 0;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-header {
+      flex-shrink: 0;
+      margin-bottom: 8px;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll {
+      max-height: 320px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: 8px;
+      background: #fff;
+      padding: 8px;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+      border-radius: 3px;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll::-webkit-scrollbar-thumb {
+      background: rgba(15, 23, 42, 0.2);
+      border-radius: 3px;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(15, 23, 42, 0.3);
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      transition: background 0.2s ease;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-row:last-child {
+      border-bottom: none;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-row:hover {
+      background: rgba(14, 165, 164, 0.05);
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-badges {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-portion {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-control {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid #f59e0b;
+      border-radius: 6px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-btn {
+      border: none;
+      background: #fef3c7;
+      color: #92400e;
+      width: 28px;
+      height: 28px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-btn:hover:not(:disabled) {
+      background: #fde68a;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input {
+      width: 50px;
+      padding: 4px;
+      border: none;
+      outline: none;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #78350f;
+      background: white;
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-remove-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
+    }
+
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-remove-btn:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
+    /* Mobile: stack controls below name on narrow screens */
+    @media (max-width: 640px) {
+      #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-row {
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-main {
+        width: 100%;
+      }
+
+      #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-controls {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
     /* Smoothie: prevent the left accent from bleeding into next rows (fixes "double tile" look) */
     #smoothie-tab-content .nutrition-grid > * {
       position: relative;
@@ -10253,8 +10443,8 @@ const allergenPanel = allergenNames.length === 0
         // For men, filter out "Thyroid Health" and "Pregnancy Support"
         if (selectedAudience.startsWith('man-')) {
           allowedGoals = allowedGoals.filter(categoryObj => {
-            const categoryValue = getCategoryValue(categoryObj);
-            const categoryLower = categoryValue.toLowerCase().trim();
+          const categoryValue = getCategoryValue(categoryObj);
+          const categoryLower = categoryValue.toLowerCase().trim();
             const isPregnancy = categoryLower.includes('pregnancy') || categoryLower.includes('prenatal');
             const isThyroid = categoryLower.includes('thyroid');
             return !isPregnancy && !isThyroid;
@@ -12508,15 +12698,15 @@ const allergenPanel = allergenNames.length === 0
           // Build badges - can have multiple badges
           let badges = [];
           if (isDried) {
-            badges.push('<span style="font-size: 0.7rem; color: #92400e; background: #fef3c7; padding: 2px 6px; border-radius: 3px; margin-left: 6px;">Dried</span>');
+            badges.push('<span class="smoothie-ingredient-badge" style="color: #92400e; background: #fef3c7;">Dried</span>');
           } else if (isFresh) {
-            badges.push('<span style="font-size: 0.7rem; color: #065f46; background: #d1fae5; padding: 2px 6px; border-radius: 3px; margin-left: 6px;">Fresh</span>');
+            badges.push('<span class="smoothie-ingredient-badge" style="color: #065f46; background: #d1fae5;">Fresh</span>');
           }
           if (isVegan) {
-            badges.push('<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px; margin-left: 6px;">🌱 Vegan</span>');
+            badges.push('<span class="smoothie-ingredient-badge" style="color: #059669; background: #d1fae5;">🌱 Vegan</span>');
           }
           if (isUnsweetened && isVegan) {
-            badges.push('<span style="font-size: 0.7rem; color: #0EA5A4; background: rgba(14, 165, 164, 0.10); padding: 2px 6px; border-radius: 3px; margin-left: 6px;">Unsweetened</span>');
+            badges.push('<span class="smoothie-ingredient-badge" style="color: #0EA5A4; background: rgba(14, 165, 164, 0.10);">Unsweetened</span>');
           }
           const badge = badges.join('');
           
@@ -12974,47 +13164,31 @@ const allergenPanel = allergenNames.length === 0
             }
           }
           
+          // Compact row layout for smoothie ingredients
           return `
-          <div class="ingredient-chip fade-in" style="background: linear-gradient(135deg, #fef9e7 0%, #fef3c7 100%); border: 2px solid #fbbf24; border-radius: 12px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(251, 191, 36, 0.15); transition: all 0.2s ease;">
-            <div style="display: flex; align-items: flex-start; gap: 12px; width: 100%;">
-              <!-- Main Content -->
-              <div style="flex: 1; min-width: 0;">
-                <!-- Ingredient Name and Badge -->
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
-                  <span style="font-weight: 700; font-size: 0.95rem; color: #78350f; line-height: 1.3;">${escapeHTML(displayName)}</span>
-                  ${badge}
-                </div>
-                
-                <!-- Serving Size Display -->
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                  <span style="font-size: 0.75rem; color: #92400e; opacity: 0.7;">•</span>
-                  <span style="font-size: 0.8rem; color: #92400e; font-weight: 500;">${escapeHTML(servingDisplay)}</span>
-                </div>
-                
-                <!-- Quantity Controls -->
-                <div style="display: flex; align-items: center; gap: 8px; visibility: visible !important;">
-                  <div class="quantity-control" style="display: flex !important; align-items: center; border: 1.5px solid #f59e0b; border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2); visibility: visible !important;">
-                    <button class="quantity-btn decrement" data-index="${idx}" type="button" style="border: none; background: #fef3c7; color: #92400e; width: 32px; height: 32px; font-size: 1rem; font-weight: 700; cursor: ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'not-allowed' : 'pointer'}; transition: all 0.2s; display: flex; align-items: center; justify-content: center; opacity: ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? '0.5' : '1'};" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
-                    <input 
-                      type="number" 
-                      class="quantity-input" 
-                      data-index="${idx}" 
-                      value="${quantity}" 
-                      min="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '50' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}" 
-                      max="${isDried ? '1' : (isFresh ? maxAllowedForThisIng : (isVegan ? (portionUnit === 'ml' ? '720' : (portionUnit === 'cup' ? '3' : '100')) : '3'))}" 
-                      step="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '10' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}"
-                      style="width: ${(isVegan && portionUnit === 'ml') ? '70px' : '50px'}; padding: 6px 4px; border: none; outline: none; text-align: center; font-size: 0.85rem; font-weight: 700; color: #78350f; background: ${isDried ? '#fef3c7' : 'white'}; cursor: ${isDried ? 'not-allowed' : 'text'};"
-                      ${isDried ? 'readonly' : ''}
-                    />
-                    <button class="quantity-btn increment" data-index="${idx}" type="button" style="border: none; background: #fef3c7; color: #92400e; width: 32px; height: 32px; font-size: 1rem; font-weight: 700; cursor: ${(isDried || (isFresh && !canIncrementFresh)) ? 'not-allowed' : 'pointer'}; transition: all 0.2s; display: flex; align-items: center; justify-content: center; opacity: ${(isDried || (isFresh && !canIncrementFresh)) ? '0.5' : '1'};" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
-                  </div>
-                </div>
-                
-                ${healthTierHtml}
+          <div class="smoothie-ingredient-row fade-in">
+            <div class="smoothie-ingredient-main">
+              <span class="smoothie-ingredient-name">${escapeHTML(displayName)}</span>
+              ${badge ? `<div class="smoothie-ingredient-badges">${badge}</div>` : ''}
+              <span class="smoothie-ingredient-portion">${escapeHTML(servingDisplay)}</span>
+            </div>
+            <div class="smoothie-ingredient-controls">
+              <div class="smoothie-quantity-control">
+                <button class="smoothie-quantity-btn decrement" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
+                <input 
+                  type="number" 
+                  class="smoothie-quantity-input" 
+                  data-index="${idx}" 
+                  value="${quantity}" 
+                  min="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '50' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}" 
+                  max="${isDried ? '1' : (isFresh ? maxAllowedForThisIng : (isVegan ? (portionUnit === 'ml' ? '720' : (portionUnit === 'cup' ? '3' : '100')) : '3'))}" 
+                  step="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '10' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}"
+                  style="width: ${(isVegan && portionUnit === 'ml') ? '60px' : '45px'};"
+                  ${isDried ? 'readonly' : ''}
+                />
+                <button class="smoothie-quantity-btn increment" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
               </div>
-              
-              <!-- Remove Button -->
-              <button class="remove-btn" data-index="${idx}" title="Remove" style="background: #ef4444; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1.1rem; line-height: 1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);">×</button>
+              <button class="smoothie-remove-btn" data-index="${idx}" title="Remove" type="button">×</button>
             </div>
           </div>
         `;
@@ -13047,7 +13221,9 @@ const allergenPanel = allergenNames.length === 0
       }
       
       try {
-        smoothieSelectedIngredientsEl.innerHTML = infoMessages + `<div style="display: flex; flex-direction: column; gap: 12px;">${chipsHtml}</div>${soakTipHtml}`;
+        // Wrap rows in scrollable container, with counter at top
+        const scrollableHtml = `<div class="smoothie-ingredients-header">${infoMessages}</div><div class="smoothie-ingredients-scroll">${chipsHtml}</div>${soakTipHtml}`;
+        smoothieSelectedIngredientsEl.innerHTML = scrollableHtml;
       } catch (err) {
         console.error('[renderSmoothieIngredients] Error setting innerHTML:', err);
         console.error('chipsHtml length:', chipsHtml.length);
@@ -13069,7 +13245,7 @@ const allergenPanel = allergenNames.length === 0
       }
 
       // Handle quantity input changes
-      smoothieSelectedIngredientsEl.querySelectorAll('.quantity-input').forEach(input => {
+      smoothieSelectedIngredientsEl.querySelectorAll('.smoothie-quantity-input').forEach(input => {
         input.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.index);
           const ing = smoothieIngredients[idx];
@@ -13177,10 +13353,10 @@ const allergenPanel = allergenNames.length === 0
       });
 
       // Handle quantity button clicks (increment/decrement)
-      smoothieSelectedIngredientsEl.querySelectorAll('.quantity-btn').forEach(btn => {
+      smoothieSelectedIngredientsEl.querySelectorAll('.smoothie-quantity-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const idx = parseInt(btn.dataset.index);
-          const input = smoothieSelectedIngredientsEl.querySelector(`.quantity-input[data-index="${idx}"]`);
+          const input = smoothieSelectedIngredientsEl.querySelector(`.smoothie-quantity-input[data-index="${idx}"]`);
           if (!input) return;
 
           const ing = smoothieIngredients[idx];
@@ -13377,7 +13553,7 @@ const allergenPanel = allergenNames.length === 0
       });
       
       // Handle remove button clicks
-      smoothieSelectedIngredientsEl.querySelectorAll('.remove-btn').forEach(btn => {
+      smoothieSelectedIngredientsEl.querySelectorAll('.smoothie-remove-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const idx = parseInt(btn.dataset.index);
           const removedIngredient = smoothieIngredients[idx];
