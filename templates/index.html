@@ -1581,59 +1581,6 @@
       background: var(--text-secondary);
     }
 
-    /* Smoothie Selected Ingredients: Compact Row Layout */
-    #smoothie-tab-content #smoothie-selected-ingredients {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      margin-top: 15px;
-      padding: 0;
-      background: transparent;
-      border-radius: 0;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-header {
-      flex-shrink: 0;
-      margin-bottom: 8px;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll {
-      max-height: 320px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      border: 1px solid rgba(15, 23, 42, 0.1);
-      border-radius: 8px;
-      background: #fff;
-      padding: 8px;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll::-webkit-scrollbar-track {
-      background: var(--bg-secondary);
-      border-radius: 3px;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll::-webkit-scrollbar-thumb {
-      background: rgba(15, 23, 42, 0.2);
-      border-radius: 3px;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredients-scroll::-webkit-scrollbar-thumb:hover {
-      background: rgba(15, 23, 42, 0.3);
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-      transition: background 0.2s ease;
-    }
-
     #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-row:last-child {
       border-bottom: none;
     }
@@ -1768,6 +1715,643 @@
       #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-controls {
         width: 100%;
         justify-content: flex-end;
+      }
+    }
+
+    /* Smoothie Selected Ingredients: Compact Panel (ss-*) */
+    #smoothie-tab-content .ss-panel{
+      background: white;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: 12px;
+      padding: 0;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+
+    #smoothie-tab-content .ss-panel summary{
+      cursor: pointer;
+      list-style: none;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      user-select: none;
+    }
+
+    #smoothie-tab-content .ss-panel summary::-webkit-details-marker{
+      display: none;
+    }
+
+    #smoothie-tab-content .ss-panel summary::before{
+      content: '▶';
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    #smoothie-tab-content .ss-panel[open] summary::before{
+      transform: rotate(90deg);
+    }
+
+    #smoothie-tab-content .ss-header{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    #smoothie-tab-content .ss-title{
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content .ss-meta{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content .ss-meta-item{
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    #smoothie-tab-content .ss-yield{
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 0.85rem;
+    }
+
+    #smoothie-tab-content .ss-chipstrip{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 4px 0;
+      flex: 1;
+      min-width: 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(15, 23, 42, 0.2) transparent;
+    }
+
+    #smoothie-tab-content .ss-chipstrip::-webkit-scrollbar{
+      height: 4px;
+    }
+
+    #smoothie-tab-content .ss-chipstrip::-webkit-scrollbar-track{
+      background: transparent;
+    }
+
+    #smoothie-tab-content .ss-chipstrip::-webkit-scrollbar-thumb{
+      background: rgba(15, 23, 42, 0.2);
+      border-radius: 2px;
+    }
+
+    #smoothie-tab-content .ss-chip{
+      flex-shrink: 0;
+      padding: 4px 8px;
+      background: var(--bg-secondary);
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    #smoothie-tab-content .ss-chip-name{
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    #smoothie-tab-content .ss-chip-portion{
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+    }
+
+    #smoothie-tab-content .ss-details{
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+      padding: 0;
+    }
+
+    #smoothie-tab-content .ss-list-scroll{
+      max-height: 240px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 8px;
+    }
+
+    #smoothie-tab-content .ss-list-scroll::-webkit-scrollbar{
+      width: 6px;
+    }
+
+    #smoothie-tab-content .ss-list-scroll::-webkit-scrollbar-track{
+      background: var(--bg-secondary);
+      border-radius: 3px;
+    }
+
+    #smoothie-tab-content .ss-list-scroll::-webkit-scrollbar-thumb{
+      background: rgba(15, 23, 42, 0.2);
+      border-radius: 3px;
+    }
+
+    #smoothie-tab-content .ss-row{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+      min-height: 44px;
+      max-height: 52px;
+      transition: background 0.15s ease;
+    }
+
+    #smoothie-tab-content .ss-row:last-child{
+      border-bottom: none;
+    }
+
+    #smoothie-tab-content .ss-row:hover{
+      background: rgba(14, 165, 164, 0.03);
+    }
+
+    #smoothie-tab-content .ss-row-main{
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #smoothie-tab-content .ss-row-name{
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #smoothie-tab-content .ss-tags{
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    #smoothie-tab-content .ss-tag{
+      font-size: 0.65rem;
+      padding: 2px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content .ss-portion{
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      margin-left: 6px;
+    }
+
+    #smoothie-tab-content .ss-row-controls{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    #smoothie-tab-content .ss-qty-control{
+      display: flex;
+      align-items: center;
+      border: 1.5px solid #f59e0b;
+      border-radius: 6px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+    }
+
+    #smoothie-tab-content .ss-qty-btn{
+      border: none;
+      background: #fef3c7;
+      color: #92400e;
+      width: 24px;
+      height: 24px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    #smoothie-tab-content .ss-qty-btn:hover:not(:disabled){
+      background: #fde68a;
+    }
+
+    #smoothie-tab-content .ss-qty-btn:disabled{
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #smoothie-tab-content .ss-qty-input{
+      width: 42px;
+      padding: 3px 2px;
+      border: none;
+      outline: none;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #78350f;
+      background: white;
+    }
+
+    #smoothie-tab-content .ss-remove-btn{
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
+    }
+
+    #smoothie-tab-content .ss-remove-btn:hover{
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
+    #smoothie-tab-content .ss-info-messages{
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      font-size: 0.8rem;
+    }
+
+    /* Smoothie Summary Modal (ssm-*) */
+    #smoothie-tab-content .ssm-summary-card{
+      background: white;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #smoothie-tab-content .ssm-summary-header{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    #smoothie-tab-content .ssm-summary-title{
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content .ssm-summary-meta{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    #smoothie-tab-content .ssm-summary-meta-item{
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content .ssm-chipstrip{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 4px 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(15, 23, 42, 0.2) transparent;
+    }
+
+    #smoothie-tab-content .ssm-chipstrip::-webkit-scrollbar{
+      height: 4px;
+    }
+
+    #smoothie-tab-content .ssm-chipstrip::-webkit-scrollbar-track{
+      background: transparent;
+    }
+
+    #smoothie-tab-content .ssm-chipstrip::-webkit-scrollbar-thumb{
+      background: rgba(15, 23, 42, 0.2);
+      border-radius: 2px;
+    }
+
+    #smoothie-tab-content .ssm-chip{
+      flex-shrink: 0;
+      padding: 4px 8px;
+      background: var(--bg-secondary);
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    #smoothie-tab-content .ssm-chip-name{
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    #smoothie-tab-content .ssm-chip-portion{
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+    }
+
+    #smoothie-tab-content .ssm-edit-btn{
+      padding: 8px 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content .ssm-edit-btn:hover{
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(14, 165, 164, 0.3);
+    }
+
+    #smoothie-tab-content .ssm-modal{
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #smoothie-tab-content .ssm-modal.ssm-modal-open{
+      display: flex;
+    }
+
+    #smoothie-tab-content .ssm-backdrop{
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    #smoothie-tab-content .ssm-modal-card{
+      position: relative;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      z-index: 1;
+    }
+
+    #smoothie-tab-content .ssm-modal-header{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+      flex-shrink: 0;
+    }
+
+    #smoothie-tab-content .ssm-modal-title{
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #0f172a;
+    }
+
+    #smoothie-tab-content .ssm-modal-close{
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    #smoothie-tab-content .ssm-modal-close:hover{
+      background: var(--bg-secondary);
+      color: #0f172a;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll{
+      max-height: 70vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 12px 20px 20px;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll::-webkit-scrollbar{
+      width: 6px;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll::-webkit-scrollbar-track{
+      background: var(--bg-secondary);
+      border-radius: 3px;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll::-webkit-scrollbar-thumb{
+      background: rgba(15, 23, 42, 0.2);
+      border-radius: 3px;
+    }
+
+    /* Modal ingredient rows (reuse ss-row classes) */
+    #smoothie-tab-content .ssm-modal-scroll .ss-row{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+      min-height: 44px;
+      max-height: 52px;
+      transition: background 0.15s ease;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-row:last-child{
+      border-bottom: none;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-row:hover{
+      background: rgba(14, 165, 164, 0.03);
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-row-main{
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-row-name{
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-tags{
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-tag{
+      font-size: 0.65rem;
+      padding: 2px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-portion{
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      margin-left: 6px;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-row-controls{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-qty-control{
+      display: flex;
+      align-items: center;
+      border: 1.5px solid #f59e0b;
+      border-radius: 6px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-qty-btn{
+      border: none;
+      background: #fef3c7;
+      color: #92400e;
+      width: 24px;
+      height: 24px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-qty-btn:hover:not(:disabled){
+      background: #fde68a;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-qty-btn:disabled{
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-qty-input{
+      width: 42px;
+      padding: 3px 2px;
+      border: none;
+      outline: none;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #78350f;
+      background: white;
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-remove-btn{
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
+    }
+
+    #smoothie-tab-content .ssm-modal-scroll .ss-remove-btn:hover{
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
+    @media (max-width: 640px) {
+      #smoothie-tab-content .ssm-modal{
+        padding: 0;
+      }
+
+      #smoothie-tab-content .ssm-modal-card{
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
       }
     }
 
@@ -13309,31 +13893,31 @@ const allergenPanel = allergenNames.length === 0
             }
           }
           
-          // Compact row layout for smoothie ingredients
+          // Ultra-compact row layout for smoothie ingredients
           return `
-          <div class="smoothie-ingredient-row fade-in">
-            <div class="smoothie-ingredient-main">
-              <span class="smoothie-ingredient-name">${escapeHTML(displayName)}</span>
-              ${badge ? `<div class="smoothie-ingredient-badges">${badge}</div>` : ''}
-              <span class="smoothie-ingredient-portion">${escapeHTML(servingDisplay)}</span>
+          <div class="ss-row fade-in">
+            <div class="ss-row-main">
+              <span class="ss-row-name">${escapeHTML(displayName)}</span>
+              ${badge ? `<div class="ss-tags">${badge}</div>` : ''}
+              <span class="ss-portion">${escapeHTML(servingDisplay)}</span>
                 </div>
-            <div class="smoothie-ingredient-controls">
-              <div class="smoothie-quantity-control">
-                <button class="smoothie-quantity-btn decrement" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
+            <div class="ss-row-controls">
+              <div class="ss-qty-control">
+                <button class="ss-qty-btn decrement" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
                     <input 
                       type="number" 
-                  class="smoothie-quantity-input" 
+                  class="ss-qty-input" 
                       data-index="${idx}" 
                       value="${quantity}" 
                       min="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '50' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}" 
                       max="${isDried ? '1' : (isFresh ? maxAllowedForThisIng : (isVegan ? (portionUnit === 'ml' ? '720' : (portionUnit === 'cup' ? '3' : '100')) : '3'))}" 
                       step="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '10' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}"
-                  style="width: ${(isVegan && portionUnit === 'ml') ? '60px' : '45px'};"
+                  style="width: ${(isVegan && portionUnit === 'ml') ? '55px' : '40px'};"
                       ${isDried ? 'readonly' : ''}
                     />
-                <button class="smoothie-quantity-btn increment" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
+                <button class="ss-qty-btn increment" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
                   </div>
-              <button class="smoothie-remove-btn" data-index="${idx}" title="Remove" type="button">×</button>
+              <button class="ss-remove-btn" data-index="${idx}" title="Remove" type="button">×</button>
             </div>
           </div>
         `;
@@ -13366,9 +13950,135 @@ const allergenPanel = allergenNames.length === 0
       }
       
       try {
-        // Wrap rows in scrollable container, with counter at top
-        const scrollableHtml = `<div class="smoothie-ingredients-header">${infoMessages}</div><div class="smoothie-ingredients-scroll">${chipsHtml}</div>${soakTipHtml}`;
-        smoothieSelectedIngredientsEl.innerHTML = scrollableHtml;
+        // Calculate total weight for yield display
+        let totalWeightGrams = 0;
+        smoothieIngredients.forEach(ing => {
+          const ingredientName = typeof ing === 'string' ? ing : (ing && ing.name ? ing.name : '');
+          if (!ingredientName) return;
+          const quantity = typeof ing === 'object' && ing.quantity ? ing.quantity : 1;
+          const portion = getSmoothiePortion(ingredientName, currentAgeGroup);
+          const portionAmount = portion.amount || 0;
+          const isVegan = isPlantBasedMilk(ingredientName);
+          const isLiquid = isVegan && portion.unit === 'ml';
+          const totalAmount = isLiquid ? quantity : (portionAmount * quantity);
+          totalWeightGrams += totalAmount;
+        });
+        
+        // Format yield display
+        const formatWeight = (grams) => {
+          if (!grams || grams <= 0) return '—';
+          if (grams >= 1000) {
+            return `${(grams / 1000).toFixed(1)}kg`;
+          }
+          return `${Math.round(grams)}g`;
+        };
+        const yieldDisplay = formatWeight(totalWeightGrams);
+        
+        // Build chip strip for summary (preview of first 6 ingredients)
+        const previewCount = 6;
+        const previewIngredients = smoothieIngredients.slice(0, previewCount);
+        const remainingCount = Math.max(0, smoothieIngredients.length - previewCount);
+        
+        const chipStripHtml = previewIngredients.map((ing, idx) => {
+          const ingredientName = typeof ing === 'string' ? ing : (ing && ing.name ? ing.name : '');
+          if (!ingredientName) return '';
+          const quantity = typeof ing === 'object' && ing.quantity ? ing.quantity : 1;
+          const portion = getSmoothiePortion(ingredientName, currentAgeGroup);
+          const portionAmount = portion.amount || 0;
+          const isVegan = isPlantBasedMilk(ingredientName);
+          const isLiquid = isVegan && portion.unit === 'ml';
+          const totalAmount = isLiquid ? quantity : (portionAmount * quantity);
+          const portionUnit = portion.unit || 'g';
+          const servingDisplay = isLiquid 
+            ? `${Math.round(quantity)}${portionUnit}`
+            : (quantity === 1 ? `${Math.round(portionAmount)}${portionUnit}` : `${Math.round(totalAmount)}${portionUnit}`);
+          return `<div class="ssm-chip"><span class="ssm-chip-name">${escapeHTML(ingredientName)}</span><span class="ssm-chip-portion">${escapeHTML(servingDisplay)}</span></div>`;
+        }).join('');
+        
+        const moreChipHtml = remainingCount > 0 ? `<div class="ssm-chip" style="background: var(--primary); color: white; border-color: var(--primary);"><span class="ssm-chip-name">+${remainingCount} more</span></div>` : '';
+        
+        // Build compact summary card (no scroll, no tall list)
+        const summaryHtml = `
+          <div class="ssm-summary-card">
+            <div class="ssm-summary-header">
+              <div style="flex: 1; min-width: 0;">
+                <div class="ssm-summary-title">Smoothie Ingredients <span style="color: var(--text-secondary); font-weight: 600;">(${smoothieIngredients.length})</span></div>
+                <div class="ssm-summary-meta">
+                  ${freshFruitCount > 0 || driedFruitCount > 0 ? `<span class="ssm-summary-meta-item">Fresh fruits ${freshFruitCount}/${MAX_FRESH_FRUITS}</span>` : ''}
+                  ${driedFruitCount > 0 ? `<span class="ssm-summary-meta-item">• Dried fruits ${driedFruitCount}/${MAX_DRIED_FRUITS}</span>` : ''}
+                </div>
+              </div>
+              <button class="ssm-edit-btn" id="ssm-edit-btn" type="button">Edit ingredients</button>
+            </div>
+            <div class="ssm-chipstrip">${chipStripHtml}${moreChipHtml}</div>
+          </div>
+        `;
+        
+        // Build modal structure with full ingredient list
+        const modalHtml = `
+          <div class="ssm-modal" id="ssm-modal">
+            <div class="ssm-backdrop" id="ssm-backdrop"></div>
+            <div class="ssm-modal-card">
+              <div class="ssm-modal-header">
+                <div class="ssm-modal-title">Edit ingredients</div>
+                <button class="ssm-modal-close" id="ssm-modal-close" type="button" aria-label="Close">×</button>
+              </div>
+              <div class="ssm-modal-scroll">
+                ${infoMessages ? `<div class="ss-info-messages">${infoMessages}</div>` : ''}
+                ${chipsHtml}
+                ${soakTipHtml ? `<div style="margin-top: 12px; padding: 10px 12px; background: #e0f2fe; border-left: 3px solid #0284c7; border-radius: 6px; font-size: 0.8rem; color: #0c4a6e; line-height: 1.5;">${soakTipHtml}</div>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+        
+        smoothieSelectedIngredientsEl.innerHTML = summaryHtml + modalHtml;
+        
+        // Setup modal open/close handlers
+        const modalEl = document.getElementById('ssm-modal');
+        const editBtn = document.getElementById('ssm-edit-btn');
+        const closeBtn = document.getElementById('ssm-modal-close');
+        const backdropEl = document.getElementById('ssm-backdrop');
+        
+        const openModal = () => {
+          if (modalEl) {
+            modalEl.classList.add('ssm-modal-open');
+            document.body.style.overflow = 'hidden'; // Prevent body scroll
+          }
+        };
+        
+        const closeModal = () => {
+          if (modalEl) {
+            modalEl.classList.remove('ssm-modal-open');
+            document.body.style.overflow = ''; // Restore body scroll
+          }
+        };
+        
+        if (editBtn) {
+          editBtn.addEventListener('click', openModal);
+        }
+        
+        if (closeBtn) {
+          closeBtn.addEventListener('click', closeModal);
+        }
+        
+        if (backdropEl) {
+          backdropEl.addEventListener('click', closeModal);
+        }
+        
+        // Close on Escape key (use a single global handler to avoid duplicates)
+        if (!window.__ssmEscapeHandler) {
+          window.__ssmEscapeHandler = (e) => {
+            if (e.key === 'Escape') {
+              const modal = document.getElementById('ssm-modal');
+              if (modal && modal.classList.contains('ssm-modal-open')) {
+                modal.classList.remove('ssm-modal-open');
+                document.body.style.overflow = '';
+              }
+            }
+          };
+          document.addEventListener('keydown', window.__ssmEscapeHandler);
+        }
       } catch (err) {
         console.error('[renderSmoothieIngredients] Error setting innerHTML:', err);
         console.error('chipsHtml length:', chipsHtml.length);
@@ -13390,7 +14100,7 @@ const allergenPanel = allergenNames.length === 0
       }
 
       // Handle quantity input changes
-      smoothieSelectedIngredientsEl.querySelectorAll('.smoothie-quantity-input').forEach(input => {
+      smoothieSelectedIngredientsEl.querySelectorAll('.ss-qty-input').forEach(input => {
         input.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.index);
           const ing = smoothieIngredients[idx];
@@ -13498,7 +14208,7 @@ const allergenPanel = allergenNames.length === 0
       });
 
       // Handle quantity button clicks (increment/decrement)
-      smoothieSelectedIngredientsEl.querySelectorAll('.smoothie-quantity-btn').forEach(btn => {
+      container.querySelectorAll('.ss-qty-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const idx = parseInt(btn.dataset.index);
           const input = smoothieSelectedIngredientsEl.querySelector(`.smoothie-quantity-input[data-index="${idx}"]`);
@@ -13698,7 +14408,7 @@ const allergenPanel = allergenNames.length === 0
       });
       
       // Handle remove button clicks
-      smoothieSelectedIngredientsEl.querySelectorAll('.smoothie-remove-btn').forEach(btn => {
+      container.querySelectorAll('.ss-remove-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const idx = parseInt(btn.dataset.index);
           const removedIngredient = smoothieIngredients[idx];
@@ -13947,6 +14657,44 @@ const allergenPanel = allergenNames.length === 0
     }
 
     // Smoothie ingredient search
+    // Helper function to clear smoothie ingredient search UI
+    function clearSmoothieIngredientSearchUI() {
+      // Query DOM fresh (do not use cached variables)
+      const input = document.getElementById('smoothie-ingredient-search');
+      if (!input) {
+        console.warn('[clearSmoothieIngredientSearchUI] Input element not found');
+        return;
+      }
+      
+      // Clear any pending search timeout first
+      if (typeof smoothieSearchTimeout !== 'undefined' && smoothieSearchTimeout) {
+        clearTimeout(smoothieSearchTimeout);
+        smoothieSearchTimeout = null;
+      }
+      
+      // Find and clear/hide suggestions container FIRST (before clearing input)
+      const suggestionsEl = document.getElementById('smoothie-ingredient-suggestions');
+      if (suggestionsEl) {
+        suggestionsEl.innerHTML = '';
+        suggestionsEl.style.display = 'none';
+      }
+      
+      // Clear input value
+      input.value = '';
+      
+      // Dispatch input event to force suggestion renderer to react
+      // This will trigger the input listener which will see empty value and hide suggestions
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      
+      // Focus input with preventScroll to avoid page jump
+      setTimeout(() => {
+        input.focus({ preventScroll: true });
+      }, 0);
+      
+      // Debug log (temporary - remove after confirming)
+      console.log('[smoothie] cleared search UI');
+    }
+
     if (smoothieIngredientSearchEl && smoothieIngredientSuggestionsEl) {
       smoothieIngredientSearchEl.addEventListener('input', (e) => {
         const query = e.target.value.trim();
@@ -14131,11 +14879,11 @@ const allergenPanel = allergenNames.length === 0
               const selectSmoothieIngredient = () => {
                 // Disable click handlers for invalid ingredients
                 if (item.classList.contains('suggestion-item-disabled')) {
-                  return;
+                  return false;
                 }
                 // Safety check: ensure we're in smoothie mode
                 if (!smoothieIngredientSearchEl || !smoothieIngredientSuggestionsEl) {
-                  return;
+                  return false;
                 }
                 
                 const ingredient = item.dataset.ingredient;
@@ -14148,7 +14896,7 @@ const allergenPanel = allergenNames.length === 0
                     'warning',
                     4000
                   );
-                  return;
+                  return false;
                 }
                 
                 // Get current counts
@@ -14158,12 +14906,12 @@ const allergenPanel = allergenNames.length === 0
                 const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
                 if (!selectedAudience) {
                   setSmoothieStatus('Please select a target audience first', true);
-                  return;
+                  return false;
                 }
                 
                 if (!hasValidAgePortion(ingredient, selectedAudience)) {
                   setSmoothieStatus('This ingredient isn\'t available for the selected age group yet.', true);
-                  return;
+                  return false;
                 }
                 
                 // Validate limits before adding
@@ -14175,7 +14923,7 @@ const allergenPanel = allergenNames.length === 0
                       'error',
                       6000
                     );
-                    return;
+                    return false;
                   }
                 } else if (isFreshFruit(ingredient)) {
                   if (freshFruitCount >= MAX_FRESH_FRUITS) {
@@ -14185,7 +14933,7 @@ const allergenPanel = allergenNames.length === 0
                       'error',
                       6000
                     );
-                    return;
+                    return false;
                   }
                 }
                 
@@ -14298,6 +15046,9 @@ const allergenPanel = allergenNames.length === 0
                 }
                 
                 smoothieIngredients.push(ingredientObj);
+                // Clear search UI immediately after successful add
+                clearSmoothieIngredientSearchUI();
+                
                 renderSmoothieIngredients();
                 updateSmoothieRecipe();
                 checkAndShowVeganMilkRecommendation();
@@ -14306,17 +15057,27 @@ const allergenPanel = allergenNames.length === 0
                 // Show dried fruit tip if this is a dried fruit (only once per session)
                 maybeShowDriedFruitTip(ingredient);
                 
-                // Always clear and refocus the search for the next ingredient
-                smoothieIngredientSearchEl.value = '';
-                smoothieIngredientSuggestionsEl.innerHTML = '';
-                smoothieIngredientSuggestionsEl.style.display = 'none';
-                smoothieIngredientSearchEl.focus();
+                // Return true to indicate successful add
+                return true;
               };
-              item.addEventListener('click', selectSmoothieIngredient);
-              item.addEventListener('dblclick', selectSmoothieIngredient);
+              
+              // Click handler: clearing happens automatically after push in selectSmoothieIngredient
+              item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectSmoothieIngredient();
+              });
+              
+              // Double-click handler: clearing happens automatically after push in selectSmoothieIngredient
+              item.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                selectSmoothieIngredient();
+              });
+              
+              // Keyboard handler: clearing happens automatically after push in selectSmoothieIngredient
               item.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
+                  e.stopPropagation();
                   selectSmoothieIngredient();
                 }
               });
