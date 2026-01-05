@@ -9819,6 +9819,30 @@ const allergenPanel = allergenNames.length === 0
       };
     }
 
+    // Helper function to check if an ingredient has a valid age-based portion
+    // Returns true if the ingredient can be added for the given age group
+    function hasValidAgePortion(ingredientName, ageGroup) {
+      if (!ingredientName || !ageGroup) return false;
+      
+      // getIngredientPortion normalizes internally, so pass ageGroup as-is
+      const portion = getIngredientPortion(ingredientName, ageGroup);
+      if (!portion) return false;
+      
+      // Check for missing/zero portion
+      const amount = Number(portion.amount) || 0;
+      const isMissing = !Number.isFinite(amount) || amount <= 0 || portion.source === 'missingPortion';
+      const isBad = portion.bad === true;
+      
+      // Check for API/fallback sources (treat as invalid)
+      // Sources containing 'api', 'serving', or 'fallback' are invalid
+      // Exception: allow 'microDoseDefault' and other legitimate sources (e.g., 'milkMap', 'fruitMap')
+      const src = String(portion.source || '').toLowerCase();
+      const isApiFallback = (src.includes('api') || src.includes('serving') || src.includes('fallback')) 
+        && !src.includes('microdose'); // Allow microdose sources (e.g., 'microDoseDefault')
+      
+      return !isMissing && !isBad && !isApiFallback;
+    }
+
     /**
      * Get health profile for a vegan milk
      * @param {string} ingredientName - The ingredient name
@@ -10904,6 +10928,12 @@ const allergenPanel = allergenNames.length === 0
         // Hide badge when value changes
         if (smoothieNameBarEl) {
           smoothieNameBarEl.style.display = 'none';
+        }
+        
+        // Re-render ingredient suggestions to update disabled state for new age group
+        if (smoothieIngredientSearchEl && smoothieIngredientSearchEl.value.trim().length >= 2) {
+          // Trigger search again to refresh suggestions with new age group validation
+          smoothieIngredientSearchEl.dispatchEvent(new Event('input'));
         }
         
         // Repopulate health goals based on selected target audience
@@ -13970,6 +14000,8 @@ const allergenPanel = allergenNames.length === 0
             // Build suggestion items using DOM APIs and textContent to avoid XSS
             smoothieIngredientSuggestionsEl.innerHTML = '';
             const frag = document.createDocumentFragment();
+            const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
+            
             finalSuggestions.forEach(sug => {
               const item = document.createElement('div');
               item.className = 'suggestion-item';
@@ -13979,6 +14011,19 @@ const allergenPanel = allergenNames.length === 0
               const nameDiv = document.createElement('div');
               nameDiv.className = 'suggestion-name';
               nameDiv.textContent = sug.name;
+
+              // Check if ingredient has valid age-based portion
+              const isValid = selectedAudience && hasValidAgePortion(sug.name, selectedAudience);
+              if (!isValid && selectedAudience) {
+                item.classList.add('suggestion-item-disabled');
+                item.style.opacity = '0.5';
+                item.style.cursor = 'not-allowed';
+                const unavailableNote = document.createElement('div');
+                unavailableNote.className = 'suggestion-unavailable';
+                unavailableNote.style.cssText = 'font-size: 0.75rem; color: #64748b; margin-top: 2px; font-style: italic;';
+                unavailableNote.textContent = 'Unavailable for this age group';
+                inner.appendChild(unavailableNote);
+              }
 
               inner.appendChild(nameDiv);
               item.appendChild(inner);
@@ -13991,6 +14036,10 @@ const allergenPanel = allergenNames.length === 0
             smoothieIngredientSuggestionsEl.querySelectorAll('.suggestion-item').forEach(item => {
               // Use a unique function name to avoid conflicts with other select handlers
               const selectSmoothieIngredient = () => {
+                // Disable click handlers for invalid ingredients
+                if (item.classList.contains('suggestion-item-disabled')) {
+                  return;
+                }
                 // Safety check: ensure we're in smoothie mode
                 if (!smoothieIngredientSearchEl || !smoothieIngredientSuggestionsEl) {
                   return;
@@ -14011,6 +14060,18 @@ const allergenPanel = allergenNames.length === 0
                 
                 // Get current counts
                 const { freshFruitCount, driedFruitCount } = countFruitTypes();
+                
+                // Validate age-based portion availability
+                const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
+                if (!selectedAudience) {
+                  setSmoothieStatus('Please select a target audience first', true);
+                  return;
+                }
+                
+                if (!hasValidAgePortion(ingredient, selectedAudience)) {
+                  setSmoothieStatus('This ingredient isn\'t available for the selected age group yet.', true);
+                  return;
+                }
                 
                 // Validate limits before adding
                 if (isDriedFruit(ingredient)) {
@@ -14037,7 +14098,6 @@ const allergenPanel = allergenNames.length === 0
                 
                 // Add ingredient with default quantity
                 // All ingredients now use ml as the default unit
-                const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
                 const ageGroupKey = normalizeAgeGroupKey(selectedAudience);
                 let defaultQuantity = 1;
                 let defaultUnit = 'ml'; // Default to ml for all ingredients
@@ -14179,6 +14239,42 @@ const allergenPanel = allergenNames.length === 0
     if (buildSmoothieBtn) {
       buildSmoothieBtn.addEventListener('click', async () => {
         if (smoothieIngredients.length === 0) return;
+        
+        // Safety guard: Filter out ingredients with missing/zero portions
+        const selectedAgeGroup = smoothieForEl ? smoothieForEl.value : '';
+        if (!selectedAgeGroup) {
+          setSmoothieStatus('Please select a target audience first', true);
+          return;
+        }
+        
+        const originalCount = smoothieIngredients.length;
+        const validIngredients = [];
+        const removedIngredients = [];
+        
+        smoothieIngredients.forEach(ing => {
+          const ingredientName = typeof ing === 'string' ? ing : (ing && ing.name ? ing.name : '');
+          if (!ingredientName) return;
+          
+          if (hasValidAgePortion(ingredientName, selectedAgeGroup)) {
+            validIngredients.push(ing);
+          } else {
+            removedIngredients.push(ingredientName);
+          }
+        });
+        
+        // Update smoothieIngredients array if any were removed
+        if (removedIngredients.length > 0) {
+          smoothieIngredients.length = 0;
+          smoothieIngredients.push(...validIngredients);
+          renderSmoothieIngredients();
+          
+          if (validIngredients.length === 0) {
+            setSmoothieStatus('No valid ingredients available for this age group. Please add ingredients.', true);
+            return;
+          } else {
+            setSmoothieStatus(`Removed ${removedIngredients.length} ingredient${removedIngredients.length > 1 ? 's' : ''} unavailable for this age group.`, true);
+          }
+        }
         
         setSmoothieStatus('Building smoothie...');
         try {
@@ -15206,29 +15302,10 @@ const allergenPanel = allergenNames.length === 0
         // Format serving display string
         let serving = '';
         if (isMissing || effectiveGrams <= 0) {
-          // If portion is missing, show API serving size (if available) but clearly mark it
+          // If portion is missing, show only 0g missing message (no API fallback)
           const ageGroupOption = smoothieForEl ? smoothieForEl.options[smoothieForEl.selectedIndex] : null;
           const ageGroupLabel = ageGroupOption ? ageGroupOption.textContent : selectedAgeGroup;
-          
-          // Get API serving size from ing.serving_size or baseGrams
-          let apiGrams = 0;
-          if (baseGrams && baseGrams > 0) {
-            apiGrams = baseGrams;
-          } else if (ing.serving_size && typeof ing.serving_size === 'string') {
-            // Try to extract grams from serving_size string (e.g., "100g" or "100 g")
-            const match = String(ing.serving_size).match(/(\d+(?:\.\d+)?)\s*g(?:rams?)?/i);
-            if (match) {
-              apiGrams = parseFloat(match[1]);
-            }
-          }
-          
-          if (apiGrams > 0) {
-            // Show API serving size but clearly mark it as API-based and missing age mapping
-            serving = `${Math.round(apiGrams)}g (API) — missing age-based portion for ${ageGroupLabel}`;
-          } else {
-            // No API serving size available
-            serving = `0g — missing portion for ${ageGroupLabel}`;
-          }
+          serving = `0g — missing portion for ${ageGroupLabel}`;
         } else if (effectiveGrams > 0 || isLiquid) {
           // Use the portion from getSmoothiePortion() - this is the single source of truth
           // Do NOT use API serving_size when we have a valid age-based portion
@@ -16044,8 +16121,31 @@ const batchG = (smoothieBatchMlOverride != null)
       const preset = smoothiePresets.find(p => p.name === presetName);
       if (!preset) return;
       
+      const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
+      if (!selectedAudience) {
+        setSmoothieStatus('Please select a target audience first', true);
+        return;
+      }
+      
+      // Filter preset ingredients to only include those with valid age-based portions
+      const validPresetIngredients = preset.ingredients.filter(ing => {
+        const ingredientName = typeof ing === 'string' ? ing : (ing && ing.name ? ing.name : '');
+        if (!ingredientName) return false;
+        return hasValidAgePortion(ingredientName, selectedAudience);
+      });
+      
+      if (validPresetIngredients.length === 0) {
+        setSmoothieStatus('No valid ingredients in this preset for the selected age group.', true);
+        return;
+      }
+      
+      if (validPresetIngredients.length < preset.ingredients.length) {
+        const removedCount = preset.ingredients.length - validPresetIngredients.length;
+        setSmoothieStatus(`Loaded preset (${removedCount} ingredient${removedCount > 1 ? 's' : ''} unavailable for this age group removed).`, true);
+      }
+      
       smoothieNameEl.value = preset.name;
-      smoothieIngredients = [...preset.ingredients];
+      smoothieIngredients = validPresetIngredients;
       renderSmoothieIngredients();
       updateSmoothieRecipe();
       setSmoothieStatus(`Loaded "${preset.name}"`);
