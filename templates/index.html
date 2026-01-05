@@ -9790,7 +9790,7 @@ const allergenPanel = allergenNames.length === 0
     // SINGLE SOURCE OF TRUTH: getSmoothiePortion
     // ============================================
     // This function is the ONLY way to get portion sizes in the Smoothie tab.
-    // All chips rendering, pre-build validation, and post-build display MUST use this.
+    // All chips rendering and post-build display MUST use this.
     function getSmoothiePortion(ingredientName, ageGroup) {
       if (!ingredientName) {
         return { amount: 0, unit: 'g', source: 'missingPortion', isMissing: true };
@@ -14180,121 +14180,6 @@ const allergenPanel = allergenNames.length === 0
       buildSmoothieBtn.addEventListener('click', async () => {
         if (smoothieIngredients.length === 0) return;
         
-        // Check if building anyway (bypass validation)
-        if (window.__smoothieBuildAnyway) {
-          window.__smoothieBuildAnyway = false;
-          // Continue to build logic below (skip validation)
-        } else {
-          // Pre-build validation: Check for ingredients with missing portion sizes
-          const selectedAgeGroup = smoothieForEl ? smoothieForEl.value : '';
-          const missingPortions = [];
-          
-          smoothieIngredients.forEach(ing => {
-            const ingredientName = typeof ing === 'string' ? ing : (ing && ing.name ? ing.name : '');
-            if (!ingredientName) return;
-            
-            // SINGLE SOURCE OF TRUTH: Use getSmoothiePortion() for validation
-            const portion = getSmoothiePortion(ingredientName, selectedAgeGroup);
-            
-            if (portion.isMissing || !Number.isFinite(portion.amount) || portion.amount <= 0) {
-              missingPortions.push(ingredientName);
-            }
-          });
-          
-          // If any ingredients have missing portions, show warning with options
-          if (missingPortions.length > 0) {
-            setSmoothieStatus('Missing portion sizes detected', true);
-            
-            // Get age group label for display
-            const ageGroupOption = smoothieForEl ? smoothieForEl.options[smoothieForEl.selectedIndex] : null;
-            const ageGroupLabel = ageGroupOption ? ageGroupOption.textContent : selectedAgeGroup;
-            
-            // Show warning box above Build button
-            const warningId = 'smoothie-portion-warning';
-            let warningEl = document.getElementById(warningId);
-            if (!warningEl) {
-              warningEl = document.createElement('div');
-              warningEl.id = warningId;
-              warningEl.style.cssText = 'margin-bottom: 12px; padding: 12px 16px; background: #fef3c7; border: 2px solid #d97706; border-radius: 8px; font-size: 0.9rem;';
-              buildSmoothieBtn.parentElement.insertBefore(warningEl, buildSmoothieBtn);
-            }
-            
-            // Store missing portions in data attribute for "Build anyway" button
-            warningEl.dataset.missingPortions = JSON.stringify(missingPortions);
-            warningEl.dataset.ageGroup = ageGroupLabel;
-            
-            warningEl.innerHTML = `
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="display: flex; align-items: flex-start; gap: 12px;">
-                  <div style="flex: 1;">
-                    <strong style="color: #78350f;">⚠️ Missing portion sizes for ${ageGroupLabel}:</strong>
-                    <div style="margin-top: 8px; color: #92400e; font-family: monospace; font-size: 0.85rem; line-height: 1.6;">
-                      ${missingPortions.map(name => `• ${name}`).join('<br>')}
-                    </div>
-                  </div>
-                  <button id="copy-missing-list" style="padding: 6px 12px; background: #fff; border: 1px solid #d97706; border-radius: 6px; color: #78350f; cursor: pointer; font-size: 0.85rem; white-space: nowrap; height: fit-content;">
-                    Copy list
-                  </button>
-                </div>
-                <div style="display: flex; gap: 8px; margin-top: 4px;">
-                  <button id="build-anyway-btn" style="padding: 8px 16px; background: #d97706; border: 1px solid #d97706; border-radius: 6px; color: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
-                    Build using API serving sizes (age-based portions missing)
-                  </button>
-                </div>
-              </div>
-            `;
-            
-            // Copy button handler
-            const copyBtn = document.getElementById('copy-missing-list');
-            if (copyBtn) {
-              copyBtn.addEventListener('click', () => {
-                const json = JSON.stringify(missingPortions);
-                navigator.clipboard.writeText(json).then(() => {
-                  const originalText = copyBtn.textContent;
-                  copyBtn.textContent = 'Copied!';
-                  copyBtn.style.background = '#d1fae5';
-                  setTimeout(() => {
-                    copyBtn.textContent = originalText;
-                    copyBtn.style.background = '#fff';
-                  }, 2000);
-                }).catch(err => {
-                  console.error('Failed to copy:', err);
-                });
-              });
-            }
-            
-            // "Build anyway" button handler - allows build but keeps warning visible
-            const buildAnywayBtn = document.getElementById('build-anyway-btn');
-            if (buildAnywayBtn) {
-              // Remove old listeners by cloning and replacing
-              const newBuildAnywayBtn = buildAnywayBtn.cloneNode(true);
-              buildAnywayBtn.parentNode.replaceChild(newBuildAnywayBtn, buildAnywayBtn);
-              
-              newBuildAnywayBtn.addEventListener('click', async () => {
-                // Hide the button but keep the warning visible
-                newBuildAnywayBtn.style.display = 'none';
-                
-                // Set flag to bypass validation and trigger build
-                window.__smoothieBuildAnyway = true;
-                
-                // Trigger build by clicking the button again
-                setTimeout(() => {
-                  buildSmoothieBtn.click();
-                }, 100);
-              });
-            }
-            
-            // Default behavior: cancel build (user must click "Build anyway" to proceed)
-            return;
-          }
-        } // End of else block (validation check)
-        
-        // Remove warning if it exists and validation passed
-        const warningEl = document.getElementById('smoothie-portion-warning');
-        if (warningEl && !window.__smoothieBuildAnyway) {
-          warningEl.remove();
-        }
-        
         setSmoothieStatus('Building smoothie...');
         try {
           // Helper function to extract ingredient name from "quantity unit name" format
@@ -15298,7 +15183,7 @@ const allergenPanel = allergenNames.length === 0
         
         // SINGLE SOURCE OF TRUTH: Use getSmoothiePortion() for all ingredients
         const portion = getSmoothiePortion(name, selectedAgeGroup);
-        effectiveGrams = portion.amount || 0;
+          effectiveGrams = portion.amount || 0;
         const isMissing = portion.isMissing;
         const portionUnit = portion.unit || 'g';
         
