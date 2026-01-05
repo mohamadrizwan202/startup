@@ -12713,7 +12713,22 @@ const allergenPanel = allergenNames.length === 0
           // Calculate total amount based on quantity
           // Note: portion and portionUnit are already defined above
           const portionAmount = portion.amount || 0;
-          const totalAmount = portionAmount * quantity;
+          
+          // SINGLE SOURCE OF TRUTH: For liquids, quantity IS the total amount (ml)
+          // For solids, quantity is a multiplier (portion × quantity = total)
+          const isLiquid = isVegan && portionUnit === 'ml';
+          const totalAmount = isLiquid ? quantity : (portionAmount * quantity);
+          
+          // Debug safeguard: prevent multiplication for liquids
+          if (isLiquid && totalAmount !== quantity) {
+            console.warn('[renderSmoothieIngredients] Liquid totalAmount bug detected!', {
+              ingredient: ingredientName,
+              quantity,
+              portionAmount,
+              calculated: totalAmount,
+              corrected: quantity
+            });
+          }
           
           // Record zero portions in tracker (for chips rendering)
           if (!Number.isFinite(portionAmount) || portionAmount <= 0) {
@@ -12737,13 +12752,18 @@ const allergenPanel = allergenNames.length === 0
             }
           }
           
-          if (portionUnit === 'ml') {
-            // For liquids (milks) - show the actual quantity value (ml) from the input
-            // The quantity input now shows the ml value directly
-            const displayMl = isVegan && typeof ing === 'object' && ing.quantity ? ing.quantity : portionAmount;
+          if (isLiquid) {
+            // For liquids (milks) - quantity IS the total amount (ml), not a multiplier
+            // Show: "160ml (default: 150ml for <ageGroup>)" format
+            const displayMl = isVegan && typeof ing === 'object' && ing.quantity ? ing.quantity : quantity;
+            const defaultMl = portionAmount > 0 ? portionAmount : (currentAgeGroup === 'child-4-8' ? 120 : 150);
+            if (displayMl === defaultMl) {
             servingDisplay = `${Math.round(displayMl)}${portionUnit}${ageGroupLabel}`;
           } else {
-            // For solids (fruits, dried fruits) - unit is 'g'
+              servingDisplay = `${Math.round(displayMl)}${portionUnit} (default: ${Math.round(defaultMl)}${portionUnit} for ${ageGroupOption ? ageGroupOption.textContent : currentAgeGroup})${ageGroupLabel}`;
+            }
+          } else {
+            // For solids (fruits, dried fruits) - unit is 'g', quantity is a multiplier
             if (quantity === 1) {
               servingDisplay = `${Math.round(portionAmount)}${portionUnit}${ageGroupLabel}`;
             } else {
@@ -13171,23 +13191,23 @@ const allergenPanel = allergenNames.length === 0
               <span class="smoothie-ingredient-name">${escapeHTML(displayName)}</span>
               ${badge ? `<div class="smoothie-ingredient-badges">${badge}</div>` : ''}
               <span class="smoothie-ingredient-portion">${escapeHTML(servingDisplay)}</span>
-            </div>
+                </div>
             <div class="smoothie-ingredient-controls">
               <div class="smoothie-quantity-control">
                 <button class="smoothie-quantity-btn decrement" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
-                <input 
-                  type="number" 
+                    <input 
+                      type="number" 
                   class="smoothie-quantity-input" 
-                  data-index="${idx}" 
-                  value="${quantity}" 
-                  min="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '50' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}" 
-                  max="${isDried ? '1' : (isFresh ? maxAllowedForThisIng : (isVegan ? (portionUnit === 'ml' ? '720' : (portionUnit === 'cup' ? '3' : '100')) : '3'))}" 
-                  step="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '10' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}"
+                      data-index="${idx}" 
+                      value="${quantity}" 
+                      min="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '50' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}" 
+                      max="${isDried ? '1' : (isFresh ? maxAllowedForThisIng : (isVegan ? (portionUnit === 'ml' ? '720' : (portionUnit === 'cup' ? '3' : '100')) : '3'))}" 
+                      step="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '10' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}"
                   style="width: ${(isVegan && portionUnit === 'ml') ? '60px' : '45px'};"
-                  ${isDried ? 'readonly' : ''}
-                />
+                      ${isDried ? 'readonly' : ''}
+                    />
                 <button class="smoothie-quantity-btn increment" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
-              </div>
+                  </div>
               <button class="smoothie-remove-btn" data-index="${idx}" title="Remove" type="button">×</button>
             </div>
           </div>
@@ -15273,15 +15293,30 @@ const allergenPanel = allergenNames.length === 0
         const isVeg = isVegetable(name);
         const isDried = isDriedFruit(name);
         const isFresh = isFreshFruit(name);
+        const isVegan = isPlantBasedMilk(name);
         let effectiveGrams = 0;
         
         // SINGLE SOURCE OF TRUTH: Use getSmoothiePortion() for all ingredients
         const portion = getSmoothiePortion(name, selectedAgeGroup);
-          effectiveGrams = portion.amount || 0;
+        effectiveGrams = portion.amount || 0;
         const isMissing = portion.isMissing;
+        const portionUnit = portion.unit || 'g';
         
-        // Formula: totalGrams = baseServingGrams * quantity
-        const totalGrams = effectiveGrams * quantity;
+        // SINGLE SOURCE OF TRUTH: For liquids, quantity IS the total amount (ml)
+        // For solids, quantity is a multiplier (portion × quantity = total)
+        const isLiquid = isVegan && portionUnit === 'ml';
+        const totalGrams = isLiquid ? quantity : (effectiveGrams * quantity);
+        
+        // Debug safeguard: prevent multiplication for liquids
+        if (isLiquid && totalGrams !== quantity) {
+          console.warn('[displaySmoothieResults] Liquid totalGrams bug detected!', {
+            ingredient: name,
+            quantity,
+            effectiveGrams,
+            calculated: effectiveGrams * quantity,
+            corrected: quantity
+          });
+        }
         
         // Format serving display string
         let serving = '';
@@ -15309,18 +15344,35 @@ const allergenPanel = allergenNames.length === 0
             // No API serving size available
             serving = `0g — missing portion for ${ageGroupLabel}`;
           }
-        } else if (effectiveGrams > 0) {
+        } else if (effectiveGrams > 0 || isLiquid) {
           // Use the portion from getSmoothiePortion() - this is the single source of truth
           // Do NOT use API serving_size when we have a valid age-based portion
+          
+          if (isLiquid) {
+            // For liquids: quantity IS the total amount (ml), not a multiplier
+            // Show: "160ml" or "160ml (default: 150ml for <ageGroup>)" format
+            const displayMl = quantity;
+            const defaultMl = effectiveGrams > 0 ? effectiveGrams : (selectedAgeGroup === 'child-4-8' ? 120 : 150);
+            const ageGroupOption = smoothieForEl ? smoothieForEl.options[smoothieForEl.selectedIndex] : null;
+            const ageGroupLabel = ageGroupOption ? ageGroupOption.textContent : selectedAgeGroup;
+            
+            if (displayMl === defaultMl) {
+              serving = `${Math.round(displayMl)}ml`;
+            } else {
+              serving = `${Math.round(displayMl)}ml (default: ${Math.round(defaultMl)}ml for ${ageGroupLabel})`;
+            }
+          } else {
+            // For solids: quantity is a multiplier
             if (quantity > 1) {
               serving = `${effectiveGrams}g × ${quantity} = ${totalGrams}g`;
             } else {
               serving = `${totalGrams}g`;
             }
-          
-          // Add source indicator for micro-dose ingredients (optional, for clarity)
-          if (portion.source === 'microDoseDefault') {
-            serving += ' (micro-dose)';
+            
+            // Add source indicator for micro-dose ingredients (optional, for clarity)
+            if (portion.source === 'microDoseDefault') {
+              serving += ' (micro-dose)';
+            }
           }
         } else {
           serving = ing.serving_size || 'N/A';
