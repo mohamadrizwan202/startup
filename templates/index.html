@@ -1678,6 +1678,40 @@
       background: white;
     }
 
+    /* Hide native number input spinners for Smoothie quantity inputs (both class systems) */
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input::-webkit-inner-spin-button,
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input::-webkit-outer-spin-button,
+    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input::-webkit-inner-spin-button,
+    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input::-webkit-outer-spin-button {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      margin: 0;
+    }
+
+    /* Firefox */
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input[type="number"],
+    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input[type="number"] {
+      -moz-appearance: textfield !important;
+      appearance: textfield !important;
+    }
+
+    /* Hide native number input spinners for Smoothie quantity inputs (both class systems) */
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input::-webkit-inner-spin-button,
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input::-webkit-outer-spin-button,
+    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input::-webkit-inner-spin-button,
+    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input::-webkit-outer-spin-button {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      margin: 0;
+    }
+
+    /* Firefox */
+    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input[type="number"],
+    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input[type="number"] {
+      -moz-appearance: textfield !important;
+      appearance: textfield !important;
+    }
+
     #smoothie-tab-content #smoothie-selected-ingredients .smoothie-remove-btn {
       background: #ef4444;
       color: white;
@@ -6564,6 +6598,7 @@ const allergenPanel = allergenNames.length === 0
     // ============================================
     let smoothieIngredients = []; // Array of objects: { name: string, quantity: number, unit: string }
     let smoothieSearchTimeout = null;
+    let smoothieEditPanelOpen = false; // Track if the edit ingredients modal is open
     let currentSmoothie = null; // Store current built smoothie data (only set when user clicks Build)
     let hasBuiltSmoothie = false; // Flag to track if user has explicitly built a smoothie
     let previousHealthGoal = null; // Track previous health goal selection
@@ -10681,6 +10716,103 @@ const allergenPanel = allergenNames.length === 0
     const veganMilkRecommendationContainerEl = document.getElementById('vegan-milk-recommendation-container');
     const smoothieRecipeEl = null; // Container removed
     const buildSmoothieBtn = document.getElementById('build-smoothie-btn');
+    
+    // Bind once: delegated click handler on document (capture phase for reliability)
+    if (!window.__ss_modal_click_bound) {
+      window.__ss_modal_click_bound = true;
+      
+      document.addEventListener('click', (e) => {
+        // Match both possible button class systems for quantity buttons
+        const qtyBtn = e.target.closest('.smoothie-quantity-btn, .ss-qty-btn');
+        // Match both possible button class systems for remove buttons
+        const removeBtn = e.target.closest('.smoothie-remove-btn, .ss-remove-btn, [data-action="remove"]');
+        
+        if (!qtyBtn && !removeBtn) return;
+
+        // Prevent form submits / bubbling to backdrop
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Only act when the edit-ingredients modal is currently open
+        const modalEl = document.getElementById('ssm-modal');
+        if (!modalEl || !modalEl.classList.contains('ssm-modal-open')) return;
+
+        // If button is disabled, return
+        const btn = qtyBtn || removeBtn;
+        if (btn.disabled) return;
+
+        // Determine index from data-idx (preferred) or data-index (fallback)
+        const idx = Number(btn.dataset.idx ?? btn.dataset.index);
+        if (!Number.isInteger(idx) || idx < 0 || idx >= smoothieIngredients.length) {
+          console.warn('[smoothie] Invalid button index:', idx);
+          return;
+        }
+
+        // Handle remove button
+        if (removeBtn) {
+          const removedIngredient = smoothieIngredients[idx];
+          if (!removedIngredient) {
+            console.warn('[smoothie] No ingredient at index:', idx);
+            return;
+          }
+          
+          // If a dried fruit is being removed, reset the tip flag so it can show again
+          if (removedIngredient && typeof removedIngredient === 'object' && removedIngredient.name) {
+            const ingredientName = removedIngredient.name;
+            if (isDriedFruit(ingredientName)) {
+              resetDriedFruitTip();
+            }
+          } else if (typeof removedIngredient === 'string' && isDriedFruit(removedIngredient)) {
+            resetDriedFruitTip();
+          }
+          
+          // Preserve modal open state before removing
+          smoothieEditPanelOpen = true;
+          
+          // Remove the ingredient
+          smoothieIngredients.splice(idx, 1);
+          
+          // Re-render (this will preserve modal state)
+          renderSmoothieIngredients();
+          updateSmoothieRecipe();
+          checkAndShowVeganMilkRecommendation();
+          return;
+        }
+
+        // Handle quantity +/- buttons
+        if (qtyBtn) {
+          // Get delta from data-delta attribute (preferred) or infer from classes
+          let delta = Number(qtyBtn.dataset.delta);
+          if (![1, -1].includes(delta)) {
+            // Fallback: infer from class
+            delta = qtyBtn.classList.contains('increment') ? 1 : -1;
+          }
+
+          const ing = smoothieIngredients?.[idx];
+          if (!ing) {
+            console.warn('[smoothie] No ingredient at index:', idx);
+            return;
+          }
+
+          const cur = Number(ing.quantity) || 1;
+          const next = Math.max(1, cur + delta);
+
+          // Preserve modal open state before updating
+          smoothieEditPanelOpen = true;
+
+          // Update data model
+          if (typeof ing === 'object') {
+            ing.quantity = next;
+          } else {
+            // Convert string to object if needed
+            smoothieIngredients[idx] = { name: ing, quantity: next, unit: 'g' };
+          }
+
+          // Re-render (this will preserve modal state)
+          renderSmoothieIngredients();
+        }
+      }, true); // Use capture phase to be extra safe against any bubbling blockers
+    }
     const clearSmoothieBtn = document.getElementById('clear-smoothie-btn');
     const smoothieNameEl = document.getElementById('smoothie-name');
     const smoothieNameBarEl = document.getElementById('smoothie-name-bar');
@@ -13903,7 +14035,7 @@ const allergenPanel = allergenNames.length === 0
                 </div>
             <div class="ss-row-controls">
               <div class="ss-qty-control">
-                <button class="ss-qty-btn decrement" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
+                <button class="ss-qty-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-1" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
                     <input 
                       type="number" 
                   class="ss-qty-input" 
@@ -13915,9 +14047,9 @@ const allergenPanel = allergenNames.length === 0
                   style="width: ${(isVegan && portionUnit === 'ml') ? '55px' : '40px'};"
                       ${isDried ? 'readonly' : ''}
                     />
-                <button class="ss-qty-btn increment" data-index="${idx}" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
+                <button class="ss-qty-btn increment" data-index="${idx}" data-idx="${idx}" data-delta="1" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
                   </div>
-              <button class="ss-remove-btn" data-index="${idx}" title="Remove" type="button">×</button>
+              <button class="ss-remove-btn" data-index="${idx}" data-idx="${idx}" data-action="remove" title="Remove" type="button">×</button>
             </div>
           </div>
         `;
@@ -14032,6 +14164,13 @@ const allergenPanel = allergenNames.length === 0
           </div>
         `;
         
+        // Preserve modal open state before rebuilding innerHTML
+        // Check both the DOM state and the global state variable
+        const prevModal = smoothieSelectedIngredientsEl.querySelector('#ssm-modal');
+        const wasOpen = (prevModal && prevModal.classList.contains('ssm-modal-open')) || smoothieEditPanelOpen;
+        // Always preserve the state - if it was open, keep it open
+        smoothieEditPanelOpen = wasOpen;
+        
         smoothieSelectedIngredientsEl.innerHTML = summaryHtml + modalHtml;
         
         // Setup modal open/close handlers
@@ -14044,6 +14183,7 @@ const allergenPanel = allergenNames.length === 0
           if (modalEl) {
             modalEl.classList.add('ssm-modal-open');
             document.body.style.overflow = 'hidden'; // Prevent body scroll
+            smoothieEditPanelOpen = true;
           }
         };
         
@@ -14051,8 +14191,21 @@ const allergenPanel = allergenNames.length === 0
           if (modalEl) {
             modalEl.classList.remove('ssm-modal-open');
             document.body.style.overflow = ''; // Restore body scroll
+            smoothieEditPanelOpen = false;
           }
         };
+        
+        // Restore modal open state if it was open before rerender
+        // Use requestAnimationFrame to ensure DOM is fully ready
+        if (wasOpen && modalEl) {
+          requestAnimationFrame(() => {
+            if (modalEl) {
+              modalEl.classList.add('ssm-modal-open');
+              document.body.style.overflow = 'hidden';
+              smoothieEditPanelOpen = true;
+            }
+          });
+        }
         
         if (editBtn) {
           editBtn.addEventListener('click', openModal);
@@ -14063,7 +14216,12 @@ const allergenPanel = allergenNames.length === 0
         }
         
         if (backdropEl) {
-          backdropEl.addEventListener('click', closeModal);
+          backdropEl.addEventListener('click', (e) => {
+            // Only close if clicking the backdrop itself, not modal content
+            if (e.target === backdropEl) {
+              closeModal();
+            }
+          });
         }
         
         // Close on Escape key (use a single global handler to avoid duplicates)
