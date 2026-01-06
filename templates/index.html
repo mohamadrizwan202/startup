@@ -10729,16 +10729,27 @@ const allergenPanel = allergenNames.length === 0
         
         if (!qtyBtn && !removeBtn) return;
 
+        // CRITICAL: Only process if button has the modal control marker
+        // This ensures we don't interfere with liquid portion controls or other +/- buttons
+        const btn = qtyBtn || removeBtn;
+        if (btn.dataset.ssModalControl !== '1') {
+          // Not a modal control button - let other handlers process it
+          return;
+        }
+
+        // Only act when the edit-ingredients modal is currently open
+        const modalEl = document.getElementById('ssm-modal');
+        if (!modalEl || !modalEl.classList.contains('ssm-modal-open')) {
+          // Modal is not open - let other handlers process it
+          return;
+        }
+
+        // Now we know it's a modal control button and modal is open
         // Prevent form submits / bubbling to backdrop
         e.preventDefault();
         e.stopPropagation();
 
-        // Only act when the edit-ingredients modal is currently open
-        const modalEl = document.getElementById('ssm-modal');
-        if (!modalEl || !modalEl.classList.contains('ssm-modal-open')) return;
-
         // If button is disabled, return
-        const btn = qtyBtn || removeBtn;
         if (btn.disabled) return;
 
         // Determine index from data-idx (preferred) or data-index (fallback)
@@ -10781,31 +10792,91 @@ const allergenPanel = allergenNames.length === 0
 
         // Handle quantity +/- buttons
         if (qtyBtn) {
-          // Get delta from data-delta attribute (preferred) or infer from classes
-          let delta = Number(qtyBtn.dataset.delta);
-          if (![1, -1].includes(delta)) {
-            // Fallback: infer from class
-            delta = qtyBtn.classList.contains('increment') ? 1 : -1;
-          }
-
           const ing = smoothieIngredients?.[idx];
           if (!ing) {
             console.warn('[smoothie] No ingredient at index:', idx);
             return;
           }
 
-          const cur = Number(ing.quantity) || 1;
-          const next = Math.max(1, cur + delta);
+          // Determine ingredient name
+          const ingredientName = typeof ing === 'object' && ing.name ? ing.name : (typeof ing === 'string' ? ing : '');
+          if (!ingredientName) {
+            console.warn('[smoothie] No ingredient name at index:', idx);
+            return;
+          }
+
+          // Get current age group
+          const currentAgeGroup = smoothieForEl ? smoothieForEl.value : '';
+          
+          // Get portion info to determine if it's a liquid and what unit/step/min/max to use
+          const portion = getSmoothiePortion(ingredientName, currentAgeGroup);
+          const isVegan = isPlantBasedMilk(ingredientName);
+          const isLiquid = isVegan && (portion.unit === 'ml' || portion.unit === 'cup');
+
+          // Determine increment direction
+          const isIncrement = qtyBtn.classList.contains('increment');
+          const sign = isIncrement ? 1 : -1;
+
+          // Get current quantity
+          const cur = Number(ing.quantity) || (isLiquid ? (portion.unit === 'ml' ? 50 : 0.5) : 1);
+
+          // Calculate step, min, max based on ingredient type
+          let step, min, max;
+          if (isLiquid) {
+            if (portion.unit === 'ml') {
+              step = 10;
+              min = 50;
+              max = 720;
+            } else if (portion.unit === 'cup') {
+              step = 0.5;
+              min = 0.5;
+              max = 3;
+            } else {
+              // Fallback for other liquid units
+              step = 1;
+              min = 1;
+              max = 100;
+            }
+          } else {
+            // Non-liquid: use step 1, min 1
+            step = 1;
+            min = 1;
+            max = 100; // Reasonable max for non-liquids
+          }
+
+          // Calculate next value with proper clamping
+          const next = Math.max(min, Math.min(max, cur + (sign * step)));
+
+          // Round appropriately based on step
+          let roundedNext = next;
+          if (step < 1) {
+            // For 0.5 step (cups), round to 1 decimal place
+            roundedNext = Math.round(next * 10) / 10;
+          } else if (step >= 10) {
+            // For 10 step (ml), round to nearest 10
+            roundedNext = Math.round(next / 10) * 10;
+          } else {
+            // For 1 step, round to whole number
+            roundedNext = Math.round(next);
+          }
+
+          // Clamp again after rounding
+          roundedNext = Math.max(min, Math.min(max, roundedNext));
 
           // Preserve modal open state before updating
           smoothieEditPanelOpen = true;
 
           // Update data model
           if (typeof ing === 'object') {
-            ing.quantity = next;
+            ing.quantity = roundedNext;
+            // Ensure unit is set correctly for liquids
+            if (isLiquid && portion.unit) {
+              ing.unit = portion.unit;
+            }
           } else {
             // Convert string to object if needed
-            smoothieIngredients[idx] = { name: ing, quantity: next, unit: 'g' };
+            const unit = isLiquid && portion.unit ? portion.unit : 'g';
+            smoothieIngredients[idx] = { name: ing, quantity: roundedNext, unit: unit };
           }
 
           // Re-render (this will preserve modal state)
@@ -10813,6 +10884,7 @@ const allergenPanel = allergenNames.length === 0
         }
       }, true); // Use capture phase to be extra safe against any bubbling blockers
     }
+
     const clearSmoothieBtn = document.getElementById('clear-smoothie-btn');
     const smoothieNameEl = document.getElementById('smoothie-name');
     const smoothieNameBarEl = document.getElementById('smoothie-name-bar');
@@ -14035,7 +14107,7 @@ const allergenPanel = allergenNames.length === 0
                 </div>
             <div class="ss-row-controls">
               <div class="ss-qty-control">
-                <button class="ss-qty-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-1" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
+                <button class="ss-qty-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-1" data-ss-modal-control="1" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
                     <input 
                       type="number" 
                   class="ss-qty-input" 
@@ -14047,9 +14119,9 @@ const allergenPanel = allergenNames.length === 0
                   style="width: ${(isVegan && portionUnit === 'ml') ? '55px' : '40px'};"
                       ${isDried ? 'readonly' : ''}
                     />
-                <button class="ss-qty-btn increment" data-index="${idx}" data-idx="${idx}" data-delta="1" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
+                <button class="ss-qty-btn increment" data-index="${idx}" data-idx="${idx}" data-delta="1" data-ss-modal-control="1" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
                   </div>
-              <button class="ss-remove-btn" data-index="${idx}" data-idx="${idx}" data-action="remove" title="Remove" type="button">×</button>
+              <button class="ss-remove-btn" data-index="${idx}" data-idx="${idx}" data-action="remove" data-ss-modal-control="1" title="Remove" type="button">×</button>
             </div>
           </div>
         `;
