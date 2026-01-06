@@ -1928,12 +1928,14 @@
     }
 
     #smoothie-tab-content .ss-row-name{
+      display: block;
       font-weight: 700;
       font-size: 0.85rem;
       color: #0f172a;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     #smoothie-tab-content .ss-tags{
@@ -2272,12 +2274,14 @@
     }
 
     #smoothie-tab-content .ssm-modal-scroll .ss-row-name{
+      display: block;
       font-weight: 700;
       font-size: 0.85rem;
       color: #0f172a;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 100%;
     }
 
     #smoothie-tab-content .ssm-modal-scroll .ss-tags{
@@ -13402,10 +13406,14 @@ const allergenPanel = allergenNames.length === 0
 
     function renderSmoothieIngredients() {
       // Safety guard: Only run if smoothie UI elements exist (Smoothie tab is active)
-      if (!smoothieSelectedIngredientsEl) {
-        console.warn('[renderSmoothieIngredients] smoothieSelectedIngredientsEl not found, skipping render');
+      const container = smoothieSelectedIngredientsEl || document.getElementById('smoothie-selected-ingredients');
+      if (!container) {
+        console.warn('[renderSmoothieIngredients] Container element not found, skipping render');
         return;
       }
+      
+      // Define ageGroupOption early so it's available throughout the function
+      const ageGroupOption = smoothieForEl?.selectedOptions?.[0] || smoothieForEl?.options?.[smoothieForEl?.selectedIndex] || null;
       if (!buildSmoothieBtn) {
         console.warn('[renderSmoothieIngredients] buildSmoothieBtn not found, skipping render');
         return;
@@ -13414,8 +13422,8 @@ const allergenPanel = allergenNames.length === 0
       console.log('[renderSmoothieIngredients] Rendering', smoothieIngredients.length, 'ingredients:', smoothieIngredients);
 
       if (smoothieIngredients.length === 0) {
-        smoothieSelectedIngredientsEl.style.display = 'none';
-        smoothieSelectedIngredientsEl.innerHTML = '';
+        container.style.display = 'none';
+        container.innerHTML = '';
         buildSmoothieBtn.disabled = true;
         return;
       }
@@ -13423,8 +13431,8 @@ const allergenPanel = allergenNames.length === 0
       // Get current counts for display
       const { freshFruitCount, driedFruitCount } = countFruitTypes();
 
-      smoothieSelectedIngredientsEl.style.display = 'flex';
-      smoothieSelectedIngredientsEl.style.flexDirection = 'column';
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
       buildSmoothieBtn.disabled = false;
       
       // Add count display
@@ -13655,26 +13663,15 @@ const allergenPanel = allergenNames.length === 0
           
           // Format serving size display based on quantity
           let servingDisplay = '';
-          let ageGroupLabel = '';
           
-          // Get age group label for display
-          if (currentAgeGroup) {
-            const ageGroupOption = smoothieForEl ? smoothieForEl.options[smoothieForEl.selectedIndex] : null;
-            if (ageGroupOption) {
-              ageGroupLabel = ` (${ageGroupOption.textContent} portion)`;
-            }
-          }
+          // Get age group label for display (short form, no "portion" word)
+          const ageGroupLabel = currentAgeGroup ? ` (${ageGroupOption?.textContent || currentAgeGroup})` : '';
           
           if (isLiquid) {
             // For liquids (milks) - quantity IS the total amount (ml), not a multiplier
-            // Show: "160ml (default: 150ml for <ageGroup>)" format
+            // Show simplified format: "160ml (Boy 14-18)"
             const displayMl = isVegan && typeof ing === 'object' && ing.quantity ? ing.quantity : quantity;
-            const defaultMl = portionAmount > 0 ? portionAmount : (currentAgeGroup === 'child-4-8' ? 120 : 150);
-            if (displayMl === defaultMl) {
             servingDisplay = `${Math.round(displayMl)}${portionUnit}${ageGroupLabel}`;
-          } else {
-              servingDisplay = `${Math.round(displayMl)}${portionUnit} (default: ${Math.round(defaultMl)}${portionUnit} for ${ageGroupOption ? ageGroupOption.textContent : currentAgeGroup})${ageGroupLabel}`;
-            }
           } else {
             // For solids (fruits, dried fruits) - unit is 'g', quantity is a multiplier
             if (quantity === 1) {
@@ -14238,12 +14235,12 @@ const allergenPanel = allergenNames.length === 0
         
         // Preserve modal open state before rebuilding innerHTML
         // Check both the DOM state and the global state variable
-        const prevModal = smoothieSelectedIngredientsEl.querySelector('#ssm-modal');
+        const prevModal = container.querySelector('#ssm-modal');
         const wasOpen = (prevModal && prevModal.classList.contains('ssm-modal-open')) || smoothieEditPanelOpen;
         // Always preserve the state - if it was open, keep it open
         smoothieEditPanelOpen = wasOpen;
         
-        smoothieSelectedIngredientsEl.innerHTML = summaryHtml + modalHtml;
+        container.innerHTML = summaryHtml + modalHtml;
         
         // Setup modal open/close handlers
         const modalEl = document.getElementById('ssm-modal');
@@ -14314,7 +14311,7 @@ const allergenPanel = allergenNames.length === 0
         console.error('chipsHtml length:', chipsHtml.length);
         console.error('smoothieIngredients:', smoothieIngredients);
         // Try to set a simple error message
-        smoothieSelectedIngredientsEl.innerHTML = '<div style="padding: 10px; background: #fee2e2; color: #991b1b; border-radius: 6px;">Error rendering ingredients. Please refresh the page.</div>';
+        container.innerHTML = '<div style="padding: 10px; background: #fee2e2; color: #991b1b; border-radius: 6px;">Error rendering ingredients. Please refresh the page.</div>';
       }
 
       // Function to update fruit counter display without re-rendering everything
@@ -14330,7 +14327,7 @@ const allergenPanel = allergenNames.length === 0
       }
 
       // Handle quantity input changes
-      smoothieSelectedIngredientsEl.querySelectorAll('.ss-qty-input').forEach(input => {
+      container.querySelectorAll('.ss-qty-input').forEach(input => {
         input.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.index);
           const ing = smoothieIngredients[idx];
@@ -14522,7 +14519,7 @@ const allergenPanel = allergenNames.length === 0
       });
       
       // Handle unit select changes
-      smoothieSelectedIngredientsEl.querySelectorAll('.unit-select').forEach(select => {
+      container.querySelectorAll('.unit-select').forEach(select => {
         select.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.index);
           const newUnit = e.target.value;
