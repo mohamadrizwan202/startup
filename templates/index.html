@@ -9821,18 +9821,27 @@ const allergenPanel = allergenNames.length === 0
     }
     
     /**
+     * Normalize goal value by converting special dashes to hyphens and standardizing format
+     * @param {string} v - The goal value to normalize
+     * @returns {string} - Normalized goal value
+     */
+    function normalizeGoalValue(v) {
+      return String(v || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[\u2010-\u2015]/g, '-')          // normalize fancy dashes to hyphen
+        .replace(/[^a-z0-9]+/g, '-')              // keep only a-z0-9, convert others to hyphen
+        .replace(/^-+|-+$/g, '');                 // trim hyphens
+    }
+    
+    /**
      * Check if the health goal is "Diabetes–Blood Sugar"
      * @param {string} healthGoalValue - The health goal value from the dropdown
      * @returns {boolean} - True if the goal is Diabetes–Blood Sugar
      */
     function isDiabetesBloodSugarGoal(healthGoalValue) {
-      if (!healthGoalValue) return false;
-      const goalLower = healthGoalValue.toLowerCase().trim();
-      // Normalize by replacing multiple dashes/spaces with single dash, then check
-      const normalized = goalLower.replace(/[\s\-]+/g, '-');
-      // Check for various possible formats: "diabetes-blood-sugar", "diabetes---blood-sugar", etc.
-      return normalized === "diabetes-blood-sugar" ||
-             (normalized.includes("diabetes") && normalized.includes("blood") && normalized.includes("sugar"));
+      const goal = normalizeGoalValue(healthGoalValue);
+      return goal === 'diabetes-blood-sugar' || goal === 'blood-sugar-support';
     }
     
     /**
@@ -11411,16 +11420,14 @@ const allergenPanel = allergenNames.length === 0
         const categoryLabel = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryValue;
         
         // Use normalized value (lowercase with hyphens) for option.value
-        option.value = categoryValue.toLowerCase().replace(/\s+/g, '-');
+        option.value = normalizeGoalValue(categoryValue);
         // Use label for display
         option.textContent = categoryLabel;
         smoothieHealthGoalsEl.appendChild(option);
       });
       
       // Update warnings after health goals are populated (in case a value was already selected)
-      updateBloodSugarGoalWarning();
-      updateWeightManagementGoalWarning();
-      updateBloodPressureGoalWarning();
+      updateGoalGuidanceCardsSoon();
     }
     
     // Health goal to display name mapping (dynamically created from categories)
@@ -11581,45 +11588,54 @@ const allergenPanel = allergenNames.length === 0
     }
     
     // Listen for health goal changes
-    if (smoothieHealthGoalsEl) {
-      // Hide badge when dropdown is clicked
-      smoothieHealthGoalsEl.addEventListener('click', () => {
-        if (smoothieNameBarEl) {
-          smoothieNameBarEl.style.display = 'none';
+    // Bind goal guidance card updates (only once) using delegated listeners
+    if (!window.__goal_guidance_bound) {
+      window.__goal_guidance_bound = true;
+      
+      document.addEventListener('change', (e) => {
+        if (e.target && e.target.id === 'smoothie-health-goals') {
+          const currentHealthGoal = e.target.value;
+          
+          // Hide badge when value changes (will be shown again by updateSmoothieNameFromHealthGoal if a goal is selected)
+          if (smoothieNameBarEl && !currentHealthGoal) {
+            smoothieNameBarEl.style.display = 'none';
+          }
+          
+          // Only clear "Who is this smoothie for?" and "Timing" if changing from one health goal to another
+          // (not on the first selection when previousHealthGoal is null)
+          if (previousHealthGoal !== null && previousHealthGoal !== '' && currentHealthGoal !== previousHealthGoal) {
+            // User is changing from one health goal to another, clear related fields
+            if (smoothieForEl) smoothieForEl.value = '';
+            if (smoothieTimingEl) smoothieTimingEl.value = '';
+            // Hide badge when changing health goals
+            if (smoothieNameBarEl) {
+              smoothieNameBarEl.style.display = 'none';
+            }
+          }
+          
+          // Update previous health goal for next change
+          previousHealthGoal = currentHealthGoal;
+          
+          updateSmoothieNameFromHealthGoal();
+          // Clear smoothie state when health goal changes
+          clearSmoothieState();
+          
+          updateGoalGuidanceCardsSoon();
         }
+        if (e.target && e.target.id === 'smoothie-for') updateGoalGuidanceCardsSoon();
+      });
+
+      document.addEventListener('input', (e) => {
+        if (e.target && e.target.id === 'smoothie-health-goals') updateGoalGuidanceCardsSoon();
       });
       
-      smoothieHealthGoalsEl.addEventListener('change', () => {
-        const currentHealthGoal = smoothieHealthGoalsEl.value;
-        
-        // Update warnings IMMEDIATELY when health goal changes (before other operations)
-        updateBloodSugarGoalWarning();
-        updateWeightManagementGoalWarning();
-        updateBloodPressureGoalWarning();
-        
-        // Hide badge when value changes (will be shown again by updateSmoothieNameFromHealthGoal if a goal is selected)
-        if (smoothieNameBarEl && !currentHealthGoal) {
-          smoothieNameBarEl.style.display = 'none';
-        }
-        
-        // Only clear "Who is this smoothie for?" and "Timing" if changing from one health goal to another
-        // (not on the first selection when previousHealthGoal is null)
-        if (previousHealthGoal !== null && previousHealthGoal !== '' && currentHealthGoal !== previousHealthGoal) {
-          // User is changing from one health goal to another, clear related fields
-          if (smoothieForEl) smoothieForEl.value = '';
-          if (smoothieTimingEl) smoothieTimingEl.value = '';
-          // Hide badge when changing health goals
+      document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'smoothie-health-goals') {
+          // Hide badge when dropdown is clicked (keep existing behavior)
           if (smoothieNameBarEl) {
             smoothieNameBarEl.style.display = 'none';
           }
         }
-        
-        // Update previous health goal for next change
-        previousHealthGoal = currentHealthGoal;
-        
-        updateSmoothieNameFromHealthGoal();
-        // Clear smoothie state when health goal changes
-        clearSmoothieState();
       });
     }
     
@@ -11666,15 +11682,35 @@ const allergenPanel = allergenNames.length === 0
       `;
     }
 
+    // Helper function to update all goal guidance cards consistently
+    function updateGoalGuidanceCards() {
+      updateBloodSugarGoalWarning();
+      updateWeightManagementGoalWarning();
+      updateBloodPressureGoalWarning();
+    }
+
+    function updateGoalGuidanceCardsSoon() {
+      // Run immediately and again after the DOM settles/rebuilds
+      updateGoalGuidanceCards();
+      requestAnimationFrame(() => updateGoalGuidanceCards());
+      setTimeout(() => updateGoalGuidanceCards(), 80);
+    }
+
     function updateBloodSugarGoalWarning() {
       const warningContainer = document.getElementById('blood-sugar-goal-warning-container');
       if (!warningContainer) return;
       
-      const selectedHealthGoal = smoothieHealthGoalsEl ? smoothieHealthGoalsEl.value : '';
-      const selectedAgeGroup = smoothieForEl ? smoothieForEl.value : '';
+      const goalEl = document.getElementById('smoothie-health-goals');
+      const forEl = document.getElementById('smoothie-for');
+      
+      const selectedHealthGoalRaw = goalEl ? goalEl.value : '';
+      const selectedHealthGoal = normalizeGoalValue(selectedHealthGoalRaw);
+      const selectedAgeGroup = forEl ? forEl.value : '';
+      
+      const isTeen1418 = selectedAgeGroup === 'girl-14-18' || selectedAgeGroup === 'boy-14-18';
       
       // Show warning only if: adult age group AND Diabetes–Blood Sugar goal
-      if (isAdultAgeGroup(selectedAgeGroup) && isDiabetesBloodSugarGoal(selectedHealthGoal)) {
+      if ((isAdultAgeGroup(selectedAgeGroup) || isTeen1418) && isDiabetesBloodSugarGoal(selectedHealthGoal)) {
         const fullText = "Guidance for managing blood sugar with confidence.<br><br>" +
                          "You've chosen <strong>Diabetes–Blood Sugar</strong> management. " +
                          "Guidance for choosing ingredients that help keep glucose levels steady.<br><br>" +
@@ -11727,8 +11763,12 @@ const allergenPanel = allergenNames.length === 0
         return;
       }
       
-      const selectedHealthGoal = smoothieHealthGoalsEl ? smoothieHealthGoalsEl.value : '';
-      const selectedAgeGroup = smoothieForEl ? smoothieForEl.value : '';
+      const goalEl = document.getElementById('smoothie-health-goals');
+      const forEl = document.getElementById('smoothie-for');
+      
+      const selectedHealthGoalRaw = goalEl ? goalEl.value : '';
+      const selectedHealthGoal = normalizeGoalValue(selectedHealthGoalRaw);
+      const selectedAgeGroup = forEl ? forEl.value : '';
       
       console.log('[weight-mgmt-warning] Checking:', {
         selectedHealthGoal,
@@ -11772,7 +11812,10 @@ const allergenPanel = allergenNames.length === 0
       const warningContainer = document.getElementById('blood-pressure-goal-warning-container');
       if (!warningContainer) return;
       
-      const selectedHealthGoal = smoothieHealthGoalsEl ? smoothieHealthGoalsEl.value : '';
+      const goalEl = document.getElementById('smoothie-health-goals');
+      
+      const selectedHealthGoalRaw = goalEl ? goalEl.value : '';
+      const selectedHealthGoal = normalizeGoalValue(selectedHealthGoalRaw);
       
       // Show warning for all age groups when Blood Pressure goal is selected
       const bloodPressureTip = getBloodPressureTip(selectedHealthGoal);
