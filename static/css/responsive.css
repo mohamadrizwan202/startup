@@ -11,19 +11,134 @@ img, svg, video { max-width: 100%; height: auto; }
    Tablet and down
    ========================= */
 @media (max-width: 1024px) {
-  /* Give breathing room on smaller screens */
+  /* INGREDIENT TAB: force single-column grid, kill 725px column */
+  #ingredient-tab-content .browse-results-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  /* Remove any forced widths that might still be applied */
+  #ingredient-tab-content .browse-results-grid > .card.results-container,
+  #ingredient-tab-content .browse-results-grid > :nth-child(2) {
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Prevent any child from forcing the grid wider */
+  #ingredient-tab-content,
+  #ingredient-tab-content * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Page padding */
   .container {
     padding-left: 14px !important;
     padding-right: 14px !important;
   }
 
-  /* If any tab rows overflow, allow horizontal scroll instead of breaking layout */
+  /* IMPORTANT: stack Browse + Results so the 725px column doesn't break iPad widths */
+  .browse-results-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  /* Remove ALL forced 725px constraints */
+  .browse-results-grid > .card.results-container,
+  .browse-results-grid > :nth-child(2) {
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* ===== Unified tab bars (top + results) ===== */
   .main-tabs,
   .results-container .tabs,
   .tabs {
-    overflow-x: auto;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch;
     white-space: nowrap;
+    padding: 6px 2px 10px !important;
+    max-width: 100% !important;
+  }
+
+  /* tab items */
+  .main-tabs > *,
+  .results-container .tabs > *,
+  .tabs > * {
+    flex: 0 0 auto !important;
+  }
+
+  /* buttons/links inside tabs */
+  .main-tabs button,
+  .results-container .tabs button,
+  .tabs button,
+  .main-tabs .tab,
+  .results-container .tabs .tab,
+  .tabs .tab {
+    padding: 10px 12px !important;
+    border-radius: 999px !important;
+    min-height: 40px !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+  }
+
+  /* Allergens report header: allow wrap instead of right-side squeeze */
+  #allergens-results-body .pf-a-wrap {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Give the text block priority */
+  #allergens-results-body .pf-a-wrap > :first-child {
+    flex: 1 1 260px !important;
+    min-width: 0 !important;
+  }
+
+  /* Put the pill on the right if space exists, otherwise it drops below */
+  #allergens-results-body .pf-a-wrap > :last-child {
+    flex: 0 0 auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* INGREDIENT TAB: kill the last 725px overflow no matter what */
+  #ingredient-tab-content {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  #ingredient-tab-content .browse-results-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* IMPORTANT: target nested results too (not only direct children) */
+  #ingredient-tab-content .browse-results-grid * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #ingredient-tab-content .results-container,
+  #ingredient-tab-content .browse-results-grid .results-container {
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* If something is wide (table/pre), scroll it inside the results body */
+  #ingredient-tab-content .results-container .results-body {
+    overflow-x: auto !important;
   }
 }
 
@@ -31,22 +146,356 @@ img, svg, video { max-width: 100%; height: auto; }
    Mobile
    ========================= */
 @media (max-width: 768px) {
-  /* Kill side-scroll caused by fixed widths */
   html, body { overflow-x: hidden; }
 
-  /* CRITICAL: stack the browse/results area */
+  /* ===== Mobile: stop horizontal wiggle from tab rows / chips ===== */
+
+  /* Main top tabs (Ingredient Analysis / Smoothie Builder) */
+  .main-tabs {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  /* Ensure tab buttons don't stretch */
+  .main-tabs > * {
+    flex: 0 0 auto;
+  }
+
+  /* Results header rows that behave like flex can overflow slightly */
+  .results-container .results-header,
+  .nutrition-results-top {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  /* Chips: prevent long names from pushing width */
+  .nutrition-selected-chip {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden;
+  }
+
+  .nutrition-selected-chip .name {
+    display: inline-block;
+    max-width: 160px;      /* tune if you want */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ===== Allergen tab: stop page-level horizontal scroll ===== */
+  .results-container,
+  .results-container .tab-pane,
+  .results-container .results-body,
+  #allergens-results-body,
+  #nutrition-results-body {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Any child element can be the offender (chips, badges, flex rows) */
+  #allergens-results-body *,
+  .results-container .tab-pane * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Common offenders: pre/code and tables */
+  #allergens-results-body pre,
+  #allergens-results-body code {
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+
+  #allergens-results-body table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Allergens: wrap content instead of horizontal scrolling */
+  #allergens-results-body {
+    overflow-x: visible !important;  /* remove horizontal scroller */
+  }
+
+  /* Common offenders inside results */
+  #allergens-results-body pre,
+  #allergens-results-body code {
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  #allergens-results-body table {
+    width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  #allergens-results-body th,
+  #allergens-results-body td {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  /* Allergens: show full pill text WITHOUT horizontal scroll */
+  #allergens-results-body .pf-a-wrap {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    overflow-x: hidden !important;   /* prevent side scroll */
+    overflow-y: visible !important;
+    white-space: normal !important;  /* allow wrapping */
+  }
+
+  /* Allergens pill: wrap by WORDS (not letters) */
+  #allergens-results-body .pf-a-wrap,
+  #allergens-results-body .pf-a-wrap * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;  /* breaks long words only if needed */
+  }
+
+  #allergens-results-body .pf-a-wrap p,
+  #allergens-results-body .pf-a-wrap span,
+  #allergens-results-body .pf-a-wrap div {
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* On phones: stack, don't squeeze */
+  #allergens-results-body .pf-a-wrap {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  #allergens-results-body .pf-a-wrap > :last-child {
+    align-self: center !important;
+  }
+
+  /* Keep any remaining wide content scrolling INSIDE the results body */
+  .results-container .results-body {
+    overflow-x: auto !important;
+  }
+
+  /* Mobile: remove inner scrollbars in Allergens/Nutrition results so page scrolls naturally */
+  #allergens-results-body,
+  #nutrition-results-body,
+  .results-container .results-body {
+    max-height: none !important;
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+
+  /* Mobile: make Allergens/Nutrition reports expand (no inner vertical scrollbar) */
+  #ingredient-tab-content .results-container .results-body,
+  #ingredient-tab-content #allergens-results-body,
+  #ingredient-tab-content #nutrition-results-body {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;   /* kills the inner vertical scroll */
+    overflow-x: auto !important;      /* keep safety for wide content */
+  }
+
+  /* If there's a scroll wrapper inside the results */
+  #allergens-results-body .results-body,
+  #allergens-results-body .results-scroll,
+  #allergens-results-body .report,
+  #allergens-results-body .report-card {
+    max-height: none !important;
+    height: auto !important;
+    overflow-y: visible !important;
+  }
+
+  /* Header spacing + prevent awkward centering */
+  .main-tabs-container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .results-container .tabs,
+  .tabs {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+  }
+
+  /* Tabs row overflow: allow horizontal scroll instead of page scroll */
+  .main-tabs,
+  .results-container .tabs,
+  .tabs {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    max-width: 100% !important;
+  }
+
+  /* Make tab items not force width */
+  .main-tabs > *,
+  .results-container .tabs > *,
+  .tabs > * {
+    flex: 0 0 auto;
+  }
+
+  /* Main tabs: allow scroll, reduce height */
+  .main-tabs {
+    gap: 10px !important;
+    padding-bottom: 6px;
+  }
+
+  /* Make tab buttons compact */
+  .main-tabs .tab,
+  .main-tabs button {
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    min-height: 44px;
+  }
+
+  /* INGREDIENT TAB: force single-column grid, kill 725px column */
+  #ingredient-tab-content .browse-results-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  /* Remove any forced widths that might still be applied */
+  #ingredient-tab-content .browse-results-grid > .card.results-container,
+  #ingredient-tab-content .browse-results-grid > :nth-child(2) {
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Prevent any child from forcing the grid wider */
+  #ingredient-tab-content,
+  #ingredient-tab-content * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* INGREDIENT TAB: kill the last 725px overflow no matter what */
+  #ingredient-tab-content {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  #ingredient-tab-content .browse-results-grid {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* IMPORTANT: target nested results too (not only direct children) */
+  #ingredient-tab-content .browse-results-grid * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #ingredient-tab-content .results-container,
+  #ingredient-tab-content .browse-results-grid .results-container {
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* If something is wide (table/pre), scroll it inside the results body */
+  #ingredient-tab-content .results-container .results-body {
+    overflow-x: auto !important;
+  }
+
+  /* Make the whole app use the phone width */
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .search-area-container,
+  .search-area-container .search-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Cards should span full width on phone */
+  .search-area-container,
+  .search-area-container .search-container,
+  .results-container,
+  .card {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Reduce the giant padding in sections */
+  .search-area-container { padding: 0 !important; }
+
+  /* Textarea + button sizing */
+  .search-area-container .ingredients-textarea {
+    min-height: 110px !important;
+    font-size: 16px !important; /* stops iOS zoom */
+  }
+
+  .search-area-container .search-container #analyze-btn {
+    width: 100% !important;
+    padding: 14px 16px !important;
+    font-size: 16px !important;
+  }
+
+  /* HARD STOP: prevent page-wide horizontal scroll caused by a single wide child */
+  .main-tabs-container,
+  .search-area-container,
+  .search-area-container .search-container,
+  .results-container,
+  .browse-results-grid,
+  .browse-results-grid > *,
+  .card {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Long text/URLs/log-like content = common overflow culprit */
+  .results-container .results-body,
+  .results-body,
+  .tab-pane {
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  /* If there is a wide table/pre/code, scroll it INSIDE the results (not the whole page) */
+  .results-container .results-body {
+    overflow-x: auto !important;
+  }
+
+  pre, code {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  /* Tables inside results often cause the giant scroll */
+  .results-container table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
   .browse-results-grid {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
   }
 
-  /* CRITICAL: remove the forced 725px results width on mobile */
-  .browse-results-grid > .card.results-container {
+  .browse-results-grid > .card.results-container,
+  .browse-results-grid > :nth-child(2) {
     width: auto !important;
     max-width: 100% !important;
+    min-width: 0 !important;
   }
 
-  /* Make cards feel less "giant" on mobile */
+  /* Make containers less "giant" */
   .card {
     padding: 12px !important;
     border-radius: 14px !important;
@@ -56,13 +505,30 @@ img, svg, video { max-width: 100%; height: auto; }
     padding: 12px !important;
   }
 
-  /* Buttons and inputs should not overflow */
-  button,
-  input,
-  select,
-  textarea {
-    max-width: 100%;
+  /* Results section: prevent "weird internal overflow" and tighten layout */
+  .results-container .results-header {
+    flex-wrap: wrap;
+    gap: 10px;
   }
+
+  .results-container .results-body {
+    padding: 12px !important;
+  }
+
+  /* Smoothie tab finishing (only if you see issues there) */
+  #smoothie-tab-content .sn-tabs,
+  #smoothie-tab-content .ssm-chipstrip,
+  #smoothie-tab-content .ss-chipstrip {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  #smoothie-tab-content .vmr-table-wrapper {
+    overflow-x: auto !important;
+  }
+
+  button, input, select, textarea { max-width: 100%; }
 }
 
 /* =========================
@@ -74,7 +540,5 @@ img, svg, video { max-width: 100%; height: auto; }
     padding-right: 12px !important;
   }
 
-  .card {
-    padding: 10px !important;
-  }
+  .card { padding: 10px !important; }
 }

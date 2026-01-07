@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>Nutrition & Allergen API - Interactive Dashboard</title>
@@ -461,30 +460,43 @@
       padding: 12px 24px; /* Reduced from default */
     }
 
-    /* Browse & Results Grid - Side by Side */
+    /* Browse & Results Grid — mobile-first (NO fixed widths) */
     .browse-results-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 725px;
-      gap: 25px;
+      grid-template-columns: 1fr;
+      gap: 14px;
       margin-bottom: 30px;
       align-items: start;
     }
-    
-    /* Force Analysis Results container to exactly 725px width */
-    .browse-results-grid > .card.results-container {
-      display: flex;
-      flex-direction: column;
-      width: 725px !important;
-      max-width: 725px !important;
-      min-width: 725px !important;
-      box-sizing: border-box;
-    }
-    
-    /* Ensure grid column doesn't expand beyond 725px */
+
+    .browse-results-grid > .card.results-container,
     .browse-results-grid > :nth-child(2) {
-      width: 725px !important;
-      max-width: 725px !important;
-      min-width: 725px !important;
+      width: auto !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    /* Desktop only: keep EXACT 725px behavior */
+    @media (min-width: 1025px) {
+      .browse-results-grid {
+        grid-template-columns: minmax(0, 1fr) 725px;
+        gap: 25px;
+      }
+
+      .browse-results-grid > .card.results-container {
+        display: flex;
+        flex-direction: column;
+        width: 725px !important;
+        max-width: 725px !important;
+        min-width: 725px !important;
+        box-sizing: border-box;
+      }
+
+      .browse-results-grid > :nth-child(2) {
+        width: 725px !important;
+        max-width: 725px !important;
+        min-width: 725px !important;
+      }
     }
     
     .results-container .results-header {
@@ -3579,6 +3591,7 @@
       }
     })();
   </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
 </head>
 <body>
   {% include "_navbar.html" %}
