@@ -148,4 +148,19 @@
     width: 100%;
     box-sizing: border-box;
   }
+
+    /* Smoothie Builder: main grid side by side on tablet */
+    .main-content-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+      align-items: flex-start;
+    }
+  
+    .main-content-grid > .card {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  
 }
