@@ -55,6 +55,28 @@
   }
 }
 
+  /* Main tabs: Ingredient / Smoothie */
+  .main-tabs-container {
+    margin-top: 1rem;
+  }
+
+  .main-tabs {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .main-tab {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .main-tab span {
+    margin-right: 0.25rem;
+  }
+
+
 
 
 /* ========== TABLETS / iPad (768–1023px) ========== */
