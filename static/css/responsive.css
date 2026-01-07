@@ -76,6 +76,34 @@
     margin-right: 0.25rem;
   }
 
+    /* Ingredient Analysis: search card */
+    .search-area-container {
+      margin-top: 1.5rem;
+    }
+  
+    .search-area-container .card.search-container {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  
+    .ingredients-textarea {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  
+    /* Ingredient Analysis: Browse + Results stack vertically */
+    .browse-results-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+  
+    .browse-results-grid > .card {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  
 
 
 
