@@ -121,11 +121,31 @@
 
 
 /* ========== TABLETS / iPad (768–1023px) ========== */
+/* ========== TABLETS / iPad (768–1023px) ========== */
 @media (min-width: 768px) and (max-width: 1023px) {
 
-  main {
-    padding: 1.5rem 2rem;
+  .container {
     max-width: 960px;
     margin: 0 auto;
+    padding: 1.5rem 2rem;
+    box-sizing: border-box;
+  }
+
+  main {
+    padding: 0; /* keep, harmless even if no <main> exists */
+  }
+
+  /* Ingredient Analysis: Browse + Results side by side */
+  .browse-results-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr; /* left a bit wider than right */
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-top: 2rem;
+  }
+
+  .browse-results-grid > .card {
+    width: 100%;
+    box-sizing: border-box;
   }
 }
