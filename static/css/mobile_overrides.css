@@ -1,0 +1,113 @@
+
+/* Mobile & tablet overrides only – do NOT change base desktop styles here */
+
+/* ========== PHONES (0–767px) ========== */
+@media (max-width: 767px) {
+
+    /* Keep page edges clean on small screens */
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  
+    /* Main page wrapper */
+    .container {
+      width: 100%;
+      max-width: 100%;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+  
+    /* Page title */
+    .header h1 {
+      font-size: 1.5rem;
+      text-align: left;
+      margin-bottom: 0.5rem;
+    }
+  
+    /* Subtitle under the title */
+    .subtitle {
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+  
+    /* ===== Navbar: logo + links on mobile ===== */
+    .navbar {
+      display: flex;
+      flex-direction: column;    /* stack rows on small screens */
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+    }
+  
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 1.1rem;
+    }
+  
+    .brand-name {
+      font-weight: 600;
+    }
+  
+    .beta-badge {
+      font-size: 0.65rem;
+      padding: 0.1rem 0.4rem;
+    }
+  
+    /* Links row */
+    .navbar-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+    }
+  
+    /* Auth row (login/register or user info) */
+    .navbar-auth {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+    }
+  
+    .navbar-auth span {
+      white-space: nowrap;
+    }
+  
+    /* Main tabs: Ingredient / Smoothie – more touch-friendly on mobile */
+    .main-tabs-container {
+      margin-top: 1.25rem;
+    }
+  
+    .main-tabs {
+      display: flex;
+      flex-direction: column;   /* stack vertically on phones */
+      gap: 0.75rem;
+    }
+  
+    .main-tab {
+      width: 100%;
+      padding: 0.9rem 0.75rem;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  
+    .main-tab span {
+      margin-right: 0.35rem;
+    }
+  }
+  
+  
+  /* ========== TABLETS / iPad (768–1023px) ========== */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    /* tablet-specific styles will go here */
+  }
+  
+    
+    
+   
+  
