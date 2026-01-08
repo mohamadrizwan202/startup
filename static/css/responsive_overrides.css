@@ -609,3 +609,159 @@
     text-size-adjust: 100% !important;
   }
 }
+
+/* =========================
+   HARD OVERRIDES (WINNERS)
+   Intentionally last so they beat earlier rules.
+   ========================= */
+
+@media (max-width: 1024px) {
+  /* Ingredient tab: stack Browse + Results */
+  .browse-results-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    align-items: start !important;
+  }
+  .browse-results-grid > .card {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Health goals / subcategory / ingredients: single column */
+  .browse-ingredients-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Smoothie tab: stack builder + results */
+  #smoothie-tab-content .main-content-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Tabs: keep one row, allow swipe */
+  .main-tabs,
+  .results-container .tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .main-tabs > *,
+  .results-container .tabs > * {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  /* Prevent sideways scroll from long tables/code */
+  .results-container .results-body {
+    overflow-x: auto !important;
+  }
+}
+
+/* --- FIX: Health Goals chip wrapping (local) --- */
+@media (max-width: 1024px) {
+  /* Make goals a real grid, not wrap-based */
+  #category-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  /* Force every chip to fit its column */
+  #category-list .goal-chip {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 14px 12px !important;
+    font-size: 1rem !important;
+    line-height: 1.15 !important;
+    text-align: center !important;
+    white-space: normal !important; /* allow wrap inside chip, not layout wrap */
+  }
+}
+
+@media (max-width: 480px) {
+  #category-list {
+    gap: 10px !important;
+  }
+  #category-list .goal-chip {
+    padding: 12px 10px !important;
+    font-size: 0.95rem !important;
+  }
+}
+
+/* --- SUPER OVERRIDE: beat (index) rules on mobile/tablet --- */
+@media (max-width: 1024px) {
+  /* This targets the exact ingredient tab section, higher specificity than (index) */
+  #ingredient-tab-content .browse-ingredients-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Goals chips: force 2-column grid inside the goals container */
+  #ingredient-tab-content #category-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  #ingredient-tab-content #category-list .goal-chip {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+/* --- COMPACT: make Health Goals feel tighter on mobile --- */
+@media (max-width: 768px) {
+  /* tighten the whole browse card spacing */
+  .browse-results-grid > .card {
+    padding: 14px !important;
+  }
+
+  /* tighten goals grid spacing */
+  #ingredient-tab-content #category-list {
+    gap: 10px !important;
+  }
+
+  /* slightly tighter pills */
+  #ingredient-tab-content #category-list .goal-chip {
+    padding: 10px 10px !important;
+    font-size: 0.95rem !important;
+    border-radius: 18px !important;
+  }
+
+  /* tighten section title spacing if it’s pushing content down */
+  #ingredient-tab-content .section-title-compact {
+    margin-bottom: 10px !important;
+  }
+}
+
+/* --- MATCH LIVE: Health Goals pills (mobile) --- */
+@media (max-width: 768px) {
+  #ingredient-tab-content #category-list {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    column-gap: 8px !important;
+    row-gap: 8px !important;
+  }
+
+  #ingredient-tab-content #category-list .goal-chip {
+    font-size: 12.8px !important;
+    padding: 6px 12px !important;
+
+    /* keep the 2-column feel like live */
+    flex: 1 1 calc(50% - 8px) !important;
+    max-width: calc(50% - 8px) !important;
+
+    width: auto !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+  }
+}
