@@ -2733,7 +2733,7 @@
       padding: 6px 10px;
       border-radius: 999px;
       border: 1px solid rgba(14,165,164,0.22);
-      background: rgba(14,165,164,0.08);
+      background: transparent;
       white-space: nowrap;
     }
 
@@ -2775,7 +2775,7 @@
       padding: 6px 10px;
       border-radius: 999px;
       border: 1px solid rgba(14,165,164,0.22);
-      background: rgba(14,165,164,0.08);
+      background: transparent;
       white-space: nowrap;
     }
 
@@ -2810,7 +2810,7 @@
     }
 
     .nutrition-tile-compact {
-      background: #ffffff;
+      background: transparent;
       border: 1px solid rgba(0,0,0,0.08);
       border-radius: 14px;
       padding: 10px 12px;
@@ -3254,7 +3254,7 @@
       padding: 0 12px;
       border-radius: 999px;
       border: 1px solid rgba(14,165,164,0.22);
-      background: rgba(14,165,164,0.08);
+      background: transparent;
       font-size: 14px;
       font-weight: 700;
       line-height: 1.2;
@@ -3268,7 +3268,7 @@
 
     .pf-a-chip--danger {
       border-color: rgba(239, 68, 68, 0.35);
-      background: rgba(239, 68, 68, 0.06);
+      background: transparent;
     }
 
     .pf-a-tags {
@@ -3482,7 +3482,7 @@
     .pf-hb2-title{font-size:18px;font-weight:900;color:#0f172a;line-height:1.2;margin:0}
     .pf-hb2-subtitle{color:#64748b;font-size:13.5px;line-height:1.35}
     .pf-hb2-header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .pf-hb2-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(14,165,164,0.22);background:rgba(14,165,164,0.08);font-weight:700;font-size:14px;color:#0f172a;white-space:nowrap}
+    .pf-hb2-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(14,165,164,0.22);background:transparent;font-weight:700;font-size:14px;color:#0f172a;white-space:nowrap}
     .pf-hb2-chip .serving{color:#0F172A99}
     .pf-hb2-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(15,23,42,.10);background:#fff;font-weight:700;font-size:12px;color:#64748b;white-space:nowrap}
     .pf-hb2-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
@@ -3727,7 +3727,7 @@
       </div>
 
       <!-- Right: Analysis Results -->
-      <div class="card results-container">
+      <div class="card results-container" id="ingredient-results-card">
         <div class="results-header">
           <h2 class="card-title">Analysis Results</h2>
           <div class="status-indicator">
@@ -3937,7 +3937,7 @@
         </div>
 
         <!-- Right: Smoothie Nutrition Results -->
-        <div class="card results-container">
+        <div class="card results-container" id="smoothie-results-card">
           <div class="results-header">
             <h2 class="card-title">Smoothie Nutrition</h2>
             <div class="status-indicator">
@@ -3970,6 +3970,21 @@
     </div>
     <!-- End Smoothie Builder Tab Content -->
   </div> <!-- /.container -->
+
+  <!-- Mobile Results Modal (used only in responsive mode) -->
+<div id="pf-results-modal" class="pf-results-modal" style="display:none;" aria-hidden="true">
+  <div class="pf-results-backdrop" data-close="1"></div>
+
+  <div class="pf-results-sheet" role="dialog" aria-modal="true" aria-label="Analysis Results">
+    <div class="pf-results-sheet-header">
+      <div class="pf-results-sheet-title">Analysis Results</div>
+      <button type="button" id="pf-results-close" class="pf-results-close" aria-label="Close">✕</button>
+    </div>
+
+    <div id="pf-results-sheet-body" class="pf-results-sheet-body"></div>
+  </div>
+</div>
+
 
   <script nonce="{{ csp_nonce }}">
     // DOM Elements
@@ -5631,12 +5646,107 @@
         }
       }
     }
+     
+        // Mobile Results Modal helpers (FIXED: never delete results card)
+        let pfResultsPlaceholder = null;
+        let pfModalScrollY = 0;
+
+        function pfIsMobileResultsMode() {
+          return window.matchMedia('(max-width: 1024px)').matches;
+        }
+
+        function pfLockScroll() {
+          pfModalScrollY = window.scrollY || 0;
+          document.documentElement.classList.add('pf-modal-open');
+          document.body.classList.add('pf-modal-open');
+          document.body.style.top = `-${pfModalScrollY}px`;
+        }
+
+        function pfUnlockScroll() {
+          document.documentElement.classList.remove('pf-modal-open');
+          document.body.classList.remove('pf-modal-open');
+          document.body.style.top = '';
+          window.scrollTo(0, pfModalScrollY || 0);
+          pfModalScrollY = 0;
+        }
+
+        function pfOpenResultsModal() {
+          const modal = document.getElementById('pf-results-modal');
+          const body = document.getElementById('pf-results-sheet-body');
+          const resultsCard = document.getElementById('ingredient-results-card');
+          if (!modal || !body || !resultsCard) return;
+
+          // Place a placeholder where the card originally lived
+          if (!pfResultsPlaceholder) {
+            pfResultsPlaceholder = document.createElement('div');
+            pfResultsPlaceholder.id = 'pf-results-placeholder';
+            pfResultsPlaceholder.style.display = 'none';
+          }
+          if (resultsCard.parentElement && resultsCard.parentElement !== body) {
+            resultsCard.parentElement.insertBefore(pfResultsPlaceholder, resultsCard);
+          }
+
+          // Move the existing results card into the modal
+          if (!body.contains(resultsCard)) {
+            body.innerHTML = '';
+            body.appendChild(resultsCard);
+          }
+
+          modal.style.display = 'flex';
+          modal.setAttribute('aria-hidden', 'false');
+          pfLockScroll();
+        }
+
+        function pfCloseResultsModal() {
+          const modal = document.getElementById('pf-results-modal');
+          const body = document.getElementById('pf-results-sheet-body');
+          const resultsCard = document.getElementById('ingredient-results-card');
+          if (!modal) return;
+
+          // Move card back to the exact original spot
+          if (resultsCard && pfResultsPlaceholder && pfResultsPlaceholder.parentElement) {
+            pfResultsPlaceholder.parentElement.insertBefore(resultsCard, pfResultsPlaceholder);
+            pfResultsPlaceholder.remove();
+            pfResultsPlaceholder = null;
+          }
+
+          if (body) body.innerHTML = '';
+          modal.style.display = 'none';
+          modal.setAttribute('aria-hidden', 'true');
+          pfUnlockScroll();
+        }
+
+        // Wire modal close interactions
+        (function pfInitResultsModal() {
+          const modal = document.getElementById('pf-results-modal');
+          if (!modal) return;
+
+          const closeBtn = document.getElementById('pf-results-close');
+          if (closeBtn) closeBtn.addEventListener('click', pfCloseResultsModal);
+
+          modal.addEventListener('click', (e) => {
+            const t = e.target;
+            if (t && t.getAttribute && t.getAttribute('data-close') === '1') {
+              pfCloseResultsModal();
+            }
+          });
+
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') {
+              pfCloseResultsModal();
+            }
+          });
+        })();
 
     // Ensure button is not null before adding event listener
     if (analyzeBtn) {
       analyzeBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        analyzeIngredients();
+        (async () => {
+  await analyzeIngredients();
+  if (pfIsMobileResultsMode()) pfOpenResultsModal();
+})();
+
       });
       console.log('Analyze button event listener attached');
     } else {
@@ -5693,6 +5803,25 @@
           activeResultsBody.scrollTop = tabScrollPositions[tab];
         }
       }, 10);
+    }
+
+    // Shared helper: escape HTML
+    function pfEscapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[c] || c));
+    }
+
+    // Shared helper: render ingredient pill consistently
+    function pfIngredientPillHTML(name, serving) {
+      const safeName = pfEscapeHtml(name || '');
+      const safeServing = pfEscapeHtml(serving || '—');
+      return `<span class="pf-ing-pill"><span class="pf-ing-pill__name">${safeName}</span><span class="pf-ing-pill__sep">•</span><span class="pf-ing-pill__serving">${safeServing}</span></span>`;
     }
 
     function displayNutritionResults(data) {
@@ -5784,33 +5913,31 @@
 
       const ingredientPills = ingredients.map((ing) => {
           const displayName = ing.display_name || ing.ingredient || 'Unknown';
-        const safeName = escapeHTML(displayName);
         const servingText = formatServingLabel(ing);
-        const safeServing = servingText ? escapeHTML(servingText) : '—';
-        return `<span class="nutrition-ing-pill"><span class="name">${safeName}</span><span class="serving">${safeServing}</span></span>`;
+        return pfIngredientPillHTML(displayName, servingText || '—');
       }).join('');
 
       const isSingle = ingredients.length === 1;
       const first = ingredients[0] || {};
-      const firstName = escapeHTML(first.display_name || first.ingredient || 'Unknown');
+      const firstDisplayName = first.display_name || first.ingredient || 'Unknown';
       const firstServingRaw = formatServingLabel(first);
-      const firstServing = escapeHTML(firstServingRaw || '—');
 
       // Ingredient tab: always single ingredient, so always show chip with name • serving
-      const headerRight = `<div class="nutrition-selected-chip"><span class="name">${firstName}</span><span style="color: rgba(15, 23, 42, 0.40); margin: 0 4px;">•</span><span class="serving">${firstServing}</span></div>`;
+      const headerRight = `<div class="nutrition-selected-chip">${pfIngredientPillHTML(firstDisplayName, firstServingRaw || '—')}</div>`;
 
       let html = `
         <div class="nutrition-results-card">
-          <div class="nutrition-results-top">
-            <div class="nutrition-title">
-              <div class="badge">📊</div>
-              <div>
+          <div class="pf-nutrition-hero">
+            <div class="pf-nutrition-hero__copy">
+              <div class="nutrition-title">
                 <h3>Nutrition Summary</h3>
                 <p>Totals across selected ingredients</p>
               </div>
-              </div>
-            ${headerRight}
             </div>
+            <div class="pf-nutrition-hero__ing">
+              ${headerRight}
+            </div>
+          </div>
 
           <div class="nutrition-summary-grid">
             <div class="nutrition-tile-compact"><div class="top"><span>🔥</span><span class="label">Calories</span></div><div class="value">${total.calories.toFixed(1)}<span class="unit">kcal</span></div></div>
@@ -5871,8 +5998,9 @@
       const servingSizeG = firstIngredient.serving_size_g;
       const servingSize = firstIngredient.serving_size || '';
       const servingText = servingSizeG ? `${servingSizeG % 1 === 0 ? servingSizeG.toFixed(0) : servingSizeG.toFixed(1)}g` : (servingSize || '—');
-      const safeName = escapeHtml(displayName);
-      const safeServing = escapeHtml(servingText);
+      // safeName and safeServing kept for backward compatibility in allBenefits array
+      const safeName = pfEscapeHtml(displayName);
+      const safeServing = pfEscapeHtml(servingText);
 
       // Collect all health benefits - flatten into array for filtering
       const allBenefits = [];
@@ -5956,13 +6084,14 @@
 
       let html = `
             <div class="pf-hb2-wrap">
-              <div class="pf-hb2-header">
-                <div class="pf-hb2-title">Health Benefits</div>
-                <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
-                <div class="pf-hb2-header-row">
-                  <span class="pf-hb2-chip">${safeName} • <span class="serving">${safeServing}</span></span>
-                  <span class="pf-hb2-pill">${pillText}</span>
-              </div>
+              <div class="pf-hb2-hero">
+                <div class="pf-hb2-hero__copy">
+                  <div class="pf-hb2-title">Health Benefits</div>
+                  <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
+                </div>
+                <div class="pf-hb2-hero__ing">
+                  <span class="pf-hb2-chip">${pfIngredientPillHTML(displayName, servingText)}</span>
+                </div>
               </div>
               <div class="pf-hb2-card">
                 <div class="pf-hb2-cardHead">
@@ -5986,13 +6115,14 @@
           // No match found in browser flow
           let html = `
             <div class="pf-hb2-wrap">
-              <div class="pf-hb2-header">
-                <div class="pf-hb2-title">Health Benefits</div>
-                <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
-                <div class="pf-hb2-header-row">
-                  <span class="pf-hb2-chip">${safeName} • <span class="serving">${safeServing}</span></span>
-                  <span class="pf-hb2-pill">${pillText}</span>
-              </div>
+              <div class="pf-hb2-hero">
+                <div class="pf-hb2-hero__copy">
+                  <div class="pf-hb2-title">Health Benefits</div>
+                  <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
+                </div>
+                <div class="pf-hb2-hero__ing">
+                  <span class="pf-hb2-chip">${pfIngredientPillHTML(displayName, servingText)}</span>
+                </div>
               </div>
               <div class="pf-hb2-card">
                 <div style="color:#64748b;font-size:.9rem;line-height:1.45">No specific benefit found for this goal for this ingredient.</div>
@@ -6015,10 +6145,15 @@
       if (benefits.length === 0) {
         const emptyHtml = `
           <div class="pf-hb2-wrap">
-            <div class="pf-hb2-header">
-              <div class="pf-hb2-title">Health Benefits</div>
-              <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
-                </div>
+            <div class="pf-hb2-hero">
+              <div class="pf-hb2-hero__copy">
+                <div class="pf-hb2-title">Health Benefits</div>
+                <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
+              </div>
+              <div class="pf-hb2-hero__ing">
+                <span class="pf-hb2-chip">${pfIngredientPillHTML(displayName, servingText)}</span>
+              </div>
+            </div>
             <div class="pf-hb2-card">
               <div style="color:#64748b;font-size:.9rem;line-height:1.45">No health benefits data available for this ingredient.</div>
               </div>
@@ -6095,13 +6230,14 @@
 
       let html = `
         <div class="pf-hb2-wrap">
-          <div class="pf-hb2-header">
-            <div class="pf-hb2-title">Health Benefits</div>
-            <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
-            <div class="pf-hb2-header-row">
-              <span class="pf-hb2-chip">${safeName} • <span class="serving">${safeServing}</span></span>
-              <span class="pf-hb2-pill">${pillText}</span>
-          </div>
+          <div class="pf-hb2-hero">
+            <div class="pf-hb2-hero__copy">
+              <div class="pf-hb2-title">Health Benefits</div>
+              <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
+            </div>
+            <div class="pf-hb2-hero__ing">
+              <span class="pf-hb2-chip">${pfIngredientPillHTML(displayName, servingText)}</span>
+            </div>
           </div>
           <div class="pf-hb2-grid">
             ${top2Cards}
@@ -6315,6 +6451,12 @@
           // Filter allergens based on detection logic
           let shouldInclude = true;
           
+          // Fix: Exclude "Eggs" allergen for "Eggplant" (eggplant contains "egg" but is not an egg allergen)
+          const normalizedIngredient = String(rawIngredient || displayName).toLowerCase().trim();
+          if (allergenKey === 'Eggs' && (normalizedIngredient === 'eggplant' || normalizedIngredient.includes('eggplant'))) {
+            shouldInclude = false;
+          }
+          
           // CRITICAL: Nut milks NEVER trigger Milk allergen (red flag)
           // If backend says "Milk" but our detection says it's a nut milk or plant milk, exclude it
           if (allergenKey === 'Milk' && !detected.milk) {
@@ -6437,10 +6579,8 @@
       // Use only first ingredient for single-ingredient mode
       const firstIngredient = ingredients[0] || {};
       const displayName = firstIngredient.display_name || firstIngredient.ingredient || 'Unknown';
-      const safeName = escapeHtml(displayName);
       const servingText = formatServingLabel(firstIngredient);
-      const safeServing = escapeHtml(servingText);
-      const headerIngredientChip = `<span class="pf-a-chip">${safeName} • <span class="serving">${safeServing}</span></span>`;
+      const headerIngredientChip = `<span class="pf-a-chip">${pfIngredientPillHTML(displayName, servingText || '—')}</span>`;
 
       // Extract allergen names
       const groupsChecked = ['Milk', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts', 'Peanuts', 'Wheat', 'Soy', 'Sesame'];
@@ -6450,10 +6590,10 @@
         return String(a);
       }).filter(Boolean);
 
-      // Status pill
+      // Status pill (with allergen-badge class for mobile modal styling)
       const statusPill = allergenNames.length === 0
-        ? `<div class="pf-a-pill pf-a-pill--ok"><span class="pf-a-pill-dot"></span>No common allergens detected</div>`
-        : `<div class="pf-a-pill pf-a-pill--bad"><span class="pf-a-pill-dot"></span>Potential allergens detected</div>`;
+        ? `<div class="pf-a-pill pf-a-pill--ok allergen-badge"><span class="pf-a-pill-dot"></span>No common allergens detected</div>`
+        : `<div class="pf-a-pill pf-a-pill--bad allergen-badge"><span class="pf-a-pill-dot"></span>Potential allergens detected</div>`;
 
       // Allergen panel - exclude first allergen if shown in header
       const remainingAllergens = allergenNames.length > 0 ? allergenNames.slice(1) : [];
@@ -6491,13 +6631,17 @@ const allergenPanel = allergenNames.length === 0
       // Build HTML
       const redesignedHtml = `
         <div class="pf-a-wrap">
-          <div class="pf-a-header">
-            <div>
+          <div class="pf-allergen-hero">
+            <div class="pf-allergen-hero__copy">
               <div class="pf-a-title">Allergen Report</div>
               <div class="pf-a-subtitle">Checks selected ingredient(s) against common allergen groups. Always verify labels if you have severe allergies.</div>
-              <div class="pf-a-subchips">${headerIngredientChip}</div>
             </div>
-            ${statusPill}
+            <div class="pf-allergen-hero__badge">
+              ${statusPill}
+            </div>
+            <div class="pf-allergen-hero__ing">
+              ${headerIngredientChip}
+            </div>
           </div>
           <div class="pf-a-grid">
             <section class="pf-a-card">

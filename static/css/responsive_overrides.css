@@ -835,6 +835,34 @@
   #pf-results-modal { display: none !important; }
 }
 
+/* Modal closing fix - use aria-hidden attribute */
+@media (max-width: 1024px) {
+  #pf-results-modal[aria-hidden="true"] {
+    display: none !important;
+  }
+  #pf-results-modal[aria-hidden="false"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 12px !important;
+  }
+}
+
+/* =========================
+   Mobile/iPad: show Analysis Results ONLY as modal
+   ========================= */
+@media (max-width: 1024px) {
+  /* Hide the inline results card on the ingredient page */
+  #ingredient-tab-content #ingredient-results-card {
+    display: none !important;
+  }
+
+  /* But show the SAME card when it gets moved into the modal */
+  #pf-results-modal #ingredient-results-card {
+    display: flex !important;  /* keeps your flex-column modal layout working */
+  }
+}
+
 /* --- Scroll lock when results modal is open --- */
 html.pf-modal-open,
 body.pf-modal-open {
@@ -883,7 +911,7 @@ body.pf-modal-open {
   }
 
   .pf-results-sheet-title {
-    font-size: 0.95rem !important;
+    font-size: 1.25rem !important; /* 20px on mobile (<= 480px) */
   }
 
   .pf-results-close {
@@ -896,11 +924,19 @@ body.pf-modal-open {
     padding: 8px 10px !important;
   }
 
-  /* remove “double card padding” when results card is moved into the modal */
+  /* remove "double card padding" when results card is moved into the modal */
   .pf-results-sheet-body .results-container {
     margin: 0 !important;
     box-shadow: none !important;
     border: none !important;
+  }
+
+  /* Tab titles: 16px on small phones too */
+  #pf-results-modal .pf-results-sheet-body .results-container .tabs .tab,
+  #pf-results-modal .results-container .tabs .tab,
+  #pf-results-modal .tabs .tab,
+  #pf-results-modal .tabs button[data-tab] {
+    font-size: 1rem !important; /* 16px */
   }
 }
 
@@ -1046,6 +1082,7 @@ body.pf-modal-open {
   }
 
   #pf-results-modal .nutrition-tile-compact {
+    background: transparent !important;
     padding: 10px 10px !important;
     border-radius: 14px !important;
     box-shadow: none !important;
@@ -1109,12 +1146,13 @@ body.pf-modal-open {
    Modal: shrink pills + tiles (stop giant look)
    ========================= */
 @media (max-width: 1024px) {
-  /* Headings: stop the huge typography */
+  /* Headings: 1.5rem for all tab titles */
   #pf-results-modal .nutrition-title,
   #pf-results-modal .nutrition-results-top .nutrition-title,
   #pf-results-modal .nutrition-results-card h2,
-  #pf-results-modal .nutrition-results-card h3 {
-    font-size: 1.05rem !important;
+  #pf-results-modal .nutrition-results-card h3,
+  #pf-results-modal .nutrition-title h3 {
+    font-size: 1.5rem !important;
     line-height: 1.2 !important;
     margin: 0 0 6px 0 !important;
   }
@@ -1495,7 +1533,7 @@ body.pf-modal-open {
   #pf-results-modal .nutrition-title h3 {
     margin: 0 !important;
     padding: 0 !important;
-    font-size: 1.05rem !important;
+    font-size: 1.5rem !important;
     line-height: 1.15 !important;
   }
 
@@ -1558,7 +1596,7 @@ body.pf-modal-open {
 
   #pf-results-modal .nutrition-title h3 {
     margin: 0 !important;
-    font-size: 1.05rem !important;
+    font-size: 1.5rem !important;
     line-height: 1.15 !important;
   }
 
@@ -1880,12 +1918,8 @@ body.pf-modal-open {
 @media (max-width: 1024px) {
 
   /* Modal layout stays centered */
-  #pf-results-modal {
-    display: flex !important;              /* override any JS inline display:block */
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 12px !important;
-  }
+ /* Modal display is controlled by JS, not CSS !important */
+
 
   /* Sheet: fixed height, internal scrolling handled by results-body */
   #pf-results-modal .pf-results-sheet {
@@ -1897,17 +1931,16 @@ body.pf-modal-open {
   }
 
   #pf-results-modal .pf-results-sheet-body {
-    flex: 1 1 auto !important;
+    overflow: hidden !important;
     min-height: 0 !important;
-    overflow: hidden !important;           /* IMPORTANT: avoid double scroll containers */
   }
 
   /* Whatever results card is inside the modal becomes a flex column */
-  #pf-results-modal .pf-results-sheet-body .results-container {
-    height: 100% !important;
-    min-height: 0 !important;
+  #pf-results-modal .results-container {
     display: flex !important;
     flex-direction: column !important;
+    height: 100% !important;
+    min-height: 0 !important;
   }
 
   /* Tabs row fixed */
@@ -1917,11 +1950,19 @@ body.pf-modal-open {
 
   /* Active pane must be allowed to shrink */
   #pf-results-modal .pf-results-sheet-body .results-container .tab-pane.active {
-    flex: 1 1 auto !important;
+    flex: 1 !important;
     min-height: 0 !important;
-    overflow: hidden !important;           /* the scroller is results-body */
     display: flex !important;
     flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  /* ONE scroll container: the active tab's results-body */
+  #pf-results-modal .tab-pane.active .results-body {
+    overflow-y: auto !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   /* THIS is the scroller (Nutrition + Allergens + Health Benefits) */
@@ -1932,32 +1973,9 @@ body.pf-modal-open {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain !important;
   }
-
-  /* Extra force for Allergens (some of your CSS makes it 'visible') */
-  #pf-results-modal #allergens-results-body {
-    overflow-y: auto !important;
-  }
 }
 
-/* =========================
-   FIX: allow modal to close
-   Show modal ONLY when aria-hidden="false"
-   ========================= */
-@media (max-width: 1024px) {
-
-  /* Default = hidden */
-  #pf-results-modal {
-    display: none !important;
-  }
-
-  /* Open = visible */
-  #pf-results-modal[aria-hidden="false"] {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 12px !important;
-  }
-}
+/* Modal display is controlled by JS, not CSS !important */
 
 /* =========================
    MOBILE RESULTS MODAL — UX POLISH (v1)
@@ -1976,8 +1994,15 @@ body.pf-modal-open {
     padding: 12px 14px !important;
   }
   #pf-results-modal .pf-results-sheet-title {
-    font-size: 0.98rem !important;
+    font-size: 1.375rem !important; /* 22px on tablet (768px - 1024px) */
     font-weight: 800 !important;
+  }
+  
+  /* Mobile (<= 768px): 20px */
+  @media (max-width: 768px) {
+    #pf-results-modal .pf-results-sheet-title {
+      font-size: 1.25rem !important; /* 20px on mobile */
+    }
   }
   #pf-results-modal .pf-results-close {
     width: 38px !important;
@@ -2004,15 +2029,26 @@ body.pf-modal-open {
     border-bottom: 1px solid rgba(15,23,42,0.10) !important;
     background: #fff !important;
   }
-  #pf-results-modal .pf-results-sheet-body .results-container .tabs .tab {
+  /* Tab titles: 16px for Nutrition, Allergens, Health Benefits */
+  #pf-results-modal .pf-results-sheet-body .results-container .tabs .tab,
+  #pf-results-modal .results-container .tabs .tab,
+  #pf-results-modal .tabs .tab,
+  #pf-results-modal .tabs button[data-tab] {
     padding: 8px 12px !important;
-    font-size: 0.92rem !important;
+    font-size: 1rem !important; /* 16px */
     border-radius: 999px !important;
   }
 
   /* Consistent inner padding for every tab content */
   #pf-results-modal .pf-results-sheet-body .results-container .tab-pane.active .results-body {
     padding: 12px 12px 16px !important;
+  }
+
+  /* Unified tab title font size: 1.5rem for all tabs */
+  #pf-results-modal .nutrition-title h3,
+  #pf-results-modal .pf-a-title,
+  #pf-results-modal .pf-hb2-title {
+    font-size: 1.5rem !important;
   }
 
   /* =========================
@@ -2041,7 +2077,7 @@ body.pf-modal-open {
   }
 
   #pf-results-modal .nutrition-title h3 {
-    font-size: 1.05rem !important;
+    font-size: 1.5rem !important;
     margin: 0 !important;
     line-height: 1.2 !important;
   }
@@ -2095,3 +2131,893 @@ body.pf-modal-open {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* --- Modal display controlled by JS, not CSS !important --- */
+
+/* =========================
+   Shared Ingredient Pill Styling (mobile modal)
+   ========================= */
+@media (max-width: 1024px) {
+  /* Unified ingredient pill style - works in nutrition-selected-chip, pf-a-chip, pf-hb2-chip */
+  #pf-results-modal .pf-ing-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 0 !important; /* Let parent handle padding */
+    border-radius: 0 !important; /* Let parent handle border-radius */
+    white-space: nowrap !important;
+    gap: 0 !important;
+  }
+
+  /* Bullet separator spacing */
+  #pf-results-modal .pf-ing-pill__sep {
+    margin: 0 8px !important;
+    opacity: 0.55 !important;
+  }
+
+  /* Name styling - inherits from parent but can be overridden */
+  #pf-results-modal .pf-ing-pill__name {
+    display: inline !important;
+  }
+
+  /* Serving styling - inherits from parent but can be overridden */
+  #pf-results-modal .pf-ing-pill__serving {
+    display: inline !important;
+  }
+
+  /* When inside nutrition-selected-chip, ensure proper styling */
+  #pf-results-modal .nutrition-selected-chip .pf-ing-pill__name {
+    font-weight: 900 !important;
+    font-size: 0.92rem !important;
+    color: #0f172a !important;
+  }
+
+  #pf-results-modal .nutrition-selected-chip .pf-ing-pill__serving {
+    font-weight: 800 !important;
+    font-size: 0.82rem !important;
+    color: rgba(15, 23, 42, 0.60) !important;
+  }
+}
+
+/* =========================
+   Modal: unify ingredient pill sizing across ALL tabs
+   ========================= */
+@media (max-width: 1024px) {
+  /* 1) Restore pill styling for ALL ingredient chip classes */
+  #pf-results-modal .nutrition-selected-chip,
+  #pf-results-modal .pf-a-chip,
+  #pf-results-modal .pf-hb2-chip,
+  #pf-results-modal .nutrition-ing-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(14, 165, 164, 0.25) !important;
+    background: transparent !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    font-size: 0.95rem !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+  }
+
+  /* 2) Standardize .name and .serving spacing inside pills */
+  #pf-results-modal .nutrition-selected-chip .name,
+  #pf-results-modal .pf-a-chip .name,
+  #pf-results-modal .pf-hb2-chip .name,
+  #pf-results-modal .nutrition-ing-pill .name,
+  #pf-results-modal .pf-ing-pill__name {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-weight: 700 !important;
+  }
+
+  #pf-results-modal .nutrition-selected-chip .serving,
+  #pf-results-modal .pf-a-chip .serving,
+  #pf-results-modal .pf-hb2-chip .serving,
+  #pf-results-modal .nutrition-ing-pill .serving,
+  #pf-results-modal .pf-ing-pill__serving {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-weight: 600 !important;
+    opacity: 0.75 !important;
+  }
+
+  /* 3) Make pf-ing-pill consistent with other pills */
+  #pf-results-modal .pf-ing-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0 !important;
+    padding: 8px 12px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(14, 165, 164, 0.25) !important;
+    background: transparent !important;
+    font-size: 0.95rem !important;
+    line-height: 1 !important;
+    font-weight: 700 !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+  }
+
+  /* 4) Prevent long ingredient names from breaking layout */
+  #pf-results-modal .pf-ing-pill__name {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #pf-results-modal .pf-ing-pill__sep {
+    margin: 0 8px !important;
+    opacity: 0.55 !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Allergens modal hero polish */
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: 6px;
+  }
+
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__badge {
+    margin: 6px auto 10px auto;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__badge .allergen-badge {
+    width: 150px;
+    height: 150px;
+    max-width: 150px;
+    margin: 0;
+    transform: none;
+  }
+
+  /* Hide the green/red dot in the allergen badge */
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__badge .pf-a-pill-dot {
+    display: none !important;
+  }
+
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing {
+    margin: 0 auto 16px auto;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__copy {
+    margin: 0 auto 10px auto;
+    max-width: 360px;
+    width: 100%;
+  }
+
+  /* Tighten title + description spacing inside hero */
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__copy .pf-a-title {
+    font-size: 1.5rem !important;
+    margin: 0 0 6px 0 !important;
+  }
+
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__copy .pf-a-subtitle {
+    margin: 0 !important;
+  }
+}
+
+/* =========================
+   RESULTS MODAL > ALLERGENS polish
+   ========================= */
+@media (max-width: 1024px) {
+  /* A) Disable scrolling on allergens-results-body (scrolling is in .results-body) */
+  #pf-results-modal #allergens-results-body {
+    overflow: visible !important;
+    padding: 14px 12px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* B) Fix badge clipping - use the new pf-allergen-hero class */
+  #pf-results-modal #allergens-results-body .pf-a-wrap {
+    margin: 0 !important;
+    max-width: 100% !important;
+    gap: 14px !important;
+  }
+
+  /* Updated to match the hero layout: badge -> ingredient pill -> text (vertical, centered) */
+  #pf-results-modal #allergens-results-body .pf-allergen-hero {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding-top: 6px !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Hide the green/red dot in the allergen badge */
+  #pf-results-modal #allergens-results-body .pf-allergen-hero__badge .pf-a-pill-dot {
+    display: none !important;
+  }
+
+  /* Badge at top - close to top with small margin */
+  #pf-results-modal #allergens-results-body .pf-allergen-hero__badge {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin: 6px auto 10px auto !important;
+  }
+
+  /* Ingredient pill below badge - small gap then larger margin before title */
+  #pf-results-modal #allergens-results-body .pf-allergen-hero__ing {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    margin: 0 auto 16px auto !important;
+  }
+
+  /* Title/message block below ingredient pill */
+  #pf-results-modal #allergens-results-body .pf-allergen-hero__copy {
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 0 auto 10px auto !important;
+  }
+
+  /* C) Consistent spacing throughout */
+  #pf-results-modal #allergens-results-body .pf-a-title {
+    font-size: 1.5rem !important;
+    margin-bottom: 6px !important;
+  }
+
+  #pf-results-modal #allergens-results-body .pf-a-subtitle {
+    font-size: 0.85rem !important;
+    margin-top: 4px !important;
+    max-width: 100% !important;
+  }
+
+  #pf-results-modal #allergens-results-body .pf-a-subchips {
+    margin-top: 8px !important;
+  }
+
+  #pf-results-modal #allergens-results-body .pf-a-grid {
+    margin-top: 8px !important;
+    gap: 12px !important;
+  }
+
+  #pf-results-modal #allergens-results-body .pf-a-card {
+    padding: 12px 14px !important;
+    margin: 0 !important;
+  }
+
+  /* D) Clean accordion/dropdown styling - using button-based accordion */
+  #pf-results-modal #allergens-results-body .pf-a-acc {
+    width: 100% !important;
+    margin-top: 12px !important;
+  }
+
+  #pf-results-modal #allergens-results-body .pf-a-acc-btn {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    font-weight: 800 !important;
+    border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    background: #fff !important;
+    cursor: pointer !important;
+    text-align: left !important;
+  }
+
+  /* Hide default marker and style caret */
+  #pf-results-modal #allergens-results-body .pf-a-acc-btn > span:last-child {
+    transition: transform 0.2s ease !important;
+  }
+
+  /* Rotate caret when open */
+  #pf-results-modal #allergens-results-body .pf-a-acc-btn[aria-expanded="true"] > span:last-child {
+    transform: rotate(180deg) !important;
+  }
+
+  /* Panel content styling */
+  #pf-results-modal #allergens-results-body .pf-a-acc-panel {
+    padding: 12px 14px !important;
+    border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    border-top: 0 !important;
+    border-bottom-left-radius: 14px !important;
+    border-bottom-right-radius: 14px !important;
+    background: #fff !important;
+    display: block !important;
+  }
+
+  #pf-results-modal #allergens-results-body .pf-a-acc-panel[hidden] {
+    display: none !important;
+  }
+
+  /* Spacing inside accordion panels */
+  #pf-results-modal #allergens-results-body .pf-a-acc-panel .pf-a-tags {
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #pf-results-modal #allergens-results-body .pf-a-acc-panel .pf-a-list {
+    margin: 0 !important;
+    padding-left: 18px !important;
+  }
+
+  #pf-results-modal #allergens-results-body .pf-a-acc-panel .pf-a-list li {
+    margin: 8px 0 !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Ensure no horizontal overflow - only for media elements */
+  #pf-results-modal #allergens-results-body img,
+  #pf-results-modal #allergens-results-body svg,
+  #pf-results-modal #allergens-results-body canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Ensure containers don't overflow */
+  #pf-results-modal #allergens-results-body .pf-a-wrap,
+  #pf-results-modal #allergens-results-body .pf-a-header,
+  #pf-results-modal #allergens-results-body .pf-a-grid,
+  #pf-results-modal #allergens-results-body .pf-a-card,
+  #pf-results-modal #allergens-results-body .pf-a-acc {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Health Benefits tab title */
+  #pf-results-modal #health-benefits-results-body .pf-hb2-title {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* =========================
+   Nutrition Tab: Beautiful & Compact (mobile modal)
+   ========================= */
+@media (max-width: 1024px) {
+  /* Reduce overall padding and margins */
+  #pf-results-modal #nutrition-results-body {
+    padding: 12px 10px 14px !important;
+  }
+
+  /* Card container - no extra spacing */
+  #pf-results-modal .nutrition-results-card {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  /* Header/title section - tighter spacing */
+  #pf-results-modal .nutrition-results-top {
+    margin: 0 0 12px 0 !important;
+    padding: 0 !important;
+    gap: 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* Title styling */
+  #pf-results-modal .nutrition-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 4px !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  #pf-results-modal .nutrition-title h3 {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
+    color: #0f172a !important;
+  }
+
+  #pf-results-modal .nutrition-title p {
+    font-size: 0.875rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.4 !important;
+    color: rgba(15, 23, 42, 0.65) !important;
+  }
+
+  /* Hide badge emoji on mobile */
+  #pf-results-modal .nutrition-title .badge {
+    display: none !important;
+  }
+
+  /* Ingredient pill - compact and beautiful */
+  #pf-results-modal .nutrition-selected-chip {
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Summary grid - tighter spacing */
+  #pf-results-modal .nutrition-summary-grid {
+    margin: 12px 0 0 0 !important;
+    padding: 0 !important;
+    gap: 8px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Nutrition tiles - compact and clean */
+  #pf-results-modal .nutrition-tile-compact {
+    background: transparent !important;
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    border: 1px solid rgba(15, 23, 42, 0.08) !important;
+    box-shadow: none !important;
+  }
+
+  #pf-results-modal .nutrition-tile-compact .top {
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+  }
+
+  #pf-results-modal .nutrition-tile-compact .label {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em !important;
+    color: rgba(15, 23, 42, 0.7) !important;
+  }
+
+  #pf-results-modal .nutrition-tile-compact .value {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    color: #0f172a !important;
+  }
+
+  /* Ingredients list section */
+  #pf-results-modal .nutrition-ingredients-list {
+    margin: 16px 0 0 0 !important;
+    padding: 0 !important;
+  }
+
+  #pf-results-modal .nutrition-ingredients-list .nutrition-ing-pill {
+    margin: 0 4px 6px 0 !important;
+  }
+
+  /* Reduce spacing between sections */
+  #pf-results-modal .nutrition-results-card > * {
+    margin-top: 0 !important;
+  }
+
+  #pf-results-modal .nutrition-results-card > * + * {
+    margin-top: 14px !important;
+  }
+}
+ /* =========================
+   MODAL > ALLERGENS finishing
+   - restore badge border
+   - remove double-border on ingredient pill
+   ========================= */
+@media (max-width: 1024px) {
+
+  /* 1) Restore the circular badge look */
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .allergen-badge{
+    border: 1px solid rgba(15,23,42,0.14) !important;
+    background: #fff !important;
+    border-radius: 999px !important;
+    box-shadow: 0 10px 24px rgba(15,23,42,0.06) !important;
+    overflow: hidden !important; /* prevents weird edge clipping */
+  }
+
+  /* 2) Ingredient pill in Allergens: force SINGLE border (outer only) */
+  /* Ingredient pill styling - ensure single border, no double outline */
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing > *{
+    border-radius: 999px !important;
+  }
+
+  /* If your Allergens pill wrapper is pf-a-chip - single border, transparent background */
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing .pf-a-chip{
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 10px 14px !important;
+    border: 1px solid rgba(14,165,164,0.22) !important;
+    background: transparent !important;
+    border-radius: 999px !important;
+  }
+
+  /* Kill the INNER border/padding so no double outline */
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing .pf-a-chip .pf-ing-pill{
+    border: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Fallback: if Allergens pill wrapper is still using old nutrition classes */
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing .nutrition-selected-chip .pf-ing-pill,
+  #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing .nutrition-ing-pill{
+    border: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+}
+ /* =========================
+   MODAL > INGREDIENT PILL (single source of truth)
+   - Make pf-ing-pill the ONLY pill shell
+   - Strip pill styling from wrappers to prevent double borders
+   ========================= */
+@media (max-width: 1024px) {
+
+  /* 1) The pill itself (used by all tabs) */
+  #pf-results-modal .pf-ing-pill{
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+
+    padding: 10px 14px !important;
+    border: 2px solid rgba(14,165,164,0.22) !important;
+    background: transparent !important;
+    border-radius: 999px !important;
+
+    box-shadow: none !important;
+  }
+
+  #pf-results-modal .pf-ing-pill__sep{
+    margin: 0 8px !important;
+    opacity: 0.55 !important;
+  }
+
+  /* 2) Kill pill-shell styling on wrappers (these cause double borders) */
+  #pf-results-modal .nutrition-selected-chip,
+  #pf-results-modal .nutrition-ing-pill,
+  #pf-results-modal .pf-a-chip,
+  #pf-results-modal .pf-hb2-chip{
+    border: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+}
+   /* =========================
+   MODAL > ALLERGEN STATUS polish (the inline status you currently have)
+   ========================= */
+@media (max-width: 1024px) {
+
+  /* This is the status layout shown in your screenshot */
+  #pf-results-modal #allergens-results-body .pf-allergen-inline{
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+
+    padding: 12px 14px !important;
+    border: 1px solid rgba(15,23,42,0.14) !important;
+    background: #fff !important;
+    border-radius: 16px !important;
+
+    width: fit-content !important;
+    max-width: 92% !important;
+    margin: 0 auto 14px auto !important;
+  }
+}
+/* =========================
+   MODAL > ALLERGEN BADGE: kill the giant circle, make a clean status card
+   ========================= */
+   @media (max-width: 1024px) {
+    #pf-results-modal #allergens-results-body .allergen-badge {
+      /* stop the "giant circle" behavior */
+      width: auto !important;
+      height: auto !important;
+      min-height: unset !important;
+      border-radius: 18px !important;     /* <- rectangle, not circle */
+      aspect-ratio: auto !important;
+  
+      /* clean card look */
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+  
+      padding: 14px 16px !important;
+      border: 1px solid rgba(15, 23, 42, 0.14) !important;
+      background: #fff !important;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08) !important;
+  
+      /* centered + controlled size */
+      max-width: min(92%, 340px) !important;
+      margin: 10px auto 14px auto !important;
+      text-align: center !important;
+    }
+  
+    /* If your badge has an inner dot element that gets positioned weirdly, normalize it */
+    #pf-results-modal #allergens-results-body .allergen-badge * {
+      max-width: 100% !important;
+    }
+  }
+/* =========================================================
+   FINAL OVERRIDE: Allergens hero layout (mobile modal only)
+   Order: Title -> Status Pill -> Ingredient Pill
+   ========================================================= */
+   @media (max-width: 1024px) {
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+      padding-top: 12px !important;
+      gap: 0 !important;
+    }
+  
+    /* 1) TITLE + MESSAGE (top) */
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__copy {
+      order: 1 !important;
+      width: 100% !important;
+      max-width: 360px !important;
+      margin: 0 auto 20px auto !important;
+    }
+  
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__copy .pf-a-title {
+      font-size: 1.5rem !important;
+      font-weight: 800 !important;
+      margin: 0 0 8px 0 !important;
+      color: #0f172a !important;
+    }
+  
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__copy .pf-a-subtitle {
+      font-size: 0.9rem !important;
+      color: #64748b !important;
+      line-height: 1.4 !important;
+      margin: 0 !important;
+    }
+  
+    /* 2) STATUS PILL (middle) */
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__badge {
+      order: 2 !important;
+      display: flex !important;
+      justify-content: center !important;
+      width: 100% !important;
+      margin: 0 auto 16px auto !important;
+    }
+  
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__badge .allergen-badge {
+      display: inline-flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      padding: 12px 18px !important;
+      border: 1px solid rgba(15,23,42,0.15) !important;
+      border-radius: 999px !important;
+      background: #fff !important;
+      box-shadow: 0 2px 8px rgba(15,23,42,0.08) !important;
+      max-width: calc(100% - 24px) !important;
+      margin: 0 !important;
+      transform: none !important;
+      width: auto !important;
+      height: auto !important;
+    }
+  
+    /* Kill the dot if it exists */
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__badge .pf-a-pill-dot {
+      display: none !important;
+    }
+  
+    /* 3) INGREDIENT PILL (bottom) */
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing {
+      order: 3 !important;
+      margin: 0 auto !important;
+      display: flex !important;
+      justify-content: center !important;
+    }
+  
+    /* This is the OUTER pill in Allergens */
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing .pf-a-chip {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+  
+      padding: 10px 14px !important;
+      border: 1px solid rgba(14,165,164,0.35) !important;
+      border-radius: 999px !important;
+      background: transparent !important;
+  
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  
+    /* Prevent double-border: inner pill has NO chrome */
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing .pf-a-chip .pf-ing-pill {
+      border: 0 !important;
+      background: transparent !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+    }
+  
+    /* Fallback if .pf-a-chip isn't present for some reason */
+    #pf-results-modal[aria-hidden="false"] #allergens-results-body .pf-allergen-hero__ing > .pf-ing-pill {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+  
+      padding: 10px 14px !important;
+      border: 1px solid rgba(14,165,164,0.35) !important;
+      border-radius: 999px !important;
+      background: transparent !important;
+  
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  }
+
+/* =========================================================
+   FINAL OVERRIDE: Nutrition hero layout (mobile modal only)
+   Order: Title -> Ingredient Pill (matching Allergen tab exactly)
+   ========================================================= */
+   @media (max-width: 1024px) {
+    #pf-results-modal[aria-hidden="false"] #nutrition-results-body .pf-nutrition-hero {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+      padding-top: 12px !important;
+      gap: 0 !important;
+    }
+  
+    /* 1) TITLE + MESSAGE (top) - match Allergen tab exactly */
+    #pf-results-modal[aria-hidden="false"] #nutrition-results-body .pf-nutrition-hero__copy {
+      order: 1 !important;
+      width: 100% !important;
+      max-width: 360px !important;
+      margin: 0 auto 20px auto !important;
+    }
+  
+    #pf-results-modal[aria-hidden="false"] #nutrition-results-body .pf-nutrition-hero__copy .nutrition-title {
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0 !important;
+      align-items: center !important;
+      text-align: center !important;
+    }
+  
+    /* Hide badge emoji if it exists */
+    #pf-results-modal[aria-hidden="false"] #nutrition-results-body .pf-nutrition-hero__copy .nutrition-title .badge {
+      display: none !important;
+    }
+  
+    /* Match Allergen tab title styling exactly */
+    #pf-results-modal[aria-hidden="false"] #nutrition-results-body .pf-nutrition-hero__copy .nutrition-title h3 {
+      font-size: 1.5rem !important;
+      font-weight: 800 !important;
+      margin: 0 0 8px 0 !important;
+      color: #0f172a !important;
+      line-height: 1.4 !important;
+      padding: 0 !important;
+      text-align: center !important;
+    }
+  
+    /* Match Allergen tab subtitle styling exactly */
+    #pf-results-modal[aria-hidden="false"] #nutrition-results-body .pf-nutrition-hero__copy .nutrition-title p {
+      font-size: 0.9rem !important;
+      color: #64748b !important;
+      line-height: 1.4 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+    }
+  
+    /* 2) INGREDIENT PILL (bottom) - match Allergen tab exactly */
+    #pf-results-modal[aria-hidden="false"] #nutrition-results-body .pf-nutrition-hero__ing {
+      order: 2 !important;
+      margin: 0 auto !important;
+      display: flex !important;
+      justify-content: center !important;
+    }
+  
+    /* Ingredient pill styling - match Allergen tab exactly */
+    #pf-results-modal[aria-hidden="false"] #nutrition-results-body .pf-nutrition-hero__ing .nutrition-selected-chip {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 10px 14px !important;
+      border: 1px solid rgba(14,165,164,0.35) !important;
+      border-radius: 999px !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  
+    /* Prevent double-border: inner pill has NO chrome */
+    #pf-results-modal[aria-hidden="false"] #nutrition-results-body .pf-nutrition-hero__ing .nutrition-selected-chip .pf-ing-pill {
+      border: 0 !important;
+      background: transparent !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+    }
+  }
+
+/* =========================================================
+   FINAL OVERRIDE: Health Benefits hero layout (mobile modal only)
+   Order: Title -> Ingredient Pill (matching Nutrition/Allergen tabs exactly)
+   ========================================================= */
+   @media (max-width: 1024px) {
+    #pf-results-modal[aria-hidden="false"] #health-benefits-results-body .pf-hb2-hero {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+      padding-top: 12px !important;
+      gap: 0 !important;
+    }
+  
+    /* 1) TITLE + MESSAGE (top) - match other tabs exactly */
+    #pf-results-modal[aria-hidden="false"] #health-benefits-results-body .pf-hb2-hero__copy {
+      order: 1 !important;
+      width: 100% !important;
+      max-width: 360px !important;
+      margin: 0 auto 20px auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 2px !important;
+      align-items: center !important;
+    }
+  
+    #pf-results-modal[aria-hidden="false"] #health-benefits-results-body .pf-hb2-hero__copy .pf-hb2-title {
+      font-size: 1.5rem !important;
+      font-weight: 800 !important;
+      margin: 0 !important;
+      color: #0f172a !important;
+      line-height: 1.4 !important;
+      text-align: center !important;
+    }
+  
+    #pf-results-modal[aria-hidden="false"] #health-benefits-results-body .pf-hb2-hero__copy .pf-hb2-subtitle {
+      font-size: 0.9rem !important;
+      color: #64748b !important;
+      line-height: 1.4 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+    }
+  
+    /* 2) INGREDIENT PILL (bottom) - match other tabs exactly */
+    #pf-results-modal[aria-hidden="false"] #health-benefits-results-body .pf-hb2-hero__ing {
+      order: 2 !important;
+      margin: 0 auto !important;
+      display: flex !important;
+      justify-content: center !important;
+    }
+  
+    /* Ingredient pill styling - match other tabs exactly */
+    #pf-results-modal[aria-hidden="false"] #health-benefits-results-body .pf-hb2-hero__ing .pf-hb2-chip {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 10px 14px !important;
+      border: 1px solid rgba(14,165,164,0.35) !important;
+      border-radius: 999px !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  
+    /* Prevent double-border: inner pill has NO chrome */
+    #pf-results-modal[aria-hidden="false"] #health-benefits-results-body .pf-hb2-hero__ing .pf-hb2-chip .pf-ing-pill {
+      border: 0 !important;
+      background: transparent !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+    }
+  }
+    
