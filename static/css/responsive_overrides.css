@@ -3020,4 +3020,674 @@ body.pf-modal-open {
       box-shadow: none !important;
     }
   }
-    
+
+  /* ============================================
+     SMOOTHIE RESULTS MODAL (mobile/tablet only)
+     ============================================ */
+
+  /* Modal display controlled by aria-hidden */
+  #pf-smoothie-modal[aria-hidden="true"] {
+    display: none !important;
+  }
+
+  #pf-smoothie-modal[aria-hidden="false"] {
+    display: flex !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 12px !important;
+    background: rgba(0, 0, 0, 0.35) !important;
+  }
+
+  /* Sheet sizing (mobile/tablet only) */
+  @media (max-width: 1024px) {
+    /* Hide smoothie results card on mobile/tablet only */
+    #smoothie-results-card.pf-smoothie-hidden {
+      display: none !important;
+    }
+
+    #pf-smoothie-modal .pf-results-sheet {
+      width: min(94vw, 420px) !important;
+      max-height: min(92dvh, 760px) !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    #pf-smoothie-sheet-body {
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      overflow: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* When moved into modal, force the smoothie card to render even if it has pf-smoothie-hidden */
+    #pf-smoothie-modal[aria-hidden="false"] #smoothie-results-card {
+      display: flex !important;
+      flex-direction: column !important;
+      height: auto !important;  /* Changed from 100% to auto to allow shrink-wrapping */
+      min-height: 0 !important;
+    }
+
+    /* Override global .results-body styles when card is moved into modal */
+    #pf-smoothie-modal .results-body {
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      overflow: visible !important;
+      padding: 10px 12px !important;
+      white-space: normal !important;
+      font-family: inherit !important;
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+  }
+
+/* Show smoothie results card on desktop */
+@media (min-width: 1025px) {
+  #smoothie-results-card.pf-smoothie-hidden {
+    display: flex !important;
+  }
+}
+
+  /* ============================================
+     SMOOTHIE ACTION BUTTONS (Build + Clear)
+     ============================================ */
+
+  /* Container for smoothie action buttons */
+  .sn-actions {
+    display: flex !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Build Smoothie button */
+  .sn-actions #build-smoothie-btn {
+    height: 52px !important;
+    border-radius: 18px !important;
+    white-space: nowrap !important;
+    flex: 1 1 220px !important;
+    min-width: 220px !important;
+    width: auto !important;
+  }
+
+  /* Clear button */
+  .sn-actions #smoothie-clear-btn {
+    height: 52px !important;
+    border-radius: 18px !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+    min-width: 140px !important;
+    width: auto !important;
+  }
+
+  /* Mobile: stack vertically, both full width */
+  @media (max-width: 520px) {
+    .sn-actions {
+      flex-direction: column !important;
+    }
+
+    .sn-actions #build-smoothie-btn,
+    .sn-actions #smoothie-clear-btn {
+      width: 100% !important;
+      min-width: 0 !important;
+      flex: 0 0 auto !important;
+    }
+  }
+
+  /* ============================================
+     SMOOTHIE EDIT MODAL POLISH
+     ============================================ */
+
+  /* Modal sizing */
+  .ss-edit-modal .ssm-modal-card {
+    max-width: 860px !important;
+    width: 94vw !important;
+    max-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  /* Header sticky with border */
+  .ss-edit-modal .ssm-modal-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background: #fff !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 16px 20px !important;
+  }
+
+  .ss-edit-modal .ssm-modal-title {
+    flex: 1 !important;
+    text-align: left !important;
+  }
+
+  .ss-edit-modal .ssm-modal-close {
+    flex: 0 0 auto !important;
+  }
+
+  /* Scrollable body */
+  .ss-edit-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: 70dvh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Summary bar - compact pill-like */
+  .ss-edit-summary {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 10px 12px !important;
+    border-radius: 14px !important;
+    background: rgba(15, 23, 42, 0.04) !important;
+    margin-bottom: 12px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .ss-edit-summary span {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 4px 10px !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Row layout - CSS Grid (scoped to smoothie edit modal) */
+  .ss-edit-modal .ssm-row {
+    display: grid !important;
+    grid-template-columns: 1fr auto auto !important;
+    gap: 12px !important;
+    align-items: center !important;
+    padding: 14px 16px !important;
+    border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .ss-edit-modal .ssm-row:first-child {
+    border-top: none !important;
+  }
+
+  /* Info block - name + meta + tags */
+  .ss-edit-modal .ssm-info {
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+
+  .ss-edit-modal .ssm-name {
+    font-weight: 800 !important;
+    font-size: 0.95rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.3 !important;
+  }
+
+  .ss-edit-modal .ssm-meta {
+    opacity: 0.75 !important;
+    font-size: 0.85rem !important;
+    margin-top: 2px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .ss-edit-modal .ssm-tags {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-top: 6px !important;
+  }
+
+  /* Quantity control */
+  .ss-edit-modal .ssm-qty {
+    display: inline-flex !important;
+    align-items: center !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+  }
+
+  .ss-edit-modal .ssm-qty .ss-qty-control {
+    height: 44px !important;
+    border-radius: 14px !important;
+    background: rgba(15, 23, 42, 0.04) !important;
+    border: 1px solid rgba(15, 23, 42, 0.12) !important;
+    display: flex !important;
+    align-items: center !important;
+    overflow: hidden !important;
+  }
+
+  .ss-edit-modal .ssm-qty .ss-qty-btn {
+    flex: 0 0 36px !important;
+    width: 36px !important;
+    height: 100% !important;
+    border: none !important;
+    background: transparent !important;
+    color: rgba(15, 23, 42, 0.7) !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.15s ease !important;
+  }
+
+  .ss-edit-modal .ssm-qty .ss-qty-btn:hover:not(:disabled) {
+    background: rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .ss-edit-modal .ssm-qty .ss-qty-btn:disabled {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+  }
+
+  .ss-edit-modal .ssm-qty .ss-qty-input {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    text-align: center !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: rgba(15, 23, 42, 0.9) !important;
+    padding: 0 4px !important;
+  }
+
+  /* Remove button - consistent square */
+  .ss-edit-modal .ss-remove-btn {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 14px !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    color: rgba(239, 68, 68, 0.9) !important;
+    font-size: 1.4rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+    flex: 0 0 44px !important;
+  }
+
+  .ss-edit-modal .ss-remove-btn:hover {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+  }
+
+  /* ============================================
+     SMOOTHIE INGREDIENTS SUMMARY BLOCK (responsive)
+     ============================================ */
+
+  @media (max-width: 1024px) {
+    /* Header row - flex with wrap */
+    #smoothie-tab-content .sb-ing-header {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 12px !important;
+      flex-wrap: wrap !important;
+    }
+
+    /* Ensure title/meta container doesn't shrink too much */
+    #smoothie-tab-content .sb-ing-header > div:first-child {
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+    }
+
+    /* Edit button - prevent clipping */
+    #smoothie-tab-content .sb-ing-header .ssm-edit-btn {
+      flex: 0 0 auto !important;
+      white-space: nowrap !important;
+    }
+
+    /* Pills row - horizontal scroll */
+    #smoothie-tab-content .ssm-chipstrip {
+      display: flex !important;
+      gap: 10px !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      padding-bottom: 6px !important;
+      padding-right: 8px !important;
+    }
+
+    /* Pills don't shrink */
+    #smoothie-tab-content .ssm-chip {
+      flex: 0 0 auto !important;
+      flex-shrink: 0 !important;
+    }
+  }
+
+  /* Small screens - stack header content */
+  @media (max-width: 520px) {
+    #smoothie-tab-content .sb-ing-header {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+    }
+
+    #smoothie-tab-content .sb-ing-header > div:first-child {
+      width: 100% !important;
+    }
+
+    /* Edit button full width on small screens */
+    #smoothie-tab-content .sb-ing-header .ssm-edit-btn {
+      width: 100% !important;
+      margin-top: 8px !important;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    /* Smoothie summary block must never overflow the viewport */
+    #smoothie-tab-content .ssm-summary,
+    #smoothie-tab-content .ssm-summary-header {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Kill any sneaky negative/full-bleed margins */
+    #smoothie-tab-content .ssm-summary {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+  }
+
+  /* =========================
+     Smoothie tab: summary header overflow fix (mobile/tablet)
+     Fixes "Edit ingredients" clipping + right-side cut-off
+     ========================= */
+  @media (max-width: 1024px) {
+    /* Force sane sizing so 100% + padding does NOT overflow */
+    #smoothie-tab-content .ssm-summary,
+    #smoothie-tab-content .ssm-summary-header,
+    #smoothie-tab-content .ssm-summary-body,
+    #smoothie-tab-content .ssm-summary-footer,
+    #smoothie-tab-content .sb-ing-header {
+      box-sizing: border-box !important;
+      max-width: 100% !important;
+    }
+
+    /* The card itself must never exceed the viewport */
+    #smoothie-tab-content .ssm-summary {
+      width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      overflow: hidden !important; /* prevents bleed; pills row handles its own scroll */
+    }
+
+    /* Header row: allow wrap, but never force extra width */
+    #smoothie-tab-content .ssm-summary-header.sb-ing-header {
+      width: auto !important;
+      min-width: 0 !important;
+      flex-wrap: wrap !important;
+    }
+
+    /* Make the edit button obey container width (no clipping) */
+    #smoothie-tab-content .ssm-summary-header.sb-ing-header button {
+      max-width: 100% !important;
+    }
+
+    /* Pills row scrolls horizontally without cutting last pill */
+    #smoothie-tab-content .ssm-summary-pills {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+      padding-right: 12px !important;
+    }
+    #smoothie-tab-content .ssm-summary-pills > * {
+      flex: 0 0 auto !important;
+      flex-shrink: 0 !important;
+    }
+  }
+
+  @media (max-width: 520px) {
+    /* On very small screens, stack the button cleanly */
+    #smoothie-tab-content .ssm-summary-header.sb-ing-header button {
+      width: 100% !important;
+    }
+  }
+
+/* =========================
+   Smoothie tab: stop horizontal overflow (mobile/tablet)
+   ========================= */
+@media (max-width: 1024px) {
+
+  /* Prevent any sideways scroll / bleed */
+  #smoothie-tab-content {
+    overflow-x: hidden !important;
+  }
+
+  /* The main offender */
+  #smoothie-tab-content .ssm-summary-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Make flex children allowed to shrink (common overflow cause) */
+  #smoothie-tab-content .ssm-summary-header,
+  #smoothie-tab-content .ssm-summary-title,
+  #smoothie-tab-content .ssm-summary-meta {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Chip row must never force the card wider */
+  #smoothie-tab-content .ssm-chipstrip {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* =========================
+   Smoothie Ingredients: uniform pill layout (mobile/tablet)
+   ========================= */
+@media (max-width: 1024px) {
+  /* Container: 2-column grid */
+  .sn-ing-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    flex-wrap: unset !important;
+  }
+
+  /* Uniform pill styling */
+  .sn-ing-pill {
+    display: flex !important;
+    align-items: center !important;
+    height: 44px !important;
+    padding: 8px 12px !important;
+    border-radius: 999px !important;
+    border: 1px solid #e5e7eb !important;
+    background: #f9fafb !important;
+    box-shadow: none !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Name: single line with ellipsis */
+  .sn-ing-pill__name {
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    color: #78350f !important;
+  }
+
+  /* Hide badges on mobile (vegan/unsweetened tags) */
+  .sn-ing-pill__badges {
+    display: none !important;
+  }
+
+  /* Separator */
+  .sn-ing-pill__sep {
+    flex-shrink: 0 !important;
+    font-size: 0.75rem !important;
+    color: #92400e !important;
+    opacity: 0.7 !important;
+  }
+
+  /* Amount */
+  .sn-ing-pill__amt {
+    flex-shrink: 0 !important;
+    font-size: 0.75rem !important;
+    color: #92400e !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+  }
+}
+
+
+/* =========================
+   Smoothie tab: yellow ingredients container - auto height based on content
+   ========================= */
+@media (max-width: 1024px) {
+  /* Target the yellow Smoothie Ingredients card container in smoothie tab only */
+  #smoothie-tab-content .sn-card.sn-card--warm {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;  /* prevent flex stretching */
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Remove extra padding from the body wrapper inside the yellow card */
+  #smoothie-tab-content .sn-card.sn-card--warm .sn-body {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Ensure ingredients panel is auto-height */
+  #smoothie-tab-content .sn-card.sn-card--warm #smoothie-ingredients-panel {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Remove extra margin/padding from the grid itself */
+  #smoothie-tab-content .sn-card.sn-card--warm .sn-ing-grid {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* =========================================
+   FINAL OVERRIDE: Smoothie Nutrition sheet (must be LAST)
+   Fix container height + yellow card height issues
+   ========================================= */
+/* Override global .results-body styles for smoothie results */
+#smoothie-tab-content #smoothie-results-body.results-body,
+#pf-smoothie-sheet-body #smoothie-results-body.results-body {
+  padding: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+/* Remove sheet body padding that creates extra space around the card */
+#pf-smoothie-sheet-body.pf-results-sheet-body {
+  padding: 0 !important;
+}
+
+/* Fix smoothie results card container */
+.pf-results-sheet[role="dialog"][aria-label="Smoothie Nutrition"] #smoothie-results-card {
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.pf-results-sheet[role="dialog"][aria-label="Smoothie Nutrition"] #smoothie-results-body {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+/* Prevent cards from stretching - force shrink-wrap */
+.pf-results-sheet[role="dialog"][aria-label="Smoothie Nutrition"] .sn-card {
+  flex: 0 0 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  align-self: flex-start !important;
+}
+
+/* Yellow card must hug content tightly */
+.pf-results-sheet[role="dialog"][aria-label="Smoothie Nutrition"] .sn-card.sn-card--warm {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  flex: 0 0 auto !important;
+  align-self: flex-start !important;
+}
+
+/* Remove vertical space sources inside yellow card */
+.pf-results-sheet[role="dialog"][aria-label="Smoothie Nutrition"] .sn-card.sn-card--warm .sn-body {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.pf-results-sheet[role="dialog"][aria-label="Smoothie Nutrition"] #smoothie-ingredients-panel {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Pill grid: prevent vertical centering, ensure content starts at top */
+.pf-results-sheet[role="dialog"][aria-label="Smoothie Nutrition"] .sn-card.sn-card--warm .sn-ing-grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  justify-content: flex-start !important;
+  align-content: flex-start !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}

@@ -1092,7 +1092,7 @@
     }
 
     /* Clear Button Style */
-    #clear-smoothie-btn {
+    #smoothie-clear-btn {
       flex: 0 0 auto;
       padding: 16px 20px;
       background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
@@ -1113,14 +1113,14 @@
       line-height: 1;
     }
 
-    #clear-smoothie-btn:hover {
+    #smoothie-clear-btn:hover {
       background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
       transform: translateY(-1px);
       box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
       border-color: #dc2626;
     }
 
-    #clear-smoothie-btn:active {
+    #smoothie-clear-btn:active {
       transform: translateY(0);
       box-shadow: 0 2px 4px rgba(239, 68, 68, 0.15);
     }
@@ -3925,11 +3925,11 @@
           <div id="vegan-milk-recommendation-container" style="display: none; margin-bottom: 15px;"></div>
 
           <!-- Smoothie Actions -->
-          <div style="display: flex; gap: 12px; margin-top: auto;">
-            <button id="build-smoothie-btn" class="btn-primary" style="flex: 1;" disabled>
+          <div class="sn-actions" style="margin-top: auto;">
+            <button id="build-smoothie-btn" class="btn-primary" disabled>
               🥤 Build Smoothie
             </button>
-            <button id="clear-smoothie-btn">
+            <button id="smoothie-clear-btn">
               <span style="font-size: 1.1rem;">🗑️</span>
               <span>Clear</span>
             </button>
@@ -3937,7 +3937,8 @@
         </div>
 
         <!-- Right: Smoothie Nutrition Results -->
-        <div class="card results-container" id="smoothie-results-card">
+        <div id="pf-smoothie-card-home"></div>
+        <div class="card results-container pf-smoothie-hidden" id="smoothie-results-card">
           <div class="results-header">
             <h2 class="card-title">Smoothie Nutrition</h2>
             <div class="status-indicator">
@@ -3982,6 +3983,20 @@
     </div>
 
     <div id="pf-results-sheet-body" class="pf-results-sheet-body"></div>
+  </div>
+</div>
+
+<!-- Smoothie Results Modal (mobile/tablet only) -->
+<div id="pf-smoothie-modal" class="pf-results-modal" style="display:none;" aria-hidden="true">
+  <div class="pf-results-backdrop" data-close="1" data-modal="smoothie"></div>
+
+  <div class="pf-results-sheet" role="dialog" aria-modal="true" aria-label="Smoothie Nutrition">
+    <div class="pf-results-sheet-header">
+      <div class="pf-results-sheet-title">Smoothie Nutrition</div>
+      <button type="button" id="pf-smoothie-close" class="pf-results-close" aria-label="Close">✕</button>
+    </div>
+
+    <div id="pf-smoothie-sheet-body" class="pf-results-sheet-body"></div>
   </div>
 </div>
 
@@ -5734,6 +5749,96 @@
           document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal.style.display === 'flex') {
               pfCloseResultsModal();
+            }
+          });
+        })();
+
+        // Smoothie Results Modal helpers
+        let pfSmoothiePlaceholder = null;
+
+        function pfIsMobileSmoothieMode() {
+          return window.matchMedia('(max-width: 1024px)').matches;
+        }
+
+        function pfOpenSmoothieModal() {
+          const modal = document.getElementById('pf-smoothie-modal');
+          const body = document.getElementById('pf-smoothie-sheet-body');
+          const resultsCard = document.getElementById('smoothie-results-card');
+          const homeAnchor = document.getElementById('pf-smoothie-card-home');
+          if (!modal || !body || !resultsCard || !homeAnchor) return;
+
+          // Place a placeholder where the card originally lived
+          if (!pfSmoothiePlaceholder) {
+            pfSmoothiePlaceholder = document.createElement('div');
+            pfSmoothiePlaceholder.id = 'pf-smoothie-placeholder';
+            pfSmoothiePlaceholder.style.display = 'none';
+          }
+          if (resultsCard.parentElement && resultsCard.parentElement !== body) {
+            resultsCard.parentElement.insertBefore(pfSmoothiePlaceholder, resultsCard);
+          }
+
+          // Remove hidden class
+          resultsCard.classList.remove('pf-smoothie-hidden');
+
+          // Move the existing results card into the modal
+          if (!body.contains(resultsCard)) {
+            body.innerHTML = '';
+            body.appendChild(resultsCard);
+          }
+
+          modal.style.display = 'flex';
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.classList.add('pf-modal-open');
+        }
+
+        function pfCloseSmoothieModal(options = {}) {
+          const { hideCard = true } = options;
+          const modal = document.getElementById('pf-smoothie-modal');
+          const body = document.getElementById('pf-smoothie-sheet-body');
+          const resultsCard = document.getElementById('smoothie-results-card');
+          const homeAnchor = document.getElementById('pf-smoothie-card-home');
+          if (!modal) return;
+
+          // Move card back to the exact original spot
+          if (resultsCard && pfSmoothiePlaceholder && pfSmoothiePlaceholder.parentElement) {
+            pfSmoothiePlaceholder.parentElement.insertBefore(resultsCard, pfSmoothiePlaceholder);
+            pfSmoothiePlaceholder.remove();
+            pfSmoothiePlaceholder = null;
+          } else if (resultsCard && homeAnchor) {
+            // Fallback: use home anchor
+            homeAnchor.insertAdjacentElement('afterend', resultsCard);
+          }
+
+          if (body) body.innerHTML = '';
+          modal.style.display = 'none';
+          modal.setAttribute('aria-hidden', 'true');
+          document.body.classList.remove('pf-modal-open');
+
+          // Hide card if requested
+          if (hideCard && resultsCard) {
+            resultsCard.classList.add('pf-smoothie-hidden');
+          }
+        }
+
+        // Wire smoothie modal close interactions
+        (function pfInitSmoothieModal() {
+          const modal = document.getElementById('pf-smoothie-modal');
+          if (!modal) return;
+
+          const closeBtn = document.getElementById('pf-smoothie-close');
+          if (closeBtn) closeBtn.addEventListener('click', () => pfCloseSmoothieModal({ hideCard: true }));
+
+          modal.addEventListener('click', (e) => {
+            const t = e.target;
+            if (t && t.getAttribute && t.getAttribute('data-close') === '1' && t.getAttribute('data-modal') === 'smoothie') {
+              e.stopPropagation();
+              pfCloseSmoothieModal({ hideCard: true });
+            }
+          });
+
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+              pfCloseSmoothieModal({ hideCard: true });
             }
           });
         })();
@@ -11057,7 +11162,7 @@ const allergenPanel = allergenNames.length === 0
       }, true); // Use capture phase to be extra safe against any bubbling blockers
     }
 
-    const clearSmoothieBtn = document.getElementById('clear-smoothie-btn');
+    const clearSmoothieBtn = document.getElementById('smoothie-clear-btn');
     const smoothieNameEl = document.getElementById('smoothie-name');
     const smoothieNameBarEl = document.getElementById('smoothie-name-bar');
     const smoothieNameDisplayEl = document.getElementById('smoothie-name-display');
@@ -11740,6 +11845,15 @@ const allergenPanel = allergenNames.length === 0
             <div style="font-size: 0.9rem;">Add ingredients and click "Build Smoothie" to see nutrition information</div>
           </div>
         `;
+      }
+      
+      // Hide card and close modal
+      const smoothieResultsCard = document.getElementById('smoothie-results-card');
+      if (smoothieResultsCard) {
+        smoothieResultsCard.classList.add('pf-smoothie-hidden');
+      }
+      if (typeof pfCloseSmoothieModal === 'function') {
+        pfCloseSmoothieModal({ hideCard: true });
       }
       
       // Reset status
@@ -13640,7 +13754,7 @@ const allergenPanel = allergenNames.length === 0
       // Add count display
       let countDisplay = '';
       if (freshFruitCount > 0 || driedFruitCount > 0) {
-        countDisplay = `<div id="fruit-counter-display" style="width: 100%; margin-bottom: 8px; padding: 8px 12px; background: var(--bg-secondary); border-radius: 6px; font-size: 0.8rem; color: var(--text-secondary);">
+        countDisplay = `<div id="fruit-counter-display" class="ss-edit-summary" style="width: 100%; margin-bottom: 8px; padding: 8px 12px; background: var(--bg-secondary); border-radius: 6px; font-size: 0.8rem; color: var(--text-secondary);">
           <span>Fresh fruits: <strong style="color: ${freshFruitCount >= MAX_FRESH_FRUITS ? 'var(--danger)' : 'var(--success)'}">${freshFruitCount}/${MAX_FRESH_FRUITS}</strong></span>
           <span style="margin-left: 12px;">Dried fruits: <strong style="color: ${driedFruitCount >= MAX_DRIED_FRUITS ? 'var(--danger)' : 'var(--success)'}">${driedFruitCount}/${MAX_DRIED_FRUITS}</strong></span>
         </div>`;
@@ -14298,13 +14412,13 @@ const allergenPanel = allergenNames.length === 0
           
           // Ultra-compact row layout for smoothie ingredients
           return `
-          <div class="ss-row fade-in">
-            <div class="ss-row-main">
-              <span class="ss-row-name">${escapeHTML(displayName)}</span>
-              ${badge ? `<div class="ss-tags">${badge}</div>` : ''}
-              <span class="ss-portion">${escapeHTML(servingDisplay)}</span>
-                </div>
-            <div class="ss-row-controls">
+          <div class="ssm-row fade-in" data-idx="${idx}">
+            <div class="ssm-info">
+              <div class="ssm-name">${escapeHTML(displayName)}</div>
+              <div class="ssm-meta">${escapeHTML(servingDisplay)}</div>
+              ${badge ? `<div class="ssm-tags">${badge}</div>` : ''}
+            </div>
+            <div class="ssm-qty">
               <div class="ss-qty-control">
                 <button class="ss-qty-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-1" data-ss-modal-control="1" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
                     <input 
@@ -14320,8 +14434,8 @@ const allergenPanel = allergenNames.length === 0
                     />
                 <button class="ss-qty-btn increment" data-index="${idx}" data-idx="${idx}" data-delta="1" data-ss-modal-control="1" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
                   </div>
-              <button class="ss-remove-btn" data-index="${idx}" data-idx="${idx}" data-action="remove" data-ss-modal-control="1" title="Remove" type="button">×</button>
             </div>
+            <button class="ss-remove-btn" data-index="${idx}" data-idx="${idx}" data-action="remove" data-ss-modal-control="1" title="Remove" type="button">×</button>
           </div>
         `;
             } catch (err) {
@@ -14403,7 +14517,7 @@ const allergenPanel = allergenNames.length === 0
         // Build compact summary card (no scroll, no tall list)
         const summaryHtml = `
           <div class="ssm-summary-card">
-            <div class="ssm-summary-header">
+            <div class="ssm-summary-header sb-ing-header">
               <div style="flex: 1; min-width: 0;">
                 <div class="ssm-summary-title">Smoothie Ingredients <span style="color: var(--text-secondary); font-weight: 600;">(${smoothieIngredients.length})</span></div>
                 <div class="ssm-summary-meta">
@@ -14419,14 +14533,14 @@ const allergenPanel = allergenNames.length === 0
         
         // Build modal structure with full ingredient list
         const modalHtml = `
-          <div class="ssm-modal" id="ssm-modal">
+          <div class="ssm-modal ss-edit-modal" id="ssm-modal">
             <div class="ssm-backdrop" id="ssm-backdrop"></div>
             <div class="ssm-modal-card">
               <div class="ssm-modal-header">
                 <div class="ssm-modal-title">Edit ingredients</div>
                 <button class="ssm-modal-close" id="ssm-modal-close" type="button" aria-label="Close">×</button>
               </div>
-              <div class="ssm-modal-scroll">
+              <div class="ssm-modal-scroll ss-edit-body">
                 ${infoMessages ? `<div class="ss-info-messages">${infoMessages}</div>` : ''}
                 ${chipsHtml}
                 ${soakTipHtml ? `<div style="margin-top: 12px; padding: 10px 12px; background: #e0f2fe; border-left: 3px solid #0284c7; border-radius: 6px; font-size: 0.8rem; color: #0c4a6e; line-height: 1.5;">${soakTipHtml}</div>` : ''}
@@ -15559,6 +15673,29 @@ const allergenPanel = allergenNames.length === 0
           }
         }
         
+        // Immediately show card and open modal on mobile
+        const smoothieResultsCard = document.getElementById('smoothie-results-card');
+        if (smoothieResultsCard) {
+          smoothieResultsCard.classList.remove('pf-smoothie-hidden');
+          
+          // Show "Building smoothie..." message while waiting
+          const smoothieResultsBody = document.getElementById('smoothie-results-body');
+          if (smoothieResultsBody) {
+            smoothieResultsBody.innerHTML = `
+              <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                <div style="font-size: 3rem; margin-bottom: 15px;">🥤</div>
+                <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">Building smoothie...</div>
+                <div style="font-size: 0.9rem;">Please wait while we calculate nutrition information</div>
+              </div>
+            `;
+          }
+          
+          // Open modal on mobile/tablet
+          if (pfIsMobileSmoothieMode()) {
+            pfOpenSmoothieModal();
+          }
+        }
+        
         setSmoothieStatus('Building smoothie...');
         try {
           // Helper function to extract ingredient name from "quantity unit name" format
@@ -15929,12 +16066,17 @@ const allergenPanel = allergenNames.length === 0
         } catch (err) {
           console.error('Build smoothie error:', err);
           setSmoothieStatus('Failed to build smoothie', true);
-          if (smoothieResultsBodyEl) {
-            smoothieResultsBodyEl.innerHTML = '';
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'empty-state';
-            errorDiv.textContent = `Error: ${err.message}`;
-            smoothieResultsBodyEl.appendChild(errorDiv);
+          
+          // Keep modal open on mobile and show error message
+          const smoothieResultsBody = document.getElementById('smoothie-results-body');
+          if (smoothieResultsBody) {
+            smoothieResultsBody.innerHTML = `
+              <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                <div style="font-size: 3rem; margin-bottom: 15px;">⚠️</div>
+                <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: var(--danger);">Error Building Smoothie</div>
+                <div style="font-size: 0.9rem;">${err.message || 'Failed to build smoothie. Please try again.'}</div>
+              </div>
+            `;
           }
         }
       });
@@ -16721,16 +16863,30 @@ const allergenPanel = allergenNames.length === 0
       ` : '';
       
       // Build ingredients HTML for panel
+      // Helper to escape HTML
+      const escapeHTML = (s) => {
+        if (!s) return '';
+        return String(s).replace(/[&<>"']/g, c => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[c]));
+      };
+      
       const ingredientsHtml = `
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <div class="sn-ing-grid" style="display: flex; flex-wrap: wrap; gap: 8px;">
               ${ingredientsList.map(ing => `
-                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #fbbf24; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
-                  <span style="font-size: 0.9rem; font-weight: 600; color: #78350f;">${ing.name}</span>
-                  ${isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px;">🌱 Vegan</span>' : ''}
-                  ${isUnsweetenedMilk(ing.originalName || ing.name) && isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #0EA5A4; background: rgba(14, 165, 164, 0.10); padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
-                  <span style="font-size: 0.75rem; color: #92400e; opacity: 0.7;">•</span>
-                  <span style="font-size: 0.75rem; color: #92400e; font-weight: 500;">${ing.serving}</span>
-                </div>
+                <span class="sn-ing-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #fbbf24; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+                  <span class="sn-ing-pill__name" style="font-size: 0.9rem; font-weight: 600; color: #78350f;">${escapeHTML(ing.name)}</span>
+                  <span class="sn-ing-pill__badges" style="display: inline-flex; align-items: center; gap: 4px;">
+                    ${isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px;">🌱 Vegan</span>' : ''}
+                    ${isUnsweetenedMilk(ing.originalName || ing.name) && isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #0EA5A4; background: rgba(14, 165, 164, 0.10); padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
+                  </span>
+                  <span class="sn-ing-pill__sep" style="font-size: 0.75rem; color: #92400e; opacity: 0.7;">•</span>
+                  <span class="sn-ing-pill__amt" style="font-size: 0.75rem; color: #92400e; font-weight: 500;">${escapeHTML(ing.serving)}</span>
+                </span>
               `).join('')}
             </div>
       `;
