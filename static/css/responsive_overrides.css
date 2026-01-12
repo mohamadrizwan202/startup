@@ -4022,3 +4022,12 @@ body.pf-modal-open {
   flex: 0 0 200px !important;   /* adjust if you want wider/narrower */
 }
 
+
+/* ============================================
+   Ingredient Tab: Title Case ingredient labels
+   (visual only; does not change data)
+   ============================================ */
+#ingredient-tab-content #ingredient-list,
+#ingredient-tab-content #recommended-list{
+  text-transform: capitalize;
+}

@@ -4,103 +4,45 @@ __pycache__/
 
 # Virtual environments
 venv/
-.env/
+.venv/
 
 # macOS junk
 .DS_Store
 
 # Logs
 *.log
+server.log
+server.pid
 
-
-# local databases
+# Local databases
 *.db
 *.sqlite
 *.sqlite3
 instance/
-.env
-__pycache__/
-.venv/
-venv/
-__pycache__/
-*.pyc
-
-# local sqlite db
 allergen_nutrition.db
 
+# Local backups / dumps (never commit)
+backups/
+*.tar.gz
+*.dump
+*.sql
+
+# Local curl / debug artifacts
 cookies*.txt
 login*.html
-
-yenv/
-*.bak
-cookies*.txt
-login*.html
-myenv/
-*.bak
-
-cookies*.txt
-login*.html
-* 2.py
-* 2.sql
-* 3.py
-* 3.sql
-
-
-# local curl artifacts
-cookies.txt
-cookies*.txt
-login.html
-login*.html
-.pgdata_restore
-register*.html
-resp_live.html
-
-# local debug dumps
 register*.html
 resp*.html
-cookies*.txt
+.pgdata_restore
 nlp_resp.json
 
+# Editor backups
 *.bak
 *~
-*.dump
-*.log
 
-# secrets
+# Secrets
 .env
 .env.*
 
-# secrets
-.env
-.env.*
 
-# local sensitive artifacts
-cookies*.txt
-backup_*.dump
-*.db
-.pgdata_restore/
-
-# Local backups
-*.bak
-* 2.bak
-
-# backups
-*.bak
-
-# local backup files
-*.bak_goal_*
-
-# local dev
-server.pid
-server.log
-.env.local
-render_latest.dump
-*.dump
-
-# local dev
-server.pid
-server.log
-.env.local
-render_latest.dump
-*.dump
-server*.pid
+# local virtualenvs
+myenv/
