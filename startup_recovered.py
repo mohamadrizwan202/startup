@@ -372,6 +372,32 @@ def init_feedback_table():
         logger.warning(f"Failed to initialize feedback table: {e}", exc_info=True)
 
 
+def init_ingredient_aliases_table():
+    """Create ingredient_aliases table in PostgreSQL if it doesn't exist (idempotent)."""
+    if not db.USE_POSTGRES:
+        return
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS public.ingredient_aliases (
+                alias_key text PRIMARY KEY,
+                canonical_key text NOT NULL,
+                created_at timestamptz NOT NULL DEFAULT now()
+            )
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS ingredient_aliases_canonical_idx 
+            ON public.ingredient_aliases(canonical_key)
+        """)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        logger.info("ingredient_aliases table initialized")
+    except Exception as e:
+        logger.warning(f"Failed to initialize ingredient_aliases table: {e}", exc_info=True)
+
+
 # Only run schema creation if RUN_SCHEMA=1 is set (default: skip to prevent app_runtime from attempting DDL)
 # In production web runtime, schema creation must be skipped so app_runtime never attempts DDL
 RUN_SCHEMA = is_truthy(os.getenv("RUN_SCHEMA", "0"))
@@ -383,6 +409,8 @@ if RUN_SCHEMA:
     seed_nutrition_facts_if_empty()
     # Initialize feedback table (idempotent)
     init_feedback_table()
+    # Initialize ingredient_aliases table (idempotent)
+    init_ingredient_aliases_table()
 else:
     logger.info("RUN_SCHEMA=0 skipping schema creation (use RUN_SCHEMA=1 to enable)")
 
