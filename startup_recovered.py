@@ -1455,34 +1455,17 @@ def register():
             conn = get_conn()
             cursor = conn.cursor()
             if db.USE_POSTGRES:
-                # PostgreSQL: use RETURNING clause to get the id and other fields
-                query = "INSERT INTO users (email, password_hash) VALUES (%s, %s) RETURNING id, email, created_at"
+                # PostgreSQL: use RETURNING clause to get the id
+                query = "INSERT INTO users (email, password_hash) VALUES (%s, %s) RETURNING id"
                 cursor.execute(query, (email, hashed_password))
-                result = cursor.fetchone()
-                if result:
-                    # Convert result to dict if it's dict-like, otherwise extract by index
-                    if isinstance(result, dict):
-                        user_dict = {
-                            "id": result['id'], 
-                            "email": result.get('email', email), 
-                            "password_hash": hashed_password,  # Use the hash we just created
-                            "created_at": result.get('created_at')
-                        }
-                    else:
-                        user_dict = {
-                            "id": result[0], 
-                            "email": email, 
-                            "password_hash": hashed_password,  # Use the hash we just created
-                            "created_at": result[2] if len(result) > 2 else None
-                        }
-                    user_id = user_dict['id']
-                else:
-                    raise Exception("Failed to get user_id after insert")
+                row = cursor.fetchone()
+                user_id = row["id"] if isinstance(row, dict) else row[0]
             else:
                 # SQLite: use lastrowid
                 query = db.prepare_query("INSERT INTO users (email, password_hash) VALUES (?, ?)")
                 cursor.execute(query, (email, hashed_password))
-            user_id = cursor.lastrowid
+                user_id = cursor.lastrowid
+
             # Construct user_dict directly since we have email, user_id, and password_hash
             user_dict = {
                 "id": user_id, 
@@ -1845,13 +1828,14 @@ def get_ingredients(category):
     try:
         conn = get_conn()
         cursor = conn.cursor()
-        query = db.prepare_query("""
+        sql = db.prepare_query("""
             SELECT DISTINCT ingredient 
             FROM ingredient_categories 
             WHERE category = ? 
             ORDER BY ingredient
         """)
-        cursor.execute(query, (category,))
+        cursor.execute(sql, (category,))
+
         results = cursor.fetchall()
         conn.close()
         # Both Postgres (dict) and SQLite (sqlite3.Row) support dictionary-style access
@@ -1865,6 +1849,8 @@ def get_ingredients(category):
 # ============================================================================
 # RECOVERED DATA STRUCTURES AND FUNCTIONS
 # ============================================================================
+
+
 
 
 @csrf.exempt
@@ -1883,20 +1869,25 @@ def ingredient_search():
         cursor = conn.cursor()
         
         sql = db.prepare_query("""
-            SELECT 
-                ingredient AS name,
-                MIN(category) AS category,
-                MIN(subcategory) AS subcategory
-            FROM ingredient_categories
-            WHERE LOWER(ingredient) LIKE LOWER(?)
-            GROUP BY LOWER(ingredient), ingredient
-            ORDER BY 
-                CASE 
-                    WHEN LOWER(ingredient) LIKE LOWER(?) THEN 1
-                    WHEN LOWER(ingredient) LIKE LOWER(?) THEN 2
+            SELECT
+                ic.ingredient AS name,
+                MIN(ic.category) AS category,
+                MIN(ic.subcategory) AS subcategory
+            FROM ingredient_categories ic
+            WHERE LOWER(ic.ingredient) LIKE LOWER(?)
+              AND EXISTS (
+                SELECT 1
+                FROM nutrition_facts nf
+                WHERE LOWER(TRIM(nf.ingredient)) = LOWER(TRIM(ic.ingredient))
+              )
+            GROUP BY LOWER(ic.ingredient), ic.ingredient
+            ORDER BY
+                CASE
+                    WHEN LOWER(ic.ingredient) LIKE LOWER(?) THEN 1
+                    WHEN LOWER(ic.ingredient) LIKE LOWER(?) THEN 2
                     ELSE 3
                 END,
-                ingredient
+                ic.ingredient
             LIMIT 20
         """)
         
@@ -50629,6 +50620,7 @@ def _row_to_dict(row, description):
 def admin_feedback():
     expected = os.environ.get("ADMIN_TOKEN", "")
     provided = request.headers.get("X-Admin-Token") or request.args.get("token", "")
+
 
     # Hide endpoint if not configured / wrong token
     if not expected or not provided or not hmac.compare_digest(provided, expected):
