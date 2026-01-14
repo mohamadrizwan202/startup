@@ -481,23 +481,52 @@
     /* Desktop only: keep EXACT 725px behavior */
     @media (min-width: 1025px) {
       .browse-results-grid {
-        grid-template-columns: minmax(0, 1fr) 725px;
-        gap: 25px;
+      grid-template-columns: minmax(0, 1fr) 725px;
+      gap: 25px;
+    }
+    
+    .browse-results-grid > .card.results-container {
+      display: flex;
+      flex-direction: column;
+      width: 725px !important;
+      max-width: 725px !important;
+      min-width: 725px !important;
+      box-sizing: border-box;
+    }
+    
+    .browse-results-grid > :nth-child(2) {
+      width: 725px !important;
+      max-width: 725px !important;
+      min-width: 725px !important;
+      }
+    }
+
+    /* Ingredient tab: keep Browse + Results panels same height (desktop) and scroll inside */
+    @media (min-width: 1024px) {
+      #ingredient-tab-content .pf-ing-grid {
+        align-items: stretch;
       }
 
-      .browse-results-grid > .card.results-container {
+      /* Both cards fixed visual height; content scrolls inside */
+      #ingredient-tab-content .pf-ing-grid > * {
+        height: clamp(560px, 72vh, 820px);
+        min-height: 0;
         display: flex;
         flex-direction: column;
-        width: 725px !important;
-        max-width: 725px !important;
-        min-width: 725px !important;
-        box-sizing: border-box;
+        overflow: hidden;
       }
 
-      .browse-results-grid > :nth-child(2) {
-        width: 725px !important;
-        max-width: 725px !important;
-        min-width: 725px !important;
+      /* Right panel: results content scrolls */
+      #ingredient-tab-content .pf-ing-grid .results-body,
+      #ingredient-tab-content .pf-ing-grid .tab-pane {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+      }
+
+      /* Left panel: browse can scroll when it grows */
+      #ingredient-tab-content .pf-ing-grid > *:first-child {
+        overflow: auto;
       }
     }
     
@@ -3653,7 +3682,7 @@
     </div>
 
       <!-- Browse Ingredients & Analysis Results Side by Side -->
-      <div class="browse-results-grid pf-ia-equal-row">
+      <div class="browse-results-grid pf-ia-equal-row pf-ing-grid">
         <!-- Left: Browse Ingredients -->
     <div class="card">
       <div class="card-header">
@@ -4018,6 +4047,12 @@
     const nutritionResultsBodyEl = document.getElementById('nutrition-results-body');
     const allergensResultsBodyEl = document.getElementById('allergens-results-body');
     const healthBenefitsResultsBodyEl = document.getElementById('health-benefits-results-body');
+    
+    // Capture default empty-state HTML so we can restore on tab switch
+    const PF_DEFAULT_NUTRITION_HTML = nutritionResultsBodyEl ? nutritionResultsBodyEl.innerHTML : '';
+    const PF_DEFAULT_ALLERGENS_HTML = allergensResultsBodyEl ? allergensResultsBodyEl.innerHTML : '';
+    const PF_DEFAULT_HB_HTML = healthBenefitsResultsBodyEl ? healthBenefitsResultsBodyEl.innerHTML : '';
+    
     const tabs = document.querySelectorAll('.tab');
     const tabPanes = document.querySelectorAll('.tab-pane');
 
@@ -4100,6 +4135,143 @@
 
       // Also clear any ingredient error
       hideIngredientError?.();
+    }
+
+    function resetIngredientTabUI() {
+      try { hideIngredientError?.(); } catch (e) {}
+
+      // Clear Ingredient textarea
+      if (typeof ingredientsInputEl !== 'undefined' && ingredientsInputEl) {
+        ingredientsInputEl.value = '';
+      }
+
+      // Clear Ingredient search bar (this is what keeps the old filtered view)
+      const ingredientSearchEl = document.getElementById('ingredient-search');
+      if (ingredientSearchEl) ingredientSearchEl.value = '';
+
+      // Clear selected chips/state
+      if (typeof selectedIngredients !== 'undefined') selectedIngredients = [];
+      if (typeof selectedCategory !== 'undefined') selectedCategory = null;
+      if (typeof selectedSubcategory !== 'undefined') selectedSubcategory = null;
+      if (typeof currentIngredients !== 'undefined') currentIngredients = [];
+
+      // Clear selected ingredient chips UI
+      if (typeof selectedIngredientsEl !== 'undefined' && selectedIngredientsEl) {
+        selectedIngredientsEl.innerHTML = '';
+        selectedIngredientsEl.style.display = 'none';
+      }
+
+      // Reset browse UI (puts back the "Select a goal first" / "Select sub-category…" placeholders)
+      try { resetBrowseAfterAnalyze(); } catch (e) {}
+
+      // Un-hide any items that were filtered by previous search
+      document
+        .querySelectorAll('#ingredient-list .ingredient-item-compact, #recommended-list .ingredient-item-compact')
+        .forEach(el => { el.style.display = ''; });
+
+      // Restore default "empty state" result panes
+      if (typeof nutritionResultsBodyEl !== 'undefined' && nutritionResultsBodyEl) {
+        nutritionResultsBodyEl.innerHTML = PF_DEFAULT_NUTRITION_HTML;
+      }
+      if (typeof allergensResultsBodyEl !== 'undefined' && allergensResultsBodyEl) {
+        allergensResultsBodyEl.innerHTML = PF_DEFAULT_ALLERGENS_HTML;
+      }
+      if (typeof healthBenefitsResultsBodyEl !== 'undefined' && healthBenefitsResultsBodyEl) {
+        healthBenefitsResultsBodyEl.innerHTML = PF_DEFAULT_HB_HTML;
+      }
+
+      // Reset inner result tab UI back to Nutrition
+      const ingRoot = document.getElementById('ingredient-tab-content');
+      if (ingRoot) {
+        ingRoot.querySelectorAll('.tab').forEach(btn => {
+          const isNut = btn.dataset.tab === 'nutrition';
+          btn.classList.toggle('active', isNut);
+        });
+        ingRoot.querySelectorAll('.tab-pane').forEach(pane => {
+          const isNut = pane.dataset.tab === 'nutrition';
+          pane.classList.toggle('active', isNut);
+          pane.style.display = isNut ? '' : 'none';
+        });
+      }
+
+      // Reset analyze button
+      if (typeof analyzeBtn !== 'undefined' && analyzeBtn) analyzeBtn.disabled = true;
+
+      // Optional: reset goal browse search term + rerender categories clean
+      try {
+        window.pfGoalSearchTerm = '';
+        window.pfGoalBrowseAllOpen = false;
+        renderCategories?.();
+      } catch (e) {}
+    }
+
+    function resetSmoothieTabUI() {
+      // Clear smoothie state
+      if (typeof clearSmoothieState === 'function') {
+        clearSmoothieState();
+      }
+
+      // Clear smoothie search and input
+      if (typeof smoothieIngredientSearchEl !== 'undefined' && smoothieIngredientSearchEl) {
+        smoothieIngredientSearchEl.value = '';
+      }
+      if (typeof smoothieIngredientSuggestionsEl !== 'undefined' && smoothieIngredientSuggestionsEl) {
+        smoothieIngredientSuggestionsEl.innerHTML = '';
+        smoothieIngredientSuggestionsEl.style.display = 'none';
+      }
+
+      // Clear smoothie ingredients array
+      if (typeof smoothieIngredients !== 'undefined') smoothieIngredients = [];
+      if (typeof smoothieSelectedIngredientsEl !== 'undefined' && smoothieSelectedIngredientsEl) {
+        smoothieSelectedIngredientsEl.innerHTML = '';
+        smoothieSelectedIngredientsEl.style.display = 'none';
+      }
+
+      // Clear smoothie recipe preview
+      if (typeof smoothieRecipeEl !== 'undefined' && smoothieRecipeEl) {
+        smoothieRecipeEl.innerHTML = `
+          <div style="font-size: 0.9rem; color: var(--text-secondary); text-align: center; padding: 20px;">
+            Add ingredients to build your smoothie recipe
+          </div>
+        `;
+      }
+
+      // Clear smoothie name bar
+      if (typeof smoothieNameBarEl !== 'undefined' && smoothieNameBarEl) {
+        smoothieNameBarEl.style.display = 'none';
+      }
+      if (typeof smoothieNameEl !== 'undefined' && smoothieNameEl) {
+        smoothieNameEl.value = '';
+      }
+      if (typeof smoothieNameDisplayEl !== 'undefined' && smoothieNameDisplayEl) {
+        smoothieNameDisplayEl.textContent = 'My Smoothie';
+      }
+
+      // Clear dropdowns
+      if (typeof smoothieForEl !== 'undefined' && smoothieForEl) smoothieForEl.value = '';
+      if (typeof smoothieTimingEl !== 'undefined' && smoothieTimingEl) smoothieTimingEl.value = '';
+      if (typeof smoothieHealthGoalsEl !== 'undefined' && smoothieHealthGoalsEl) smoothieHealthGoalsEl.value = '';
+
+      // Clear smoothie results
+      if (typeof smoothieResultsBodyEl !== 'undefined' && smoothieResultsBodyEl) {
+        smoothieResultsBodyEl.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+            <div style="font-size: 3rem; margin-bottom: 15px;">🥤</div>
+            <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">No Smoothie Built Yet</div>
+            <div style="font-size: 0.9rem;">Add ingredients and click "Build Smoothie" to see nutrition information</div>
+          </div>
+        `;
+      }
+
+      // Reset build button
+      if (typeof buildSmoothieBtn !== 'undefined' && buildSmoothieBtn) {
+        buildSmoothieBtn.disabled = true;
+      }
+
+      // Reset status
+      if (typeof setSmoothieStatus === 'function') {
+        setSmoothieStatus('Ready to build');
+      }
     }
 
     function scrollToSubcategories() {
@@ -4863,7 +5035,7 @@
           const items = ingredientListEl.querySelectorAll('.ingredient-item-compact');
           const recommendedListEl = document.getElementById('recommended-list');
           const recommendedItems = recommendedListEl ? recommendedListEl.querySelectorAll('.ingredient-item-compact') : [];
-
+          
           [...items, ...recommendedItems].forEach(item => {
             const text = item.querySelector('span').textContent.toLowerCase();
             item.style.display = text.includes(query) ? '' : 'none';
@@ -6086,15 +6258,15 @@
         <div class="nutrition-results-card">
           <div class="pf-nutrition-hero">
             <div class="pf-nutrition-hero__copy">
-              <div class="nutrition-title">
+            <div class="nutrition-title">
                 <h3>Nutrition Summary</h3>
                 <p>Totals across selected ingredients</p>
               </div>
-            </div>
+              </div>
             <div class="pf-nutrition-hero__ing">
-              ${headerRight}
+            ${headerRight}
             </div>
-          </div>
+            </div>
 
           <div class="nutrition-summary-grid">
             <div class="nutrition-tile-compact"><div class="top"><span>🔥</span><span class="label">Calories</span></div><div class="value">${total.calories.toFixed(1)}<span class="unit">kcal</span></div></div>
@@ -6245,18 +6417,18 @@
                 <div class="pf-hb2-hero__copy">
                   <div class="pf-hb2-title">Health Benefits</div>
                   <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
-                </div>
+              </div>
                 <div class="pf-hb2-hero__ing">
                   <span class="pf-hb2-chip">${pfIngredientPillHTML(displayName, servingText)}</span>
-                </div>
               </div>
+            </div>
               <div class="pf-hb2-card">
                 <div class="pf-hb2-cardHead">
                   <div class="pf-hb2-name">${name}</div>
                   ${categoryLabel ? `<span class="pf-hb2-tag">${categoryLabel}</span>` : ''}
             </div>
                 ${desc ? `<div class="pf-hb2-desc">${desc}</div>` : ''}
-            </div>
+          </div>
           </div>
           `;
           
@@ -6276,11 +6448,11 @@
                 <div class="pf-hb2-hero__copy">
                   <div class="pf-hb2-title">Health Benefits</div>
                   <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
-                </div>
+              </div>
                 <div class="pf-hb2-hero__ing">
                   <span class="pf-hb2-chip">${pfIngredientPillHTML(displayName, servingText)}</span>
-                </div>
               </div>
+            </div>
               <div class="pf-hb2-card">
                 <div style="color:#64748b;font-size:.9rem;line-height:1.45">No specific benefit found for this goal for this ingredient.</div>
             </div>
@@ -6306,16 +6478,16 @@
               <div class="pf-hb2-hero__copy">
                 <div class="pf-hb2-title">Health Benefits</div>
                 <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
-              </div>
+                </div>
               <div class="pf-hb2-hero__ing">
                 <span class="pf-hb2-chip">${pfIngredientPillHTML(displayName, servingText)}</span>
               </div>
-            </div>
+                  </div>
             <div class="pf-hb2-card">
               <div style="color:#64748b;font-size:.9rem;line-height:1.45">No health benefits data available for this ingredient.</div>
-              </div>
-                  </div>
-        `;
+                </div>
+            </div>
+          `;
         if (targetBody) {
           targetBody.innerHTML = emptyHtml;
         }
@@ -6339,10 +6511,10 @@
             <div class="pf-hb2-cardHead">
               <div class="pf-hb2-name">${name}</div>
               ${safeCategory ? `<span class="pf-hb2-tag">${safeCategory}</span>` : ''}
-                </div>
-            ${desc ? `<div class="pf-hb2-desc">${desc}</div>` : ''}
             </div>
-          `;
+            ${desc ? `<div class="pf-hb2-desc">${desc}</div>` : ''}
+          </div>
+        `;
       }).join('');
 
       // Build remaining benefits (for accordion)
@@ -6391,7 +6563,7 @@
             <div class="pf-hb2-hero__copy">
               <div class="pf-hb2-title">Health Benefits</div>
               <div class="pf-hb2-subtitle">Wellness benefits of analyzed ingredient</div>
-            </div>
+          </div>
             <div class="pf-hb2-hero__ing">
               <span class="pf-hb2-chip">${pfIngredientPillHTML(displayName, servingText)}</span>
             </div>
@@ -6794,7 +6966,7 @@ const allergenPanel = allergenNames.length === 0
               <div class="pf-a-subtitle">Checks selected ingredient(s) against common allergen groups. Always verify labels if you have severe allergies.</div>
             </div>
             <div class="pf-allergen-hero__badge">
-              ${statusPill}
+            ${statusPill}
             </div>
             <div class="pf-allergen-hero__ing">
               ${headerIngredientChip}
@@ -11920,30 +12092,30 @@ const allergenPanel = allergenNames.length === 0
       document.addEventListener('change', (e) => {
         if (e.target && e.target.id === 'smoothie-health-goals') {
           const currentHealthGoal = e.target.value;
-          
-          // Hide badge when value changes (will be shown again by updateSmoothieNameFromHealthGoal if a goal is selected)
-          if (smoothieNameBarEl && !currentHealthGoal) {
+        
+        // Hide badge when value changes (will be shown again by updateSmoothieNameFromHealthGoal if a goal is selected)
+        if (smoothieNameBarEl && !currentHealthGoal) {
+          smoothieNameBarEl.style.display = 'none';
+        }
+        
+        // Only clear "Who is this smoothie for?" and "Timing" if changing from one health goal to another
+        // (not on the first selection when previousHealthGoal is null)
+        if (previousHealthGoal !== null && previousHealthGoal !== '' && currentHealthGoal !== previousHealthGoal) {
+          // User is changing from one health goal to another, clear related fields
+          if (smoothieForEl) smoothieForEl.value = '';
+          if (smoothieTimingEl) smoothieTimingEl.value = '';
+          // Hide badge when changing health goals
+          if (smoothieNameBarEl) {
             smoothieNameBarEl.style.display = 'none';
           }
-          
-          // Only clear "Who is this smoothie for?" and "Timing" if changing from one health goal to another
-          // (not on the first selection when previousHealthGoal is null)
-          if (previousHealthGoal !== null && previousHealthGoal !== '' && currentHealthGoal !== previousHealthGoal) {
-            // User is changing from one health goal to another, clear related fields
-            if (smoothieForEl) smoothieForEl.value = '';
-            if (smoothieTimingEl) smoothieTimingEl.value = '';
-            // Hide badge when changing health goals
-            if (smoothieNameBarEl) {
-              smoothieNameBarEl.style.display = 'none';
-            }
-          }
-          
-          // Update previous health goal for next change
-          previousHealthGoal = currentHealthGoal;
-          
-          updateSmoothieNameFromHealthGoal();
-          // Clear smoothie state when health goal changes
-          clearSmoothieState();
+        }
+        
+        // Update previous health goal for next change
+        previousHealthGoal = currentHealthGoal;
+        
+        updateSmoothieNameFromHealthGoal();
+        // Clear smoothie state when health goal changes
+        clearSmoothieState();
           
           updateGoalGuidanceCardsSoon();
         }
@@ -14469,7 +14641,7 @@ const allergenPanel = allergenNames.length === 0
               <div class="ssm-name">${escapeHTML(displayName)}</div>
               <div class="ssm-meta">${escapeHTML(servingDisplay)}</div>
               ${badge ? `<div class="ssm-tags">${badge}</div>` : ''}
-            </div>
+                </div>
             <div class="ssm-qty">
               <div class="ss-qty-control">
                 <button class="ss-qty-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-1" data-ss-modal-control="1" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
@@ -14486,7 +14658,7 @@ const allergenPanel = allergenNames.length === 0
                     />
                 <button class="ss-qty-btn increment" data-index="${idx}" data-idx="${idx}" data-delta="1" data-ss-modal-control="1" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
                   </div>
-            </div>
+                </div>
             <button class="ss-remove-btn" data-index="${idx}" data-idx="${idx}" data-action="remove" data-ss-modal-control="1" title="Remove" type="button">×</button>
           </div>
         `;
@@ -16933,8 +17105,8 @@ const allergenPanel = allergenNames.length === 0
                 <span class="sn-ing-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #fbbf24; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
                   <span class="sn-ing-pill__name" style="font-size: 0.9rem; font-weight: 600; color: #78350f;">${escapeHTML(ing.name)}</span>
                   <span class="sn-ing-pill__badges" style="display: inline-flex; align-items: center; gap: 4px;">
-                    ${isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px;">🌱 Vegan</span>' : ''}
-                    ${isUnsweetenedMilk(ing.originalName || ing.name) && isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #0EA5A4; background: rgba(14, 165, 164, 0.10); padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
+                  ${isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #059669; background: #d1fae5; padding: 2px 6px; border-radius: 3px;">🌱 Vegan</span>' : ''}
+                  ${isUnsweetenedMilk(ing.originalName || ing.name) && isPlantBasedMilk(ing.originalName || ing.name) ? '<span style="font-size: 0.7rem; color: #0EA5A4; background: rgba(14, 165, 164, 0.10); padding: 2px 6px; border-radius: 3px; margin-left: 4px;">Unsweetened</span>' : ''}
                   </span>
                   <span class="sn-ing-pill__sep" style="font-size: 0.75rem; color: #92400e; opacity: 0.7;">•</span>
                   <span class="sn-ing-pill__amt" style="font-size: 0.75rem; color: #92400e; font-weight: 500;">${escapeHTML(ing.serving)}</span>
@@ -17650,35 +17822,18 @@ const batchG = (smoothieBatchMlOverride != null)
       tab.addEventListener('click', () => {
         const targetTab = tab.dataset.mainTab;
         
-        // Clear Ingredient tab fields when switching away
+        // Reset tabs when switching to ensure fresh state
         if (targetTab === 'smoothie') {
-          // Clear ingredient input
-          if (ingredientsInputEl) {
-            ingredientsInputEl.value = '';
-          }
-          // Clear selected ingredients
-          selectedIngredients = [];
-          if (selectedIngredientsEl) {
-            selectedIngredientsEl.innerHTML = '';
-            selectedIngredientsEl.style.display = 'none';
-          }
-          // Clear results
-          if (resultsBodyEl) {
-            resultsBodyEl.innerHTML = '';
-          }
-          // Reset analyze button
-          if (analyzeBtn) {
-            analyzeBtn.disabled = true;
-          }
-          
           // Cancel any pending "scroll back to search" timer (from Add button UX)
           if (scrollToSearchTimer) {
             clearTimeout(scrollToSearchTimer);
             scrollToSearchTimer = null;
           }
 
-          // Fully reset Goal/Subcategory/Selected summary + chips/lists
-          resetBrowseAfterAnalyze();
+          // Fully reset Ingredient tab UI when switching away from it
+          if (typeof resetIngredientTabUI === 'function') {
+            resetIngredientTabUI();
+          }
 
           // Hide step sections again (they'll re-appear after user clicks goal/subcategory)
           const subSec = document.getElementById('subcategories-section');
@@ -17686,65 +17841,18 @@ const batchG = (smoothieBatchMlOverride != null)
 
           const ingSec = document.getElementById('ingredients-section');
           if (ingSec) ingSec.style.display = 'none';
+
+          // Reset Smoothie tab UI when switching to it (ensures fresh state)
+          if (typeof resetSmoothieTabUI === 'function') {
+            resetSmoothieTabUI();
+          }
         }
         
-        // Clear Smoothie tab fields when switching away from smoothie
         if (targetTab === 'ingredient') {
-          // Clear smoothie state when switching tabs
-          clearSmoothieState();
-          
-          // Clear smoothie search and input
-          if (smoothieIngredientSearchEl) {
-            smoothieIngredientSearchEl.value = '';
+          // Reset Smoothie tab UI when switching away from it
+          if (typeof resetSmoothieTabUI === 'function') {
+            resetSmoothieTabUI();
           }
-          if (smoothieIngredientSuggestionsEl) {
-            smoothieIngredientSuggestionsEl.innerHTML = '';
-            smoothieIngredientSuggestionsEl.style.display = 'none';
-          }
-          // Clear smoothie ingredients array
-          smoothieIngredients = [];
-          if (smoothieSelectedIngredientsEl) {
-            smoothieSelectedIngredientsEl.innerHTML = '';
-            smoothieSelectedIngredientsEl.style.display = 'none';
-          }
-          // Clear smoothie recipe preview
-          if (smoothieRecipeEl) {
-            smoothieRecipeEl.innerHTML = `
-              <div style="font-size: 0.9rem; color: var(--text-secondary); text-align: center; padding: 20px;">
-                Add ingredients to build your smoothie recipe
-              </div>
-            `;
-          }
-          // Clear smoothie name bar
-          if (smoothieNameBarEl) {
-            smoothieNameBarEl.style.display = 'none';
-          }
-          if (smoothieNameEl) {
-            smoothieNameEl.value = '';
-          }
-          if (smoothieNameDisplayEl) {
-            smoothieNameDisplayEl.textContent = 'My Smoothie';
-          }
-          // Clear dropdowns
-          if (smoothieForEl) smoothieForEl.value = '';
-          if (smoothieTimingEl) smoothieTimingEl.value = '';
-          if (smoothieHealthGoalsEl) smoothieHealthGoalsEl.value = '';
-          // Clear smoothie results
-          if (smoothieResultsBodyEl) {
-            smoothieResultsBodyEl.innerHTML = `
-              <div style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
-                <div style="font-size: 3rem; margin-bottom: 15px;">🥤</div>
-                <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">No Smoothie Built Yet</div>
-                <div style="font-size: 0.9rem;">Add ingredients and click "Build Smoothie" to see nutrition information</div>
-              </div>
-            `;
-          }
-          // Reset build button
-          if (buildSmoothieBtn) {
-            buildSmoothieBtn.disabled = true;
-          }
-          // Reset status
-          setSmoothieStatus('Ready to build');
         }
         
         // Update active states
@@ -17759,6 +17867,14 @@ const batchG = (smoothieBatchMlOverride != null)
         if (targetContent) {
           targetContent.classList.add('active');
           targetContent.style.display = 'block';
+        }
+
+        // Reset Ingredient tab UI AFTER tab is shown (ensures fresh state)
+        if (targetTab === 'ingredient') {
+          // Use requestAnimationFrame to ensure DOM is fully ready and visible
+          if (typeof resetIngredientTabUI === 'function') {
+            requestAnimationFrame(() => resetIngredientTabUI());
+          }
         }
       });
     });
