@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us - PureFyul</title>
@@ -11,53 +12,114 @@
   {% include "_navbar.html" %}
 
   <main class="about-page">
+
     <!-- Hero Section -->
     <section class="about-hero">
-      <h1 class="about-hero-title">About PureFyul</h1>
-      <p class="about-hero-subtitle">
-        Empowering healthier choices through comprehensive nutrition and allergen analysis. 
-        Discover the nutritional value of ingredients and create balanced smoothies tailored to your health goals.
-      </p>
-      <div class="about-pills">
-        <span class="about-pill">Nutrition</span>
-        <span class="about-pill">Allergen Safety</span>
-        <span class="about-pill">Health Goals</span>
+      <div class="about-hero-inner">
+        <div class="about-hero-left">
+          <h1 class="about-hero-title">About PureFyul</h1>
+          <p class="about-hero-subtitle">
+            Nutrition + allergen clarity in one place. Analyze ingredients, build smoothies, and make better choices with less guesswork.
+          </p>
+
+          <div class="about-pills">
+            <span class="about-pill">Nutrition</span>
+            <span class="about-pill">Allergen Safety</span>
+            <span class="about-pill">Goal Support</span>
+          </div>
+
+          <div class="about-hero-buttons">
+            <a href="{{ url_for('index') }}" class="about-button about-button-primary">Try it now</a>
+            <a href="{{ url_for('register') }}" class="about-button about-button-secondary">Create account</a>
+          </div>
+        </div>
+
+        <div class="about-hero-right" aria-hidden="true">
+          <div class="about-preview">
+            <div class="about-preview-top">
+              <span class="about-dot"></span><span class="about-dot"></span><span class="about-dot"></span>
+              <div class="about-preview-pill">Preview</div>
+            </div>
+
+            <div class="about-preview-search">
+              <div class="about-preview-search-icon"></div>
+              <div class="about-preview-search-text">Search ingredients…</div>
+            </div>
+
+            <div class="about-preview-grid">
+              <div class="about-preview-card">
+                <div class="about-preview-line w60"></div>
+                <div class="about-preview-line w90"></div>
+                <div class="about-preview-bars">
+                  <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                </div>
+              </div>
+              <div class="about-preview-card">
+                <div class="about-preview-line w70"></div>
+                <div class="about-preview-line w80"></div>
+                <div class="about-preview-tags">
+                  <span class="tag"></span><span class="tag"></span><span class="tag"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-preview-footer">
+              <div class="about-preview-chip"></div>
+              <div class="about-preview-chip"></div>
+              <div class="about-preview-chip"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- What We Do Section -->
+<!-- What We Do Section -->
     <section class="about-section">
       <h2 class="about-section-title">What we do</h2>
-      <div class="about-grid about-grid-three">
-        <div class="about-card">
-          <h3 class="about-card-title">Ingredient Analysis</h3>
-          <p class="about-card-text">
-            Analyze multiple ingredients simultaneously to get comprehensive nutrition facts, 
-            allergen information, and health benefits. Perfect for understanding individual 
-            ingredients and their nutritional profiles.
-          </p>
+
+      <div class="about-grid about-grid-three about-feature-grid">
+        <div class="about-card about-feature">
+          <div class="about-feature-top">
+            <div class="about-feature-icon" aria-hidden="true">🍃</div>
+            <h3 class="about-card-title">Ingredient analysis</h3>
+          </div>
+          <ul class="about-bullets">
+            <li>Nutrition facts (macros + key micros)</li>
+            <li>Allergen flags and safety cues</li>
+            <li>Clear, readable breakdown</li>
+          </ul>
         </div>
-        <div class="about-card">
-          <h3 class="about-card-title">Smoothie Builder</h3>
-          <p class="about-card-text">
-            Create and analyze complete smoothie recipes with multiple ingredients. Get combined 
-            nutrition data, allergen warnings, and personalized health-goal feedback for your 
-            custom smoothie creations.
-          </p>
+
+        <div class="about-card about-feature">
+          <div class="about-feature-top">
+            <div class="about-feature-icon" aria-hidden="true">🥤</div>
+            <h3 class="about-card-title">Smoothie builder</h3>
+          </div>
+          <ul class="about-bullets">
+            <li>Combine multiple ingredients</li>
+            <li>See totals for the whole recipe</li>
+            <li>Adjust portions and compare</li>
+          </ul>
         </div>
-        <div class="about-card">
-          <h3 class="about-card-title">Smart Recommendations</h3>
-          <p class="about-card-text">
-            Receive personalized ingredient suggestions based on your health goals and dietary preferences. 
-            Our system helps you discover new ingredients that align with your wellness objectives.
-          </p>
+
+        <div class="about-card about-feature">
+          <div class="about-feature-top">
+            <div class="about-feature-icon" aria-hidden="true">🎯</div>
+            <h3 class="about-card-title">Smart recommendations</h3>
+          </div>
+          <ul class="about-bullets">
+            <li>Suggestions aligned to goals</li>
+            <li>Better swaps when needed</li>
+            <li>Discover new ingredients</li>
+          </ul>
         </div>
       </div>
     </section>
 
-    <!-- How It Works Section -->
+<!-- How It Works Section -->
     <section class="about-section">
       <h2 class="about-section-title">How it works</h2>
+      <p class="about-section-subtitle">Check nutrition + allergens in Ingredient Analysis, or craft a full blend in Smoothie Builder.</p>
       <div class="about-steps">
         <div class="about-step">
           <span class="about-step-number">1</span>
@@ -91,31 +153,58 @@
     </section>
 
     <!-- Built for Trust Section -->
-    <section class="about-section">
-      <h2 class="about-section-title">Built for trust</h2>
-      <div class="about-grid about-grid-two">
-        <div class="about-card">
+<section class="about-section about-trust">
+  <h2 class="about-section-title">Built for trust</h2>
+  <p class="about-section-subtitle">Privacy-minded by design, with clear data behavior and no dark patterns.</p>
+
+  <div class="about-grid about-grid-two about-trust-grid">
+    <div class="about-card about-trust-card">
+      <div class="about-trust-head">
+        <div class="about-trust-icon" aria-hidden="true">🛡️</div>
+        <div>
           <h3 class="about-card-title">Privacy-first mindset</h3>
-          <p class="about-card-text">
-            Your data stays yours. We don't track your personal information or share your recipes. 
-            Everything you create is private and secure.
-          </p>
-        </div>
-        <div class="about-card">
-          <h3 class="about-card-title">Data consistency & transparency</h3>
-          <p class="about-card-text">
-            All nutrition data comes from trusted sources with clear attribution. We're transparent 
-            about our data sources and update information regularly.
-          </p>
+          <p class="about-trust-sub">Your recipes stay yours.</p>
         </div>
       </div>
-    </section>
 
-    <!-- CTA Section -->
+      <ul class="about-bullets about-trust-bullets">
+        <li>Your data stays yours.</li>
+        <li>We don’t track personal info unnecessarily.</li>
+        <li>We don’t share your recipes.</li>
+      </ul>
+    </div>
+
+    <div class="about-card about-trust-card">
+      <div class="about-trust-head">
+        <div class="about-trust-icon" aria-hidden="true">📄</div>
+        <div>
+          <h3 class="about-card-title">Data consistency & transparency</h3>
+          <p class="about-trust-sub">Clear sourcing, predictable outputs.</p>
+        </div>
+      </div>
+
+      <ul class="about-bullets about-trust-bullets">
+        <li>Nutrition data comes from trusted sources with attribution.</li>
+        <li>We’re transparent about updates and changes.</li>
+        <li>No “magic” numbers—results should be explainable.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="about-trust-callout" role="note">
+    <div class="about-trust-callout-icon" aria-hidden="true">ℹ️</div>
+    <p class="about-trust-callout-text">
+      Nutrition info is educational—not medical advice. Allergies can be severe, so always double-check labels and consult a professional when needed.
+    </p>
+  </div>
+</section>
+
+<!-- CTA Section -->
     <section class="about-cta">
       <h2 class="about-cta-title">Start building smarter smoothies</h2>
       <a href="{{ url_for('index') }}" class="about-cta-button">Get Started</a>
     </section>
   </main>
+  <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
 </body>
 </html>
