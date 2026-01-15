@@ -3580,6 +3580,7 @@
     }
   </style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
   <script nonce="{{ csp_nonce }}">
     // Check session validity immediately (before page renders)
     // This runs as early as possible to catch invalidated sessions
@@ -18141,6 +18142,8 @@ const batchG = (smoothieBatchMlOverride != null)
     window.addEventListener('load', () => {
       forceScrollToTop();
     });
+
+    // Navbar mobile menu logic moved to static/js/navbar.js
 
     (async function init() {
       // Reset to initial state on page load
