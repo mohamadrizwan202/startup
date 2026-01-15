@@ -1,22 +1,36 @@
-<nav class="navbar">
-  <a class="navbar-brand" href="{{ url_for('index') }}">
-    <span class="brand-name">PureFyul</span>
-    <span class="beta-badge" aria-label="Beta">BETA</span>
-  </a>
-  <div class="navbar-nav">
-    <a href="/about">About</a>
-    <a href="/pricing">Pricing</a>
-    <a href="{{ url_for('contact') }}">Contact</a>
-  </div>
-  <div class="navbar-auth">
-    {% if current_user.is_authenticated %}
-      <span>Logged in as <strong>{{ current_user.email }}</strong></span>
-      <span>|</span>
-      <a href="{{ url_for('logout') }}">Logout</a>
-    {% else %}
-      <a href="{{ url_for('login') }}">Login</a>
-      <span>/</span>
-      <a href="{{ url_for('register') }}">Register</a>
-    {% endif %}
+<nav class="navbar pf-navbar">
+  <div class="pf-navbar-inner">
+    <a class="navbar-brand" href="{{ url_for('index') }}">
+      <span class="brand-name">PureFyul</span>
+      <span class="beta-badge" aria-label="Beta">BETA</span>
+    </a>
+    
+    <!-- Hamburger toggle (mobile only) -->
+    <input type="checkbox" id="pf-nav-check" class="pf-nav-check" aria-label="Toggle navigation menu">
+    <label for="pf-nav-check" class="pf-nav-burger" aria-label="Toggle navigation menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </label>
+    
+    <!-- Collapsible navigation content -->
+    <div class="pf-nav-collapse">
+      <div class="pf-nav-links">
+        <a href="/about">About</a>
+        <a href="/pricing">Pricing</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
+      </div>
+      <div class="pf-nav-auth">
+        {% if current_user.is_authenticated %}
+          <span>Logged in as <strong>{{ current_user.email }}</strong></span>
+          <span class="pf-nav-sep" aria-hidden="true">|</span>
+          <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}">Login</a>
+          <span class="pf-nav-sep" aria-hidden="true">/</span>
+          <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </nav>

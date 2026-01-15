@@ -4087,3 +4087,257 @@ body.pf-modal-open {
   }
 }
 
+/* =========================
+   Navbar Mobile Responsive (<= 768px)
+   ========================= */
+@media (max-width: 768px) {
+  /* Navbar wrapper structure */
+  .pf-navbar {
+    position: relative;
+    padding: 14px 20px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .pf-navbar-inner {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    position: relative;
+  }
+
+  /* Brand stays on left */
+  .pf-navbar .navbar-brand {
+    width: auto !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0;
+  }
+
+  /* Hide checkbox visually */
+  .pf-nav-check {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* Hamburger icon */
+  .pf-nav-burger {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 28px;
+    height: 24px;
+    cursor: pointer;
+    z-index: 1001;
+    flex-shrink: 0;
+  }
+
+  .pf-nav-burger span {
+    width: 100%;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    transform-origin: center;
+  }
+
+  /* Hamburger animation when checked */
+  .pf-nav-check:checked ~ .pf-nav-burger span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+  }
+
+  .pf-nav-check:checked ~ .pf-nav-burger span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .pf-nav-check:checked ~ .pf-nav-burger span:nth-child(3) {
+    transform: rotate(-45deg) translate(8px, -8px);
+  }
+
+  /* Hide collapse by default on mobile */
+  .pf-nav-collapse {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    margin-top: 10px;
+    padding: 20px;
+    z-index: 1000;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Show collapse when checkbox is checked */
+  .pf-nav-check:checked ~ .pf-nav-collapse {
+    display: flex;
+  }
+
+  /* Navigation links in dropdown */
+  .pf-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .pf-nav-links a {
+    color: #0f172a;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 12px 16px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+  }
+
+  .pf-nav-links a:hover {
+    background: rgba(14, 165, 164, 0.1);
+    color: #0EA5A4;
+  }
+
+  /* Auth section in dropdown */
+  .pf-nav-auth {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding-top: 16px;
+    border-top: 1px solid rgba(15, 23, 42, 0.1);
+  }
+
+  .pf-nav-auth a {
+    color: #0f172a !important;
+    text-decoration: none !important;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 12px 16px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    display: inline-block;
+    width: auto;
+  }
+
+  .pf-nav-auth a:hover,
+  .pf-nav-auth a:focus,
+  .pf-nav-auth a:active,
+  .pf-nav-auth a:visited {
+    color: #0EA5A4 !important;
+    text-decoration: none !important;
+    background: rgba(14, 165, 164, 0.1);
+  }
+
+  .pf-nav-auth span:not(.pf-nav-sep) {
+    color: #64748b;
+    font-size: 0.9rem;
+    padding: 0;
+    flex: 1 1 100%;
+  }
+
+  /* Separator styling - keeps Login/Register on one line */
+  .pf-nav-sep {
+    color: #64748b;
+    opacity: 0.5;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  /* Hide old navbar classes on mobile (they're now inside pf-nav-collapse) */
+  .navbar-nav,
+  .navbar-auth {
+    display: none !important;
+  }
+}
+
+/* Desktop: keep original navbar behavior (unchanged) */
+@media (min-width: 769px) {
+  .pf-nav-burger {
+    display: none;
+  }
+
+  .pf-nav-collapse {
+    display: flex !important;
+    position: static;
+    background: transparent;
+    box-shadow: none;
+    margin-top: 0;
+    padding: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    width: auto;
+  }
+
+  .pf-nav-links {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 25px;
+    font-size: 0.95rem;
+    width: auto;
+  }
+
+  .pf-nav-links a {
+    color: white;
+    text-decoration: none;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+    font-weight: 500;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .pf-nav-links a:hover {
+    opacity: 1;
+    text-decoration: underline;
+    background: transparent;
+    color: white;
+  }
+
+  .pf-nav-auth {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+    font-size: 0.9rem;
+    color: white;
+    width: auto;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .pf-nav-auth a {
+    color: white;
+    text-decoration: none;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .pf-nav-auth a:hover {
+    opacity: 1;
+    text-decoration: underline;
+    background: transparent;
+    color: white;
+  }
+
+  .pf-nav-auth span {
+    opacity: 0.7;
+    color: white;
+    padding: 0;
+  }
+}
