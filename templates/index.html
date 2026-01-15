@@ -3651,7 +3651,8 @@
     <div id="ingredient-tab-content" class="main-tab-content active">
       <!-- Search Area - Centered -->
       <div class="search-area-container">
-      <div class="card search-container">
+        <div class="card search-container" id="ingredient-search-card">
+
         <div class="card-header">
           <div>
             <div class="card-title">Search & Analyze Ingredients</div>
@@ -4138,6 +4139,7 @@
     }
 
     function resetIngredientTabUI() {
+      console.log('[ING_RESET] resetIngredientTabUI fired');
       try { hideIngredientError?.(); } catch (e) {}
 
       // Clear Ingredient textarea
@@ -4149,11 +4151,24 @@
       const ingredientSearchEl = document.getElementById('ingredient-search');
       if (ingredientSearchEl) ingredientSearchEl.value = '';
 
-      // Clear selected chips/state
+      // Clear Health Goal search input
+      const goalSearchEl = document.getElementById('goal-search');
+      if (goalSearchEl) goalSearchEl.value = '';
+
+      // Clear ALL state variables
       if (typeof selectedIngredients !== 'undefined') selectedIngredients = [];
       if (typeof selectedCategory !== 'undefined') selectedCategory = null;
       if (typeof selectedSubcategory !== 'undefined') selectedSubcategory = null;
       if (typeof currentIngredients !== 'undefined') currentIngredients = [];
+
+      // Clear Health Browser globals (must be cleared before renderCategories() runs)
+      if (typeof window !== 'undefined') {
+        window.pfActiveHealthGoalValue = null;
+        window.pfActiveHealthGoalLabel = null;
+        window.pfInHealthBrowserFlow = false;
+        window.pfGoalSearchTerm = '';
+        window.pfGoalBrowseAllOpen = false;
+      }
 
       // Clear selected ingredient chips UI
       if (typeof selectedIngredientsEl !== 'undefined' && selectedIngredientsEl) {
@@ -4161,8 +4176,39 @@
         selectedIngredientsEl.style.display = 'none';
       }
 
-      // Reset browse UI (puts back the "Select a goal first" / "Select sub-category…" placeholders)
-      try { resetBrowseAfterAnalyze(); } catch (e) {}
+      // Remove 'active' class from all goal chips and subcategory chips
+      document.querySelectorAll('.goal-chip.active').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.subcategory-chip.active').forEach(el => el.classList.remove('active'));
+
+      // Clear chip containers and reset to empty state
+      // Clear category list - will be fully re-rendered below with no active state
+      if (typeof categoryListEl !== 'undefined' && categoryListEl) {
+        categoryListEl.innerHTML = '';
+      }
+      if (typeof subcatListEl !== 'undefined' && subcatListEl) {
+        subcatListEl.innerHTML = '<div class="empty-state">Select a goal first</div>';
+      }
+      if (typeof ingredientListEl !== 'undefined' && ingredientListEl) {
+        ingredientListEl.innerHTML = '<div class="empty-state">Select a sub-category to see ingredients</div>';
+      }
+
+      // Clear recommended ingredients list
+      const recommendedEl = document.getElementById('recommended-list');
+      if (recommendedEl) recommendedEl.innerHTML = '';
+
+      // Hide subcategories and ingredients sections
+      const subSec = document.getElementById('subcategories-section');
+      if (subSec) subSec.style.display = 'none';
+      const ingSec = document.getElementById('ingredients-section');
+      if (ingSec) ingSec.style.display = 'none';
+
+      // Reset summary display to default
+      const goalDisplay = document.getElementById('selected-goal-display');
+      const subcatDisplay = document.getElementById('selected-subcat-display');
+      const countDisplay = document.getElementById('selected-count-display');
+      if (goalDisplay) goalDisplay.textContent = 'None';
+      if (subcatDisplay) subcatDisplay.textContent = 'None';
+      if (countDisplay) countDisplay.textContent = '0 ingredients';
 
       // Un-hide any items that were filtered by previous search
       document
@@ -4197,12 +4243,21 @@
       // Reset analyze button
       if (typeof analyzeBtn !== 'undefined' && analyzeBtn) analyzeBtn.disabled = true;
 
-      // Optional: reset goal browse search term + rerender categories clean
+      // Force full re-render of Health Goals list from cached data (if categories are already loaded)
+      // IMPORTANT: State is already cleared above, so renderCategories() will see null values and create NO active chips
       try {
-        window.pfGoalSearchTerm = '';
-        window.pfGoalBrowseAllOpen = false;
-        renderCategories?.();
-      } catch (e) {}
+        if (typeof categories !== 'undefined' && categories && categories.length > 0) {
+          // Re-render categories to rebuild the goal chips DOM (will see selectedCategory = null and pfActiveHealthGoalValue = null, so no active chips)
+          if (typeof renderCategories === 'function') {
+            renderCategories();
+          }
+        } else if (typeof loadCategories === 'function') {
+          // If categories not loaded, load them
+          loadCategories();
+        }
+      } catch (e) {
+        console.warn('[resetIngredientTabUI] Error re-rendering categories:', e);
+      }
     }
 
     function resetSmoothieTabUI() {
@@ -4273,87 +4328,124 @@
         setSmoothieStatus('Ready to build');
       }
     }
+    function pfScrollIntoViewWithinIngredientTab(targetEl, opts = {}) {
+      if (!targetEl) return;
+
+      const root = document.getElementById('ingredient-tab-content');
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const behavior = reduceMotion ? 'auto' : (opts.behavior || 'smooth');
+      const block = opts.block || 'start';
+
+      // If not inside ingredient tab, just do normal page scroll
+      if (!root || !root.contains(targetEl)) {
+        try { targetEl.scrollIntoView({ behavior, block }); } catch (e) {}
+        return;
+      }
+
+      const scrollChildIntoParent = (scrollParent, child) => {
+        const parentRect = scrollParent.getBoundingClientRect();
+        const childRect  = child.getBoundingClientRect();
+
+        const currentTop = scrollParent.scrollTop;
+        let nextTop = currentTop + (childRect.top - parentRect.top);
+
+        if (block === 'center') {
+          nextTop -= (scrollParent.clientHeight / 2) - (childRect.height / 2);
+        } else if (block === 'end') {
+          nextTop -= (scrollParent.clientHeight - childRect.height);
+        }
+
+        nextTop = Math.max(0, Math.min(nextTop, scrollParent.scrollHeight - scrollParent.clientHeight));
+
+        try {
+          scrollParent.scrollTo({ top: nextTop, behavior });
+        } catch (e) {
+          scrollParent.scrollTop = nextTop;
+        }
+      };
+
+      // 1) Prefer the closest scrollable ancestor
+      let node = targetEl.parentElement;
+      while (node && node !== root) {
+        const cs = window.getComputedStyle(node);
+        const oy = cs.overflowY;
+        const canScroll = (oy === 'auto' || oy === 'scroll') && (node.scrollHeight > node.clientHeight + 1);
+        if (canScroll) {
+          scrollChildIntoParent(node, targetEl);
+          return;
+        }
+        node = node.parentElement;
+      }
+
+      // 2) Fallback: find ANY scrollable container inside ingredient tab that CONTAINS the target
+      const candidates = Array.from(root.querySelectorAll('*')).filter(el => {
+        if (!el.contains(targetEl)) return false;
+        const cs = window.getComputedStyle(el);
+        const oy = cs.overflowY;
+        return (oy === 'auto' || oy === 'scroll') && (el.scrollHeight > el.clientHeight + 1);
+      });
+
+      if (candidates.length) {
+        // Pick the smallest scroll container that still contains the target (most "local" scroll)
+        candidates.sort((a, b) => (a.clientHeight * a.clientWidth) - (b.clientHeight * b.clientWidth));
+        scrollChildIntoParent(candidates[0], targetEl);
+        return;
+      }
+
+      // 3) Final fallback
+      try { targetEl.scrollIntoView({ behavior, block }); } catch (e) {}
+    }
+
 
     function scrollToSubcategories() {
       const el = document.getElementById('subcategories-section');
       if (!el) return;
-
       // If still hidden, don't scroll yet
-      const isHidden = (el.style.display === 'none') || el.offsetParent === null;
-      if (isHidden) return;
-
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const rect = el.getBoundingClientRect();
-
-      // If it's already visible enough, don't jump
-      if (rect.top >= 0 && rect.top < window.innerHeight * 0.35) return;
-
-      const offset = 90; // adjust if navbar overlaps
-      const top = window.scrollY + rect.top - offset;
-
-      window.scrollTo({ top, behavior: prefersReduced ? 'auto' : 'smooth' });
+      if (el.style.display === 'none' || el.offsetParent === null) return;
+      pfScrollIntoViewWithinIngredientTab(el, { block: 'start' });
     }
 
     function scrollToIngredients() {
       const el = document.getElementById('ingredients-section');
       if (!el) return;
-
       // If still hidden, don't scroll
-      const isHidden = (el.style.display === 'none') || el.offsetParent === null;
-      if (isHidden) return;
-
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const rect = el.getBoundingClientRect();
-
-      // If already visible enough, don't scroll
-      const alreadyVisible = rect.top >= 0 && rect.top < window.innerHeight * 0.35;
-      if (alreadyVisible) return;
-
-      const offset = 90; // match your navbar spacing (adjust if needed)
-      const top = window.scrollY + rect.top - offset;
-
-      window.scrollTo({ top, behavior: prefersReduced ? 'auto' : 'smooth' });
+      if (el.style.display === 'none' || el.offsetParent === null) return;
+      pfScrollIntoViewWithinIngredientTab(el, { block: 'start' });
     }
 
     let scrollToSearchTimer = null;
 
     function scrollToSearchArea() {
-      const input = ingredientsInputEl || document.getElementById('ingredients-input');
-      if (!input) return;
+      const card =
+        document.getElementById('ingredient-search-card') ||
+        document.querySelector('#ingredient-tab-content .search-area-container .card.search-container') ||
+        document.querySelector('#ingredient-tab-content .search-area-container');
 
-      // Anchor to the Search card so the section title is visible (not just the input)
-      const anchor = input.closest('.card') || input;
+      const input =
+        (typeof ingredientsInputEl !== 'undefined' && ingredientsInputEl) ||
+        document.getElementById('ingredients-input');
 
-      // If anchor is hidden, don't scroll
-      if (anchor.offsetParent === null) return;
+      const target =
+        card ||
+        document.querySelector('#ingredient-tab-content .ingredients-textarea-section') ||
+        input;
 
-      const prefersReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-      const rect = anchor.getBoundingClientRect();
-      const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+      if (!target) return;
+      if (target.offsetParent === null) return;
 
-      // If already reasonably visible, just focus (no scroll)
-      const topOk = rect.top >= vh * 0.10 && rect.top <= vh * 0.45;
-      const bottomOk = rect.bottom <= vh * 0.95;
-      if (topOk && bottomOk) {
-        try { input.focus({ preventScroll: true }); } catch { input.focus(); }
-        return;
+      pfScrollIntoViewWithinIngredientTab(target, { block: 'start' });
+
+      if (input) {
+        requestAnimationFrame(() => {
+          try { input.focus({ preventScroll: true }); }
+          catch (e) { try { input.focus(); } catch {} }
+        });
       }
-
-      // Dynamic offset: place the card top around ~40% of viewport so header is visible (matches desired screenshot)
-      const navbar = document.querySelector('.navbar') || document.querySelector('nav') || document.querySelector('header nav');
-      const navH = navbar ? navbar.getBoundingClientRect().height : 0;
-
-      const desiredOffset = Math.round(Math.min(vh * 0.55, Math.max(navH + 16, vh * 0.40)));
-      const targetTop = window.scrollY + rect.top - desiredOffset;
-
-      window.scrollTo({ top: Math.max(0, targetTop), behavior: prefersReduced ? 'auto' : 'smooth' });
-
-      // Focus after scroll without triggering another scroll
-      const focusDelay = prefersReduced ? 0 : 250;
-      setTimeout(() => {
-        try { input.focus({ preventScroll: true }); } catch { input.focus(); }
-      }, focusDelay);
     }
+
+    // Sanity check: scroll helpers loaded
+    console.log('[ING_SCROLL] scroll helpers loaded');
+
     
     // Toast notification system
     function showToast(message, type = 'info', duration = 5000) {
@@ -4700,10 +4792,14 @@
           updateSelectedSummary();
           setStatus(`Selected "${categoryLabel}"`);
           loadSubcategories(categoryValue);
-          // Show subcategories section
-          document.getElementById('subcategories-section').style.display = 'block';
-          // Hide ingredients section until subcategory is selected
-          document.getElementById('ingredients-section').style.display = 'none';
+          
+          const subSec = document.getElementById('subcategories-section');
+          if (subSec) subSec.style.display = 'block';
+
+          const ingSec = document.getElementById('ingredients-section');
+          if (ingSec) ingSec.style.display = 'none';
+
+          requestAnimationFrame(() => requestAnimationFrame(scrollToSubcategories));
         });
         categoryListEl.appendChild(chip);
       });
@@ -17817,39 +17913,45 @@ const batchG = (smoothieBatchMlOverride != null)
     // Main tab switching
     const mainTabs = document.querySelectorAll('.main-tab');
     const mainTabContents = document.querySelectorAll('.main-tab-content');
+    
+    let pfActiveMainTab = document.querySelector('.main-tab.active')?.dataset.mainTab || 'ingredient';
 
     mainTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const targetTab = tab.dataset.mainTab;
         
-        // Reset tabs when switching to ensure fresh state
-        if (targetTab === 'smoothie') {
+        const fromTab = pfActiveMainTab;
+
+        if (fromTab === targetTab) {
+          console.log('[TAB_SWITCH] ignored (already active)', { fromTab, targetTab });
+          return;
+        }
+
+        console.log('[TAB_SWITCH]', { fromTab, targetTab });
+        
+        // Reset Ingredient tab UI when LEAVING the ingredient tab
+        if (fromTab === 'ingredient' && targetTab !== 'ingredient') {
+          console.log('[ING_RESET] called (leaving ingredient tab)');
+          if (typeof resetIngredientTabUI === 'function') {
+            resetIngredientTabUI();
+          }
+          
           // Cancel any pending "scroll back to search" timer (from Add button UX)
           if (scrollToSearchTimer) {
             clearTimeout(scrollToSearchTimer);
             scrollToSearchTimer = null;
           }
-
-          // Fully reset Ingredient tab UI when switching away from it
-          if (typeof resetIngredientTabUI === 'function') {
-            resetIngredientTabUI();
-          }
-
-          // Hide step sections again (they'll re-appear after user clicks goal/subcategory)
-          const subSec = document.getElementById('subcategories-section');
-          if (subSec) subSec.style.display = 'none';
-
-          const ingSec = document.getElementById('ingredients-section');
-          if (ingSec) ingSec.style.display = 'none';
-
-          // Reset Smoothie tab UI when switching to it (ensures fresh state)
+        }
+        
+        // Reset Smoothie tab UI when switching away from it
+        if (targetTab === 'ingredient') {
           if (typeof resetSmoothieTabUI === 'function') {
             resetSmoothieTabUI();
           }
         }
         
-        if (targetTab === 'ingredient') {
-          // Reset Smoothie tab UI when switching away from it
+        // Reset Smoothie tab UI when switching to it (ensures fresh state)
+        if (targetTab === 'smoothie') {
           if (typeof resetSmoothieTabUI === 'function') {
             resetSmoothieTabUI();
           }
@@ -17869,11 +17971,20 @@ const batchG = (smoothieBatchMlOverride != null)
           targetContent.style.display = 'block';
         }
 
-        // Reset Ingredient tab UI AFTER tab is shown (ensures fresh state)
+        pfActiveMainTab = targetTab;
+
+        // Reset Ingredient tab UI when ENTERING the ingredient tab (force fresh state + rebuild goals UI)
         if (targetTab === 'ingredient') {
-          // Use requestAnimationFrame to ensure DOM is fully ready and visible
+          console.log('[ING_RESET] entering ingredient tab');
           if (typeof resetIngredientTabUI === 'function') {
-            requestAnimationFrame(() => resetIngredientTabUI());
+            resetIngredientTabUI();
+          }
+
+          // Force Health Goals to re-render (prevents stale active chip / stale filtered view)
+          if (typeof renderCategories === 'function' && typeof categories !== 'undefined' && Array.isArray(categories) && categories.length) {
+            renderCategories();
+          } else if (typeof loadCategories === 'function') {
+            loadCategories();
           }
         }
       });
