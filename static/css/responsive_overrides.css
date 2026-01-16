@@ -4341,3 +4341,59 @@ body.pf-modal-open {
     padding: 0;
   }
 }
+
+/* === NUTRITION TAB: ONE SCREEN (NO INNER SCROLL) === */
+#nutrition-tab-pane { min-height: 0 !important; }
+
+#nutrition-results-body.results-body{
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+
+  /* kill the “blank top + inner scrollbar” behavior */
+  padding: 12px 14px !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+#nutrition-results-body.results-body .nutrition-results-card{
+  margin: 0 !important;
+}
+
+#nutrition-results-body.results-body .nutrition-results-top{
+  margin: 0 !important;
+}
+
+#nutrition-results-body.results-body .nutrition-summary-grid{
+  margin-top: 8px !important;
+  gap: 8px !important;
+}
+
+@media (max-width: 768px){
+  #nutrition-results-body.results-body{
+    padding: 10px 12px !important;
+  }
+  #nutrition-results-body.results-body .nutrition-tile-compact{
+    padding: 8px 10px !important;
+  }
+}
+
+
+/* Nutrition tab: remove terminal-style spacing + internal scroll */
+#nutrition-results-body.results-body{
+  padding: 12px !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+
+  /* Kill the huge fake whitespace from preserved newlines */
+  white-space: normal !important;
+  font-family: inherit !important;
+  line-height: 1.45 !important;
+
+  background: transparent !important;
+  border: none !important;
+}
