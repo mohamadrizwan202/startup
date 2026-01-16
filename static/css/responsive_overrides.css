@@ -4397,3 +4397,113 @@ body.pf-modal-open {
   background: transparent !important;
   border: none !important;
 }
+/* ============================
+   Allergen report (after analyze)
+   Make it compact + add outer card border
+   ============================ */
+
+/* If the report is rendered as pf-a-wrap directly inside the results body, give it a card look */
+#allergens-results-body > .pf-a-wrap {
+  background: #fff !important;
+  border: 1px solid rgba(15, 23, 42, 0.10) !important;
+  border-radius: var(--radius) !important;
+  padding: 16px !important;
+  box-shadow: var(--shadow-sm) !important;
+  margin: 0 !important;
+}
+
+/* Kill the giant empty space in the hero area */
+#allergens-results-body > .pf-a-wrap .pf-allergen-hero {
+  margin: 0 0 12px 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  grid-template-areas:
+    "copy badge"
+    "copy ing";
+  gap: 10px 12px !important;
+  align-items: start !important;
+}
+
+#allergens-results-body > .pf-a-wrap .pf-allergen-hero__copy { grid-area: copy; }
+#allergens-results-body > .pf-a-wrap .pf-allergen-hero__badge { grid-area: badge; justify-self: end; align-self: start; margin: 0 !important; }
+#allergens-results-body > .pf-a-wrap .pf-allergen-hero__ing { grid-area: ing; justify-self: end; align-self: start; margin: 0 !important; }
+
+/* === Allergen tab AFTER-analysis layout (v2) === */
+#allergens-results-body .pf-a-headRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+#allergens-results-body .pf-a-body {
+  display: grid;
+  gap: 12px;
+  padding-top: 10px;
+}
+
+#allergens-results-body .pf-a-okCallout {
+  border: 1px solid rgba(34, 160, 107, 0.25);
+  background: rgba(34, 160, 107, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+#allergens-results-body .pf-a-okCallout .t1 {
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+#allergens-results-body .pf-a-okCallout .t2 {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+#allergens-results-body .pf-a-section {
+  display: grid;
+  gap: 10px;
+}
+
+#allergens-results-body .pf-a-sectionTitle {
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+#allergens-results-body .pf-a-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#allergens-results-body details.pf-a-details {
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+#allergens-results-body details.pf-a-details > summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #0f172a;
+  list-style: none;
+}
+
+#allergens-results-body details.pf-a-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+#allergens-results-body .pf-a-detailsBody {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}

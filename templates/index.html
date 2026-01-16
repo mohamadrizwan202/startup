@@ -3081,9 +3081,9 @@
       max-height: none !important;
       height: auto !important;
       overflow: visible !important;
-      background: transparent !important;
-      border: none !important;
-      border-radius: 0 !important;
+      background: var(--bg-secondary) !important;
+      border: 2px solid var(--border) !important;
+      border-radius: var(--radius) !important;
     }
 
     #allergens-results-body > .nutrition-results-card,
@@ -3096,8 +3096,22 @@
       gap: 10px !important;
     }
 
+    /* Ensure allergen report content sits tight within the card */
+    #allergens-results-body .nutrition-results-card .pf-a-wrap {
+      margin-top: 0 !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      max-width: 100% !important;
+    }
 
-/* ---------- Allergen tab: compact "no allergens" state ---------- */
+    /* Ensure normal fonts for allergen content */
+    #allergens-results-body .pf-a-wrap,
+    #allergens-results-body .pf-a-wrap * {
+      font-family: inherit !important;
+    }
+
+
+    /* ---------- Allergen tab: compact "no allergens" state ---------- */
     .pf-allergen-inline {
       display: flex;
       gap: 12px;
@@ -3660,7 +3674,7 @@
       font-weight: 900;
     }
 
-</style>
+  </style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
   <script nonce="{{ csp_nonce }}">
@@ -7250,62 +7264,46 @@ const allergenPanel = allergenNames.length === 0
       // Build HTML
       
       const redesignedHtml = `
-        <div class="nutrition-results-card fade-in">
-          <div class="nutrition-results-top">
-            <div class="nutrition-title">
-              <span class="badge" aria-hidden="true">⚠️</span>
-              <div>
-                <h3>Allergen Check</h3>
-                <p>Potential allergens in selected ingredients</p>
-              </div>
-            </div>
-          </div>
+  <div class="nutrition-results-card fade-in">
+    <div class="nutrition-results-top">
+      <div class="nutrition-title">
+        <span class="badge" aria-hidden="true">⚠️</span>
+        <div>
+          <h3>Allergen Check</h3>
+          <p>Potential allergens in selected ingredients</p>
+        </div>
+      </div>
 
-          <div class="pf-a-wrap">
-            <div class="pf-allergen-hero">
-              <div class="pf-allergen-hero__copy">
-                <div class="pf-a-title">Allergen Report</div>
-                <div class="pf-a-subtitle">Checks selected ingredient(s) against common allergen groups. Always verify labels if you have severe allergies.</div>
-            </div>
-            <div class="pf-allergen-hero__badge">
-            ${statusPill}
-            </div>
-            <div class="pf-allergen-hero__ing">
-              ${headerIngredientChip}
-            </div>
-          </div>
-          <div class="pf-a-grid">
-            <section class="pf-a-card">
-              <div class="pf-a-card-head">
-                <div class="pf-a-card-title pf-a-card-title--center">Detected allergens</div>
-                ${allergenNames.length > 0 ? `<span class="pf-a-chip pf-a-chip--danger pf-a-chip--head">${escapeHtml(allergenNames[0])}</span>` : ``}
-              </div>
-              ${allergenPanel}
-            </section>
-        </div>
-          <section class="pf-a-acc">
-            <button class="pf-a-acc-btn" type="button" aria-expanded="false" aria-controls="pf-a-groups">
-              <span>Allergen groups checked</span><span aria-hidden="true">▾</span>
-            </button>
-            <div id="pf-a-groups" class="pf-a-acc-panel" hidden>
-              <div class="pf-a-tags">${groupTags}</div>
-            </div>
-          </section>
-          <section class="pf-a-acc">
-            <button class="pf-a-acc-btn" type="button" aria-expanded="false" aria-controls="pf-a-notes">
-              <span>Notes</span><span aria-hidden="true">▾</span>
-            </button>
-            <div id="pf-a-notes" class="pf-a-acc-panel" hidden>
-              ${notesList}
-            </div>
-          </section>
-          </div>
-        </div>
-      `;
+      <div class="pf-a-headRight">
+        ${statusPill}
+        ${headerIngredientChip}
+      </div>
+    </div>
+
+    <div class="pf-a-body">
+      ${allergenNames.length === 0 ? `<div class="pf-a-okCallout"><div class="t1">No common allergens detected</div><div class="t2">Still verify labels if you have severe allergies.</div></div>` : ``}
+
+      <div class="pf-a-section">
+        <div class="pf-a-sectionTitle">Detected allergens</div>
+        ${allergenNames.length === 0 ? `<div class="pf-a-muted">None detected from common allergen groups.</div>` : `<div class="pf-a-chips">${allergenNames.map(n => `<span class="pf-a-chip pf-a-chip--danger">${escapeHtml(n)}</span>`).join('')}</div>`}
+      </div>
+
+      <details class="pf-a-details">
+        <summary>Allergen groups checked</summary>
+        <div class="pf-a-detailsBody"><div class="pf-a-tags">${groupTags}</div></div>
+      </details>
+
+      <details class="pf-a-details">
+        <summary>Notes</summary>
+        <div class="pf-a-detailsBody">${notesList}</div>
+      </details>
+    </div>
+  </div>
+`;
 
       if (targetBody) {
         targetBody.innerHTML = redesignedHtml;
-        initAllergenAccordions(targetBody);
+        // Note: Using native <details> elements, so no accordion JS needed
       }
     }
 
