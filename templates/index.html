@@ -3040,7 +3040,64 @@
       margin: 4px 0 0 0 !important;
     }
 
-    /* ---------- Allergen tab: compact "no allergens" state ---------- */
+    /* === Nutrition tab: one-screen spacing (remove vertical dead space) === */
+    #nutrition-tab-pane {
+      min-height: 0 !important;
+    }
+    #nutrition-results-body {
+      display: block !important;
+      padding: 14px 14px 12px !important;
+      min-height: 0 !important;
+    }
+    #nutrition-results-body > .nutrition-results-card {
+      flex: 0 0 auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      justify-content: flex-start !important;
+      align-content: flex-start !important;
+      gap: 10px !important;
+    }
+    #nutrition-results-body .nutrition-ingredients-list {
+      justify-content: flex-start !important;
+      margin: 0 0 8px 0 !important;
+      padding: 0 0 6px 0 !important;
+    }
+    #nutrition-results-body .nutrition-summary-grid {
+      margin-top: 8px !important;
+    }
+
+    
+    /* === Allergen + Health Benefits tabs: match Nutrition one-screen spacing === */
+    #allergens-tab-pane,
+    #health-benefits-tab-pane {
+      min-height: 0 !important;
+    }
+
+    #allergens-results-body,
+    #health-benefits-results-body {
+      display: block !important;
+      padding: 14px 14px 12px !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      height: auto !important;
+      overflow: visible !important;
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+    }
+
+    #allergens-results-body > .nutrition-results-card,
+    #health-benefits-results-body > .nutrition-results-card {
+      flex: 0 0 auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      justify-content: flex-start !important;
+      align-content: flex-start !important;
+      gap: 10px !important;
+    }
+
+
+/* ---------- Allergen tab: compact "no allergens" state ---------- */
     .pf-allergen-inline {
       display: flex;
       gap: 12px;
@@ -3578,7 +3635,32 @@
     .feedback-fab:hover {
       background: #f8fafc;
     }
-  </style>
+  
+    /* ---- Nutrition tab empty state (matches results card styling) ---- */
+    .nutrition-empty {
+      border: 1px dashed rgba(15,23,42,0.18);
+      background: rgba(14,165,164,0.06);
+      border-radius: 14px;
+      padding: 18px 16px;
+      display: grid;
+      gap: 6px;
+    }
+    .nutrition-empty-title {
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.2;
+    }
+    .nutrition-empty-text {
+      color: rgba(15, 23, 42, 0.65);
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+    .nutrition-empty-text strong {
+      color: #0f172a;
+      font-weight: 900;
+    }
+
+</style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
   <script nonce="{{ csp_nonce }}">
@@ -3776,7 +3858,26 @@
                 <!-- Separate scrollable containers for each tab -->
         <div class="tab-pane active" id="nutrition-tab-pane" data-tab="nutrition">
           <div class="results-body" id="nutrition-results-body">
-            When you analyze ingredients, the results will appear here. Select ingredients from the panels below and click "Analyze Ingredients" to get started.
+            
+            <div class="nutrition-results-card">
+              <div class="nutrition-results-top">
+                <div class="nutrition-title">
+                  <span class="badge" aria-hidden="true">🥗</span>
+                  <div>
+                    <h3>Nutrition Summary</h3>
+                    <p>Totals across selected ingredients</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="nutrition-empty">
+                <div class="nutrition-empty-title">No analysis yet</div>
+                <div class="nutrition-empty-text">
+                  Select ingredients below, then click <strong>Analyze Ingredients</strong> to generate totals here.
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -3795,13 +3896,51 @@
           </div>
 
           <div class="results-body" id="allergens-results-body">
-            When you analyze ingredients, allergen information will appear here.
+            
+            <div class="nutrition-results-card">
+              <div class="nutrition-results-top">
+                <div class="nutrition-title">
+                  <span class="badge" aria-hidden="true">⚠️</span>
+                  <div>
+                    <h3>Allergen Check</h3>
+                    <p>Potential allergens in selected ingredients</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="nutrition-empty">
+                <div class="nutrition-empty-title">No analysis yet</div>
+                <div class="nutrition-empty-text">
+                  Select ingredients below, then click <strong>Analyze Ingredients</strong> to see allergen flags here.
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
         <div class="tab-pane" id="health-benefits-tab-pane" data-tab="health-benefits" style="display: none;">
           <div class="results-body" id="health-benefits-results-body">
-            When you analyze ingredients, health benefits will appear here.
+            
+            <div class="nutrition-results-card">
+              <div class="nutrition-results-top">
+                <div class="nutrition-title">
+                  <span class="badge" aria-hidden="true">💪</span>
+                  <div>
+                    <h3>Health Benefits</h3>
+                    <p>Highlights from selected ingredients</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="nutrition-empty">
+                <div class="nutrition-empty-title">No analysis yet</div>
+                <div class="nutrition-empty-text">
+                  Select ingredients below, then click <strong>Analyze Ingredients</strong> to see benefits here.
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div> <!-- /.card.results-container -->
@@ -6195,13 +6334,67 @@
       if (!lastAnalysisResult) {
         // Reset all tab panes to initial state
         if (nutritionResultsBodyEl) {
-          nutritionResultsBodyEl.innerHTML = 'When you analyze ingredients, the results will appear here. Select ingredients from the panels below and click "Analyze Ingredients" to get started.';
+          nutritionResultsBodyEl.innerHTML = `<div class="nutrition-results-card">
+  <div class="nutrition-results-top">
+    <div class="nutrition-title">
+      <span class="badge" aria-hidden="true">🥗</span>
+      <div>
+        <h3>Nutrition Summary</h3>
+        <p>Totals across selected ingredients</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nutrition-empty">
+    <div class="nutrition-empty-title">No analysis yet</div>
+    <div class="nutrition-empty-text">
+      Select ingredients below, then click <strong>Analyze Ingredients</strong> to generate totals here.
+    </div>
+  </div>
+</div>
+`;
         }
         if (allergensResultsBodyEl) {
-          allergensResultsBodyEl.innerHTML = 'When you analyze ingredients, allergen information will appear here.';
+          allergensResultsBodyEl.innerHTML = `<div class="nutrition-results-card">
+  <div class="nutrition-results-top">
+    <div class="nutrition-title">
+      <span class="badge" aria-hidden="true">⚠️</span>
+      <div>
+        <h3>Allergen Check</h3>
+        <p>Potential allergens in selected ingredients</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nutrition-empty">
+    <div class="nutrition-empty-title">No analysis yet</div>
+    <div class="nutrition-empty-text">
+      Select ingredients below, then click <strong>Analyze Ingredients</strong> to see allergen flags here.
+    </div>
+  </div>
+</div>
+`;
         }
         if (healthBenefitsResultsBodyEl) {
-          healthBenefitsResultsBodyEl.innerHTML = 'When you analyze ingredients, health benefits will appear here.';
+          healthBenefitsResultsBodyEl.innerHTML = `<div class="nutrition-results-card">
+  <div class="nutrition-results-top">
+    <div class="nutrition-title">
+      <span class="badge" aria-hidden="true">💪</span>
+      <div>
+        <h3>Health Benefits</h3>
+        <p>Highlights from selected ingredients</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nutrition-empty">
+    <div class="nutrition-empty-title">No analysis yet</div>
+    <div class="nutrition-empty-text">
+      Select ingredients below, then click <strong>Analyze Ingredients</strong> to see benefits here.
+    </div>
+  </div>
+</div>
+`;
         }
         // Reset scroll position for empty state
         if (activeResultsBody) {
@@ -7055,12 +7248,24 @@ const allergenPanel = allergenNames.length === 0
 `;
 
       // Build HTML
+      
       const redesignedHtml = `
-        <div class="pf-a-wrap">
-          <div class="pf-allergen-hero">
-            <div class="pf-allergen-hero__copy">
-              <div class="pf-a-title">Allergen Report</div>
-              <div class="pf-a-subtitle">Checks selected ingredient(s) against common allergen groups. Always verify labels if you have severe allergies.</div>
+        <div class="nutrition-results-card fade-in">
+          <div class="nutrition-results-top">
+            <div class="nutrition-title">
+              <span class="badge" aria-hidden="true">⚠️</span>
+              <div>
+                <h3>Allergen Check</h3>
+                <p>Potential allergens in selected ingredients</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-a-wrap">
+            <div class="pf-allergen-hero">
+              <div class="pf-allergen-hero__copy">
+                <div class="pf-a-title">Allergen Report</div>
+                <div class="pf-a-subtitle">Checks selected ingredient(s) against common allergen groups. Always verify labels if you have severe allergies.</div>
             </div>
             <div class="pf-allergen-hero__badge">
             ${statusPill}
@@ -7094,6 +7299,7 @@ const allergenPanel = allergenNames.length === 0
               ${notesList}
             </div>
           </section>
+          </div>
         </div>
       `;
 
@@ -18002,7 +18208,25 @@ const batchG = (smoothieBatchMlOverride != null)
       
       // Reset results body to initial message
       if (resultsBodyEl) {
-        resultsBodyEl.innerHTML = 'When you analyze ingredients, the results will appear here. Select ingredients from the panels below and click "Analyze Ingredients" to get started.';
+        resultsBodyEl.innerHTML = `<div class="nutrition-results-card">
+  <div class="nutrition-results-top">
+    <div class="nutrition-title">
+      <span class="badge" aria-hidden="true">🥗</span>
+      <div>
+        <h3>Nutrition Summary</h3>
+        <p>Totals across selected ingredients</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="nutrition-empty">
+    <div class="nutrition-empty-title">No analysis yet</div>
+    <div class="nutrition-empty-text">
+      Select ingredients below, then click <strong>Analyze Ingredients</strong> to generate totals here.
+    </div>
+  </div>
+</div>
+`;
       }
       
       // Reset tabs to Nutrition (first tab)
