@@ -4507,3 +4507,209 @@ body.pf-modal-open {
   padding-top: 10px;
   border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
+
+/* =========================
+   PureFyul Modern Navbar v1
+   ========================= */
+
+:root{
+  --pf-bg-1: rgba(36, 140, 138, 0.92);
+  --pf-bg-2: rgba(52, 168, 165, 0.88);
+  --pf-border: rgba(255,255,255,0.14);
+  --pf-text: rgba(255,255,255,0.92);
+  --pf-glow: rgba(0,0,0,0.18);
+}
+
+.pf-header{
+  position: sticky;
+  top: 0;
+  z-index: 2000;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: linear-gradient(90deg, var(--pf-bg-2), var(--pf-bg-1));
+  border-bottom: 1px solid var(--pf-border);
+  box-shadow: 0 10px 30px var(--pf-glow);
+}
+
+.pf-nav{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.pf-brand{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--pf-text);
+}
+.pf-brand__text{
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  line-height: 1;
+}
+
+.pf-badge{
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--pf-border);
+  background: rgba(255,255,255,0.10);
+  color: var(--pf-text);
+}
+
+.pf-nav__toggle{
+  display: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--pf-border);
+  background: rgba(255,255,255,0.08);
+  cursor: pointer;
+}
+.pf-nav__bar{
+  display: block;
+  width: 18px;
+  height: 2px;
+  margin: 4px auto;
+  background: rgba(255,255,255,0.92);
+  border-radius: 2px;
+}
+
+.pf-nav__menu{
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.pf-nav__links{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.pf-nav__link{
+  color: rgba(255,255,255,0.92);
+  text-decoration: none;
+  font-weight: 700;
+  padding: 10px 10px;
+  border-radius: 10px;
+  transition: background 160ms ease, transform 160ms ease;
+}
+.pf-nav__link:hover{
+  background: rgba(255,255,255,0.10);
+}
+.pf-nav__link:active{
+  transform: translateY(1px);
+}
+
+.pf-nav__auth{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pf-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  border: 1px solid transparent;
+  color: rgba(255,255,255,0.92);
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.pf-btn:active{ transform: translateY(1px); }
+
+.pf-btn--ghost{
+  background: transparent;
+  border-color: var(--pf-border);
+}
+.pf-btn--ghost:hover{
+  background: rgba(255,255,255,0.08);
+}
+
+.pf-btn--primary{
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.22);
+}
+.pf-btn--primary:hover{
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.30);
+}
+
+.pf-nav__who{
+  color: rgba(255,255,255,0.82);
+  font-weight: 700;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+/* Mobile dropdown */
+@media (max-width: 860px){
+  .pf-nav__toggle{ display: inline-block; }
+
+  .pf-nav__menu{
+    display: none;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--pf-border);
+    background: rgba(0,0,0,0.14);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .pf-nav__links{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .pf-nav__link{
+    padding: 12px 12px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .pf-nav__auth{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pf-nav__auth .pf-btn{
+    width: 100%;
+  }
+
+  .pf-header.is-open .pf-nav__menu{
+    display: flex;
+  }
+}
+
+/* Capitalize ingredient name in selected pill (Nutrition tab) */
+#pf-results-modal .nutrition-ing-pill .name,
+#pf-results-modal .pf-ing-pill__name{
+  text-transform: capitalize;
+}
+#pf-results-modal .sn-ing-pill__name{
+  text-transform: capitalize;
+}
+
+/* Force-capitalize ingredient NAME everywhere (override page-level styles) */
+.nutrition-ing-pill .name,
+.pf-ing-pill__name,
+.sn-ing-pill__name{
+  text-transform: capitalize !important;
+}

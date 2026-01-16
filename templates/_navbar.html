@@ -1,36 +1,38 @@
-<nav class="navbar pf-navbar">
-  <div class="pf-navbar-inner">
-    <a class="navbar-brand" href="{{ url_for('index') }}">
-      <span class="brand-name">PureFyul</span>
-      <span class="beta-badge" aria-label="Beta">BETA</span>
+<header class="pf-header" role="banner">
+  <nav class="pf-nav" aria-label="Primary">
+    <a class="pf-brand" href="{{ url_for('index') }}">
+      <span class="pf-brand__text">PureFyul</span>
+      <span class="pf-badge" aria-label="Beta">BETA</span>
     </a>
-    
-    <!-- Hamburger toggle (mobile only) -->
-    <input type="checkbox" id="pf-nav-check" class="pf-nav-check" aria-label="Toggle navigation menu">
-    <label for="pf-nav-check" class="pf-nav-burger" aria-label="Toggle navigation menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </label>
-    
-    <!-- Collapsible navigation content -->
-    <div class="pf-nav-collapse">
-      <div class="pf-nav-links">
-        <a href="/about">About</a>
-        <a href="/pricing">Pricing</a>
-        <a href="{{ url_for('contact') }}">Contact</a>
+
+    <button
+      class="pf-nav__toggle"
+      type="button"
+      aria-label="Open menu"
+      aria-controls="pf-nav-menu"
+      aria-expanded="false"
+    >
+      <span class="pf-nav__bar"></span>
+      <span class="pf-nav__bar"></span>
+      <span class="pf-nav__bar"></span>
+    </button>
+
+    <div id="pf-nav-menu" class="pf-nav__menu">
+      <div class="pf-nav__links">
+        <a class="pf-nav__link" href="/about">About</a>
+        <a class="pf-nav__link" href="/pricing">Pricing</a>
+        <a class="pf-nav__link" href="{{ url_for('contact') }}">Contact</a>
       </div>
-      <div class="pf-nav-auth">
+
+      <div class="pf-nav__auth">
         {% if current_user.is_authenticated %}
-          <span>Logged in as <strong>{{ current_user.email }}</strong></span>
-          <span class="pf-nav-sep" aria-hidden="true">|</span>
-          <a href="{{ url_for('logout') }}">Logout</a>
+          <span class="pf-nav__who">Logged in as <strong>{{ current_user.email }}</strong></span>
+          <a class="pf-btn pf-btn--ghost" href="{{ url_for('logout') }}">Logout</a>
         {% else %}
-          <a href="{{ url_for('login') }}">Login</a>
-          <span class="pf-nav-sep" aria-hidden="true">/</span>
-          <a href="{{ url_for('register') }}">Register</a>
+          <a class="pf-btn pf-btn--ghost" href="{{ url_for('login') }}">Login</a>
+          <a class="pf-btn pf-btn--primary" href="{{ url_for('register') }}">Register</a>
         {% endif %}
       </div>
     </div>
-  </div>
-</nav>
+  </nav>
+</header>
