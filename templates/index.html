@@ -3096,6 +3096,18 @@
       gap: 10px !important;
     }
 
+    /* Ensure allergen content uses normal fonts (not monospace) */
+    #allergens-results-body .pf-a-wrap,
+    #allergens-results-body .pf-a-wrap * {
+      font-family: inherit !important;
+    }
+
+    /* Ensure allergen report is properly contained within the card */
+    #allergens-results-body .nutrition-results-card .pf-a-wrap {
+      margin-top: 0;
+      padding: 0;
+    }
+
 
 /* ---------- Allergen tab: compact "no allergens" state ---------- */
     .pf-allergen-inline {
@@ -4360,7 +4372,12 @@
         nutritionResultsBodyEl.innerHTML = PF_DEFAULT_NUTRITION_HTML;
       }
       if (typeof allergensResultsBodyEl !== 'undefined' && allergensResultsBodyEl) {
-        allergensResultsBodyEl.innerHTML = PF_DEFAULT_ALLERGENS_HTML;
+        // Use renderAllergensEmptyState() to ensure consistent styled empty state
+        if (typeof renderAllergensEmptyState === 'function') {
+          allergensResultsBodyEl.innerHTML = renderAllergensEmptyState();
+        } else {
+          allergensResultsBodyEl.innerHTML = PF_DEFAULT_ALLERGENS_HTML;
+        }
       }
       if (typeof healthBenefitsResultsBodyEl !== 'undefined' && healthBenefitsResultsBodyEl) {
         healthBenefitsResultsBodyEl.innerHTML = PF_DEFAULT_HB_HTML;
@@ -6324,6 +6341,30 @@
       return active ? active.dataset.tab : 'nutrition';
     }
 
+    // Render empty state for Allergen tab
+    function renderAllergensEmptyState() {
+      return `
+            <div class="nutrition-results-card">
+              <div class="nutrition-results-top">
+                <div class="nutrition-title">
+                  <span class="badge" aria-hidden="true">⚠️</span>
+                  <div>
+                    <h3>Allergen Check</h3>
+                    <p>Potential allergens in selected ingredients</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="nutrition-empty">
+                <div class="nutrition-empty-title">No analysis yet</div>
+                <div class="nutrition-empty-text">
+                  Select ingredients below, then click <strong>Analyze Ingredients</strong> to see allergen flags here.
+                </div>
+              </div>
+            </div>
+      `;
+    }
+
     function updateResultsView() {
       const tab = getActiveTab();
 
@@ -6355,25 +6396,7 @@
 `;
         }
         if (allergensResultsBodyEl) {
-          allergensResultsBodyEl.innerHTML = `<div class="nutrition-results-card">
-  <div class="nutrition-results-top">
-    <div class="nutrition-title">
-      <span class="badge" aria-hidden="true">⚠️</span>
-      <div>
-        <h3>Allergen Check</h3>
-        <p>Potential allergens in selected ingredients</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="nutrition-empty">
-    <div class="nutrition-empty-title">No analysis yet</div>
-    <div class="nutrition-empty-text">
-      Select ingredients below, then click <strong>Analyze Ingredients</strong> to see allergen flags here.
-    </div>
-  </div>
-</div>
-`;
+          allergensResultsBodyEl.innerHTML = renderAllergensEmptyState();
         }
         if (healthBenefitsResultsBodyEl) {
           healthBenefitsResultsBodyEl.innerHTML = `<div class="nutrition-results-card">
