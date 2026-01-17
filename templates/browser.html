@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Health Categories Browser</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
     <style>
         * {
             margin: 0;
@@ -470,6 +471,8 @@
             }
         })();
     </script>
+    {% include "_feedback.html" %}
+    <script src="{{ url_for('static', filename='js/feedback.js') }}" defer></script>
 </body>
 </html>
 

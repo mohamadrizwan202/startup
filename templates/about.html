@@ -5,6 +5,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us - PureFyul</title>
 </head>
@@ -205,6 +206,8 @@
       <a href="{{ url_for('index') }}" class="about-cta-button">Get Started</a>
     </section>
   </main>
+  {% include "_feedback.html" %}
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/feedback.js') }}" defer></script>
 </body>
 </html>
