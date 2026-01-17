@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory
 import time
 import logging
 import secrets
@@ -849,6 +849,16 @@ def health_check():
     Example: curl -i https://<service>/__health
     """
     return jsonify({"ok": True, "version": _app_version()}), 200
+
+
+# --- Sitemap and Robots.txt Routes ---
+@app.get("/sitemap.xml")
+def sitemap():
+    return send_from_directory("static", "sitemap.xml", mimetype="application/xml")
+
+@app.get("/robots.txt")
+def robots():
+    return send_from_directory("static", "robots.txt", mimetype="text/plain")
 
 
 # --- Helper: Detect if running on Render production ---
