@@ -3802,8 +3802,8 @@
           <span class="selected-value" id="selected-subcat-display">None</span>
         </div>
         <div class="selected-item">
-          <span class="selected-label">Selected:</span>
-          <span class="selected-value" id="selected-count-display">0 ingredients</span>
+          <span class="selected-label">Ingredient:</span>
+          <span class="selected-value" id="selected-count-display">None</span>
         </div>
       </div>
 
@@ -4274,11 +4274,19 @@
 
     function resetBrowseAfterAnalyze() {
       // Reset state
-      selectedCategory = null;
-      selectedSubcategory = null;
+      // Preserve last Goal + Sub-category for the summary bar
+      const _keepGoalLabel = window.pfActiveHealthGoalLabel || selectedCategory || null;
+      const _keepGoalValue = window.pfActiveHealthGoalValue || selectedCategory || null;
+      const _activeSub = document.querySelector('.subcategory-chip.active')?.textContent?.trim();
+      const _keepSubcatLabel = (_activeSub ? _activeSub.replace(/\s*\(\d+\)\s*$/, '').trim() : null) || selectedSubcategory || null;
+
+      // Reset state (but keep goal/subcat)
+      selectedCategory = _keepGoalValue;
+      selectedSubcategory = _keepSubcatLabel;
       currentIngredients = [];
       selectedIngredients = [];
-
+      if (_keepGoalLabel) window.pfActiveHealthGoalLabel = _keepGoalLabel;
+      if (_keepGoalValue) window.pfActiveHealthGoalValue = _keepGoalValue;
       // Clear UI selections
       document.querySelectorAll('.goal-chip.active').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.subcategory-chip.active').forEach(el => el.classList.remove('active'));
@@ -4386,7 +4394,7 @@
       const countDisplay = document.getElementById('selected-count-display');
       if (goalDisplay) goalDisplay.textContent = 'None';
       if (subcatDisplay) subcatDisplay.textContent = 'None';
-      if (countDisplay) countDisplay.textContent = '0 ingredients';
+      if (countDisplay) countDisplay.textContent = 'None';
 
       // Un-hide any items that were filtered by previous search
       document
@@ -5231,10 +5239,11 @@
         subcatDisplay.textContent = cleanSubText || selectedSubcategory || 'None';
       }
       
-      // Always update selected count: show 0 when empty
+      // Always update Ingredient summary: show selected ingredient name (single-select mode)
       if (countDisplay) {
-        const count = selectedIngredients.length;
-        countDisplay.textContent = `${count} ingredient${count !== 1 ? 's' : ''}`;
+        const raw = (selectedIngredients && selectedIngredients[0]) ? String(selectedIngredients[0]).trim() : '';
+        const name = raw ? (raw.charAt(0).toUpperCase() + raw.slice(1)) : 'None';
+        countDisplay.textContent = name;
       }
     }
 
