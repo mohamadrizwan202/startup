@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -3782,7 +3783,7 @@
       <!-- Browse Ingredients & Analysis Results Side by Side -->
       <div class="browse-results-grid pf-ia-equal-row pf-ing-grid">
         <!-- Left: Browse Ingredients -->
-    <div class="card">
+    <div class="card" id="pf-browse-ingredients-card">
       <div class="card-header">
         <div>
           <div class="card-title">Browse Ingredients</div>
@@ -4254,6 +4255,23 @@
       }
     }
 
+    
+    // Ingredient Analysis flow controller:
+    // step 0 = show Health Goals only
+    // step 1 = show Sub-categories
+    // step 2 = show Ingredients
+    function setIngredientFlowStep(step) {
+      const subSec = document.getElementById('subcategories-section');
+      const ingSec = document.getElementById('ingredients-section');
+      const recSec = document.getElementById('recommended-ingredients');
+
+      if (subSec) subSec.style.display = (step >= 1) ? 'block' : 'none';
+      if (ingSec) ingSec.style.display = (step >= 2) ? 'block' : 'none';
+
+      // Optional: keep Recommended hidden until ingredients are visible
+      if (recSec && step < 2) recSec.style.display = 'none';
+    }
+
     function resetBrowseAfterAnalyze() {
       // Reset state
       selectedCategory = null;
@@ -4290,6 +4308,12 @@
 
       // Also clear any ingredient error
       hideIngredientError?.();
+      
+      // Flow reset: show Health Goals only
+      try { setIngredientFlowStep(0); } catch (e) {}
+
+
+
     }
 
     function resetIngredientTabUI() {
@@ -6067,7 +6091,47 @@
         analyzeBtn.disabled = true;
         
         // Focus back on textarea for next search
-        if (ingredientsInputEl) ingredientsInputEl.focus();
+        if (ingredientsInputEl) { try { ingredientsInputEl.focus({ preventScroll: true }); } catch (e) { ingredientsInputEl.focus(); } }
+
+        // Force page scroll back to Browse Ingredients card (page is the scroller)
+        try {
+          const leftCard = document.getElementById('pf-browse-ingredients-card');
+          if (leftCard) {
+            const nav = document.querySelector('.pf-navbar, .pf-header, .navbar');
+            const navH = nav ? nav.getBoundingClientRect().height : 0;
+            const offset = Math.ceil(navH) + 16;
+            const targetY = () => Math.max(0, window.pageYOffset + leftCard.getBoundingClientRect().top - offset);
+            const startT = performance.now();
+            const DURATION_MS = 1200;
+            (function tick() {
+              const y = targetY();
+              if (document.scrollingElement) document.scrollingElement.scrollTop = y;
+              else window.scrollTo(0, y);
+              if (performance.now() - startT < DURATION_MS) requestAnimationFrame(tick);
+            })();
+          }
+        } catch (e) {}
+
+        // Bring Browse Ingredients (left panel) back to top after analyze
+        // Must scroll the PAGE (lists are not scroll containers: overflowY is visible)
+        (function scrollBrowseToTop(){
+          const leftCard = document.getElementById('pf-browse-ingredients-card');
+          if (!leftCard) return;
+
+          const run = () => {
+            const y = window.pageYOffset + leftCard.getBoundingClientRect().top;
+            const offset = 90; // sticky navbar offset
+            const target = Math.max(0, y - offset);
+            const scroller = document.scrollingElement || document.documentElement;
+            scroller.scrollTop = target;
+          };
+
+          // Run multiple times to beat late layout/focus scroll jumps
+          setTimeout(run, 0);
+          setTimeout(run, 120);
+          setTimeout(run, 350);
+        })();
+
         
       } catch (err) {
         console.error(err);

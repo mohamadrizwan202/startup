@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact Us - PureFyul</title>
   <style>
@@ -322,7 +323,9 @@
       <p>We typically respond within 24-48 hours.</p>
     </div>
   </div>
+  {% include "_feedback.html" %}
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/feedback.js') }}" defer></script>
 </body>
 </html>
 

@@ -1,0 +1,77 @@
+<!-- Floating Feedback Widget -->
+<div id="pf-feedback-widget" class="pf-feedback-widget">
+  <!-- Feedback Button -->
+  <button id="pf-feedback-btn" class="pf-feedback-btn" aria-label="Open feedback form">
+    <span class="pf-feedback-btn-text">Feedback</span>
+  </button>
+
+  <!-- Feedback Form Panel -->
+  <div id="pf-feedback-panel" class="pf-feedback-panel" aria-hidden="true">
+    <div class="pf-feedback-panel-header">
+      <h3 class="pf-feedback-panel-title">Send Feedback</h3>
+      <button id="pf-feedback-close" class="pf-feedback-close" aria-label="Close feedback form">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <form id="pf-feedback-form" class="pf-feedback-form">
+      <div id="pf-feedback-message" class="pf-feedback-message" role="alert" style="display: none;"></div>
+
+      <div class="pf-feedback-field">
+        <label for="pf-feedback-email" class="pf-feedback-label">
+          Email <span class="pf-feedback-optional">(optional)</span>
+        </label>
+        <input 
+          type="email" 
+          id="pf-feedback-email" 
+          name="email" 
+          class="pf-feedback-input"
+          placeholder="your.email@example.com"
+          autocomplete="email"
+        >
+      </div>
+
+      <div class="pf-feedback-field">
+        <label for="pf-feedback-category" class="pf-feedback-label">
+          Category <span class="pf-feedback-optional">(optional)</span>
+        </label>
+        <select id="pf-feedback-category" name="category" class="pf-feedback-select">
+          <option value="">Select category</option>
+          <option value="bug">Bug Report</option>
+          <option value="feature">Feature Request</option>
+          <option value="improvement">Improvement</option>
+          <option value="general">General Feedback</option>
+        </select>
+      </div>
+
+      <div class="pf-feedback-field">
+        <label for="pf-feedback-message-text" class="pf-feedback-label">
+          Message <span class="pf-feedback-required">*</span>
+        </label>
+        <textarea 
+          id="pf-feedback-message-text" 
+          name="message" 
+          class="pf-feedback-textarea"
+          placeholder="Tell us what you think..."
+          required
+          rows="5"
+        ></textarea>
+        <div class="pf-feedback-char-count">
+          <span id="pf-feedback-char-count">0</span>/1500
+        </div>
+      </div>
+
+      <button type="submit" class="pf-feedback-submit" id="pf-feedback-submit">
+        <span class="pf-feedback-submit-text">Send Feedback</span>
+        <span class="pf-feedback-submit-spinner" style="display: none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-opacity="0.25"/>
+            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+          </svg>
+        </span>
+      </button>
+    </form>
+  </div>
+</div>
