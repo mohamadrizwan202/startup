@@ -41,13 +41,6 @@ logger = logging.getLogger("startup_recovered")
 
 app = Flask(__name__)
 
-# Force non-www redirect
-@app.before_request
-def force_non_www():
-    host = request.host.lower()
-    if host.startswith("www."):
-        return redirect(request.url.replace("://www.", "://", 1), code=301)
-
 # Production environment detection (single source of truth)
 ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
 IS_PROD = ENV == "production" or (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
