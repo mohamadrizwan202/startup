@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /login
 Disallow: /register
 
-Sitemap: https://www.purefyul.com/sitemap.xml
+Sitemap: https://purefyul.com/sitemap.xml
