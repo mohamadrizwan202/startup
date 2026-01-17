@@ -4255,6 +4255,23 @@
       }
     }
 
+    
+    // Ingredient Analysis flow controller:
+    // step 0 = show Health Goals only
+    // step 1 = show Sub-categories
+    // step 2 = show Ingredients
+    function setIngredientFlowStep(step) {
+      const subSec = document.getElementById('subcategories-section');
+      const ingSec = document.getElementById('ingredients-section');
+      const recSec = document.getElementById('recommended-ingredients');
+
+      if (subSec) subSec.style.display = (step >= 1) ? 'block' : 'none';
+      if (ingSec) ingSec.style.display = (step >= 2) ? 'block' : 'none';
+
+      // Optional: keep Recommended hidden until ingredients are visible
+      if (recSec && step < 2) recSec.style.display = 'none';
+    }
+
     function resetBrowseAfterAnalyze() {
       // Reset state
       selectedCategory = null;
@@ -4291,6 +4308,10 @@
 
       // Also clear any ingredient error
       hideIngredientError?.();
+      
+      // Flow reset: show Health Goals only
+      try { setIngredientFlowStep(0); } catch (e) {}
+
 
 
     }
