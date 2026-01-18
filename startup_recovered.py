@@ -46,13 +46,17 @@ CANONICAL_HOST = "purefyul.com"
 
 @app.before_request
 def enforce_canonical_host():
-    # Only enforce in production (avoid breaking localhost)
-    if request.host.startswith("127.0.0.1") or request.host.startswith("localhost"):
+    # Get the real host (behind proxies, X-Forwarded-Host can be the truth)
+    host = (request.headers.get("X-Forwarded-Host") or request.host or "")
+    host = host.split(",")[0].strip()          # handle "a,b" format
+    host_no_port = host.split(":")[0].lower()  # strip :443 etc.
+
+    # Don't enforce on local dev
+    if host_no_port in ("127.0.0.1", "localhost"):
         return
 
-    # If user hits Render hostname or www, redirect to canonical host
     bad_hosts = {"startup-hmwd.onrender.com", "www.purefyul.com"}
-    if request.host in bad_hosts:
+    if host_no_port in bad_hosts:
         parts = urlsplit(request.url)
         new_url = urlunsplit((parts.scheme, CANONICAL_HOST, parts.path, parts.query, parts.fragment))
         return redirect(new_url, code=301)
