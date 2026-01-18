@@ -50638,8 +50638,8 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))
     debug = os.getenv("FLASK_DEBUG", "0") == "1"
 
-    # IMPORTANT: no reloader in nohup/background mode
-    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=False, threaded=True)
+    # Reloader is helpful for development (restart on code changes)
+    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=debug, threaded=True)
     
 # ---------------------------
 # ADMIN: Feedback viewer
