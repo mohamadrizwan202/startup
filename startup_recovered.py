@@ -1313,6 +1313,13 @@ def add_security_headers(response):
     # ---------------------------
     path = request.path or "/"
 
+    # Never cache redirects
+    if 300 <= response.status_code < 400:
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
     # Private / sensitive routes: never cache
     if (
         path.startswith("/admin")
