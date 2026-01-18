@@ -1277,15 +1277,6 @@ def add_security_headers(response):
         "geolocation=(), microphone=(), camera=(), payment=(), usb=()",
     )
     
-    # Cache-Control & Pragma: Prevent caching of HTML responses only
-    # This ensures that HTML responses aren't cached (prevents stale frontend updates)
-    # API/JSON responses are left unchanged
-    content_type = response.headers.get("Content-Type", "").lower()
-    if content_type.startswith("text/html"):
-        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
-
     # Content-Security-Policy: XSS baseline with nonce-based scripts
     nonce = getattr(g, "csp_nonce", None)
     csp_directives = [
@@ -1317,6 +1308,46 @@ def add_security_headers(response):
         )
         response.headers.setdefault(csp_header_name, csp_value)
     
+    # ---------------------------
+    # Cache-Control policy (SEO + performance)
+    # ---------------------------
+    path = request.path or "/"
+
+    # Private / sensitive routes: never cache
+    if (
+        path.startswith("/admin")
+        or path.startswith("/api")
+        or path.startswith("/__")
+        or path in ("/login", "/register", "/dbcheck")
+    ):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
+    # Robots + sitemap: cacheable (safe)
+    elif path in ("/robots.txt", "/sitemap.xml"):
+        response.headers["Cache-Control"] = "public, max-age=3600"
+        if "Pragma" in response.headers:
+            del response.headers["Pragma"]
+        if "Expires" in response.headers:
+            del response.headers["Expires"]
+
+    # Static assets: long cache
+    elif path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        if "Pragma" in response.headers:
+            del response.headers["Pragma"]
+        if "Expires" in response.headers:
+            del response.headers["Expires"]
+
+    # Public marketing pages: cacheable
+    else:
+        response.headers["Cache-Control"] = "public, max-age=600"
+        if "Pragma" in response.headers:
+            del response.headers["Pragma"]
+        if "Expires" in response.headers:
+            del response.headers["Expires"]
+
     return response
 
 # ============================================================================
