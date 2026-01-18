@@ -14,7 +14,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime, timezone
 from functools import wraps
 from flask import jsonify # pyright: ignore[reportMissingImports]
-from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
+from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode, urlsplit, urlunsplit
 
 import sqlite3
 import os
@@ -40,6 +40,22 @@ logging.basicConfig(
 logger = logging.getLogger("startup_recovered")
 
 app = Flask(__name__)
+
+# Canonical host enforcement
+CANONICAL_HOST = "purefyul.com"
+
+@app.before_request
+def enforce_canonical_host():
+    # Only enforce in production (avoid breaking localhost)
+    if request.host.startswith("127.0.0.1") or request.host.startswith("localhost"):
+        return
+
+    # If user hits Render hostname or www, redirect to canonical host
+    bad_hosts = {"startup-hmwd.onrender.com", "www.purefyul.com"}
+    if request.host in bad_hosts:
+        parts = urlsplit(request.url)
+        new_url = urlunsplit((parts.scheme, CANONICAL_HOST, parts.path, parts.query, parts.fragment))
+        return redirect(new_url, code=301)
 
 # Production environment detection (single source of truth)
 ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
