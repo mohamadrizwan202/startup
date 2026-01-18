@@ -28,7 +28,7 @@ img, svg, video { max-width: 100%; height: auto; }
   /* Prevent any child from forcing the grid wider */
   #ingredient-tab-content,
   #ingredient-tab-content * {
-    min-width: 0 !important;
+    /* min-width: 0 !important; */
     max-width: 100% !important;
   }
 
@@ -542,3 +542,5 @@ img, svg, video { max-width: 100%; height: auto; }
 
   .card { padding: 10px !important; }
 }
+
+

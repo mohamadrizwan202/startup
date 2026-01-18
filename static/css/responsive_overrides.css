@@ -216,7 +216,24 @@
   .search-area-container .search-container {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 12px 14px !important;
+    padding: 10px !important;
+  }
+
+  /* Search Row - stack on mobile */
+  .pf-search-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+  }
+
+  .pf-input-wrapper {
+    width: 100% !important;
+  }
+
+  .pf-search-row #analyze-btn {
+    width: 100% !important;
+    height: 44px !important;
+    margin: 0 !important;
   }
 
   .search-area-container .search-container .card-header {
@@ -346,7 +363,18 @@
   }
 
   .results-container .card-title {
-    font-size: 1rem !important;
+    font-size: 0.95rem !important;
+    margin: 0 !important;
+  }
+
+  .status-indicator {
+    padding: 4px 10px !important;
+    border-radius: 999px !important;
+    background: rgba(14,165,164,0.05) !important;
+  }
+
+  #status-text {
+    font-size: 0.75rem !important;
   }
 
   /* Tabs - horizontal scrolling */
@@ -370,10 +398,45 @@
   .tabs .tab,
   .results-container .tabs button,
   .tabs button {
-    padding: 10px 14px !important;
+    padding: 8px 12px !important;
     font-size: 0.85rem !important;
-    min-height: 44px !important;
+    min-height: 40px !important;
     white-space: nowrap !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+
+  /* Allergen Profile - stack on mobile */
+  .pf-ap {
+    padding: 10px !important;
+    margin: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .pf-ap-head {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .pf-ap-title {
+    font-size: 0.9rem !important;
+  }
+
+  .pf-ap-sub {
+    font-size: 0.75rem !important;
+  }
+
+  .pf-ap-clear {
+    align-self: flex-end !important;
+    padding: 4px 8px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .pf-ap-chips {
+    gap: 6px !important;
+    margin-top: 8px !important;
   }
 
   /* Results body - tighter padding */
@@ -480,6 +543,30 @@
     flex-direction: column !important;
     gap: 14px !important;
   }
+
+  /* Allergen Check Mobile Font Sizes */
+  #allergens-results-body .pf-a-okCallout .t1 {
+    font-size: 0.95rem !important;
+  }
+  #allergens-results-body .pf-a-okCallout .t2 {
+    font-size: 0.8rem !important;
+  }
+  #allergens-results-body .pf-a-sectionTitle {
+    font-size: 0.9rem !important;
+  }
+  #allergens-results-body .pf-a-muted {
+    font-size: 0.82rem !important;
+  }
+  #allergens-results-body .pf-a-chip {
+    font-size: 0.78rem !important;
+    padding: 4px 10px !important;
+  }
+  #allergens-results-body details summary {
+    font-size: 0.85rem !important;
+  }
+  #allergens-results-body .pf-a-list li {
+    font-size: 0.78rem !important;
+  }
 }
 
 /* =========================
@@ -512,7 +599,11 @@
 
   /* Search area - minimal padding */
   .search-area-container .search-container {
-    padding: 10px 12px !important;
+    padding: 8px !important;
+  }
+
+  .pf-search-row {
+    gap: 8px !important;
   }
 
   /* Cards - minimal padding */
@@ -853,9 +944,10 @@
    ========================= */
 @media (max-width: 1024px) {
   /* Hide the inline results card on the ingredient page */
-  #ingredient-tab-content #ingredient-results-card {
+  /* ad comment this out */
+  /* #ingredient-tab-content #ingredient-results-card {
     display: none !important;
-  }
+  } */
 
   /* But show the SAME card when it gets moved into the modal */
   #pf-results-modal #ingredient-results-card {
@@ -4513,22 +4605,24 @@ body.pf-modal-open {
    ========================= */
 
 :root{
-  --pf-bg-1: rgba(36, 140, 138, 0.92);
-  --pf-bg-2: rgba(52, 168, 165, 0.88);
-  --pf-border: rgba(255,255,255,0.14);
-  --pf-text: rgba(255,255,255,0.92);
-  --pf-glow: rgba(0,0,0,0.18);
+  --pf-bg-1: rgba(36, 140, 138, 0.94);
+  --pf-bg-2: rgba(52, 168, 165, 0.90);
+  --pf-border: rgba(255,255,255,0.18);
+  --pf-text: #ffffff;
+  --pf-glow: rgba(0,0,0,0.15);
+  --pf-font: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .pf-header{
   position: sticky;
   top: 0;
   z-index: 2000;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
   background: linear-gradient(90deg, var(--pf-bg-2), var(--pf-bg-1));
   border-bottom: 1px solid var(--pf-border);
-  box-shadow: 0 10px 30px var(--pf-glow);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  font-family: var(--pf-font);
 }
 
 .pf-nav{
@@ -4550,10 +4644,14 @@ body.pf-modal-open {
   color: var(--pf-text);
 }
 .pf-brand__text{
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1;
+  background: linear-gradient(to bottom, #ffffff, #e0f2f1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .pf-badge{
@@ -4597,15 +4695,34 @@ body.pf-modal-open {
   gap: 14px;
 }
 .pf-nav__link{
-  color: rgba(255,255,255,0.92);
+  color: #ffffff;
   text-decoration: none;
-  font-weight: 700;
-  padding: 10px 10px;
-  border-radius: 10px;
-  transition: background 160ms ease, transform 160ms ease;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  opacity: 0.85;
 }
 .pf-nav__link:hover{
-  background: rgba(255,255,255,0.10);
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+.pf-nav__link::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: white;
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
+  transform-origin: right;
+}
+.pf-nav__link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 .pf-nav__link:active{
   transform: translateY(1px);
@@ -4640,12 +4757,15 @@ body.pf-modal-open {
 }
 
 .pf-btn--primary{
-  background: rgba(255,255,255,0.16);
-  border-color: rgba(255,255,255,0.22);
+  background: #ffffff;
+  color: #0EA5A4 !important;
+  border-color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
 }
 .pf-btn--primary:hover{
-  background: rgba(255,255,255,0.22);
-  border-color: rgba(255,255,255,0.30);
+  background: #f0fdfa;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .pf-nav__who{
@@ -4712,4 +4832,34 @@ body.pf-modal-open {
 .pf-ing-pill__name,
 .sn-ing-pill__name{
   text-transform: capitalize !important;
+}
+
+/*  custom CSS */
+.pf-hb2-hero__copy{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pf-hb2-hero{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pf-hb2-hero__ing{
+  display: flex;
+}
+.pf-a-detailsBody{
+  display: flex;
+}
+.pf-a-list{
+  display: flex;
+  flex-direction: column;
+}
+.nutrition-title{
+  display: flex;
+}
+.normal_gapping{
+  display: flex;
+    flex-direction: column;
+    gap: 10px;
 }

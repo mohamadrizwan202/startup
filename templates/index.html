@@ -5,6 +5,9 @@
   <link rel="canonical" href="https://purefyul.com{{ request.path }}">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>PureFyul | Nutrition Facts & Allergen Ingredient Analyzer + Smoothie Builder</title>
@@ -278,8 +281,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 50%, #0EA5A4 100%);
-      background-attachment: fixed;
+      background: #f1f5f9; /* Professional slate workspace background */
       min-height: 100vh;
       color: var(--text-primary);
       line-height: 1.6;
@@ -293,7 +295,7 @@
       inset: 0;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.035; /* subtle grain */
+      opacity: 0.02; /* even subtler for light background */
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
       background-repeat: repeat;
     }
@@ -305,36 +307,42 @@
     }
 
     .container {
-      max-width: 1600px;
-      margin: 0 auto;
-      padding: 30px 20px;
+      width: 100%;
+      min-height: 100vh;
+      max-width: none;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
     /* Main Tabs Container */
     .main-tabs-container {
-      margin-bottom: 30px;
+      margin-bottom: 0;
       display: flex;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .main-tabs {
       display: flex;
       gap: 10px;
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
-      padding: 8px;
+      padding: 6px;
       border-radius: 16px;
       border: 1px solid rgba(255, 255, 255, 0.2);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .main-tab {
-      padding: 12px 24px;
+      padding: 10px 20px;
       background: transparent;
       border: none;
       border-radius: 12px;
-      color: white;
-      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -346,7 +354,7 @@
 
     .main-tab:hover {
       opacity: 1;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.15);
     }
 
     .main-tab.active {
@@ -358,41 +366,49 @@
 
     .main-tab-content {
       display: none;
+      flex: 1;
+      height: 100%;
+      overflow: hidden;
     }
 
     .main-tab-content.active {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
     
     /* Header */
     .header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 0;
       color: white;
+      flex-shrink: 0;
     }
 
     .header h1 {
-      font-size: 3rem;
+      font-size: 2.2rem;
       font-weight: 800;
-      margin-bottom: 10px;
+      margin-bottom: 4px;
       text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
     .header .subtitle {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       opacity: 0.95;
-      margin-bottom: 15px;
+      margin-bottom: 0;
     }
 
     .header .badge {
       display: inline-block;
-      padding: 8px 20px;
-      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 16px;
+      background: white;
       backdrop-filter: blur(10px);
       border-radius: 50px;
-      font-size: 0.9rem;
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
     }
 
     /* Main Layout - Removed, using centered search and 3-column browse */
@@ -401,19 +417,24 @@
       margin-bottom: 25px;
     }
     
-    /* Search Area Container - Centered */
+    /* Search Area Container - Left Aligned */
     .search-area-container {
       display: flex;
-      justify-content: center;
-      margin-bottom: 30px;
+      justify-content: flex-start;
+      margin-bottom: 20px;
+      flex-shrink: 0;
     }
 
     .search-area-container .search-container {
-      max-width: 800px;
+      max-width: 50%;
       width: 100%;
       display: flex;
       flex-direction: column;
-      padding: 15px 20px; /* Reduced from 25px */
+      padding: 16px;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
     }
     
     .search-area-container .search-container .card-header {
@@ -457,87 +478,151 @@
     }
     
     .search-area-container .search-container #analyze-btn {
-      margin-top: 12px; /* Reduced spacing */
+      margin-top: 0; /* Align with input */
       flex-shrink: 0;
-      padding: 12px 24px; /* Reduced from default */
+      padding: 10px 20px;
+      height: 48px; /* Match textarea height roughly */
+      width: max-content;
     }
 
-    /* Browse & Results Grid — mobile-first (NO fixed widths) */
+    /* Minimal One-Line Search Row */
+    .pf-search-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+      transition: all 0.2s ease;
+      box-shadow: none;
+    }
+
+    .pf-input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border: 1.5px solid rgba(15, 23, 42, 0.15);
+      border-radius: 10px;
+      padding: 2px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .pf-input-wrapper:focus-within {
+      border-color: #0EA5A4;
+      box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.1);
+    }
+
+    .pf-search-row .ingredients-textarea-section {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+    }
+
+    .pf-search-row .ingredients-textarea {
+      min-height: 40px !important;
+      height: 40px !important;
+      padding: 8px 12px !important;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      resize: none;
+      font-size: 0.95rem;
+      color: #0f172a;
+    }
+
+    .pf-search-row .ingredients-textarea:focus {
+      outline: none !important;
+    }
+
+    #analyze-btn {
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin: 0;
+      white-space: nowrap;
+      flex-shrink: 0;
+      background: var(--primary) !important;
+      color: white !important;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    #analyze-btn:hover:not(:disabled) {
+      background: var(--primary-dark) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    #analyze-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #cbd5e1 !important;
+      color: #64748b !important;
+    }
+
+    #ingredient-search-card {
+      padding: 12px !important;
+      border-radius: 20px !important;
+    }
+
+    #ingredient-search-card .card-header {
+      display: none !important; /* Hide redundant headers for minimal look */
+    }
+
+    /* Browse & Results Grid — Desktop layout side by side */
     .browse-results-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-      margin-bottom: 30px;
-      align-items: stretch;
+      display: flex;
+      gap: 16px;
+      flex: 1;
+      min-height: 0; /* Important for flex child with overflow */
+      margin-bottom: 0;
     }
 
-    .browse-results-grid > .card.results-container,
-    .browse-results-grid > :nth-child(2) {
-      width: auto !important;
-      max-width: 100% !important;
-      min-width: 0 !important;
-      align-self: start;
+    .browse-results-grid > .card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
 
+    .browse-results-grid > .card .card-header,
+    .browse-results-grid > .card .results-header,
+    .browse-results-grid > .card .tabs,
+    .browse-results-grid > .card .selected-summary {
+      flex-shrink: 0;
+    }
+
+    .browse-results-grid > .card .browse-ingredients-layout,
+    .browse-results-grid > .card .results-body,
+    .browse-results-grid > .card .tab-pane {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      padding: 16px;
     }
 
     /* Desktop only: keep EXACT 725px behavior */
-    @media (min-width: 1025px) {
-      .browse-results-grid {
-      grid-template-columns: minmax(0, 1fr) 725px;
-      gap: 25px;
-    }
-    
-    .browse-results-grid > .card.results-container {
-      display: flex;
-      flex-direction: column;
-      width: 725px !important;
-      max-width: 725px !important;
-      min-width: 725px !important;
-      box-sizing: border-box;
-    }
-    
-    .browse-results-grid > :nth-child(2) {
-      width: 725px !important;
-      max-width: 725px !important;
-      min-width: 725px !important;
-      }
-    }
-
-    /* Ingredient tab: keep Browse + Results panels same height (desktop) and scroll inside */
-    @media (min-width: 1024px) {
-      #ingredient-tab-content .pf-ing-grid {
-        align-items: stretch;
-      }
-
-      /* Both cards fixed visual height; content scrolls inside */
-      #ingredient-tab-content .pf-ing-grid > * {
-        height: clamp(560px, 72vh, 820px);
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-
-      /* Right panel: results content scrolls */
-      #ingredient-tab-content .pf-ing-grid .results-body,
-      #ingredient-tab-content .pf-ing-grid .tab-pane {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow: auto;
-      }
-
-      /* Left panel: browse can scroll when it grows */
-      #ingredient-tab-content .pf-ing-grid > *:first-child {
-        overflow: auto;
-      }
-    }
-    
+    /* Results container specific headers */
     .results-container .results-header {
       flex-shrink: 0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
     }
     
     .results-container .tabs {
       flex-shrink: 0;
+      margin-bottom: 12px;
     }
     
     /* Browse Ingredients Grid */
@@ -852,20 +937,24 @@
 
     /* Main Content Grid: Search & Results Side by Side (for Smoothie tab) */
     .main-content-grid {
-      display: grid;
-      grid-template-columns: 1fr 1.5fr;
-      gap: 25px;
-      margin-bottom: 30px;
+      display: flex;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+      margin-bottom: 0;
       align-items: stretch;
     }
 
     /* Cards */
     .card {
-      background: var(--bg-primary);
+      background: #ffffff;
       border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-xl);
-      padding: 25px;
+      box-shadow: var(--shadow-md);
+      padding: 20px;
       border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     .card-header {
@@ -1022,6 +1111,80 @@
     .suggestion-item:hover {
       background: var(--bg-secondary);
       border-left: 3px solid var(--primary);
+    }
+
+    /* Smoothie Preset Mini Cards */
+    .preset-mini-card {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .preset-mini-card:hover {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 4px 12px rgba(14, 165, 164, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .preset-info-trigger {
+      color: var(--primary);
+      font-size: 1.1rem;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preset-info-trigger:hover {
+      opacity: 1;
+    }
+
+    .preset-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      top: 130%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      width: 260px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      z-index: 1000;
+      margin-top: 12px;
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+
+    .preset-info-trigger:hover .preset-tooltip {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .preset-tooltip::after {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-left: 1px solid var(--border);
+      border-top: 1px solid var(--border);
     }
 
     .suggestion-name {
@@ -1298,33 +1461,39 @@
     }
 
     .tabs {
-      display: flex;
-      gap: 5px;
-      background: var(--bg-secondary);
-      padding: 5px;
-      border-radius: var(--radius);
+      position: relative;
+      display: inline-flex;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.05);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(15, 23, 42, 0.05);
     }
 
     .tab {
-      padding: 10px 20px;
+      padding: 8px 16px;
       border: none;
       background: transparent;
-      border-radius: var(--radius);
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
+      font-size: 0.85rem;
+      font-weight: 600;
       color: var(--text-secondary);
-      transition: all 0.2s ease;
-    }
-
-    .tab.active {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white;
-      box-shadow: var(--shadow-sm);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .tab:hover:not(.active) {
-      background: rgba(14, 165, 164, 0.10);
+      background: rgba(14, 165, 164, 0.05);
+      color: var(--primary);
+    }
+
+    .tab.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     .tab-pane {
@@ -2697,55 +2866,47 @@
     .nutrition-results-card {
       background: #ffffff;
       border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 16px;
-      padding: 14px;
+      border-radius: 12px;
+      padding: 10px;
       margin: 0;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 12px;
+      gap: 4px;
     }
 
     .nutrition-results-top {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 8px;
       margin: 0;
     }
 
     .nutrition-title {
       display: flex;
-      align-items: flex-start;
-      gap: 10px;
+      align-items: center;
+      gap: 6px;
     }
 
     .nutrition-title .badge {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      background: rgba(14,165,164,0.12);
-      border: 1px solid rgba(14,165,164,0.22);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 auto;
+      display: none;
     }
 
     .nutrition-title h3 {
       margin: 0;
-      font-size: 1.05rem;
-      font-weight: 800;
+      font-size: 0.9rem;
+      font-weight: 700;
       color: #0f172a;
       line-height: 1.15;
     }
 
-    .nutrition-title p {
-      margin: 4px 0 0 0;
-      font-size: 0.85rem;
-      color: rgba(15, 23, 42, 0.65);
-      line-height: 1.25;
+    .nutrition-title h3 span {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: rgba(15, 23, 42, 0.55);
+      margin-left: 4px;
     }
 
     .nutrition-count {
@@ -3654,26 +3815,28 @@
   
     /* ---- Nutrition tab empty state (matches results card styling) ---- */
     .nutrition-empty {
-      border: 1px dashed rgba(15,23,42,0.18);
-      background: rgba(14,165,164,0.06);
-      border-radius: 14px;
-      padding: 18px 16px;
+      border: 1px dashed rgba(15,23,42,0.1);
+      background: rgba(14,165,164,0.03);
+      border-radius: 10px;
+      padding: 10px;
       display: grid;
-      gap: 6px;
+      gap: 2px;
+      text-align: center;
     }
     .nutrition-empty-title {
-      font-weight: 900;
+      font-weight: 800;
       color: #0f172a;
-      line-height: 1.2;
+      line-height: 1.1;
+      font-size: 0.85rem;
     }
     .nutrition-empty-text {
-      color: rgba(15, 23, 42, 0.65);
-      line-height: 1.5;
-      font-size: 0.95rem;
+      color: rgba(15, 23, 42, 0.55);
+      line-height: 1.35;
+      font-size: 0.78rem;
     }
     .nutrition-empty-text strong {
       color: #0f172a;
-      font-weight: 900;
+      font-weight: 800;
     }
 
   </style>
@@ -3727,7 +3890,7 @@
 <body>
   {% include "_navbar.html" %}
 
-  <div class="container">
+  <div class="container " style="background: #0ea5a4;">
     <!-- Header -->
     <header class="header">
       <h1>Nutrition & Allergen</h1>
@@ -3750,36 +3913,31 @@
     <div id="ingredient-tab-content" class="main-tab-content active">
       <!-- Search Area - Centered -->
       <div class="search-area-container">
-        <div class="card search-container" id="ingredient-search-card">
+        <div class="search-container" id="ingredient-search-card">
+          <div class="pf-search-row">
+            <div class="pf-input-wrapper">
+              <div class="ingredients-textarea-section" style="padding-left: 8px;">
+                <textarea
+                  id="ingredients-input"
+                  class="ingredients-textarea"
+                  placeholder="Type ingredients..."
+                  rows="1"
+                  style="height: 32px !important; min-height: 32px !important; padding: 6px 8px !important;"
+                ></textarea>
+              </div>
+            </div>
 
-        <div class="card-header">
-          <div>
-            <div class="card-title">Search & Analyze Ingredients</div>
-            <div class="card-subtitle">Type ingredient names or browse categories below</div>
+            <button id="analyze-btn" class="btn-primary" disabled>
+              ⚡ Analyze
+            </button>
+          </div>
+          <!-- Error Message Container moved outside row to avoid breaking it -->
+          <div id="ingredient-error-message" class="error-message" style="display: none; margin-top: 8px; padding-left: 16px;"></div>
+
+          <div id="selected-ingredients" class="selected-ingredients" style="display: none;">
           </div>
         </div>
-
-        <!-- Ingredients Input -->
-        <div class="ingredients-textarea-section">
-          <label for="ingredients-input" class="textarea-label">Ingredients</label>
-          <textarea
-            id="ingredients-input"
-            class="ingredients-textarea"
-            placeholder="Enter ingredients separated by commas (e.g., mango, spinach, chicken breast)..."
-              rows="2"
-          ></textarea>
-          <!-- Error Message Container -->
-          <div id="ingredient-error-message" class="error-message" style="display: none;"></div>
-        </div>
-
-        <div id="selected-ingredients" class="selected-ingredients" style="display: none;">
-        </div>
-
-        <button id="analyze-btn" class="btn-primary" disabled>
-          ⚡ Analyze Ingredients
-        </button>
       </div>
-    </div>
 
       <!-- Browse Ingredients & Analysis Results Side by Side -->
       <div class="browse-results-grid pf-ia-equal-row pf-ing-grid">
@@ -3867,9 +4025,15 @@
           </div>
         </div>
         <div class="tabs">
-          <button class="tab active" data-tab="nutrition">Nutrition</button>
-          <button class="tab" data-tab="allergens">Allergens</button>
-          <button class="tab" data-tab="health-benefits">Health Benefits</button>
+          <button class="tab active" data-tab="nutrition">
+            <span style="font-size: 1.1rem;">🧪</span> Nutrition
+          </button>
+          <button class="tab" data-tab="allergens">
+            <span style="font-size: 1.1rem;">⚠️</span> Allergens
+          </button>
+          <button class="tab" data-tab="health-benefits">
+            <span style="font-size: 1.1rem;">🌿</span> Health Benefits
+          </button>
         </div>
                 <!-- Separate scrollable containers for each tab -->
         <div class="tab-pane active" id="nutrition-tab-pane" data-tab="nutrition">
@@ -3878,11 +4042,7 @@
             <div class="nutrition-results-card">
               <div class="nutrition-results-top">
                 <div class="nutrition-title">
-                  <span class="badge" aria-hidden="true">🥗</span>
-                  <div>
-                    <h3>Nutrition Summary</h3>
-                    <p>Totals across selected ingredients</p>
-                  </div>
+                  <h3>Nutrition Summary <span>(Totals across selected ingredients)</span></h3>
                 </div>
               </div>
 
@@ -3916,11 +4076,7 @@
             <div class="nutrition-results-card">
               <div class="nutrition-results-top">
                 <div class="nutrition-title">
-                  <span class="badge" aria-hidden="true">⚠️</span>
-                  <div>
-                    <h3>Allergen Check</h3>
-                    <p>Potential allergens in selected ingredients</p>
-                  </div>
+                  <h3>Allergen Check <span>(Potential allergens in selected ingredients)</span></h3>
                 </div>
               </div>
 
@@ -3941,11 +4097,7 @@
             <div class="nutrition-results-card">
               <div class="nutrition-results-top">
                 <div class="nutrition-title">
-                  <span class="badge" aria-hidden="true">💪</span>
-                  <div>
-                    <h3>Health Benefits</h3>
-                    <p>Highlights from selected ingredients</p>
-                  </div>
+                  <h3>Health Benefits <span>(Highlights from selected ingredients)</span></h3>
                 </div>
               </div>
 
@@ -3998,6 +4150,31 @@
 
     <!-- Smoothie Builder Tab Content -->
     <div id="smoothie-tab-content" class="main-tab-content">
+      <!-- Smoothie Presets / Saved Recipes -->
+      <div class="card" style="margin-bottom: 12px; border-radius: 12px; overflow: visible;">
+        <div class="card-header" style="padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+            <div class="card-title" style="margin: 0; font-size: 1.1rem;">📚 Smoothie Presets</div>
+            <div class="card-subtitle" style="margin: 0; font-size: 0.85rem; opacity: 0.8;">Quick-start recipes for different health goals</div>
+          </div>
+        </div>
+        <div id="smoothie-presets" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; padding: 10px 0;">
+          <!-- Presets will be loaded here -->
+        </div>
+        <script>
+          function toggleSmoothiePresets() {
+            const presetsEl = document.getElementById('smoothie-presets');
+            const toggleBtn = document.getElementById('smoothie-presets-toggle');
+            if (presetsEl.style.display === 'none') {
+              presetsEl.style.display = 'grid';
+              toggleBtn.textContent = 'Hide';
+            } else {
+              presetsEl.style.display = 'none';
+              toggleBtn.textContent = 'Show';
+            }
+          }
+        </script>
+      </div>
       <div class="main-content-grid">
         <!-- Left: Smoothie Builder -->
         <div class="card search-container">
@@ -4144,18 +4321,6 @@
         </div>
       </div>
 
-      <!-- Smoothie Presets / Saved Recipes -->
-      <div class="card" style="margin-top: 25px;">
-        <div class="card-header">
-          <div>
-            <div class="card-title">📚 Smoothie Presets</div>
-            <div class="card-subtitle">Quick-start recipes for different health goals</div>
-          </div>
-        </div>
-        <div id="smoothie-presets" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; padding: 10px 0;">
-          <!-- Presets will be loaded here -->
-        </div>
-      </div>
     </div>
     <!-- End Smoothie Builder Tab Content -->
   </div> <!-- /.container -->
@@ -6425,11 +6590,7 @@
           nutritionResultsBodyEl.innerHTML = `<div class="nutrition-results-card">
   <div class="nutrition-results-top">
     <div class="nutrition-title">
-      <span class="badge" aria-hidden="true">🥗</span>
-      <div>
-        <h3>Nutrition Summary</h3>
-        <p>Totals across selected ingredients</p>
-      </div>
+      <h3>Nutrition Summary <span>(Totals across selected ingredients)</span></h3>
     </div>
   </div>
 
@@ -6446,11 +6607,7 @@
           allergensResultsBodyEl.innerHTML = `<div class="nutrition-results-card">
   <div class="nutrition-results-top">
     <div class="nutrition-title">
-      <span class="badge" aria-hidden="true">⚠️</span>
-      <div>
-        <h3>Allergen Check</h3>
-        <p>Potential allergens in selected ingredients</p>
-      </div>
+      <h3>Allergen Check <span>(Potential allergens in selected ingredients)</span></h3>
     </div>
   </div>
 
@@ -6467,11 +6624,7 @@
           healthBenefitsResultsBodyEl.innerHTML = `<div class="nutrition-results-card">
   <div class="nutrition-results-top">
     <div class="nutrition-title">
-      <span class="badge" aria-hidden="true">💪</span>
-      <div>
-        <h3>Health Benefits</h3>
-        <p>Highlights from selected ingredients</p>
-      </div>
+      <h3>Health Benefits <span>(Highlights from selected ingredients)</span></h3>
     </div>
   </div>
 
@@ -6634,7 +6787,7 @@
 
       let html = `
         <div class="nutrition-results-card">
-          <div class="pf-nutrition-hero">
+          <div class="pf-nutrition-hero normal_gapping">
             <div class="pf-nutrition-hero__copy">
             <div class="nutrition-title">
                 <h3>Nutrition Summary</h3>
@@ -7341,11 +7494,7 @@ const allergenPanel = allergenNames.length === 0
   <div class="nutrition-results-card fade-in">
     <div class="nutrition-results-top">
       <div class="nutrition-title">
-        <span class="badge" aria-hidden="true">⚠️</span>
-        <div>
-          <h3>Allergen Check</h3>
-          <p>Potential allergens in selected ingredients</p>
-        </div>
+        <h3>Allergen Check <span>(Potential allergens in selected ingredients)</span></h3>
       </div>
 
       <div class="pf-a-headRight">
@@ -18136,21 +18285,24 @@ const batchG = (smoothieBatchMlOverride != null)
     // Load smoothie presets
     function loadSmoothiePresets() {
       smoothiePresetsEl.innerHTML = smoothiePresets.map(preset => `
-        <div style="background: white; border-radius: var(--radius); padding: 20px; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s ease; hover:border-color: var(--primary);" 
-             onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 4px 12px rgba(14, 165, 164, 0.15)'"
-             onmouseout="this.style.borderColor='var(--border)'; this.style.boxShadow='none'"
-             onclick="loadSmoothiePreset('${preset.name}')">
-          <div style="font-size: 1.1rem; font-weight: 600; color: var(--primary); margin-bottom: 8px;">${preset.name}</div>
-          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">${preset.description}</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
-            ${preset.ingredients.slice(0, 3).map(ing => `
-              <span style="padding: 4px 8px; background: var(--bg-tertiary); border-radius: 4px; font-size: 0.75rem; color: var(--text-primary);">
-                ${ing}
-              </span>
-            `).join('')}
-            ${preset.ingredients.length > 3 ? `<span style="font-size: 0.75rem; color: var(--text-secondary);">+${preset.ingredients.length - 3} more</span>` : ''}
+        <div class="preset-mini-card" onclick="loadSmoothiePreset('${preset.name}')">
+          <div style="font-size: 0.9rem; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; margin-right: 8px;">
+            ${preset.name}
           </div>
-          <div style="font-size: 0.75rem; color: var(--success); font-weight: 600;">${preset.healthGoal}</div>
+
+          <div class="preset-info-trigger">
+            ⓘ
+            <div class="preset-tooltip">
+              <div style="font-weight: 700; color: var(--primary); margin-bottom: 4px; font-size: 0.95rem;">${preset.name}</div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">${preset.description}</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px;">
+                ${preset.ingredients.map(ing => `
+                  <span style="padding: 2px 6px; background: #f1f5f9; border-radius: 4px; font-size: 0.7rem; color: #475569;">${ing}</span>
+                `).join('')}
+              </div>
+              <div style="font-size: 0.75rem; color: var(--success); font-weight: 700;">🎯 ${preset.healthGoal}</div>
+            </div>
+          </div>
         </div>
       `).join('');
     }
@@ -18283,11 +18435,7 @@ const batchG = (smoothieBatchMlOverride != null)
         resultsBodyEl.innerHTML = `<div class="nutrition-results-card">
   <div class="nutrition-results-top">
     <div class="nutrition-title">
-      <span class="badge" aria-hidden="true">🥗</span>
-      <div>
-        <h3>Nutrition Summary</h3>
-        <p>Totals across selected ingredients</p>
-      </div>
+      <h3>Nutrition Summary <span>(Totals across selected ingredients)</span></h3>
     </div>
   </div>
 
