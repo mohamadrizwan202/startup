@@ -61,6 +61,15 @@ def enforce_canonical_host():
         new_url = urlunsplit((parts.scheme, CANONICAL_HOST, parts.path, parts.query, parts.fragment))
         return redirect(new_url, code=301)
 
+# Favicon route
+@app.get("/favicon.ico")
+def favicon_ico():
+    return send_from_directory(
+        app.static_folder,
+        "favicon.ico",
+        mimetype="image/vnd.microsoft.icon",
+    )
+
 # Production environment detection (single source of truth)
 ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
 IS_PROD = ENV == "production" or (os.getenv("RENDER") or "").strip().lower() in ("true", "1", "yes")
@@ -1340,7 +1349,7 @@ def add_security_headers(response):
             del response.headers["Expires"]
 
     # Static assets: long cache
-    elif path.startswith("/static/"):
+    elif path.startswith("/static/") or path in ("/favicon.ico",):
         response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
         if "Pragma" in response.headers:
             del response.headers["Pragma"]
