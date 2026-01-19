@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <link rel="canonical" href="https://purefyul.com{{ request.path }}">
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="icon" href="/static/favicon.ico" sizes="any">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/static/favicon-48.png">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
