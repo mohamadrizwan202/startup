@@ -54,3 +54,8 @@ myenv/
 # Allow SQL migrations to be committed
 !migrations/**/*.sql
 !migrations/*.sql
+
+# --- allow admin login template (override ignore login*.html) ---
+!templates/admin/
+!templates/admin/login.html
+
