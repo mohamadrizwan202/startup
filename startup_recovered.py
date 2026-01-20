@@ -912,6 +912,10 @@ def health_check():
 
 
 # --- Sitemap and Robots.txt Routes ---
+@app.get("/favicon.ico")
+def favicon():
+    return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/vnd.microsoft.icon")
+
 @app.get("/sitemap.xml")
 def sitemap():
     return send_from_directory("static", "sitemap.xml", mimetype="application/xml")
