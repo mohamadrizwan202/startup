@@ -27,6 +27,10 @@ backups/
 *.dump
 *.sql
 
+# Allow SQL migrations to be committed
+!migrations/**/*.sql
+!migrations/*.sql
+
 # Local curl / debug artifacts
 cookies*.txt
 login*.html
@@ -46,3 +50,7 @@ nlp_resp.json
 
 # local virtualenvs
 myenv/
+
+# Allow SQL migrations to be committed
+!migrations/**/*.sql
+!migrations/*.sql
