@@ -57,6 +57,12 @@ def is_truthy(value):
     return str(value).strip().lower() in ("1", "true", "yes", "on")
 
 
+def admin_required():
+    """Helper function to check if user is admin. Aborts with 403 if not."""
+    if not session.get('is_admin'):
+        abort(403)
+
+
 # Internal routes flag (PoLP: only enable with explicit flag)
 ENABLE_INTERNAL_ROUTES = is_truthy(os.getenv("ENABLE_INTERNAL_ROUTES", "0"))
 logger.info("ENABLE_INTERNAL_ROUTES=%s", "enabled" if ENABLE_INTERNAL_ROUTES else "disabled")
@@ -1483,8 +1489,10 @@ def handle_csrf_error(error):
             "message": error_message
         }), 400
     else:
-        # Non-API routes: return simple text/HTML message
-        return "Security check failed. Please reload the page and try again.", 400
+        # Non-API routes: flash friendly message and redirect
+        flash('Session expired. Please reload the page and try again.', 'error')
+        target = request.referrer or url_for('contact')
+        return redirect(target)
 
 
 # ============================================================================
@@ -1681,6 +1689,11 @@ def pricing():
 def contact():
     """Contact form route"""
     if request.method == 'POST':
+        # Honeypot spam protection
+        company = request.form.get('company', '').strip()
+        if company:
+            return '', 204
+        
         name = request.form.get('name', '').strip()
         email = request.form.get('email', '').strip()
         subject = request.form.get('subject', '').strip()
@@ -1712,15 +1725,46 @@ def contact():
             flash('Message must be at least 10 characters long.', 'error')
             return render_template('contact.html')
         
-        # Here you could:
-        # - Send an email notification
-        # - Store the message in a database
-        # - Integrate with a third-party service
+        # Store submission in database
+        try:
+            # Get IP and user agent
+            ip = None
+            forwarded_for = request.headers.get('X-Forwarded-For')
+            if forwarded_for:
+                ip = forwarded_for.split(',')[0].strip()
+            else:
+                ip = request.remote_addr
+            
+            user_agent = request.headers.get('User-Agent', '')[:500] if request.headers.get('User-Agent') else None
+            
+            conn = db.get_conn()
+            cursor = conn.cursor()
+            
+            if db.USE_POSTGRES:
+                query = """
+                    INSERT INTO public.contact_messages (name, email, subject, message, ip, user_agent)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(query, (name, email, subject, message, ip, user_agent))
+            else:
+                query = """
+                    INSERT INTO contact_messages (name, email, subject, message, ip, user_agent)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """
+                cursor.execute(query, (name, email, subject, message, ip, user_agent))
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            app.logger.info(f"Contact form saved: {name} ({email}) - {subject}")
+            flash('Thank you for your message! We\'ll get back to you soon.', 'success')
+            return redirect(url_for('contact'))
         
-        # For now, just show success message
-        app.logger.info(f"Contact form submission: {name} ({email}) - {subject}")
-        flash('Thank you for your message! We\'ll get back to you soon.', 'success')
-        return redirect(url_for('contact'))
+        except Exception as e:
+            app.logger.exception('Contact form DB insert failed')
+            flash('Sorry, there was an error submitting your message. Please try again later.', 'error')
+            return render_template('contact.html')
     
     return render_template('contact.html')
 
@@ -50773,19 +50817,9 @@ logger.warning("ROUTES_WITH_DBCHECK=%s", dbcheck_routes)
 #   Expected: HTTP 500 with {"ok": false, "error": "MISSING_TABLE", "table": "users"}
 # ============================================================================
 
-if __name__ == "__main__":
-    import os
-
-    port = int(os.getenv("PORT", "8000"))
-    debug = True # os.getenv("FLASK_DEBUG", "0") == "1"
-
-    # Reloader is helpful for development (restart on code changes)
-    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=debug, threaded=True)
-    
 # ---------------------------
 # ADMIN: Feedback viewer
 # ---------------------------
-import os, hmac
 
 def _row_to_dict(row, description):
     # row can be dict-like or tuple-like depending on cursor factory
@@ -50793,6 +50827,36 @@ def _row_to_dict(row, description):
         return row
     cols = [d[0] for d in (description or [])]
     return {cols[i]: row[i] for i in range(min(len(cols), len(row)))}
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Admin login route - session-based authentication"""
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        
+        admin_username = os.getenv('ADMIN_USERNAME', '')
+        if username != admin_username:
+            flash('Invalid username or password.', 'error')
+            return render_template('admin/login.html')
+        
+        pw_hash = os.getenv('ADMIN_PASSWORD_HASH', '')
+        if not pw_hash or not check_password_hash(pw_hash, password):
+            flash('Invalid username or password.', 'error')
+            return render_template('admin/login.html')
+        
+        session['is_admin'] = True
+        return redirect(url_for('admin_contacts'))
+    
+    return render_template('admin/login.html')
+
+
+@app.route('/admin/logout', methods=['POST'])
+def admin_logout():
+    """Admin logout route - clears session"""
+    session.clear()
+    return redirect('/admin/login')
+
 
 @app.get("/admin/feedback")
 @limiter.limit("30 per minute")
@@ -50823,3 +50887,103 @@ def admin_feedback():
 
     out = [_row_to_dict(r, desc) for r in rows]
     return render_template("admin_feedback.html", rows=out), 200, {"Cache-Control": "no-store"}
+
+
+@app.route('/admin/contacts')
+def admin_contacts():
+    """Admin contacts inbox - list view"""
+    if not session.get('is_admin'):
+        abort(403)
+    
+    if not db.USE_POSTGRES:
+        return "Postgres disabled", 503, {"Cache-Control": "no-store"}
+    
+    conn = db.get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, created_at, name, email, subject, status
+        FROM public.contact_messages
+        ORDER BY created_at DESC
+        LIMIT 200
+    """)
+    rows = cur.fetchall()
+    desc = cur.description
+    cur.close()
+    conn.close()
+    
+    out = [_row_to_dict(r, desc) for r in rows]
+    return render_template("admin/contacts.html", messages=out), 200, {"Cache-Control": "no-store"}
+
+
+@app.route('/admin/contacts/<int:msg_id>', methods=['GET', 'POST'])
+def admin_contact_detail(msg_id):
+    """Admin contact message detail view and update"""
+    if not session.get('is_admin'):
+        abort(403)
+    
+    if not db.USE_POSTGRES:
+        return "Postgres disabled", 503, {"Cache-Control": "no-store"}
+    
+    # Handle POST updates
+    if request.method == 'POST':
+        status = request.form.get('status', '').strip()
+        internal_note = request.form.get('internal_note', '').strip()
+        
+        # Whitelist status values
+        allowed_statuses = {'new', 'in_progress', 'done'}
+        if status not in allowed_statuses:
+            # Keep current status if invalid
+            conn = db.get_conn()
+            cur = conn.cursor()
+            cur.execute("SELECT status FROM public.contact_messages WHERE id = %s", (msg_id,))
+            row = cur.fetchone()
+            desc = cur.description
+            cur.close()
+            conn.close()
+            if row:
+                # Use _row_to_dict to properly handle the row
+                row_dict = _row_to_dict(row, desc)
+                status = row_dict.get('status', 'new') or 'new'
+            else:
+                abort(404)
+        
+        # Update the message
+        conn = db.get_conn()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE public.contact_messages
+            SET status = %s, internal_note = %s
+            WHERE id = %s
+        """, (status, internal_note if internal_note else None, msg_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        flash('Updated.', 'success')
+        return redirect(url_for('admin_contact_detail', msg_id=msg_id))
+    
+    # GET: Show message details
+    conn = db.get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, created_at, name, email, subject, message, ip, user_agent, status, internal_note
+        FROM public.contact_messages
+        WHERE id = %s
+    """, (msg_id,))
+    row = cur.fetchone()
+    desc = cur.description
+    cur.close()
+    conn.close()
+    
+    if not row:
+        abort(404)
+    
+    msg = _row_to_dict(row, desc)
+    return render_template("admin/contact_detail.html", msg=msg), 200, {"Cache-Control": "no-store"}
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", "8000"))
+    debug = True # os.getenv("FLASK_DEBUG", "0") == "1"
+
+    # Reloader is helpful for development (restart on code changes)
+    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=debug, threaded=True)

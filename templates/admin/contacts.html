@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="canonical" href="https://purefyul.com{{ request.path }}">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — Contact Inbox</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
+    h1 { margin: 0 0 10px; }
+    .hint { color: #555; margin: 0 0 18px; }
+    .header-actions { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #e6e6e6; padding: 10px 8px; vertical-align: top; font-size: 14px; }
+    th { text-align: left; background: #fafafa; position: sticky; top: 0; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+    .wrap { white-space: pre-wrap; word-break: break-word; }
+    .link { color: #0EA5A4; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+    .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .status-new { background: #dbeafe; color: #1e40af; }
+    .status-read { background: #e5e7eb; color: #374151; }
+    .status-replied { background: #d1fae5; color: #065f46; }
+    .flash-messages { margin-bottom: 20px; }
+    .flash-message { padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; }
+    .flash-message.success { background: #d1fae5; color: #065f46; }
+    .flash-message.error { background: #fee2e2; color: #991b1b; }
+    .logout-form { display: inline; }
+    .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .logout-btn:hover { background: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="header-actions">
+    <h1>Contact Inbox</h1>
+    <form method="POST" action="{{ url_for('admin_logout') }}" class="logout-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
+  
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  
+  <p class="hint">Latest {{ messages|length }} messages (newest first).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Created</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Subject</th>
+        <th>Status</th>
+        <th>View</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for msg in messages %}
+      <tr>
+        <td class="mono">{{ msg.id }}</td>
+        <td class="mono">{{ msg.created_at }}</td>
+        <td>{{ msg.name }}</td>
+        <td class="wrap">{{ msg.email }}</td>
+        <td>{{ msg.subject }}</td>
+        <td>
+          <span class="status status-{{ msg.status or 'new' }}">{{ msg.status or 'new' }}</span>
+        </td>
+        <td><a href="{{ url_for('admin_contact_detail', msg_id=msg.id) }}" class="link">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
