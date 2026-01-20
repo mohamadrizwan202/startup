@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="canonical" href="https://purefyul.com{{ request.path }}">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — Contact Message #{{ msg.id }}</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; max-width: 900px; }
+    h1 { margin: 0 0 10px; }
+    .header-actions { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .back-link { color: #0EA5A4; text-decoration: none; font-size: 14px; }
+    .back-link:hover { text-decoration: underline; }
+    .detail-card { background: #fafafa; border: 1px solid #e6e6e6; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    .detail-row { margin-bottom: 16px; }
+    .detail-label { font-weight: 600; color: #374151; margin-bottom: 4px; font-size: 14px; }
+    .detail-value { color: #1f2937; font-size: 14px; }
+    .detail-value.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+    .detail-value.message { white-space: pre-wrap; word-break: break-word; background: white; padding: 12px; border-radius: 6px; border: 1px solid #e6e6e6; }
+    .flash-messages { margin-bottom: 20px; }
+    .flash-message { padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; }
+    .flash-message.success { background: #d1fae5; color: #065f46; }
+    .flash-message.error { background: #fee2e2; color: #991b1b; }
+    .logout-form { display: inline; }
+    .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .logout-btn:hover { background: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="header-actions">
+    <div>
+      <h1>Contact Message #{{ msg.id }}</h1>
+      <a href="{{ url_for('admin_contacts') }}" class="back-link">← Back to Inbox</a>
+    </div>
+    <form method="POST" action="{{ url_for('admin_logout') }}" class="logout-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
+  
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="detail-card">
+    <div class="detail-row">
+      <div class="detail-label">Created At</div>
+      <div class="detail-value mono">{{ msg.created_at }}</div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Name</div>
+      <div class="detail-value">{{ msg.name }}</div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Email</div>
+      <div class="detail-value">{{ msg.email }}</div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Subject</div>
+      <div class="detail-value">{{ msg.subject }}</div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Status</div>
+      <div class="detail-value">{{ msg.status or 'new' }}</div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Message</div>
+      <div class="detail-value message">{{ msg.message }}</div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">IP Address</div>
+      <div class="detail-value mono">{{ msg.ip or 'N/A' }}</div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">User Agent</div>
+      <div class="detail-value mono">{{ msg.user_agent or 'N/A' }}</div>
+    </div>
+    
+    {% if msg.internal_note %}
+    <div class="detail-row">
+      <div class="detail-label">Internal Note</div>
+      <div class="detail-value">{{ msg.internal_note }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Update Form -->
+  <div class="detail-card">
+    <h2 style="margin: 0 0 20px; font-size: 1.25rem;">Update Message</h2>
+    <form method="POST" action="{{ url_for('admin_contact_detail', msg_id=msg.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      
+      <div class="detail-row">
+        <label for="status" class="detail-label">Status</label>
+        <select id="status" name="status" style="width: 100%; padding: 8px 12px; border: 1px solid #e6e6e6; border-radius: 6px; font-size: 14px; margin-top: 4px;">
+          <option value="new" {{ 'selected' if (msg.status or 'new') == 'new' }}>new</option>
+          <option value="in_progress" {{ 'selected' if msg.status == 'in_progress' }}>in_progress</option>
+          <option value="done" {{ 'selected' if msg.status == 'done' }}>done</option>
+        </select>
+      </div>
+      
+      <div class="detail-row">
+        <label for="internal_note" class="detail-label">Internal Note</label>
+        <textarea 
+          id="internal_note" 
+          name="internal_note" 
+          style="width: 100%; padding: 8px 12px; border: 1px solid #e6e6e6; border-radius: 6px; font-size: 14px; margin-top: 4px; min-height: 100px; font-family: inherit;"
+          placeholder="Add internal notes..."
+        >{{ msg.internal_note or '' }}</textarea>
+      </div>
+      
+      <button type="submit" style="background: #0EA5A4; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">
+        Update
+      </button>
+    </form>
+  </div>
+</body>
+</html>

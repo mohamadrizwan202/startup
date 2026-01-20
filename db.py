@@ -66,7 +66,11 @@ def get_conn():
     if USE_POSTGRES:
         import psycopg  # pyright: ignore[reportMissingImports]
         from psycopg.rows import dict_row  # pyright: ignore[reportMissingImports]
-        normalized_url = normalize_pg_url(RUNTIME_DB_URL)
+        # Handle local Unix socket URLs (postgresql:/// or postgres:///) without normalization
+        if RUNTIME_DB_URL.startswith("postgresql:///") or RUNTIME_DB_URL.startswith("postgres:///"):
+            normalized_url = RUNTIME_DB_URL
+        else:
+            normalized_url = normalize_pg_url(RUNTIME_DB_URL)
         conn = psycopg.connect(normalized_url, row_factory=dict_row, connect_timeout=5)
         return conn
     else:
@@ -87,7 +91,11 @@ def get_migrate_conn():
     if migrate_url and (migrate_url.startswith("postgres://") or migrate_url.startswith("postgresql://")):
         import psycopg  # pyright: ignore[reportMissingImports]
         from psycopg.rows import dict_row  # pyright: ignore[reportMissingImports]
-        normalized_url = normalize_pg_url(migrate_url)
+        # Handle local Unix socket URLs (postgresql:/// or postgres:///) without normalization
+        if migrate_url.startswith("postgresql:///") or migrate_url.startswith("postgres:///"):
+            normalized_url = migrate_url
+        else:
+            normalized_url = normalize_pg_url(migrate_url)
         conn = psycopg.connect(normalized_url, row_factory=dict_row, connect_timeout=5)
         return conn
     else:
