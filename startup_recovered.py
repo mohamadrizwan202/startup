@@ -14,7 +14,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime, timezone
 from functools import wraps
 from flask import jsonify # pyright: ignore[reportMissingImports]
-from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 
 import sqlite3
 import os
@@ -40,35 +40,6 @@ logging.basicConfig(
 logger = logging.getLogger("startup_recovered")
 
 app = Flask(__name__)
-
-# Canonical host enforcement
-CANONICAL_HOST = "purefyul.com"
-
-@app.before_request
-def enforce_canonical_host():
-    # Get the real host (behind proxies, X-Forwarded-Host can be the truth)
-    host = (request.headers.get("X-Forwarded-Host") or request.host or "")
-    host = host.split(",")[0].strip()          # handle "a,b" format
-    host_no_port = host.split(":")[0].lower()  # strip :443 etc.
-
-    # Don't enforce on local dev
-    if host_no_port in ("127.0.0.1", "localhost"):
-        return
-
-    bad_hosts = {"startup-hmwd.onrender.com", "www.purefyul.com"}
-    if host_no_port in bad_hosts:
-        parts = urlsplit(request.url)
-        new_url = urlunsplit((parts.scheme, CANONICAL_HOST, parts.path, parts.query, parts.fragment))
-        return redirect(new_url, code=301)
-
-# Favicon route
-@app.get("/favicon.ico")
-def favicon_ico():
-    return send_from_directory(
-        app.static_folder,
-        "favicon.ico",
-        mimetype="image/vnd.microsoft.icon",
-    )
 
 # Production environment detection (single source of truth)
 ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
@@ -427,6 +398,58 @@ def init_ingredient_aliases_table():
         logger.warning(f"Failed to initialize ingredient_aliases table: {e}", exc_info=True)
 
 
+def seed_ingredient_categories_if_empty():
+    """Seed ingredient_categories table if empty."""
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        
+        # Check if table is empty
+        query = db.prepare_query("SELECT COUNT(*) as count FROM ingredient_categories")
+        cursor.execute(query)
+        result = cursor.fetchone()
+        count = result['count'] if isinstance(result, dict) else result[0]
+        
+        if count > 0:
+            logger.info(f"ingredient_categories table already has {count} rows, skipping seed")
+            cursor.close()
+            conn.close()
+            return
+
+        # Seed data
+        # (ingredient, category, subcategory, health_benefits, key_nutrients, description)
+        seed_data = [
+            ("apple", "Heart Health", "Fruits", "Rich in fiber", "Vitamin C", "Great for heart"),
+            ("banana", "Energy", "Fruits", "Quick energy", "Potassium", "Good pre-workout"),
+            ("spinach", "Heart Health", "Vegetables", "Low calorie", "Iron", "Nutrient dense"),
+            ("salmon", "Brain Health", "Fish", "Omega-3s", "Omega-3", "Brain food"),
+            ("chicken breast", "Muscle Gain", "Meat", "High protein", "Protein", "Lean muscle builder"),
+            ("almonds", "Heart Health", "Nuts", "Healthy fats", "Vitamin E", "Cholesterol lowering"),
+            ("oats", "Heart Health", "Grains", "Beta-glucan", "Fiber", "Heart friendly"),
+            ("blueberry", "Brain Health", "Fruits", "Antioxidants", "Vitamin C", "Brain boost"),
+        ]
+
+        # Insert
+        insert_sql = """
+            INSERT INTO ingredient_categories 
+            (ingredient, category, subcategory, health_benefits, key_nutrients, description)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """
+        if db.USE_POSTGRES:
+            insert_sql = insert_sql.replace("?", "%s") + " ON CONFLICT DO NOTHING"
+        else:
+            insert_sql = "INSERT OR IGNORE INTO ingredient_categories (ingredient, category, subcategory, health_benefits, key_nutrients, description) VALUES (?, ?, ?, ?, ?, ?)"
+
+        cursor.executemany(db.prepare_query(insert_sql), seed_data)
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        logger.info(f"ingredient_categories table seeded with {len(seed_data)} rows")
+
+    except Exception as e:
+        logger.warning(f"Failed to seed ingredient_categories table: {e}", exc_info=True)
+
 # Only run schema creation if RUN_SCHEMA=1 is set (default: skip to prevent app_runtime from attempting DDL)
 # In production web runtime, schema creation must be skipped so app_runtime never attempts DDL
 RUN_SCHEMA = is_truthy(os.getenv("RUN_SCHEMA", "0"))
@@ -440,6 +463,8 @@ if RUN_SCHEMA:
     init_feedback_table()
     # Initialize ingredient_aliases table (idempotent)
     init_ingredient_aliases_table()
+    # Seed ingredient_categories table (idempotent)
+    seed_ingredient_categories_if_empty()
 else:
     logger.info("RUN_SCHEMA=0 skipping schema creation (use RUN_SCHEMA=1 to enable)")
 
@@ -1286,6 +1311,15 @@ def add_security_headers(response):
         "geolocation=(), microphone=(), camera=(), payment=(), usb=()",
     )
     
+    # Cache-Control & Pragma: Prevent caching of HTML responses only
+    # This ensures that HTML responses aren't cached (prevents stale frontend updates)
+    # API/JSON responses are left unchanged
+    content_type = response.headers.get("Content-Type", "").lower()
+    if content_type.startswith("text/html"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
     # Content-Security-Policy: XSS baseline with nonce-based scripts
     nonce = getattr(g, "csp_nonce", None)
     csp_directives = [
@@ -1317,53 +1351,6 @@ def add_security_headers(response):
         )
         response.headers.setdefault(csp_header_name, csp_value)
     
-    # ---------------------------
-    # Cache-Control policy (SEO + performance)
-    # ---------------------------
-    path = request.path or "/"
-
-    # Never cache redirects
-    if 300 <= response.status_code < 400:
-        response.headers["Cache-Control"] = "no-store"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
-        return response
-
-    # Private / sensitive routes: never cache
-    if (
-        path.startswith("/admin")
-        or path.startswith("/api")
-        or path.startswith("/__")
-        or path in ("/login", "/register", "/dbcheck")
-    ):
-        response.headers["Cache-Control"] = "no-store"
-        response.headers["Pragma"] = "no-cache"
-        response.headers["Expires"] = "0"
-
-    # Robots + sitemap: cacheable (safe)
-    elif path in ("/robots.txt", "/sitemap.xml"):
-        response.headers["Cache-Control"] = "public, max-age=3600"
-        if "Pragma" in response.headers:
-            del response.headers["Pragma"]
-        if "Expires" in response.headers:
-            del response.headers["Expires"]
-
-    # Static assets: long cache
-    elif path.startswith("/static/") or path in ("/favicon.ico",):
-        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
-        if "Pragma" in response.headers:
-            del response.headers["Pragma"]
-        if "Expires" in response.headers:
-            del response.headers["Expires"]
-
-    # Public marketing pages: cacheable
-    else:
-        response.headers["Cache-Control"] = "public, max-age=600"
-        if "Pragma" in response.headers:
-            del response.headers["Pragma"]
-        if "Expires" in response.headers:
-            del response.headers["Expires"]
-
     return response
 
 # ============================================================================
@@ -50140,6 +50127,93 @@ def api_analyze():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/categories', methods=['GET'])
+def api_categories():
+    try:
+        format_type = request.args.get('format', 'json')
+        conn = get_conn()
+        cursor = conn.cursor()
+        
+        query = "SELECT DISTINCT category FROM ingredient_categories ORDER BY category"
+        cursor.execute(db.prepare_query(query))
+        rows = cursor.fetchall()
+        
+        categories = [row['category'] if isinstance(row, dict) else row[0] for row in rows]
+        
+        conn.close()
+        
+        if format_type == 'ui':
+            return jsonify([{'value': c, 'label': c} for c in categories])
+        return jsonify(categories)
+    except Exception as e:
+        logger.error(f"Error in /api/categories: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/category-hierarchy', methods=['GET'])
+def api_category_hierarchy():
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        
+        # Group by category, subcategory and count ingredients
+        query = """
+            SELECT category, subcategory, COUNT(*) as count 
+            FROM ingredient_categories 
+            GROUP BY category, subcategory
+        """
+        cursor.execute(db.prepare_query(query))
+        rows = cursor.fetchall()
+        
+        hierarchy = {}
+        for row in rows:
+            if isinstance(row, dict):
+                cat = row['category']
+                sub = row['subcategory']
+                count = row['count']
+            else:
+                cat = row[0]
+                sub = row[1]
+                count = row[2]
+                
+            if cat not in hierarchy:
+                hierarchy[cat] = {}
+            hierarchy[cat][sub] = count
+            
+        conn.close()
+        return jsonify(hierarchy)
+    except Exception as e:
+        logger.error(f"Error in /api/category-hierarchy: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/categories/<category>/<subcategory>', methods=['GET'])
+def api_category_ingredients(category, subcategory):
+    try:
+        # Flask decodes the URL params automatically
+        conn = get_conn()
+        cursor = conn.cursor()
+        
+        query = """
+            SELECT ingredient 
+            FROM ingredient_categories 
+            WHERE category = ? AND subcategory = ?
+            ORDER BY ingredient
+        """
+        cursor.execute(db.prepare_query(query), (category, subcategory))
+        rows = cursor.fetchall()
+        
+        ingredients = []
+        for row in rows:
+            ing = row['ingredient'] if isinstance(row, dict) else row[0]
+            ingredients.append({'ingredient': ing})
+            
+        conn.close()
+        return jsonify(ingredients)
+    except Exception as e:
+        logger.error(f"Error in /api/categories/<cat>/<subcat>: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/feedback', methods=['POST'])
 @csrf.exempt
 @limiter.limit("5 per minute")
@@ -50703,7 +50777,7 @@ if __name__ == "__main__":
     import os
 
     port = int(os.getenv("PORT", "8000"))
-    debug = os.getenv("FLASK_DEBUG", "0") == "1"
+    debug = True # os.getenv("FLASK_DEBUG", "0") == "1"
 
     # Reloader is helpful for development (restart on code changes)
     app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=debug, threaded=True)
