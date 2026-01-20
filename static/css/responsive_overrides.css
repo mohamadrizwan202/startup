@@ -4863,3 +4863,1331 @@ body.pf-modal-open {
     flex-direction: column;
     gap: 10px;
 }
+
+/* ============================================
+   Analysis Results Redesign (Moved from index.html)
+   ============================================ */
+
+/* New Analysis Results Styling */
+.pf-analysis-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  /* overflow: hidden; */
+  overflow: auto;
+  max-height: 577px;
+  /* removed border to avoid conflict with shadow, or keep if user wants */
+  border: 1px solid rgba(14, 165, 164, 0.1); 
+}
+
+.pf-analysis-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.pf-analysis-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(14, 165, 164, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+}
+
+.pf-analysis-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pf-analysis-title::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 24px;
+  background: #0ea5a4;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(14, 165, 164, 0.4);
+}
+
+/* Redesigned Tabs for Analysis Card */
+.pf-analysis-tabs {
+  display: flex;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  background: #fafbfc;
+  gap: 32px;
+}
+
+.pf-analysis-tab {
+  background: none;
+  border: none;
+  padding: 16px 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pf-analysis-tab:hover {
+  color: #0ea5a4;
+}
+
+.pf-analysis-tab.active {
+  color: #0ea5a4;
+}
+
+.pf-analysis-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #0ea5a4;
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 -2px 6px rgba(14, 165, 164, 0.3);
+}
+
+.pf-analysis-tab-icon {
+    font-size: 1.1rem;
+    filter: grayscale(100%);
+    transition: filter 0.2s ease;
+}
+
+.pf-analysis-tab:hover .pf-analysis-tab-icon,
+.pf-analysis-tab.active .pf-analysis-tab-icon {
+    filter: grayscale(0%);
+}
+
+.pf-analysis-content {
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.pf-analysis-pane {
+    padding: 24px;
+}
+
+/* ============================================
+   Inner Tab Content Redesign (Nutrition, Allergen, Health Benefits)
+   ============================================ */
+
+/* --- General Tab Content Styles --- */
+.pf-tab-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.pf-tab-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+.pf-tab-header {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.pf-tab-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.3;
+}
+
+.pf-tab-subtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* --- Nutrition Tab Redesign --- */
+.pf-nut-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.pf-nut-tile {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid rgba(15, 23, 42, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pf-nut-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    border-color: rgba(14, 165, 164, 0.2);
+}
+
+.pf-nut-icon {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.pf-nut-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.pf-nut-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.pf-nut-unit {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 700;
+    margin-left: 2px;
+}
+
+/* --- Allergen Tab Redesign --- */
+.pf-all-banner {
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.pf-all-banner.safe {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid #a7f3d0;
+    color: #047857;
+}
+
+.pf-all-banner.unsafe {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+}
+
+.pf-all-icon {
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pf-all-text {
+    flex: 1;
+}
+
+.pf-all-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.pf-all-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.pf-all-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pf-all-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+
+.pf-all-chip.found {
+    background: #fff1f2;
+    border-color: #fecaca;
+    color: #e11d48;
+}
+
+.pf-all-chip.safe {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #16a34a;
+}
+
+/* --- Health Benefits Tab Redesign --- */
+.pf-hb-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.pf-hb-card {
+    background: #ffffff;
+    border: 1px solid rgba(14, 165, 164, 0.15);
+    border-radius: 12px;
+    padding: 18px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.pf-hb-card:hover {
+    box-shadow: 0 8px 20px rgba(14, 165, 164, 0.08);
+    transform: translateY(-2px);
+    border-color: rgba(14, 165, 164, 0.4);
+}
+
+.pf-hb-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #0ea5a4;
+}
+
+.pf-hb-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.pf-hb-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.pf-hb-tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0ea5a4;
+    background: rgba(14, 165, 164, 0.08);
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(14, 165, 164, 0.1);
+}
+
+.pf-hb-desc {
+    font-size: 0.95rem;
+    color: #475569;
+    line-height: 1.5;
+}
+
+/* Empty State Styling - Unified */
+.pf-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(14, 165, 164, 0.03);
+    border-radius: 12px;
+    border: 1px dashed rgba(14, 165, 164, 0.2);
+    color: #64748b;
+}
+
+.pf-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    display: block;
+    opacity: 0.8;
+}
+
+.pf-empty-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.pf-empty-text strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+/* Accordion Button Style */
+.pf-hb2-acc-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border: 1px solid rgba(15, 23, 42, 0.05);
+    border-radius: 8px;
+    color: #475569;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pf-hb2-acc-btn:hover {
+    background: #f1f5f9;
+    color: #0ea5a4;
+}
+
+.pf-hb2-acc-btn[aria-expanded="true"] {
+    background: #e0f2fe;
+    color: #0284c7;
+    border-color: #bae6fd;
+}
+
+.pf-hb2-nutrients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.pf-hb2-nutr {
+    display: inline-block;
+    padding: 4px 10px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: #475569;
+    font-weight: 500;
+}
+
+/* My Allergen Profile Styles */
+.pf-ap {
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.pf-ap-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.pf-ap-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.25;
+    margin-bottom: 4px;
+}
+
+.pf-ap-sub {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.pf-ap-clear {
+    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pf-ap-clear:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.pf-ap-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pf-ap-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #334155;
+}
+
+.pf-ap-chip button {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+.pf-ap-chip button:hover {
+    color: #ef4444;
+}
+
+/* Selected Ingredients & Chips moved from index.html */
+.selected-ingredients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    padding: 15px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+}
+
+.ingredient-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, rgba(14, 165, 164, 0.10) 0%, rgba(14, 165, 164, 0.10) 100%);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.ingredient-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.25) !important;
+}
+
+.ingredient-chip .remove-btn {
+    background: none;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 1.3rem;
+    padding: 0;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    font-weight: bold;
+}
+
+.ingredient-chip .remove-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    transform: scale(1.1);
+}
+
+.ingredient-chip .quantity-btn:hover {
+    background: #fde68a !important;
+    transform: scale(1.05);
+}
+
+.ingredient-chip .unit-select:hover {
+    border-color: #d97706 !important;
+}
+
+.search-container .selected-ingredients {
+    flex-shrink: 0;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Default Tab State Styling moved from index.html */
+.nutrition-empty {
+    border: 1px dashed rgba(15, 23, 42, 0.1);
+    background: rgba(14, 165, 164, 0.03);
+    border-radius: 10px;
+    padding: 10px;
+    display: grid;
+    gap: 2px;
+    text-align: center;
+    min-height: 100px;
+    align-content: center;
+    margin-top: 8px;
+}
+
+.nutrition-empty-title {
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+}
+
+.nutrition-empty-text {
+    color: rgba(15, 23, 42, 0.55);
+    line-height: 1.35;
+    font-size: 0.78rem;
+}
+
+.nutrition-empty-text strong {
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.nutrition-empty-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    opacity: 0.5;
+    display: block;
+}
+/* ============================================
+   E) Smoothie Builder & Nutrition Redesign
+   High Specificity Overrides for Modern UI
+   ============================================ */
+
+/* 1. Layout & Grid improvements */
+#smoothie-tab-content .main-content-grid {
+    display: grid !important;
+    gap: 24px !important;
+    align-items: start !important;
+}
+
+@media (min-width: 1025px) {
+    #smoothie-tab-content .main-content-grid {
+        grid-template-columns: 45% 55% !important; /* Balanced split */
+    }
+}
+
+/* 2. Left Panel: Smoothie Builder Card */
+#smoothie-tab-content .search-container.card {
+    padding: 24px !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+    background: #ffffff !important;
+}
+
+#smoothie-tab-content .search-container .card-header {
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding-bottom: 16px !important;
+    margin-bottom: 20px !important;
+}
+
+#smoothie-tab-content .card-title {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.025em !important;
+}
+
+#smoothie-tab-content .card-subtitle {
+    font-size: 0.9rem !important;
+    color: #64748b !important;
+    margin-top: 4px !important;
+}
+
+/* 3. Inputs and Selects Styling */
+#smoothie-tab-content .search-section {
+    margin-bottom: 20px !important;
+}
+
+#smoothie-tab-content .textarea-label {
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+    margin-bottom: 8px !important;
+    display: block !important;
+}
+
+#smoothie-tab-content .search-input, 
+#smoothie-tab-content select,
+#smoothie-ingredient-search {
+    height: 48px !important;
+    padding: 0 16px !important;
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    background-color: #f8fafc !important;
+    color: #334155 !important;
+    font-size: 0.95rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+    width: 100% !important;
+}
+
+#smoothie-tab-content .search-input:focus, 
+#smoothie-tab-content select:focus,
+#smoothie-ingredient-search:focus {
+    background-color: #ffffff !important;
+    border-color: #0EA5A4 !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.1) !important;
+    outline: none !important;
+}
+
+/* 4. Action Buttons */
+#smoothie-tab-content #build-smoothie-btn {
+    width: 100% !important;
+    height: 52px !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 100%) !important;
+    box-shadow: 0 4px 12px rgba(14, 165, 164, 0.25) !important;
+    border: none !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+    margin-top: 24px !important;
+    transition: transform 0.1s ease, box-shadow 0.2s ease !important;
+}
+
+#smoothie-tab-content #build-smoothie-btn:hover:not(:disabled) {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(14, 165, 164, 0.3) !important;
+}
+
+#smoothie-tab-content #build-smoothie-btn:disabled {
+    background: #cbd5e1 !important; /* Muted slate */
+    box-shadow: none !important;
+    color: #94a3b8 !important;
+    cursor: default !important;
+    transform: none !important;
+}
+
+#smoothie-tab-content #smoothie-clear-btn {
+    width: 100% !important;
+    margin-top: 12px !important;
+    padding: 12px !important;
+    background: transparent !important;
+    border: 1px dashed #cbd5e1 !important;
+    color: #64748b !important;
+    font-size: 0.9rem !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+#smoothie-tab-content #smoothie-clear-btn:hover {
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
+    background: #fef2f2 !important;
+}
+
+/* 5. Selected Ingredients List */
+#smoothie-selected-ingredients {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+/* Assuming the JS creates elements with class .smoothie-ingredient-row or similar */
+/* Based on grep search, we have .smoothie-ingredient-row */
+#smoothie-tab-content .smoothie-ingredient-row {
+    background: #ffffff !important;
+    border: 1px solid #f1f5f9 !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    transition: border-color 0.2s !important;
+}
+
+#smoothie-tab-content .smoothie-ingredient-row:hover {
+    border-color: #e2e8f0 !important;
+}
+
+#smoothie-tab-content .smoothie-ingredient-name {
+    font-weight: 600 !important;
+    color: #334155 !important;
+    font-size: 0.95rem !important;
+}
+
+#smoothie-tab-content .smoothie-quantity-control {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    height: 32px !important;
+}
+
+#smoothie-tab-content .smoothie-quantity-btn {
+    width: 28px !important;
+    background: transparent !important;
+    color: #64748b !important;
+}
+
+#smoothie-tab-content .smoothie-quantity-btn:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+#smoothie-tab-content .smoothie-remove-btn {
+    color: #94a3b8 !important;
+    margin-left: 12px !important;
+    padding: 4px !important;
+    border-radius: 50% !important;
+    transition: all 0.2s !important;
+}
+
+#smoothie-tab-content .smoothie-remove-btn:hover {
+    background: #fee2e2 !important;
+    color: #ef4444 !important;
+}
+
+/* 6. Right Panel: Nutrition Results */
+#smoothie-tab-content .results-container {
+    padding: 0 !important; /* Let child containers handle padding or use 0 for clean edges */
+    border-radius: 16px !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+    background: #ffffff !important;
+    overflow: hidden !important;
+    height: fit-content !important;
+}
+
+#smoothie-tab-content .results-header {
+    padding: 20px 24px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #ffffff !important;
+}
+
+#smoothie-tab-content .results-header .card-title {
+    margin: 0 !important;
+    font-size: 1.1rem !important;
+}
+
+#smoothie-tab-content .status-indicator {
+    padding: 6px 12px !important;
+    background: #f0fdfa !important;
+    border: 1px solid #ccfbf1 !important;
+    border-radius: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+#smoothie-tab-content .status-dot {
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 50% !important;
+    background-color: #14b8a6 !important; /* Teal-500 */
+    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2) !important;
+}
+
+#smoothie-tab-content #smoothie-status-text {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    color: #0d9488 !important; /* Teal-700 */
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+}
+
+/* Results Content Area */
+#smoothie-tab-content .results-body {
+    padding: 24px !important;
+    background: #ffffff !important;
+}
+
+/* Tables inside results */
+#smoothie-tab-content .vmr-table-wrapper table {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+#smoothie-tab-content .vmr-table-wrapper th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+    padding: 12px 16px !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+}
+
+#smoothie-tab-content .vmr-table-wrapper td {
+    padding: 14px 16px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    color: #334155 !important;
+    font-size: 0.9rem !important;
+}
+
+#smoothie-tab-content .vmr-table-wrapper tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Modernize Rows */
+#smoothie-tab-content .vmr-table-wrapper tr:hover td {
+    background-color: #f8fafc !important;
+}
+
+/* Empty State */
+#smoothie-results-body div[style*="text-align: center"] {
+    padding: 60px 20px !important;
+}
+
+/* ============================================
+   F) Smoothie Nutrition Polish (Padding & Spacing)
+   ============================================ */
+
+/* 1. Nutrition Cards Polish */
+.sn-card {
+    padding: 24px !important; /* Increased from default */
+    border-radius: 16px !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+    background: #ffffff !important;
+    margin-bottom: 24px !important; /* Spacing between cards */
+}
+
+/* 2. Headers within Nutrition Cards */
+.sn-head, 
+.sn-summary {
+    padding-bottom: 16px !important;
+    margin-bottom: 20px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.sn-title {
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.01em !important;
+}
+
+/* 3. Ingredient Pills Spacing */
+.sn-ing-grid {
+    gap: 12px !important; /* More breathing room */
+}
+
+.sn-ing-pill {
+    padding: 8px 14px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+
+/* 4. Yield Section Polish */
+#smoothie-yield-panel {
+    padding: 4px 0 !important; /* Alignment fix */
+}
+
+/* 5. Nutrition Breakdown Specifics */
+/* Green Per Serving Card Spacing */
+.sn-body > div[style*="linear-gradient(135deg, #ecfdf5"] {
+    margin-bottom: 24px !important;
+    padding: 16px 20px !important;
+    border-radius: 12px !important;
+}
+
+/* Nutrient Tables Polish */
+.vmr-table-wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 1px solid #f1f5f9 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+.vmr-table-wrapper th {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 20px !important; /* Generous padding */
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.vmr-table-wrapper td {
+    padding: 16px 20px !important; /* Generous padding */
+    color: #334155 !important;
+    font-size: 0.95rem !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.vmr-table-wrapper tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Tabs inside Nutrition */
+.sn-tabs {
+    margin-bottom: 20px !important;
+    gap: 8px !important;
+}
+
+.sn-tab {
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+}
+
+/* ============================================
+   G) Compact Layout & Nutrition Cards Redesign
+   ============================================ */
+
+/* 1. Compact Ingredients & Yield (Side-by-Side) */
+/* Desktop Only (>= 1025px) */
+@media (min-width: 1025px) {
+    .sn-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 24px !important;
+        align-items: start !important;
+    }
+    
+    /* Ensure cards inside stretched to equal height if needed, 
+       but align-items: start avoids stretching empty space */
+    .sn-grid .sn-card {
+        margin-bottom: 0 !important; /* Remove bottom margin inside grid */
+        height: 100% !important;
+    }
+}
+
+/* 2. Nutrition Grid -> Small Cards */
+/* Override JS inline styles on the container */
+.nutrition-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* 2 columns */
+    gap: 12px !important;
+    padding-bottom: 8px !important;
+    width: 100% !important;
+}
+
+/* Override JS inline styles on the tiles */
+.nutrition-tile {
+    width: 100% !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important; /* Taller/Bigger padding */
+    flex-direction: column !important; /* Stack Icon/Label top, Value bottom OR keep row but tighter */
+    align-items: flex-start !important; /* unique look? or keep centered row */
+    gap: 8px !important;
+    border: 1px solid rgba(0,0,0,0.05) !important;
+    /* JS sets border-left, let's keep that accent */
+    border-left-width: 4px !important; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03) !important;
+    background: #ffffff !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.nutrition-tile:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.06) !important;
+}
+
+/* Adjust internal layout of the tile (Icon+Label vs Value) */
+/* We want a clean "Card" look. Let's make it Row-based but cleaner */
+.nutrition-tile {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+/* Target the 'left' div inside tile (Icon + Label) */
+.nutrition-tile > div:first-child {
+    gap: 12px !important;
+}
+
+.nutrition-tile .icon {
+    font-size: 1.25rem !important;
+    background: rgba(0,0,0,0.03) !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+}
+
+.nutrition-tile .label {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+}
+
+/* Target the 'value' div */
+.nutrition-tile > div:last-child {
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+}
+
+.nutrition-tile .unit {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #94a3b8 !important;
+}
+
+/* Responsive: On mobile, keep 2 columns for nutrition cards? 
+   Yes, usually fine for small metrics. 
+   On very small screens (< 360px), maybe 1 column. */
+@media (max-width: 360px) {
+    .nutrition-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ============================================
+   H) Final UI/UX Polish (Button, Empty State, Tabs)
+   ============================================ */
+
+/* 1. Build Smoothie Button Polish */
+#build-smoothie-btn {
+    color: #ffffff !important; /* Force white text */
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
+    text-transform: uppercase !important;
+    /* Ensure it stands out */
+    background: linear-gradient(135deg, #0d9488 0%, #115e59 100%) !important;
+    box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.25) !important;
+    border: none !important;
+}
+
+#build-smoothie-btn:hover {
+    box-shadow: 0 6px 10px -2px rgba(13, 148, 136, 0.35) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* 2. Center Empty State */
+#smoothie-results-body > div[style*="text-align: center"] {
+    min-height: 400px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: #fcfcfc !important; /* Subtle contrast */
+    border-radius: 12px !important;
+    border: 2px dashed #e2e8f0 !important;
+    margin: 10px !important; /* Add some margin inside container */
+}
+
+/* 3. Nutrition Tabs (Whole / Per Serving) */
+.sn-tabs {
+    background: #f1f5f9 !important;
+    padding: 6px !important;
+    border-radius: 12px !important;
+    display: inline-flex !important;
+    gap: 0 !important;
+    border: none !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.03) !important;
+}
+
+.sn-tab {
+    background: transparent !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+    padding: 10px 24px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+}
+
+.sn-tab:hover {
+    color: #334155 !important;
+}
+
+.sn-tab.active {
+    background: #ffffff !important;
+    color: #0d9488 !important; /* Teal */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+}
+
+/* 4. Smoothie Ingredients Tab (Redesign for Pills/List if needed) */
+/* This targets the 'pills' inside the ingredient summary card */
+.sn-ing-pill {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
+    padding: 8px 12px !important;
+    border-radius: 20px !important; /* More pill-like */
+    transition: transform 0.15s ease !important;
+}
+
+.sn-ing-pill:hover {
+    transform: translateY(-1px) !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* Specific styling for the 'No Smoothie Built Yet' icon */
+#smoothie-results-body div[style*="font-size: 3rem"] {
+    font-size: 4rem !important;
+    margin-bottom: 24px !important;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* ============================================
+   I) Fix Smoothie Presets Visibility
+   ============================================ */
+
+/* Force preset card text visibility and color */
+.preset-mini-card > div:first-child {
+    color: #334155 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important; /* Ensure it takes up space */
+    font-weight: 600 !important;
+}
+
+/* Ensure global overrides don't hide flex items */
+.preset-mini-card {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #f8fafc !important; /* Restore background */
+    border: 1px solid #e2e8f0 !important;
+}
+
+.preset-mini-card:hover {
+    background: #ffffff !important;
+    border-color: #0d9488 !important; /* Teal accent on hover */
+}
+
+/* ============================================
+   J) Fix Smoothie Presets Visibility (Final Refactor)
+   ============================================ */
+
+/* New class for preset name to guarantee visibility */
+.preset-name {
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 !important;
+    margin-right: 8px !important;
+    display: block !important;
+    min-width: 0 !important; /* Critical for flex child truncation */
+}
+
+/* ============================================
+   K) Analysis Tabs Responsive (Mobile Vertical Stack)
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Stack tabs vertically */
+    .pf-analysis-tabs {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    /* Make each tab full width */
+    .pf-analysis-tab {
+        width: 100% !important;
+        justify-content: center !important; /* Center text/icon */
+        padding: 12px 16px !important; /* Larger touch target */
+    }
+
+    /* Ensure icons are nicely spaced */
+    .pf-analysis-tab-icon {
+        margin-right: 8px !important;
+    }
+}
+
+/* ============================================
+   L) Ingredients List Responsive (Mobile Vertical Stack)
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Stack ingredients vertically */
+    .sn-ing-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    /* Make each pill full width and cleaner layout */
+    .sn-ing-pill {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 10px 12px !important; /* Slightly larger targets */
+    }
+    
+    /* Hide the small separator dot on mobile as we space them out */
+    .sn-ing-pill__sep {
+        display: none !important;
+    }
+    
+    /* Ensure name and badges are grouped on the left */
+    .sn-ing-pill__name {
+        font-size: 0.95rem !important; /* Slightly larger text */
+    }
+}
+
+/* ============================================
+   M) Per Serving Card Responsive (Mobile Vertical Stack)
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Stack the row contents vertically */
+    .sn-serving-row {
+        flex-direction: column !important;
+        align-items: flex-start !important; /* Align to left */
+        gap: 12px !important;
+    }
+    
+    /* Ensure child containers take full width if needed */
+    .sn-serving-row > div {
+        width: 100% !important;
+    }
+    
+    /* Adjust the inner flex spacing */
+    .sn-serving-row > div:first-child {
+        margin-bottom: 4px;
+    }
+}

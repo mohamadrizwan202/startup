@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <link rel="canonical" href="https://purefyul.com{{ request.path }}">
-  <link rel="icon" href="/favicon.ico?v=2" sizes="any">
-  <link rel="shortcut icon" href="/favicon.ico?v=2">
-  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png?v=2">
-  <link rel="icon" type="image/png" sizes="48x48" href="/static/favicon-48.png?v=2">
-  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=2">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
@@ -197,6 +194,39 @@
       transform: none;
     }
 
+    /* Contact Info Section */
+    .contact-info {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 30px;
+      text-align: center;
+      color: white;
+    }
+
+    .contact-info h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .contact-info p {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      opacity: 0.95;
+    }
+
+    .contact-info a {
+      color: white;
+      text-decoration: underline;
+      transition: opacity 0.2s ease;
+    }
+
+    .contact-info a:hover {
+      opacity: 0.8;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .contact-card {
@@ -287,6 +317,13 @@
         
         <button type="submit" class="submit-button">Send Message</button>
       </form>
+    </div>
+    
+    <!-- Contact Info -->
+    <div class="contact-info">
+      <h2>Other Ways to Reach Us</h2>
+      <p>Email: <a href="mailto:contact@purefyul.com">contact@purefyul.com</a></p>
+      <p>We typically respond within 24-48 hours.</p>
     </div>
   </div>
   {% include "_feedback.html" %}
