@@ -22,6 +22,14 @@ import sys
 import hmac
 from pathlib import Path
 from importlib import metadata
+import smtplib
+import ssl
+from email.message import EmailMessage
+import urllib.request
+import urllib.parse
+import json
+import html
+import socket
 
 # Import database helpers
 import db
@@ -721,24 +729,34 @@ except metadata.PackageNotFoundError:
     logger.info("PSYCOPG=missing")
 
 def _normalize_pg_url(url: str) -> str:
+    """
+    Normalize Postgres URLs safely.
+    - Keep local unix-socket URLs untouched: postgresql:///db
+    - Convert postgres:// to postgresql://
+    - Add sslmode only when hostname exists
+    """
+    url = (url or "").strip()
+    if not url:
+        return url
+
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://"):]
-    
+
+    # ✅ unix socket (no hostname) — DO NOT append sslmode or rewrite
+    if url.startswith("postgresql:///"):
+        return url
+
     parsed = urlparse(url)
-    query_params = dict(parse_qsl(parsed.query))
-    
-    # If sslmode is already set, don't change it
-    if "sslmode" not in query_params:
-        hostname = parsed.hostname or ""
-        if hostname in ("localhost", "127.0.0.1", "::1"):
-            query_params["sslmode"] = "disable"
+    qs = dict(parse_qsl(parsed.query, keep_blank_values=True))
+
+    if "sslmode" not in qs:
+        host = parsed.hostname or ""
+        if host in ("localhost", "127.0.0.1", "::1"):
+            qs["sslmode"] = "disable"
         else:
-            query_params["sslmode"] = "require"
-    
-    # Reconstruct URL with updated query params
-    new_query = urlencode(query_params)
-    new_parsed = parsed._replace(query=new_query)
-    return urlunparse(new_parsed)
+            qs["sslmode"] = "require"
+
+    return urlunparse(parsed._replace(query=urlencode(qs)))
 
 if not db_url or not (db_url.startswith("postgres://") or db_url.startswith("postgresql://")):
     logger.info("POSTGRES_PROBE=skip reason=no_DATABASE_URL_or_not_postgres")
@@ -1688,6 +1706,132 @@ def pricing():
     return render_template('pricing.html')
 
 
+# ============================================================================
+# Contact Form Automation Helpers
+# ============================================================================
+
+def _truthy(val):
+    """Check if env var value is truthy (1, true, yes, on)"""
+    if not val:
+        return False
+    return str(val).lower() in ('1', 'true', 'yes', 'on')
+
+
+def _send_email_smtp(to_email, subject, body_text, reply_to=None):
+    """Send email via SMTP with timeout. Returns True on success, False on failure."""
+    try:
+        smtp_host = os.getenv('SMTP_HOST', '').strip()
+        smtp_port = int(os.getenv('SMTP_PORT', '587'))
+        smtp_user = os.getenv('SMTP_USER', '').strip()
+        smtp_pass = os.getenv('SMTP_PASS', '').strip()
+        smtp_from = os.getenv('SMTP_FROM', '').strip()
+        
+        if not all([smtp_host, smtp_user, smtp_pass, smtp_from]):
+            app.logger.warning("SMTP configuration incomplete, skipping email")
+            return False
+        
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = smtp_from
+        msg["To"] = to_email
+        if reply_to:
+            msg["Reply-To"] = reply_to
+        msg.set_content(body_text)
+        
+        context = ssl.create_default_context()
+        
+        # Use timeout for SMTP operations
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=8) as server:
+            server.starttls(context=context)
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        
+        return True
+    except Exception as e:
+        app.logger.warning(f"SMTP send failed: {type(e).__name__}")
+        return False
+
+
+def _send_contact_auto_ack(name, email, subject, message):
+    """Send auto-acknowledgment email to contact form submitter."""
+    if not _truthy(os.getenv('AUTO_ACK_ENABLED', '')):
+        return False
+    
+    ack_subject = "Thank you for contacting PureFyul"
+    ack_body = f"""Hello {name},
+
+Thank you for reaching out to us! We've received your message:
+
+Subject: {subject}
+
+Your message:
+{message}
+
+We'll review your message and get back to you as soon as possible.
+
+Best regards,
+The PureFyul Team
+"""
+    return _send_email_smtp(email, ack_subject, ack_body)
+
+
+def _notify_telegram(text):
+    """Send Telegram notification. Returns True on success, False on failure."""
+    try:
+        bot_token = os.getenv('TELEGRAM_BOT_TOKEN', '').strip()
+        chat_id = os.getenv('TELEGRAM_CHAT_ID', '').strip()
+        
+        if not bot_token or not chat_id:
+            app.logger.warning("Telegram configuration incomplete, skipping notification")
+            return False
+        
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        data = {
+            'chat_id': chat_id,
+            'text': text,
+            'parse_mode': 'HTML'
+        }
+        
+        data_bytes = urllib.parse.urlencode(data).encode('utf-8')
+        req = urllib.request.Request(url, data=data_bytes, method='POST')
+        
+        # Use timeout for Telegram request
+        with urllib.request.urlopen(req, timeout=6) as response:
+            result = json.loads(response.read().decode('utf-8'))
+            return result.get('ok', False)
+    except Exception as e:
+        app.logger.warning(f"Telegram notification failed: {type(e).__name__}")
+        return False
+
+
+def _send_admin_alert_email(name, email, subject, message, msg_id, request):
+    """Send admin alert email for new contact submission. Returns True on success, False on failure."""
+    if not _truthy(os.getenv('ADMIN_ALERT_EMAIL_ENABLED', '')):
+        return False
+    
+    admin_email = os.getenv('ADMIN_ALERT_EMAIL_TO', '').strip()
+    if not admin_email:
+        app.logger.warning("ADMIN_ALERT_EMAIL_TO not set, skipping admin alert")
+        return False
+    
+    alert_subject = f"[PureFyul] New contact #{msg_id}"
+    message_preview = message[:400] + ('...' if len(message) > 400 else '')
+    admin_url = f"{request.host_url.rstrip('/')}{url_for('admin_contact_detail', msg_id=msg_id)}"
+    
+    alert_body = f"""New contact form submission:
+
+Name: {name}
+Email: {email}
+Subject: {subject}
+
+Message:
+{message_preview}
+
+View in admin: {admin_url}
+"""
+    return _send_email_smtp(admin_email, alert_subject, alert_body, reply_to=email)
+
+
 @app.route('/contact', methods=['GET', 'POST'])
 @limiter.limit("5 per hour", methods=["POST"])
 def contact():
@@ -1744,24 +1888,67 @@ def contact():
             conn = db.get_conn()
             cursor = conn.cursor()
             
+            msg_id = None
             if db.USE_POSTGRES:
                 query = """
                     INSERT INTO public.contact_messages (name, email, subject, message, ip, user_agent)
                     VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id
                 """
                 cursor.execute(query, (name, email, subject, message, ip, user_agent))
+                row = cursor.fetchone()
+                msg_id = row["id"] if isinstance(row, dict) else (row[0] if row else None)
             else:
                 query = """
                     INSERT INTO contact_messages (name, email, subject, message, ip, user_agent)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """
                 cursor.execute(query, (name, email, subject, message, ip, user_agent))
+                msg_id = cursor.lastrowid
             
             conn.commit()
             cursor.close()
             conn.close()
             
-            app.logger.info(f"Contact form saved: {name} ({email}) - {subject}")
+            # Automation: send auto-ack email, admin alert, and Telegram notification (non-blocking)
+            auto_ack_sent = False
+            admin_alert_sent = False
+            telegram_notified = False
+            
+            if msg_id:
+                # Send auto-acknowledgment email
+                try:
+                    auto_ack_sent = _send_contact_auto_ack(name, email, subject, message)
+                except Exception as e:
+                    app.logger.warning(f"Auto-ack failed: {type(e).__name__}")
+                
+                # Send admin alert email
+                try:
+                    admin_alert_sent = _send_admin_alert_email(name, email, subject, message, msg_id, request)
+                except Exception as e:
+                    app.logger.warning(f"Admin alert email failed: {type(e).__name__}")
+                
+                # Send Telegram notification
+                if _truthy(os.getenv('TELEGRAM_NOTIFY_ENABLED', '')):
+                    try:
+                        message_preview = message[:400] + ('...' if len(message) > 400 else '')
+                        admin_url = f"{request.host_url.rstrip('/')}{url_for('admin_contact_detail', msg_id=msg_id)}"
+                        # Escape HTML entities in user-provided content
+                        telegram_text = f"""<b>New Contact Form Submission</b>
+
+<b>Name:</b> {html.escape(name)}
+<b>Email:</b> {html.escape(email)}
+<b>Subject:</b> {html.escape(subject)}
+
+<b>Message:</b>
+{html.escape(message_preview)}
+
+<a href="{admin_url}">View in Admin</a>"""
+                        telegram_notified = _notify_telegram(telegram_text)
+                    except Exception as e:
+                        app.logger.warning(f"Telegram notify failed: {type(e).__name__}")
+            
+            app.logger.info(f"Contact form saved: msg_id={msg_id}, auto_ack_sent={auto_ack_sent}, admin_alert_sent={admin_alert_sent}, telegram_notified={telegram_notified}")
             flash('Thank you for your message! We\'ll get back to you soon.', 'success')
             return redirect(url_for('contact'))
         
