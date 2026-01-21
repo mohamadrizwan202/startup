@@ -1116,45 +1116,7 @@
       border-left: 3px solid var(--primary);
     }
 
-    /* Smoothie Preset Mini Cards */
-    .preset-mini-card {
-      background: #f8fafc;
-      border-radius: 12px;
-      padding: 10px 14px;
-      border: 1.5px solid #e2e8f0;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: relative;
-    }
 
-    .preset-mini-card:hover {
-      border-color: var(--primary);
-      background: white;
-      box-shadow: 0 4px 12px rgba(14, 165, 164, 0.1);
-      transform: translateY(-1px);
-    }
-
-    .preset-info-trigger {
-      color: var(--primary);
-      font-size: 1.1rem;
-      opacity: 0.7;
-      transition: opacity 0.2s;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .preset-info-trigger:hover {
-      opacity: 1;
-    }
-
-    .preset-tooltip {
-      visibility: hidden;
-      opacity: 0;
 
     /* Browse Ingredients & Results Grid - Side by Side */
     .browse-results-grid {
@@ -1194,24 +1156,6 @@
       display: flex;
     }
 
-    .preset-info-trigger:hover .preset-tooltip {
-      visibility: visible;
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .preset-tooltip::after {
-      content: "";
-      position: absolute;
-      top: -7px;
-      left: 50%;
-      transform: translateX(-50%) rotate(45deg);
-      width: 12px;
-      height: 12px;
-      background: white;
-      border-left: 1px solid var(--border);
-      border-top: 1px solid var(--border);
-    }
 
     .suggestion-name {
       font-weight: 500;
@@ -1258,7 +1202,8 @@
 
     /* Clear Button Style */
     #smoothie-clear-btn {
-      flex: 0 0 auto;
+      width: 100%;
+      margin-top: 10px;
       padding: 16px 20px;
       background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
       border: 2px solid #ef4444;
@@ -1702,1090 +1647,7 @@
     }
 
     /* Smoothie tab: stop giant results container */
-    #smoothie-tab-content .results-container .results-body,
-    #smoothie-tab-content .results-body {
-      height: auto !important;
-      min-height: 0 !important;
-      max-height: none !important;
-      overflow: visible !important;
 
-      /* Smoothie results should look like normal UI, not terminal output */
-      font-family: inherit !important;
-      white-space: normal !important;
-      line-height: 1.5 !important;
-      padding: 16px !important;
-    }
-
-    /* Smoothie tab: make results look like a modern card (not a log panel) */
-    #smoothie-tab-content .results-body {
-      background: transparent !important;
-      border: none !important;
-      border-radius: 0 !important;
-      font-size: 0.95rem !important;
-    }
-
-    /* Smoothie Nutrition: clean tabs (scoped) */
-    #smoothie-tab-content .sn-tabs {
-      display: flex;
-      gap: 8px;
-      border-bottom: 1px solid var(--border);
-      margin-top: 8px;
-    }
-
-    #smoothie-tab-content .sn-tab {
-      padding: 10px 14px;
-      background: transparent;
-      border: none;
-      border-bottom: 3px solid transparent;
-      color: var(--text-secondary);
-      font-weight: 700;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    #smoothie-tab-content .sn-tab:hover {
-      color: var(--text-primary);
-      background: rgba(0,0,0,0.03);
-      border-radius: 10px 10px 0 0;
-    }
-
-    #smoothie-tab-content .sn-tab.active {
-      border-bottom-color: var(--primary);
-      color: var(--primary);
-    }
-
-    /* Smoothie Nutrition: clean header + badge */
-    #smoothie-tab-content .sn-nutrition-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
-      margin: 8px 0 10px;
-    }
-
-    #smoothie-tab-content .sn-nutrition-title{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    #smoothie-tab-content .sn-emoji{ font-size: 1.2rem; }
-
-    #smoothie-tab-content .sn-title{
-      color: var(--primary);
-      font-size: 1.05rem;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-
-    #smoothie-tab-content .sn-subtitle{
-      color: var(--text-secondary);
-      font-size: 0.82rem;
-      margin-top: 2px;
-    }
-
-    #smoothie-tab-content .sn-usda-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid #6ee7b7;
-      background: #ecfdf5;
-      font-size: 0.75rem;
-      color: #047857;
-    }
-
-    /* Smoothie Nutrition: servings control */
-    #smoothie-tab-content .sn-controls{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-bottom: 10px;
-    }
-
-    #smoothie-tab-content .sn-qty{
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      background: #fff;
-      display:flex;
-      align-items:center;
-    }
-
-    #smoothie-tab-content .sn-qty-btn{
-      border: none;
-      background: transparent;
-      padding: 8px 12px;
-      font-weight: 900;
-      cursor: pointer;
-      color: var(--text-primary);
-    }
-
-    #smoothie-tab-content .sn-qty-btn:hover{
-      background: rgba(0,0,0,0.04);
-    }
-
-    #smoothie-tab-content .sn-qty-btn.decrement{
-      border-right: 1px solid var(--border);
-    }
-
-    #smoothie-tab-content .sn-qty-btn.increment{
-      border-left: 1px solid var(--border);
-    }
-
-    #smoothie-tab-content .sn-qty-input{
-      width: 64px;
-      padding: 6px;
-      border: none;
-      outline: none;
-      text-align: center;
-      font-size: 0.9rem;
-      font-weight: 800;
-    }
-
-    /* Vegan Milk Recommendation: compact collapsible card */
-    #smoothie-tab-content .vmr-card{
-      padding: 10px 12px;
-      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-      border: 2px solid #ef4444;
-      border-radius: var(--radius);
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
-    }
-
-    #smoothie-tab-content .vmr-summary-row{
-      cursor: pointer;
-      list-style: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      color: #7f1d1d;
-      line-height: 1.4;
-    }
-
-    #smoothie-tab-content .vmr-summary-row::-webkit-details-marker{
-      display: none;
-    }
-
-    #smoothie-tab-content .vmr-summary-row::before{
-      content: '▶';
-      font-size: 0.7rem;
-      transition: transform 0.2s ease;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-
-    #smoothie-tab-content .vmr-card[open] .vmr-summary-row::before{
-      transform: rotate(90deg);
-    }
-
-    #smoothie-tab-content .vmr-title{
-      font-size: 0.75rem;
-      color: #991b1b;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 700;
-    }
-
-    #smoothie-tab-content .vmr-table-wrapper{
-      max-height: 220px;
-      overflow-y: auto;
-      margin-top: 10px;
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    #smoothie-tab-content .vmr-table-wrapper table{
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    #smoothie-tab-content .vmr-table-wrapper thead tr{
-      background: rgba(0, 0, 0, 0.2);
-    }
-
-    #smoothie-tab-content .vmr-table-wrapper th{
-      padding: 10px 12px;
-      font-size: 0.75rem;
-      color: white;
-      text-align: left;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    #smoothie-tab-content .vmr-table-wrapper th:last-child{
-      text-align: center;
-    }
-
-    #smoothie-tab-content .vmr-table-wrapper tbody tr{
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    #smoothie-tab-content .vmr-table-wrapper tbody tr:last-child{
-      border-bottom: none;
-    }
-
-    #smoothie-tab-content .vmr-table-wrapper td{
-      padding: 8px 12px;
-      font-size: 0.85rem;
-      color: white;
-    }
-
-    #smoothie-tab-content .vmr-table-wrapper td:last-child{
-      text-align: center;
-      font-weight: 600;
-    }
-
-    /* Nutrition Display - Compact Tile Grid With Icons */
-    .nutrition-grid {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: nowrap;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      width: 100%;
-      padding-bottom: 4px;
-    }
-    
-    .nutrition-grid::-webkit-scrollbar {
-      height: 6px;
-    }
-    
-    .nutrition-grid::-webkit-scrollbar-track {
-      background: var(--bg-tertiary);
-      border-radius: 3px;
-    }
-    
-    .nutrition-grid::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 3px;
-    }
-    
-    .nutrition-grid::-webkit-scrollbar-thumb:hover {
-      background: var(--text-secondary);
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-row:last-child {
-      border-bottom: none;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-row:hover {
-      background: rgba(14, 165, 164, 0.05);
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-main {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-name {
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #0f172a;
-      white-space: nowrap;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-badges {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-badge {
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 3px;
-      white-space: nowrap;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-portion {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      white-space: nowrap;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-control {
-      display: flex;
-      align-items: center;
-      border: 1.5px solid #f59e0b;
-      border-radius: 6px;
-      overflow: hidden;
-      background: white;
-      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-btn {
-      border: none;
-      background: #fef3c7;
-      color: #92400e;
-      width: 28px;
-      height: 28px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-btn:hover:not(:disabled) {
-      background: #fde68a;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input {
-      width: 50px;
-      padding: 4px;
-      border: none;
-      outline: none;
-      text-align: center;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #78350f;
-      background: white;
-    }
-
-    /* Hide native number input spinners for Smoothie quantity inputs (both class systems) */
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input::-webkit-inner-spin-button,
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input::-webkit-outer-spin-button,
-    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input::-webkit-inner-spin-button,
-    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input::-webkit-outer-spin-button {
-      -webkit-appearance: none !important;
-      appearance: none !important;
-      margin: 0;
-    }
-
-    /* Firefox */
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input[type="number"],
-    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input[type="number"] {
-      -moz-appearance: textfield !important;
-      appearance: textfield !important;
-    }
-
-    /* Hide native number input spinners for Smoothie quantity inputs (both class systems) */
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input::-webkit-inner-spin-button,
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input::-webkit-outer-spin-button,
-    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input::-webkit-inner-spin-button,
-    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input::-webkit-outer-spin-button {
-      -webkit-appearance: none !important;
-      appearance: none !important;
-      margin: 0;
-    }
-
-    /* Firefox */
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-quantity-input[type="number"],
-    #smoothie-tab-content #smoothie-selected-ingredients .ss-qty-input[type="number"] {
-      -moz-appearance: textfield !important;
-      appearance: textfield !important;
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-remove-btn {
-      background: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      cursor: pointer;
-      font-size: 1rem;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.2s;
-      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
-    }
-
-    #smoothie-tab-content #smoothie-selected-ingredients .smoothie-remove-btn:hover {
-      background: #dc2626;
-      transform: scale(1.1);
-    }
-
-    /* Mobile: stack controls below name on narrow screens */
-    @media (max-width: 640px) {
-      #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-row {
-        flex-wrap: wrap;
-        align-items: flex-start;
-      }
-
-      #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-main {
-        width: 100%;
-      }
-
-      #smoothie-tab-content #smoothie-selected-ingredients .smoothie-ingredient-controls {
-        width: 100%;
-        justify-content: flex-end;
-      }
-    }
-
-    /* Smoothie Selected Ingredients: Compact Panel (ss-*) */
-    #smoothie-tab-content .ss-panel{
-      background: white;
-      border: 1px solid rgba(15, 23, 42, 0.1);
-      border-radius: 12px;
-      padding: 0;
-      margin-top: 15px;
-      overflow: hidden;
-    }
-
-    #smoothie-tab-content .ss-panel summary{
-      cursor: pointer;
-      list-style: none;
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      user-select: none;
-    }
-
-    #smoothie-tab-content .ss-panel summary::-webkit-details-marker{
-      display: none;
-    }
-
-    #smoothie-tab-content .ss-panel summary::before{
-      content: '▶';
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-      transition: transform 0.2s ease;
-      flex-shrink: 0;
-    }
-
-    #smoothie-tab-content .ss-panel[open] summary::before{
-      transform: rotate(90deg);
-    }
-
-    #smoothie-tab-content .ss-header{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-      min-width: 0;
-    }
-
-    #smoothie-tab-content .ss-title{
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #0f172a;
-      white-space: nowrap;
-    }
-
-    #smoothie-tab-content .ss-meta{
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      white-space: nowrap;
-    }
-
-    #smoothie-tab-content .ss-meta-item{
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    #smoothie-tab-content .ss-yield{
-      font-weight: 600;
-      color: var(--primary);
-      font-size: 0.85rem;
-    }
-
-    #smoothie-tab-content .ss-chipstrip{
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 4px 0;
-      flex: 1;
-      min-width: 0;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(15, 23, 42, 0.2) transparent;
-    }
-
-    #smoothie-tab-content .ss-chipstrip::-webkit-scrollbar{
-      height: 4px;
-    }
-
-    #smoothie-tab-content .ss-chipstrip::-webkit-scrollbar-track{
-      background: transparent;
-    }
-
-    #smoothie-tab-content .ss-chipstrip::-webkit-scrollbar-thumb{
-      background: rgba(15, 23, 42, 0.2);
-      border-radius: 2px;
-    }
-
-    #smoothie-tab-content .ss-chip{
-      flex-shrink: 0;
-      padding: 4px 8px;
-      background: var(--bg-secondary);
-      border: 1px solid rgba(15, 23, 42, 0.1);
-      border-radius: 6px;
-      font-size: 0.75rem;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    #smoothie-tab-content .ss-chip-name{
-      font-weight: 600;
-      color: #0f172a;
-    }
-
-    #smoothie-tab-content .ss-chip-portion{
-      color: var(--text-secondary);
-      font-size: 0.7rem;
-    }
-
-    #smoothie-tab-content .ss-details{
-      border-top: 1px solid rgba(15, 23, 42, 0.08);
-      padding: 0;
-    }
-
-    #smoothie-tab-content .ss-list-scroll{
-      max-height: 240px;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 8px;
-    }
-
-    #smoothie-tab-content .ss-list-scroll::-webkit-scrollbar{
-      width: 6px;
-    }
-
-    #smoothie-tab-content .ss-list-scroll::-webkit-scrollbar-track{
-      background: var(--bg-secondary);
-      border-radius: 3px;
-    }
-
-    #smoothie-tab-content .ss-list-scroll::-webkit-scrollbar-thumb{
-      background: rgba(15, 23, 42, 0.2);
-      border-radius: 3px;
-    }
-
-    #smoothie-tab-content .ss-row{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-      min-height: 44px;
-      max-height: 52px;
-      transition: background 0.15s ease;
-    }
-
-    #smoothie-tab-content .ss-row:last-child{
-      border-bottom: none;
-    }
-
-    #smoothie-tab-content .ss-row:hover{
-      background: rgba(14, 165, 164, 0.03);
-    }
-
-    #smoothie-tab-content .ss-row-main{
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    #smoothie-tab-content .ss-row-name{
-      display: block;
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: #0f172a;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    #smoothie-tab-content .ss-tags{
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-
-    #smoothie-tab-content .ss-tag{
-      font-size: 0.65rem;
-      padding: 2px 5px;
-      border-radius: 3px;
-      white-space: nowrap;
-    }
-
-    #smoothie-tab-content .ss-portion{
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      margin-left: 6px;
-    }
-
-    #smoothie-tab-content .ss-row-controls{
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-
-    #smoothie-tab-content .ss-qty-control{
-      display: flex;
-      align-items: center;
-      border: 1.5px solid #f59e0b;
-      border-radius: 6px;
-      overflow: hidden;
-      background: white;
-      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
-    }
-
-    #smoothie-tab-content .ss-qty-btn{
-      border: none;
-      background: #fef3c7;
-      color: #92400e;
-      width: 24px;
-      height: 24px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-
-    #smoothie-tab-content .ss-qty-btn:hover:not(:disabled){
-      background: #fde68a;
-    }
-
-    #smoothie-tab-content .ss-qty-btn:disabled{
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    #smoothie-tab-content .ss-qty-input{
-      width: 42px;
-      padding: 3px 2px;
-      border: none;
-      outline: none;
-      text-align: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #78350f;
-      background: white;
-    }
-
-    #smoothie-tab-content .ss-remove-btn{
-      background: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.15s;
-      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
-    }
-
-    #smoothie-tab-content .ss-remove-btn:hover{
-      background: #dc2626;
-      transform: scale(1.1);
-    }
-
-    #smoothie-tab-content .ss-info-messages{
-      padding: 8px 12px;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-      font-size: 0.8rem;
-    }
-
-    /* Smoothie Summary Modal (ssm-*) */
-    .ssm-summary-card{
-      background: white;
-      border: 1px solid rgba(15, 23, 42, 0.1);
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-top: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .ssm-summary-header{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .ssm-summary-title{
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #0f172a;
-      white-space: nowrap;
-    }
-
-    .ssm-summary-meta{
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
-    .ssm-summary-meta-item{
-      white-space: nowrap;
-    }
-
-    .ssm-chipstrip{
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 4px 0;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(15, 23, 42, 0.2) transparent;
-    }
-
-    .ssm-chipstrip::-webkit-scrollbar{
-      height: 4px;
-    }
-
-    .ssm-chipstrip::-webkit-scrollbar-track{
-      background: transparent;
-    }
-
-    .ssm-chipstrip::-webkit-scrollbar-thumb{
-      background: rgba(15, 23, 42, 0.2);
-      border-radius: 2px;
-    }
-
-    .ssm-chip{
-      flex-shrink: 0;
-      padding: 4px 8px;
-      background: var(--bg-secondary);
-      border: 1px solid rgba(15, 23, 42, 0.1);
-      border-radius: 6px;
-      font-size: 0.75rem;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .ssm-chip-name{
-      font-weight: 600;
-      color: #0f172a;
-    }
-
-    .ssm-chip-portion{
-      color: var(--text-secondary);
-      font-size: 0.7rem;
-    }
-
-    .ssm-edit-btn{
-      padding: 8px 16px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
-    }
-
-    .ssm-edit-btn:hover{
-      background: var(--primary-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(14, 165, 164, 0.3);
-    }
-
-    .ssm-modal{
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 10000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .ssm-modal.ssm-modal-open{
-      display: flex;
-    }
-
-    .ssm-backdrop{
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(4px);
-    }
-
-    .ssm-modal-card{
-      position: relative;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      width: 100%;
-      max-width: 600px;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      z-index: 1;
-    }
-
-    .ssm-modal-header{
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.1);
-      flex-shrink: 0;
-    }
-
-    .ssm-modal-title{
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: #0f172a;
-    }
-
-    .ssm-modal-close{
-      background: transparent;
-      border: none;
-      font-size: 1.5rem;
-      color: var(--text-secondary);
-      cursor: pointer;
-      padding: 0;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-    }
-
-    .ssm-modal-close:hover{
-      background: var(--bg-secondary);
-      color: #0f172a;
-    }
-
-    .ssm-modal-scroll{
-      max-height: 70vh;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 12px 20px 20px;
-    }
-
-    .ssm-modal-scroll::-webkit-scrollbar{
-      width: 6px;
-    }
-
-    .ssm-modal-scroll::-webkit-scrollbar-track{
-      background: var(--bg-secondary);
-      border-radius: 3px;
-    }
-
-    .ssm-modal-scroll::-webkit-scrollbar-thumb{
-      background: rgba(15, 23, 42, 0.2);
-      border-radius: 3px;
-    }
-
-    /* Modal ingredient rows (reuse ss-row classes) */
-    .ssm-modal-scroll .ss-row{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-      min-height: 44px;
-      max-height: 52px;
-      transition: background 0.15s ease;
-    }
-
-    .ssm-modal-scroll .ss-row:last-child{
-      border-bottom: none;
-    }
-
-    .ssm-modal-scroll .ss-row:hover{
-      background: rgba(14, 165, 164, 0.03);
-    }
-
-    .ssm-modal-scroll .ss-row-main{
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .ssm-modal-scroll .ss-row-name{
-      display: block;
-      font-weight: 700;
-      font-size: 0.85rem;
-      color: #0f172a;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    .ssm-modal-scroll .ss-tags{
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-
-    .ssm-modal-scroll .ss-tag{
-      font-size: 0.65rem;
-      padding: 2px 5px;
-      border-radius: 3px;
-      white-space: nowrap;
-    }
-
-    .ssm-modal-scroll .ss-portion{
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      margin-left: 6px;
-    }
-
-    .ssm-modal-scroll .ss-row-controls{
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-
-    .ssm-modal-scroll .ss-qty-control{
-      display: flex;
-      align-items: center;
-      border: 1.5px solid #f59e0b;
-      border-radius: 6px;
-      overflow: hidden;
-      background: white;
-      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
-    }
-
-    .ssm-modal-scroll .ss-qty-btn{
-      border: none;
-      background: #fef3c7;
-      color: #92400e;
-      width: 24px;
-      height: 24px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-    }
-
-    .ssm-modal-scroll .ss-qty-btn:hover:not(:disabled){
-      background: #fde68a;
-    }
-
-    .ssm-modal-scroll .ss-qty-btn:disabled{
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .ssm-modal-scroll .ss-qty-input{
-      width: 42px;
-      padding: 3px 2px;
-      border: none;
-      outline: none;
-      text-align: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #78350f;
-      background: white;
-    }
-
-    .ssm-modal-scroll .ss-remove-btn{
-      background: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.15s;
-      box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
-    }
-
-    .ssm-modal-scroll .ss-remove-btn:hover{
-      background: #dc2626;
-      transform: scale(1.1);
-    }
-
-    @media (max-width: 640px) {
-      .ssm-modal{
-        padding: 0;
-      }
-
-      .ssm-modal-card{
-        max-width: 100%;
-        max-height: 100vh;
-        border-radius: 0;
-      }
-    }
 
     /* Smoothie: prevent the left accent from bleeding into next rows (fixes "double tile" look) */
     #smoothie-tab-content .nutrition-grid > * {
@@ -2871,13 +1733,6 @@
       cursor: not-allowed;
     }
     
-    /* Extra compact tile style for Smoothie Nutrition (no big card look) */
-    .smoothie-metrics-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
 
     /* Smoothie Nutrition redesign (scoped + safe) */
     .sn-wrap { padding: 12px 0; }
@@ -3959,34 +2814,10 @@
     #feedback-modal[style*="display: flex"] {
       display: flex !important;
     }
-    .feedback-open:hover {
-      background: #f8fafc;
-      border-color: rgba(15,23,42,0.25);
-    }
-    /* Keep only the floating feedback FAB. Hide any other Feedback opener button. */
-    button.feedback-open:not(.feedback-fab) {
-      display: none !important;
-    }
     #feedback-modal button[type="submit"]:hover {
       background: #0b7f7e;
     }
     #feedback-modal button[type="button"]:hover {
-      background: #f8fafc;
-    }
-    .feedback-fab {
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      z-index: 10001;
-      padding: 12px 16px;
-      border-radius: 999px;
-      border: 1px solid rgba(15,23,42,0.18);
-      background: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-    }
-    .feedback-fab:hover {
       background: #f8fafc;
     }
   
@@ -4517,6 +3348,19 @@
         <!-- Presets will be loaded here -->
         <!-- <div id="smoothie-presets" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; padding: 10px 0;">
         </div> -->
+              <!-- Smoothie Presets / Saved Recipes -->
+      <div class="card" style="margin-top: 20px; margin-bottom: 12px; border-radius: 12px; overflow: visible;">
+        <div class="card-header" style="padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+            <div class="card-title" style="margin: 0; font-size: 1.1rem;">📚 Smoothie Presets</div>
+            <div class="card-subtitle" style="margin: 0; font-size: 0.85rem; opacity: 0.8;">Quick-start recipes for different health goals</div>
+          </div>
+        </div>
+        <div id="smoothie-presets" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; padding: 10px 0;">
+          <!-- Presets will be loaded here -->
+        </div>
+     
+
         <script>
           function toggleSmoothiePresets() {
             const presetsEl = document.getElementById('smoothie-presets');
@@ -5591,6 +4435,9 @@
         
         // Refresh button states after adding (updates both Recommended and All Ingredients)
         refreshIngredientButtons(ingredient);
+
+        // Scroll to top of the page
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
       
       return item;
@@ -15452,7 +14299,7 @@ const allergenPanel = allergenNames.length === 0
                 <button class="ss-qty-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-1" data-ss-modal-control="1" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
                     <input 
                       type="number" 
-                  class="ss-qty-input" 
+                      class="smoothie-quantity-input ss-qty-input" 
                       data-index="${idx}" 
                       value="${quantity}" 
                       min="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '50' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}" 
@@ -17135,144 +15982,112 @@ const allergenPanel = allergenNames.length === 0
     // Returns a DOM node (no HTML string) to avoid HTML injection sinks
     function renderSmoothieNutritionMetrics(nutritionData, isPerServing = false) {
       const grid = document.createElement('div');
-      grid.className = 'nutrition-grid';
-      grid.style.gap = '8px';
-      grid.style.margin = '0';
-      grid.style.padding = '0';
-      grid.style.display = 'flex';
-      grid.style.flexDirection = 'column';
-      grid.style.flexWrap = 'nowrap';
-      grid.style.overflowY = 'auto';
-      grid.style.width = '100%';
+      grid.className = 'smoothie-metrics-grid';
+      
+      // Note: Layout is now handled by CSS classes .smoothie-metrics-grid and .smoothie-metrics-tile
 
-      function addTile({ className, borderColor, icon, label, value, unit }) {
+      function addTile({ className, icon, label, value, unit, color }) {
         const tile = document.createElement('div');
-        tile.className = `nutrition-tile ${className} smoothie-metrics-row`;
-        tile.style.background = 'white';
-        tile.style.borderLeft = `2px solid ${borderColor}`;
-        tile.style.boxShadow = '0 1px 1px rgba(0, 0, 0, 0.05)';
-        tile.style.padding = '8px 12px';
-        tile.style.display = 'flex';
-        tile.style.flexDirection = 'row';
-        tile.style.alignItems = 'center';
-        tile.style.justifyContent = 'space-between';
-        tile.style.gap = '12px';
-
+        tile.className = `smoothie-metrics-tile ${className}`;
+        
+        // Left side: Icon + Label
         const left = document.createElement('div');
-        left.style.display = 'flex';
-        left.style.flexDirection = 'row';
-        left.style.alignItems = 'center';
-        left.style.gap = '10px';
-        left.style.flex = '1';
-
-        const iconSpan = document.createElement('span');
-        iconSpan.className = 'icon';
-        iconSpan.style.fontSize = '1rem';
-        iconSpan.style.lineHeight = '1.2';
-        iconSpan.style.margin = '0';
-        iconSpan.textContent = icon;
-
+        left.className = 'left';
+        
+        const iconWrap = document.createElement('div');
+        iconWrap.className = 'icon-wrap';
+        iconWrap.textContent = icon;
+        
         const labelDiv = document.createElement('div');
         labelDiv.className = 'label';
-        labelDiv.style.fontSize = '0.7rem';
-        labelDiv.style.fontWeight = '600';
-        labelDiv.style.color = '#64748b';
-        labelDiv.style.textTransform = 'uppercase';
-        labelDiv.style.letterSpacing = '0.05em';
-        labelDiv.style.margin = '0';
-        labelDiv.style.lineHeight = '1.2';
         labelDiv.textContent = label;
-
-        left.appendChild(iconSpan);
+        
+        left.appendChild(iconWrap);
         left.appendChild(labelDiv);
-
+        
+        // Right side: Value + Unit
+        const right = document.createElement('div');
+        right.className = 'right';
+        
         const valueDiv = document.createElement('div');
         valueDiv.className = 'value';
-        valueDiv.style.fontSize = '0.95rem';
-        valueDiv.style.fontWeight = '700';
-        valueDiv.style.lineHeight = '1.2';
-        valueDiv.style.color = borderColor;
-
-        const valueText = document.createTextNode(typeof value === 'number' ? value.toFixed(1) : String(value));
-        valueDiv.appendChild(valueText);
-
+        if (color) valueDiv.style.color = color;
+        valueDiv.textContent = typeof value === 'number' ? value.toFixed(1) : String(value);
+        
         const unitSpan = document.createElement('span');
         unitSpan.className = 'unit';
-        unitSpan.style.fontSize = '0.6rem';
-        unitSpan.style.color = '#94a3b8';
-        unitSpan.style.fontWeight = '500';
-        unitSpan.style.marginLeft = '3px';
         unitSpan.textContent = unit;
-
+        
         valueDiv.appendChild(unitSpan);
-
+        right.appendChild(valueDiv);
+        
         tile.appendChild(left);
-        tile.appendChild(valueDiv);
-
+        tile.appendChild(right);
+        
         grid.appendChild(tile);
       }
 
       addTile({
         className: 'calories',
-        borderColor: '#3b82f6',
         icon: '🔥',
         label: 'CALORIES',
         value: Number(nutritionData.calories || 0),
         unit: 'kcal',
+        color: '#3b82f6'
       });
 
       addTile({
         className: 'protein',
-        borderColor: '#10b981',
         icon: '💪',
         label: 'PROTEIN',
         value: Number(nutritionData.protein || 0),
         unit: 'g',
+        color: '#10b981'
       });
 
       addTile({
         className: 'carbs',
-        borderColor: '#f59e0b',
         icon: '🌾',
         label: 'CARBS',
         value: Number(nutritionData.carbs || 0),
         unit: 'g',
+        color: '#f59e0b'
       });
 
       addTile({
         className: 'fat',
-        borderColor: '#ef4444',
         icon: '🥑',
         label: 'FAT',
         value: Number(nutritionData.fat || 0),
         unit: 'g',
+        color: '#ef4444'
       });
 
       addTile({
         className: 'fiber',
-        borderColor: '#0EA5A4',
         icon: '🌿',
         label: 'FIBER',
         value: Number(nutritionData.fiber || 0),
         unit: 'g',
+        color: '#0EA5A4'
       });
 
       addTile({
         className: 'sugar',
-        borderColor: '#ec4899',
         icon: '🍬',
         label: 'SUGAR',
         value: Number(nutritionData.sugar || 0),
         unit: 'g',
+        color: '#ec4899'
       });
 
       addTile({
         className: 'sodium',
-        borderColor: '#06b6d4',
         icon: '🧂',
         label: 'SODIUM',
         value: Number(nutritionData.sodium || 0),
         unit: 'mg',
+        color: '#06b6d4'
       });
 
       return grid;
@@ -18020,6 +16835,7 @@ const allergenPanel = allergenNames.length === 0
           <div style="margin-bottom: 16px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius); border: 1px solid var(--border);">
                 <!-- Servings Input (ONLY for Per Serving tab) -->
                 <div id="smoothie-servings-control" style="display:none; margin-bottom: 16px;">
+                
                   <!-- Batch size selector (ml) -->
                   <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom: 12px;">
                     <div style="display:flex; align-items:center; gap:8px;">
