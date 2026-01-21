@@ -59,3 +59,4 @@ myenv/
 !templates/admin/
 !templates/admin/login.html
 
+templates/index.html.bak_ssm_*
