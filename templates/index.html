@@ -2436,7 +2436,7 @@
     }
 
     /* Smoothie Summary Modal (ssm-*) */
-    #smoothie-tab-content .ssm-summary-card{
+    .ssm-summary-card{
       background: white;
       border: 1px solid rgba(15, 23, 42, 0.1);
       border-radius: 12px;
@@ -2447,7 +2447,7 @@
       gap: 10px;
     }
 
-    #smoothie-tab-content .ssm-summary-header{
+    .ssm-summary-header{
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -2455,14 +2455,14 @@
       flex-wrap: wrap;
     }
 
-    #smoothie-tab-content .ssm-summary-title{
+    .ssm-summary-title{
       font-weight: 700;
       font-size: 0.9rem;
       color: #0f172a;
       white-space: nowrap;
     }
 
-    #smoothie-tab-content .ssm-summary-meta{
+    .ssm-summary-meta{
       display: flex;
       align-items: center;
       gap: 6px;
@@ -2472,11 +2472,11 @@
       margin-top: 4px;
     }
 
-    #smoothie-tab-content .ssm-summary-meta-item{
+    .ssm-summary-meta-item{
       white-space: nowrap;
     }
 
-    #smoothie-tab-content .ssm-chipstrip{
+    .ssm-chipstrip{
       display: flex;
       align-items: center;
       gap: 6px;
@@ -2487,20 +2487,20 @@
       scrollbar-color: rgba(15, 23, 42, 0.2) transparent;
     }
 
-    #smoothie-tab-content .ssm-chipstrip::-webkit-scrollbar{
+    .ssm-chipstrip::-webkit-scrollbar{
       height: 4px;
     }
 
-    #smoothie-tab-content .ssm-chipstrip::-webkit-scrollbar-track{
+    .ssm-chipstrip::-webkit-scrollbar-track{
       background: transparent;
     }
 
-    #smoothie-tab-content .ssm-chipstrip::-webkit-scrollbar-thumb{
+    .ssm-chipstrip::-webkit-scrollbar-thumb{
       background: rgba(15, 23, 42, 0.2);
       border-radius: 2px;
     }
 
-    #smoothie-tab-content .ssm-chip{
+    .ssm-chip{
       flex-shrink: 0;
       padding: 4px 8px;
       background: var(--bg-secondary);
@@ -2513,17 +2513,17 @@
       gap: 4px;
     }
 
-    #smoothie-tab-content .ssm-chip-name{
+    .ssm-chip-name{
       font-weight: 600;
       color: #0f172a;
     }
 
-    #smoothie-tab-content .ssm-chip-portion{
+    .ssm-chip-portion{
       color: var(--text-secondary);
       font-size: 0.7rem;
     }
 
-    #smoothie-tab-content .ssm-edit-btn{
+    .ssm-edit-btn{
       padding: 8px 16px;
       background: var(--primary);
       color: white;
@@ -2536,13 +2536,13 @@
       white-space: nowrap;
     }
 
-    #smoothie-tab-content .ssm-edit-btn:hover{
+    .ssm-edit-btn:hover{
       background: var(--primary-dark);
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(14, 165, 164, 0.3);
     }
 
-    #smoothie-tab-content .ssm-modal{
+    .ssm-modal{
       display: none;
       position: fixed;
       top: 0;
@@ -2555,11 +2555,11 @@
       padding: 20px;
     }
 
-    #smoothie-tab-content .ssm-modal.ssm-modal-open{
+    .ssm-modal.ssm-modal-open{
       display: flex;
     }
 
-    #smoothie-tab-content .ssm-backdrop{
+    .ssm-backdrop{
       position: absolute;
       top: 0;
       left: 0;
@@ -2569,7 +2569,7 @@
       backdrop-filter: blur(4px);
     }
 
-    #smoothie-tab-content .ssm-modal-card{
+    .ssm-modal-card{
       position: relative;
       background: white;
       border-radius: 16px;
@@ -2582,7 +2582,7 @@
       z-index: 1;
     }
 
-    #smoothie-tab-content .ssm-modal-header{
+    .ssm-modal-header{
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -2591,13 +2591,13 @@
       flex-shrink: 0;
     }
 
-    #smoothie-tab-content .ssm-modal-title{
+    .ssm-modal-title{
       font-weight: 700;
       font-size: 1.1rem;
       color: #0f172a;
     }
 
-    #smoothie-tab-content .ssm-modal-close{
+    .ssm-modal-close{
       background: transparent;
       border: none;
       font-size: 1.5rem;
@@ -2613,34 +2613,34 @@
       transition: all 0.2s ease;
     }
 
-    #smoothie-tab-content .ssm-modal-close:hover{
+    .ssm-modal-close:hover{
       background: var(--bg-secondary);
       color: #0f172a;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll{
+    .ssm-modal-scroll{
       max-height: 70vh;
       overflow-y: auto;
       overflow-x: hidden;
       padding: 12px 20px 20px;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll::-webkit-scrollbar{
+    .ssm-modal-scroll::-webkit-scrollbar{
       width: 6px;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll::-webkit-scrollbar-track{
+    .ssm-modal-scroll::-webkit-scrollbar-track{
       background: var(--bg-secondary);
       border-radius: 3px;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll::-webkit-scrollbar-thumb{
+    .ssm-modal-scroll::-webkit-scrollbar-thumb{
       background: rgba(15, 23, 42, 0.2);
       border-radius: 3px;
     }
 
     /* Modal ingredient rows (reuse ss-row classes) */
-    #smoothie-tab-content .ssm-modal-scroll .ss-row{
+    .ssm-modal-scroll .ss-row{
       display: flex;
       align-items: center;
       gap: 10px;
@@ -2651,15 +2651,15 @@
       transition: background 0.15s ease;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-row:last-child{
+    .ssm-modal-scroll .ss-row:last-child{
       border-bottom: none;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-row:hover{
+    .ssm-modal-scroll .ss-row:hover{
       background: rgba(14, 165, 164, 0.03);
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-row-main{
+    .ssm-modal-scroll .ss-row-main{
       flex: 1;
       min-width: 0;
       display: flex;
@@ -2667,7 +2667,7 @@
       gap: 8px;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-row-name{
+    .ssm-modal-scroll .ss-row-name{
       display: block;
       font-weight: 700;
       font-size: 0.85rem;
@@ -2678,35 +2678,35 @@
       max-width: 100%;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-tags{
+    .ssm-modal-scroll .ss-tags{
       display: flex;
       align-items: center;
       gap: 4px;
       flex-shrink: 0;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-tag{
+    .ssm-modal-scroll .ss-tag{
       font-size: 0.65rem;
       padding: 2px 5px;
       border-radius: 3px;
       white-space: nowrap;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-portion{
+    .ssm-modal-scroll .ss-portion{
       font-size: 0.7rem;
       color: var(--text-secondary);
       white-space: nowrap;
       margin-left: 6px;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-row-controls{
+    .ssm-modal-scroll .ss-row-controls{
       display: flex;
       align-items: center;
       gap: 6px;
       flex-shrink: 0;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-qty-control{
+    .ssm-modal-scroll .ss-qty-control{
       display: flex;
       align-items: center;
       border: 1.5px solid #f59e0b;
@@ -2716,7 +2716,7 @@
       box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-qty-btn{
+    .ssm-modal-scroll .ss-qty-btn{
       border: none;
       background: #fef3c7;
       color: #92400e;
@@ -2731,16 +2731,16 @@
       transition: all 0.15s;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-qty-btn:hover:not(:disabled){
+    .ssm-modal-scroll .ss-qty-btn:hover:not(:disabled){
       background: #fde68a;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-qty-btn:disabled{
+    .ssm-modal-scroll .ss-qty-btn:disabled{
       opacity: 0.5;
       cursor: not-allowed;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-qty-input{
+    .ssm-modal-scroll .ss-qty-input{
       width: 42px;
       padding: 3px 2px;
       border: none;
@@ -2752,7 +2752,7 @@
       background: white;
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-remove-btn{
+    .ssm-modal-scroll .ss-remove-btn{
       background: #ef4444;
       color: white;
       border: none;
@@ -2770,17 +2770,17 @@
       box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
     }
 
-    #smoothie-tab-content .ssm-modal-scroll .ss-remove-btn:hover{
+    .ssm-modal-scroll .ss-remove-btn:hover{
       background: #dc2626;
       transform: scale(1.1);
     }
 
     @media (max-width: 640px) {
-      #smoothie-tab-content .ssm-modal{
+      .ssm-modal{
         padding: 0;
       }
 
-      #smoothie-tab-content .ssm-modal-card{
+      .ssm-modal-card{
         max-width: 100%;
         max-height: 100vh;
         border-radius: 0;
