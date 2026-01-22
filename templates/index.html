@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -4095,11 +4096,8 @@
         refreshIngredientButtons(previousSelected);
       }
       
-      // Debounced: if user adds multiple ingredients quickly, scroll once after 2s
+      // Debounced scroll removed per user request
       if (scrollToSearchTimer) clearTimeout(scrollToSearchTimer);
-      scrollToSearchTimer = setTimeout(() => {
-        requestAnimationFrame(() => requestAnimationFrame(scrollToSearchArea));
-      }, 2000);
         
         console.log('[addIngredient] After renderSelectedIngredients, selectedIngredientsEl.innerHTML length:', selectedIngredientsEl.innerHTML.length);
     }
@@ -14367,8 +14365,8 @@ const allergenPanel = allergenNames.length === 0
         };
         const yieldDisplay = formatWeight(totalWeightGrams);
         
-        // Build chip strip for summary (preview of first 6 ingredients)
-        const previewCount = 6;
+        // Build chip strip for summary (preview of first 4 ingredients)
+        const previewCount = 4;
         const previewIngredients = smoothieIngredients.slice(0, previewCount);
         const remainingCount = Math.max(0, smoothieIngredients.length - previewCount);
         
@@ -14388,7 +14386,7 @@ const allergenPanel = allergenNames.length === 0
           return `<div class="ssm-chip"><span class="ssm-chip-name">${escapeHTML(ingredientName)}</span><span class="ssm-chip-portion">${escapeHTML(servingDisplay)}</span></div>`;
         }).join('');
         
-        const moreChipHtml = remainingCount > 0 ? `<div class="ssm-chip" style="background: var(--primary); color: white; border-color: var(--primary);"><span class="ssm-chip-name">+${remainingCount} more</span></div>` : '';
+        const moreChipHtml = remainingCount > 0 ? `<div class="ssm-chip" style="background: var(--primary); color: white; border-color: var(--primary);"><span class="ssm-chip-name" style="color:white;">+${remainingCount}</span></div>` : '';
         
         // Build compact summary card (no scroll, no tall list)
         const summaryHtml = `
@@ -17700,13 +17698,22 @@ const batchG = (smoothieBatchMlOverride != null)
       // Ensure we're at the top after reset
       forceScrollToTop();
       
-      await loadHierarchy();
-      await loadCategories();
-      renderSelectedIngredients();
-      loadSmoothiePresets();
-      
-      // Initialize search and toggle functionality
-      initializeBrowseIngredientsFeatures();
+
+
+    // Initialize
+    await loadHierarchy();
+    await loadCategories();  // This will also load hierarchy & eventually subcategories
+    renderSelectedIngredients();
+    loadSmoothiePresets();
+    
+    loadPreferences();
+    loadCart();        // Load saved cart from localStorage
+    initializeBrowseIngredientsFeatures(); // Search & toggle handlers
+    
+    // Check if we need to show the welcome modal
+    if (!localStorage.getItem('pf_welcome_seen')) {
+      // document.getElementById('welcome-modal').style.display = 'flex';
+    }
       
       // Check initial state of textarea
       const hasText = ingredientsInputEl.value.trim().length > 0;

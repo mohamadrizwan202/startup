@@ -829,7 +829,7 @@
        border-radius: 18px !important;
      }
    
-     /* tighten section title spacing if it’s pushing content down */
+     /* tighten section title spacing if itâ€™s pushing content down */
      #ingredient-tab-content .section-title-compact {
        margin-bottom: 10px !important;
      }
@@ -1112,7 +1112,7 @@
        border-radius: 18px !important;
      }
    
-     /* the “drag handle” is a bottom-sheet vibe; remove it for centered popup */
+     /* the â€œdrag handleâ€ is a bottom-sheet vibe; remove it for centered popup */
      .pf-results-sheet::before {
        display: none !important;
      }
@@ -1163,13 +1163,13 @@
        margin: 0 0 10px 0 !important;
      }
    
-     /* Selected ingredient chip row: don’t float weirdly */
+     /* Selected ingredient chip row: donâ€™t float weirdly */
      #pf-results-modal .nutrition-selected-chip,
      #pf-results-modal .nutrition-ing-pill {
        max-width: 100% !important;
      }
    
-     /* MAIN FIX: shrink the “giant square boxes” (nutrition tiles) */
+     /* MAIN FIX: shrink the â€œgiant square boxesâ€ (nutrition tiles) */
      #pf-results-modal .nutrition-summary-grid {
        display: grid !important;
        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -1218,7 +1218,7 @@
        margin: 0 !important;
      }
    
-     /* Health Benefits layout often looks “two-column messy” on mobile */
+     /* Health Benefits layout often looks â€œtwo-column messyâ€ on mobile */
      #pf-results-modal .pf-hb2-header-row {
        display: flex !important;
        flex-direction: column !important;
@@ -1259,7 +1259,7 @@
        letter-spacing: normal !important;
      }
    
-     /* Ingredient pill (avocado • 150g): make it compact, not full-width */
+     /* Ingredient pill (avocado â€¢ 150g): make it compact, not full-width */
      #pf-results-modal .nutrition-ing-pill,
      #pf-results-modal .nutrition-selected-chip {
        display: inline-flex !important;
@@ -1752,7 +1752,7 @@
        margin: 6px 0 !important;
      }
    
-     /* Allergen results container: remove “giant card feel” */
+     /* Allergen results container: remove â€œgiant card feelâ€ */
      #pf-results-modal #allergens-results-body {
        padding: 0 !important;
      }
@@ -2073,7 +2073,7 @@
    /* Modal display is controlled by JS, not CSS !important */
    
    /* =========================
-      MOBILE RESULTS MODAL — UX POLISH (v1)
+      MOBILE RESULTS MODAL â€” UX POLISH (v1)
       Goal: consistent padding, no giant blocks, clean mobile card feel.
       ========================= */
    @media (max-width: 1024px) {
@@ -2104,7 +2104,7 @@
        border-radius: 12px !important;
      }
    
-     /* Remove “double card” feeling when we move the results card into the modal */
+     /* Remove â€œdouble cardâ€ feeling when we move the results card into the modal */
      #pf-results-modal .pf-results-sheet-body {
        padding: 0 !important;
      }
@@ -2153,7 +2153,7 @@
         Nutrition tab cleanup inside modal
         ========================= */
    
-     /* Remove giant “card inside card” look */
+     /* Remove giant â€œcard inside cardâ€ look */
      #pf-results-modal .nutrition-results-card {
        margin: 0 !important;
        border: none !important;
@@ -2185,7 +2185,7 @@
        opacity: 0.85 !important;
      }
    
-     /* Ingredient “pill”: never full-width, always natural size */
+     /* Ingredient â€œpillâ€: never full-width, always natural size */
      #pf-results-modal .nutrition-selected-chip,
      #pf-results-modal .nutrition-ing-pill {
        width: fit-content !important;
@@ -2203,7 +2203,7 @@
        margin-top: 10px !important;
      }
    
-     /* Tiles: remove “giant boxes” feeling */
+     /* Tiles: remove â€œgiant boxesâ€ feeling */
      #pf-results-modal .nutrition-tile-compact {
        border-radius: 16px !important;
        padding: 10px 12px !important;
@@ -3430,6 +3430,7 @@
      align-items: center !important;
      padding: 14px 16px !important;
      border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+     margin-bottom: 8px;
    }
    
    .ss-edit-modal .ssm-row:first-child {
@@ -3925,7 +3926,7 @@
        align-items: start !important;
      }
    
-     /* This placeholder breaks grid flow; keep it for JS, but don’t let it take a grid cell */
+     /* This placeholder breaks grid flow; keep it for JS, but donâ€™t let it take a grid cell */
      #smoothie-tab-content #pf-smoothie-card-home {
        display: none !important;
      }
@@ -4004,7 +4005,7 @@
    
    /* ============================================
       REDESIGN: Top Smoothie Nutrition cards
-      (Ingredients + Total Yield) — desktop only
+      (Ingredients + Total Yield) â€” desktop only
       Clean, modern, light UI (no heavy yellow/blue blocks)
       ============================================ */
    @media (min-width: 1025px) {
@@ -4107,7 +4108,7 @@
    }
    
    /* ============================================
-      Smoothie Nutrition — Yield card looks empty
+      Smoothie Nutrition â€” Yield card looks empty
       Fix: vertically center yield content when cards are equal height
       (Scoped to Smoothie tab only)
       ============================================ */
@@ -4177,7 +4178,7 @@
        min-height: unset !important;
      }
    
-     /* 2) Guaranteed: don’t push actions to the bottom (removes blank area) */
+     /* 2) Guaranteed: donâ€™t push actions to the bottom (removes blank area) */
      #smoothie-tab-content .card.search-container .sn-actions {
        margin-top: 16px !important; /* overrides margin-top:auto */
      }
@@ -4575,7 +4576,7 @@
      justify-content: flex-start !important;
      align-items: stretch !important;
    
-     /* kill the “blank top + inner scrollbar” behavior */
+     /* kill the â€œblank top + inner scrollbarâ€ behavior */
      padding: 12px 14px !important;
      overflow-y: visible !important;
      max-height: none !important;
@@ -6492,6 +6493,7 @@
        border-radius: 10px !important;
        transition: all 0.2s ease !important;
        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+       
    }
    
    .ssm-row:hover {
@@ -6826,7 +6828,7 @@
    }
    
    #smoothie-tab-content .vmr-summary-row::before{
-     content: '▶';
+     content: 'â–¶';
      font-size: 0.7rem;
      transition: transform 0.2s ease;
      display: inline-block;
@@ -6922,7 +6924,7 @@
    }
    
    #smoothie-tab-content .ss-panel summary::before{
-     content: '▶';
+     content: 'â–¶';
      font-size: 0.7rem;
      color: var(--text-secondary);
      transition: transform 0.2s ease;
@@ -7218,10 +7220,15 @@
    #smoothie-tab-content .ssm-chipstrip{
      display: flex;
      align-items: center;
+     flex-wrap: nowrap;
      gap: 6px;
      overflow-x: auto;
      overflow-y: hidden;
      padding: 4px 0;
+     flex: 1;
+     min-width: 0;
+     width: 100%;
+     max-width: 100%;
      scrollbar-width: thin;
      scrollbar-color: rgba(15, 23, 42, 0.2) transparent;
    }
@@ -7727,4 +7734,3 @@
        padding-right: 5px !important;
      }
    }
-   
