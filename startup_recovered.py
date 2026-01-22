@@ -1104,6 +1104,34 @@ def readiness_check():
             pass
 
 
+@app.get("/__smtpcheck")
+def __smtpcheck():
+    # Protect it (same style you use elsewhere)
+    expected = os.environ.get("ADMIN_TOKEN", "").strip()
+    provided = (request.headers.get("X-Admin-Token") or request.args.get("token", "")).strip()
+    if not expected or not provided or not hmac.compare_digest(provided, expected):
+        abort(404)
+
+    host = (os.environ.get("SMTP_HOST") or "smtp.hostinger.com").strip()
+    results = {}
+
+    # Test 465 (SMTPS) and 587 (TCP connect only)
+    for port in (465, 587):
+        try:
+            s = socket.create_connection((host, port), timeout=8)
+            if port == 465:
+                ctx = ssl.create_default_context()
+                s = ctx.wrap_socket(s, server_hostname=host)
+                results[str(port)] = {"ok": True, "tls": s.version()}
+            else:
+                results[str(port)] = {"ok": True, "tcp": True}
+            s.close()
+        except Exception as e:
+            results[str(port)] = {"ok": False, "err": f"{type(e).__name__}: {e}"}
+
+    return jsonify({"host": host, "results": results})
+
+
 # --- Diagnostics Endpoint (token-protected) ---
 @app.get("/__diag")
 @limiter.limit("5 per minute", key_func=real_client_ip)
