@@ -7734,3 +7734,40 @@
        padding-right: 5px !important;
      }
    }
+   /* ============================================
+   FIX: Ingredient pill spacing (desktop matches responsive)
+   ============================================ */
+.pf-ing-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;                 /* fixes name•serving -> name • serving */
+  white-space:nowrap;
+  line-height:1;
+}
+
+.pf-ing-pill__name{ font-weight:800; color:#0f172a; }
+.pf-ing-pill__sep{ color:#94a3b8; font-weight:800; }
+.pf-ing-pill__serving{ color:#94a3b8; font-weight:700; }
+
+/* Prevent “double ring”: pill chrome must live on wrapper, not inner span */
+@media (min-width: 1025px) {
+  .nutrition-selected-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 22px;
+    white-space:nowrap;
+    border:2px solid rgba(14,165,164,0.22);
+    background:#fff;
+    border-radius:999px;
+  }
+
+  /* Make sure inner span never becomes a second pill */
+  .nutrition-selected-chip .pf-ing-pill{
+    border:0;
+    background:transparent;
+    padding:0;
+    border-radius:0;
+    box-shadow:none;
+  }
+}
