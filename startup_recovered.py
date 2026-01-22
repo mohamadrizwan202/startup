@@ -30,6 +30,7 @@ import urllib.parse
 import json
 import html
 import socket
+import contextlib
 
 # Import database helpers
 import db
@@ -1717,6 +1718,35 @@ def _truthy(val):
     return str(val).lower() in ('1', 'true', 'yes', 'on')
 
 
+@contextlib.contextmanager
+def _force_ipv4_create_connection():
+    """Force socket.create_connection to use IPv4 only (helps on hosts with broken IPv6 routes)."""
+    orig = socket.create_connection
+
+    def create_connection(address, timeout=None, source_address=None, **kwargs):
+        host, port = address
+        last_err = None
+        infos = socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)
+        for family, socktype, proto, canonname, sockaddr in infos:
+            try:
+                s = socket.socket(family, socktype, proto)
+                if timeout is not None:
+                    s.settimeout(timeout)
+                if source_address:
+                    s.bind(source_address)
+                s.connect(sockaddr)
+                return s
+            except Exception as e:
+                last_err = e
+        raise last_err or OSError("IPv4 connect failed")
+
+    socket.create_connection = create_connection
+    try:
+        yield
+    finally:
+        socket.create_connection = orig
+
+
 def _send_email_smtp(to_email, subject, body_text, reply_to=None):
     smtp_host = os.getenv('SMTP_HOST', '').strip()
     smtp_port_raw = os.getenv('SMTP_PORT', '587').strip()
@@ -1747,17 +1777,21 @@ def _send_email_smtp(to_email, subject, body_text, reply_to=None):
     ctx = ssl.create_default_context()
 
     try:
-        if use_ssl:
-            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=timeout_s, context=ctx) as s:
-                s.login(smtp_user, smtp_pass)
-                s.send_message(msg)
-        else:
-            with smtplib.SMTP(smtp_host, smtp_port, timeout=timeout_s) as s:
-                s.ehlo()
-                s.starttls(context=ctx)
-                s.ehlo()
-                s.login(smtp_user, smtp_pass)
-                s.send_message(msg)
+        force_ipv4 = _truthy(os.getenv("SMTP_FORCE_IPV4", ""))
+
+        cm = _force_ipv4_create_connection() if force_ipv4 else contextlib.nullcontext()
+        with cm:
+            if use_ssl:
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=timeout_s, context=ctx) as s:
+                    s.login(smtp_user, smtp_pass)
+                    s.send_message(msg)
+            else:
+                with smtplib.SMTP(smtp_host, smtp_port, timeout=timeout_s) as s:
+                    s.ehlo()
+                    s.starttls(context=ctx)
+                    s.ehlo()
+                    s.login(smtp_user, smtp_pass)
+                    s.send_message(msg)
 
         return True
 
@@ -51102,96 +51136,97 @@ def admin_feedback():
     return render_template("admin_feedback.html", rows=out), 200, {"Cache-Control": "no-store"}
 
 
-@app.post("/api/contact")
-@csrf.exempt
-@limiter.limit("10 per minute")
-def api_contact_submit():
-    # Accept JSON or form-post
-    data = request.get_json(silent=True) or {}
-    if not data:
-        data = request.form.to_dict(flat=True) or {}
+if os.getenv("ENABLE_PUBLIC_CONTACT_API", "") == "1":
+    @app.post("/api/contact")
+    @csrf.exempt
+    @limiter.limit("10 per minute")
+    def api_contact_submit():
+        # Accept JSON or form-post
+        data = request.get_json(silent=True) or {}
+        if not data:
+            data = request.form.to_dict(flat=True) or {}
 
-    # Honeypot (front-end should include a hidden field named "company")
-    if (data.get("company") or "").strip():
-        return jsonify({"ok": True}), 200
+        # Honeypot (front-end should include a hidden field named "company")
+        if (data.get("company") or "").strip():
+            return jsonify({"ok": True}), 200
 
-    name = (data.get("name") or "").strip()
-    email = (data.get("email") or "").strip()
-    subject = (data.get("subject") or "").strip() or "Contact Form"
-    message = (data.get("message") or "").strip()
+        name = (data.get("name") or "").strip()
+        email = (data.get("email") or "").strip()
+        subject = (data.get("subject") or "").strip() or "Contact Form"
+        message = (data.get("message") or "").strip()
 
-    if not name or not email or not message:
-        return jsonify({"ok": False, "error": "missing_fields"}), 400
-    if len(message) > 4000:
-        return jsonify({"ok": False, "error": "message_too_long"}), 400
+        if not name or not email or not message:
+            return jsonify({"ok": False, "error": "missing_fields"}), 400
+        if len(message) > 4000:
+            return jsonify({"ok": False, "error": "message_too_long"}), 400
 
-    ip = (
-        request.headers.get("CF-Connecting-IP")
-        or (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
-        or request.remote_addr
-        or ""
-    )
-    user_agent = (request.headers.get("User-Agent") or "")[:500]
+        ip = (
+            request.headers.get("CF-Connecting-IP")
+            or (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
+            or request.remote_addr
+            or ""
+        )
+        user_agent = (request.headers.get("User-Agent") or "")[:500]
 
-    msg_id = None
+        msg_id = None
 
-    # Save to Postgres so it appears in /admin/contacts
-    if db.USE_POSTGRES:
-        conn = db.get_conn()
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO public.contact_messages
-                (name, email, subject, message, ip, user_agent, status)
-            VALUES
-                (%s, %s, %s, %s, %s, %s, 'new')
-            RETURNING id
-        """, (name, email, subject, message, ip, user_agent))
-        row = cur.fetchone()
-        if row is None:
-            msg_id = None
-        elif isinstance(row, dict):
-            msg_id = row.get("id")
-        else:
-            msg_id = row[0]
-        conn.commit()
-        cur.close()
-        conn.close()
+        # Save to Postgres so it appears in /admin/contacts
+        if db.USE_POSTGRES:
+            conn = db.get_conn()
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO public.contact_messages
+                    (name, email, subject, message, ip, user_agent, status)
+                VALUES
+                    (%s, %s, %s, %s, %s, %s, 'new')
+                RETURNING id
+            """, (name, email, subject, message, ip, user_agent))
+            row = cur.fetchone()
+            if row is None:
+                msg_id = None
+            elif isinstance(row, dict):
+                msg_id = row.get("id")
+            else:
+                msg_id = row[0]
+            conn.commit()
+            cur.close()
+            conn.close()
 
-    # Email notification to support@purefyul.com
-    try:
-        import os, ssl, smtplib
-        from email.message import EmailMessage
+        # Email notification to support@purefyul.com
+        try:
+            import os, ssl, smtplib
+            from email.message import EmailMessage
 
-        smtp_host = os.getenv("SMTP_HOST", "smtp.hostinger.com")
-        smtp_port = int(os.getenv("SMTP_PORT", "465"))
-        smtp_user = os.getenv("SMTP_USER", "support@purefyul.com")
-        smtp_pass = os.getenv("SMTP_PASS")
-        to_email = os.getenv("CONTACT_TO", smtp_user)
+            smtp_host = os.getenv("SMTP_HOST", "smtp.hostinger.com")
+            smtp_port = int(os.getenv("SMTP_PORT", "465"))
+            smtp_user = os.getenv("SMTP_USER", "support@purefyul.com")
+            smtp_pass = os.getenv("SMTP_PASS")
+            to_email = os.getenv("CONTACT_TO", smtp_user)
 
-        if smtp_pass:
-            msg = EmailMessage()
-            msg["Subject"] = f"[PureFyul Contact] {subject}"
-            msg["From"] = smtp_user
-            msg["To"] = to_email
-            msg["Reply-To"] = email  # reply goes to user
-            tag = f"Message ID: {msg_id}\n\n" if msg_id else ""
-            msg.set_content(
-                f"{tag}"
-                f"Name: {name}\n"
-                f"Email: {email}\n"
-                f"IP: {ip}\n\n"
-                f"Subject: {subject}\n\n"
-                f"{message}\n"
-            )
+            if smtp_pass:
+                msg = EmailMessage()
+                msg["Subject"] = f"[PureFyul Contact] {subject}"
+                msg["From"] = smtp_user
+                msg["To"] = to_email
+                msg["Reply-To"] = email  # reply goes to user
+                tag = f"Message ID: {msg_id}\n\n" if msg_id else ""
+                msg.set_content(
+                    f"{tag}"
+                    f"Name: {name}\n"
+                    f"Email: {email}\n"
+                    f"IP: {ip}\n\n"
+                    f"Subject: {subject}\n\n"
+                    f"{message}\n"
+                )
 
-            ctx = ssl.create_default_context()
-            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=20, context=ctx) as s:
-                s.login(smtp_user, smtp_pass)
-                s.send_message(msg)
-    except Exception as e:
-        print("CONTACT_EMAIL_FAIL:", repr(e))
+                ctx = ssl.create_default_context()
+                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=20, context=ctx) as s:
+                    s.login(smtp_user, smtp_pass)
+                    s.send_message(msg)
+        except Exception as e:
+            print("CONTACT_EMAIL_FAIL:", repr(e))
 
-    return jsonify({"ok": True, "id": msg_id}), 200
+        return jsonify({"ok": True, "id": msg_id}), 200
 
 
 @app.route('/admin/contacts')
