@@ -1718,37 +1718,59 @@ def _truthy(val):
 
 
 def _send_email_smtp(to_email, subject, body_text, reply_to=None):
-    """Send email via SMTP with timeout. Returns True on success, False on failure."""
+    smtp_host = os.getenv('SMTP_HOST', '').strip()
+    smtp_port_raw = os.getenv('SMTP_PORT', '587').strip()
+    smtp_user = os.getenv('SMTP_USER', '').strip()
+    smtp_pass = os.getenv('SMTP_PASS', '').strip()
+    smtp_from = os.getenv('SMTP_FROM', '').strip() or smtp_user
+
     try:
-        smtp_host = os.getenv('SMTP_HOST', '').strip()
-        smtp_port = int(os.getenv('SMTP_PORT', '587'))
-        smtp_user = os.getenv('SMTP_USER', '').strip()
-        smtp_pass = os.getenv('SMTP_PASS', '').strip()
-        smtp_from = os.getenv('SMTP_FROM', '').strip()
-        
-        if not all([smtp_host, smtp_user, smtp_pass, smtp_from]):
-            app.logger.warning("SMTP configuration incomplete, skipping email")
-            return False
-        
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = smtp_from
-        msg["To"] = to_email
-        if reply_to:
-            msg["Reply-To"] = reply_to
-        msg.set_content(body_text)
-        
-        context = ssl.create_default_context()
-        
-        # Use timeout for SMTP operations
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=8) as server:
-            server.starttls(context=context)
-            server.login(smtp_user, smtp_pass)
-            server.send_message(msg)
-        
+        smtp_port = int(smtp_port_raw)
+    except Exception:
+        smtp_port = 587
+
+    use_ssl = _truthy(os.getenv('SMTP_USE_SSL', '')) or smtp_port == 465
+    timeout_s = float(os.getenv('SMTP_TIMEOUT', '6') or '6')
+
+    if not (smtp_host and smtp_user and smtp_pass and to_email):
+        app.logger.warning("SMTP not configured (missing host/user/pass/to). Skipping.")
+        return False
+
+    msg = EmailMessage()
+    msg["From"] = smtp_from
+    msg["To"] = to_email
+    msg["Subject"] = subject
+    if reply_to:
+        msg["Reply-To"] = reply_to
+    msg.set_content(body_text)
+
+    ctx = ssl.create_default_context()
+
+    try:
+        if use_ssl:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=timeout_s, context=ctx) as s:
+                s.login(smtp_user, smtp_pass)
+                s.send_message(msg)
+        else:
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=timeout_s) as s:
+                s.ehlo()
+                s.starttls(context=ctx)
+                s.ehlo()
+                s.login(smtp_user, smtp_pass)
+                s.send_message(msg)
+
         return True
+
     except Exception as e:
-        app.logger.warning(f"SMTP send failed: {type(e).__name__}")
+        # DO NOT log secrets. This is safe.
+        app.logger.warning(
+            "SMTP send failed: %s: %s (host=%s port=%s ssl=%s)",
+            type(e).__name__,
+            str(e)[:200],
+            smtp_host,
+            smtp_port,
+            use_ssl,
+        )
         return False
 
 
