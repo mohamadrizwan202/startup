@@ -2961,7 +2961,6 @@
                   class="ingredients-textarea"
                   placeholder="Type ingredients..."
                   rows="1"
-                  style="overflow: hidden; resize: none;"
                 ></textarea>
               </div>
             </div>
@@ -4144,13 +4143,18 @@
         });
       }
       
-      // Determine which categories to show
-      const showAll = isExpanded || filteredCategories.length <= 10;
-      const categoriesToShow = showAll ? filteredCategories : filteredCategories.slice(0, 10);
-      const hasMore = filteredCategories.length > 10 && !showAll;
+      // Determine if we should show all (always render all, but hide/show with CSS)
+      const hasMore = filteredCategories.length > 10;
       
       // Clear container
       categoryListEl.innerHTML = '';
+      
+      // Toggle expanded class on container for CSS-based show/hide
+      if (isExpanded) {
+        categoryListEl.classList.add('pf-goals-expanded');
+      } else {
+        categoryListEl.classList.remove('pf-goals-expanded');
+      }
       
       if (filteredCategories.length === 0) {
         categoryListEl.innerHTML = '<div class="pf-goal-empty">No goals found.</div>';
@@ -4163,14 +4167,18 @@
       // Get currently selected category value for highlighting
       const activeCategoryValue = selectedCategory || window.pfActiveHealthGoalValue;
       
-      // Render chips
-      categoriesToShow.forEach(categoryObj => {
+      // Render ALL chips (no slicing)
+      filteredCategories.forEach((categoryObj, index) => {
         // Handle both object format {value, label} and string format (legacy)
         const categoryValue = typeof categoryObj === 'object' && 'value' in categoryObj ? categoryObj.value : categoryObj;
         const categoryLabel = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryObj;
         
         const chip = document.createElement('div');
         chip.className = 'goal-chip';
+        // Add pf-goal-extra class to chips beyond the first 10
+        if (index >= 10) {
+          chip.classList.add('pf-goal-extra');
+        }
         chip.textContent = categoryLabel; // Use label for display
         chip.dataset.categoryValue = categoryValue;
         
@@ -4212,7 +4220,7 @@
       // Show/hide browse toggle
       const browseToggle = document.getElementById('pf-goal-browse-toggle');
       if (browseToggle) {
-        if (hasMore || (isExpanded && filteredCategories.length > 10)) {
+        if (hasMore) {
           browseToggle.style.display = 'block';
           browseToggle.setAttribute('aria-expanded', String(isExpanded));
           browseToggle.textContent = isExpanded ? 'Hide all goals' : 'Browse all goals';
@@ -4220,6 +4228,9 @@
           browseToggle.style.display = 'none';
         }
       }
+      
+      // Re-bind toggle handler after DOM update
+      bindBrowseGoalsToggle();
     }
 
     // Load Hierarchy
@@ -4469,6 +4480,18 @@
       }
     }
 
+    // Bind browse goals toggle handler (idempotent)
+    function bindBrowseGoalsToggle() {
+      const browseToggle = document.getElementById('pf-goal-browse-toggle');
+      if (browseToggle && !browseToggle.dataset.listenerBound) {
+        browseToggle.addEventListener('click', () => {
+          window.pfGoalBrowseAllOpen = !window.pfGoalBrowseAllOpen;
+          renderCategories();
+        });
+        browseToggle.dataset.listenerBound = 'true';
+      }
+    }
+
     // Initialize search and toggle features
     function initializeBrowseIngredientsFeatures() {
       // Goal search
@@ -4491,13 +4514,7 @@
       }
       
       // Browse all goals toggle
-      const browseToggle = document.getElementById('pf-goal-browse-toggle');
-      if (browseToggle) {
-        browseToggle.addEventListener('click', () => {
-          window.pfGoalBrowseAllOpen = !window.pfGoalBrowseAllOpen;
-          renderCategories();
-        });
-      }
+      bindBrowseGoalsToggle();
 
       // Ingredient search
       const ingredientSearchEl = document.getElementById('ingredient-search');
