@@ -4143,18 +4143,12 @@
         });
       }
       
-      // Determine if we should show all (always render all, but hide/show with CSS)
+      // Determine which categories to show
       const hasMore = filteredCategories.length > 10;
+      const categoriesToShow = isExpanded ? filteredCategories : filteredCategories.slice(0, 10);
       
       // Clear container
       categoryListEl.innerHTML = '';
-      
-      // Toggle expanded class on container for CSS-based show/hide
-      if (isExpanded) {
-        categoryListEl.classList.add('pf-goals-expanded');
-      } else {
-        categoryListEl.classList.remove('pf-goals-expanded');
-      }
       
       if (filteredCategories.length === 0) {
         categoryListEl.innerHTML = '<div class="pf-goal-empty">No goals found.</div>';
@@ -4167,18 +4161,14 @@
       // Get currently selected category value for highlighting
       const activeCategoryValue = selectedCategory || window.pfActiveHealthGoalValue;
       
-      // Render ALL chips (no slicing)
-      filteredCategories.forEach((categoryObj, index) => {
+      // Render chips
+      categoriesToShow.forEach(categoryObj => {
         // Handle both object format {value, label} and string format (legacy)
         const categoryValue = typeof categoryObj === 'object' && 'value' in categoryObj ? categoryObj.value : categoryObj;
         const categoryLabel = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryObj;
         
         const chip = document.createElement('div');
         chip.className = 'goal-chip';
-        // Add pf-goal-extra class to chips beyond the first 10
-        if (index >= 10) {
-          chip.classList.add('pf-goal-extra');
-        }
         chip.textContent = categoryLabel; // Use label for display
         chip.dataset.categoryValue = categoryValue;
         
