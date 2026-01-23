@@ -7771,3 +7771,20 @@
     box-shadow:none;
   }
 }
+/* Landing search: compact input height (Ingredient Analyzer search box) */
+#ingredient-search-card .ingredients-textarea {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+
+  padding: 6px 10px !important;
+  line-height: 20px !important;
+
+  box-sizing: border-box !important;
+  overflow-y: hidden !important;
+  resize: none !important;
+}
+
+#ingredient-search-card .pf-search-row {
+  align-items: center !important;
+}
