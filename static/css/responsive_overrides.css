@@ -7077,3 +7077,88 @@ html body #ingredient-tab-content .tab-pane.active .results-body {
   max-height: unset !important;
   overflow: unset !important;
 }
+
+/* ============================================
+   MOBILE: Compact Nutrition Summary tiles
+   (results modal + inline results card)
+   ============================================ */
+@media (max-width: 1024px) {
+
+  /* Force clean 2-column grid on mobile */
+  #pf-results-modal .pf-nut-grid,
+  #ingredient-results-card .pf-nut-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* Smaller, tighter tiles */
+  #pf-results-modal .pf-nut-tile,
+  #ingredient-results-card .pf-nut-tile {
+    padding: 10px 10px !important;
+    border-radius: 10px !important;
+  }
+
+  #pf-results-modal .pf-nut-icon,
+  #ingredient-results-card .pf-nut-icon {
+    font-size: 1.15rem !important;
+    margin-bottom: 4px !important;
+  }
+
+  #pf-results-modal .pf-nut-label,
+  #ingredient-results-card .pf-nut-label {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.04em !important;
+    margin-bottom: 2px !important;
+  }
+
+  #pf-results-modal .pf-nut-value,
+  #ingredient-results-card .pf-nut-value {
+    font-size: 1.05rem !important;
+    line-height: 1.1 !important;
+  }
+
+  #pf-results-modal .pf-nut-unit,
+  #ingredient-results-card .pf-nut-unit {
+    font-size: 0.75rem !important;
+    margin-left: 3px !important;
+    font-weight: 700 !important;
+    opacity: 0.85 !important;
+  }
+
+  /* Make header feel tighter on mobile */
+  #pf-results-modal .pf-tab-header,
+  #ingredient-results-card .pf-tab-header {
+    gap: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  /* The chip can be huge on mobile — compact it */
+  #pf-results-modal .nutrition-selected-chip,
+  #ingredient-results-card .nutrition-selected-chip {
+    font-size: 0.82rem !important;
+    padding: 6px 10px !important;
+    border-radius: 999px !important;
+  }
+}
+
+/* Touch devices: kill hover lift (looks weird on mobile) */
+@media (hover: none) {
+  #pf-results-modal .pf-nut-tile:hover,
+  #ingredient-results-card .pf-nut-tile:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Very small phones: slightly tighter */
+@media (max-width: 390px) {
+  #pf-results-modal .pf-nut-value,
+  #ingredient-results-card .pf-nut-value {
+    font-size: 0.98rem !important;
+  }
+
+  #pf-results-modal .pf-nut-icon,
+  #ingredient-results-card .pf-nut-icon {
+    font-size: 1.05rem !important;
+  }
+}
