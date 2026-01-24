@@ -4,6 +4,12 @@
   box-sizing: border-box !important;
 }
 
+/* Hide "My Allergen Profile" box (not used) */
+#allergens-tab-pane #allergen-profile,
+#allergen-profile.pf-ap {
+  display: none !important;
+}
+
 @media (max-width: 1024px) {
   html,
      body {
