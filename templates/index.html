@@ -6649,8 +6649,8 @@ const allergenPanel = allergenNames.length === 0
 
             <!-- Detected Allergens List -->
             ${!overallSafe ? `
-              <div style="margin-bottom: 24px;">
-                <div style="margin-bottom: 12px; font-weight: 700; color: #0f172a; font-size: 0.95rem;">Detected Allergens</div>
+              <div class="pf-all-section">
+                <div class="pf-all-section-title">Detected Allergens</div>
                 <div class="pf-all-grid">
                   ${allergenNames.map(a => `
                     <div class="pf-all-chip found">
@@ -6664,8 +6664,8 @@ const allergenPanel = allergenNames.length === 0
 
             <!-- Safe Ingredients List (Optional, can be collapsible or just a grid) -->
             ${overallSafe ? `
-              <div style="margin-top: 10px;">
-                <div style="margin-bottom: 12px; font-weight: 700; color: #0f172a; font-size: 0.95rem;">Safe Ingredients</div>
+              <div class="pf-all-section">
+                <div class="pf-all-section-title">Safe Ingredients</div>
                 <div class="pf-all-grid">
                    ${ingredients.map(ing => {
                       const name = ing.display_name || ing.ingredient || 'Unknown';

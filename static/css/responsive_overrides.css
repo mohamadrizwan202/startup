@@ -7185,3 +7185,91 @@ html body #ingredient-tab-content .tab-pane.active .results-body {
     align-self: center !important;
   }
 }
+
+/* =========================================================
+   Allergen tab (mobile): compact + centered + clean grid
+   Applies to inline results + results modal
+   ========================================================= */
+@media (max-width: 768px) {
+
+  /* Stack header + center the ingredient pill */
+  #ingredient-results-card .pf-tab-header,
+  #pf-results-modal .pf-tab-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 10px !important;
+  }
+
+  #ingredient-results-card .pf-tab-header .nutrition-selected-chip,
+  #pf-results-modal .pf-tab-header .nutrition-selected-chip {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+
+  /* Slightly smaller pill on mobile */
+  #ingredient-results-card .nutrition-selected-chip .pf-ing-pill,
+  #pf-results-modal .nutrition-selected-chip .pf-ing-pill {
+    padding: 10px 14px !important;
+    max-width: 100% !important;
+  }
+
+  /* Banner becomes compact */
+  #ingredient-results-card .pf-all-banner,
+  #pf-results-modal .pf-all-banner {
+    padding: 14px 14px !important;
+    border-radius: 14px !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+  }
+
+  #ingredient-results-card .pf-all-icon,
+  #pf-results-modal .pf-all-icon {
+    font-size: 1.6rem !important;
+    line-height: 1 !important;
+  }
+
+  #ingredient-results-card .pf-all-title,
+  #pf-results-modal .pf-all-title {
+    font-size: 1.05rem !important;
+    line-height: 1.2 !important;
+  }
+
+  #ingredient-results-card .pf-all-subtitle,
+  #pf-results-modal .pf-all-subtitle {
+    font-size: 0.9rem !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Section spacing (replaces your inline styles) */
+  #ingredient-results-card .pf-all-section,
+  #pf-results-modal .pf-all-section {
+    margin-top: 14px !important;
+  }
+
+  #ingredient-results-card .pf-all-section-title,
+  #pf-results-modal .pf-all-section-title {
+    margin-bottom: 10px !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    font-size: 0.95rem !important;
+    text-align: left !important;
+  }
+
+  /* Chips grid: 2 columns, tighter */
+  #ingredient-results-card .pf-all-grid,
+  #pf-results-modal .pf-all-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  /* Chips: less padding so they don't look huge */
+  #ingredient-results-card .pf-all-chip,
+  #pf-results-modal .pf-all-chip {
+    padding: 10px 10px !important;
+    border-radius: 14px !important;
+    font-size: 0.9rem !important;
+    gap: 8px !important;
+  }
+}
