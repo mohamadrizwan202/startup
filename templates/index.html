@@ -4571,6 +4571,32 @@
       }
     }
 
+    function pfEnterSearchModeAndResetBrowseUI() {
+      // Always force Health Benefits to "search flow" (show ALL benefits)
+      try { pfSetHBContext('search', null, null); } catch (e) {}
+
+      // Clear browse goal state
+      window.pfActiveHealthGoalLabel = null;
+      window.pfActiveHealthGoalValue = null;
+
+      // Clear browse selection state
+      selectedIngredients = [];
+      selectedCategory = null;
+      selectedSubcategory = null;
+
+      // Clear active UI highlights
+      document.querySelectorAll('.goal-chip.active, .subcategory-chip.active')
+        .forEach(el => el.classList.remove('active'));
+
+      // Clear selected chips UI
+      if (typeof selectedIngredientsEl !== 'undefined' && selectedIngredientsEl) {
+        selectedIngredientsEl.innerHTML = '';
+        selectedIngredientsEl.style.setProperty('display', 'none', 'important');
+      }
+
+      try { updateSelectedSummary(); } catch (e) {}
+      try { refreshAllIngredientButtons(); } catch (e) {}
+    }
 
     // Update analyze button state based on textarea input
     // Note: When ingredients are added via browser, syncTextareaFromSelected() updates the textarea
@@ -4578,27 +4604,21 @@
     ingredientsInputEl.addEventListener('input', () => {
       const hasText = ingredientsInputEl.value.trim().length > 0;
 
-      // If the user manually edits the textarea, they are no longer using the Browse selection state.
-      // Clear the old browse-picked chips (e.g., "Banana") so UI doesn't show stale selections.
-      if (hasText && selectedIngredients.length > 0) {
-        selectedIngredients = [];
-        selectedCategory = null;
-        selectedSubcategory = null;
-        window.pfActiveHealthGoalLabel = null;
-        window.pfActiveHealthGoalValue = null;
+      // If user is typing in the main textarea, they are in search mode.
+      // We must reset browse UI + HB context even if selectedIngredients is already empty.
+      if (hasText) {
+        const hasActiveBrowseUI =
+          !!window.pfActiveHealthGoalValue ||
+          !!selectedCategory ||
+          !!selectedSubcategory ||
+          !!document.querySelector('.goal-chip.active, .subcategory-chip.active');
 
-        // ✅ ADD THIS (you are missing it)
-        if (selectedIngredientsEl) {
-          selectedIngredientsEl.innerHTML = '';
-          selectedIngredientsEl.style.setProperty('display', 'none', 'important');
+        if (hasActiveBrowseUI) {
+          pfEnterSearchModeAndResetBrowseUI();
+        } else {
+          // still force HB context to search to prevent stale "browser flow"
+          try { pfSetHBContext('search', null, null); } catch (e) {}
         }
-
-        // optional but good (kills "active" highlight)
-        document.querySelectorAll('.goal-chip.active, .subcategory-chip.active')
-          .forEach(el => el.classList.remove('active'));
-
-        try { updateSelectedSummary(); } catch (e) {}
-        try { refreshAllIngredientButtons(); } catch (e) {}
       }
 
       analyzeBtn.disabled = !hasText && selectedIngredients.length === 0;
@@ -5113,6 +5133,10 @@
       
       // Get ingredients from textarea (free text input)
       const textareaValue = ingredientsInputEl.value.trim();
+      // If user is analyzing from textarea without browse chips, force search flow for Health Benefits
+      if (textareaValue.length > 0 && (!selectedIngredients || selectedIngredients.length === 0)) {
+        try { pfSetHBContext('search', null, null); } catch (e) {}
+      }
       console.log('Textarea value:', textareaValue);
       
       // Parse ingredients from textarea (comma-separated)
