@@ -5335,6 +5335,10 @@
         }
         
         lastAnalysisResult = data;
+
+        // Mobile UX: once analysis is successful, allow inline results card to appear
+        document.body.classList.add('pf-has-analysis');
+
         setStatus('Analysis complete!');
         
         // Reset scroll positions for all tabs when new analysis is performed
@@ -17562,6 +17566,7 @@ const batchG = (smoothieBatchMlOverride != null)
     function resetToInitialState() {
       // Clear analysis results
       lastAnalysisResult = null;
+      document.body.classList.remove('pf-has-analysis');
       
       // Reset results body to initial message
       if (resultsBodyEl) {
