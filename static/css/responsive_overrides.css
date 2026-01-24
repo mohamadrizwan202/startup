@@ -836,6 +836,16 @@
 }
 
 @media (max-width: 1024px) {
+  /* Mobile/tablet: hide inline Analysis Results ONLY before first analysis */
+  body:not(.pf-has-analysis) #ingredient-results-card {
+    display: none !important;
+  }
+
+  /* When results card is hidden, remove the empty 2nd column */
+  body:not(.pf-has-analysis) .browse-results-grid {
+    grid-template-columns: 1fr !important;
+  }
+
   #pf-results-modal[aria-hidden="true"] {
     display: none !important;
   }
