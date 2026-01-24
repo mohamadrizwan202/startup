@@ -7162,3 +7162,26 @@ html body #ingredient-tab-content .tab-pane.active .results-body {
     font-size: 1.05rem !important;
   }
 }
+
+/* ============================================
+   MOBILE: Center Nutrition Summary pill (chip)
+   ============================================ */
+@media (max-width: 1024px) {
+
+  /* Nutrition tab header: stack + center on mobile */
+  #pf-results-modal #nutrition-results-body .pf-tab-header,
+  #ingredient-results-card #nutrition-results-body .pf-tab-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  /* Center the chip itself */
+  #pf-results-modal #nutrition-results-body .pf-tab-header .nutrition-selected-chip,
+  #ingredient-results-card #nutrition-results-body .pf-tab-header .nutrition-selected-chip {
+    margin: 8px auto 0 !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-self: center !important;
+  }
+}
