@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="canonical" href="https://purefyul.com{{ request.path }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/legal.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - PureFyul</title>
+</head>
+<body>
+  {% include "_navbar.html" %}
+
+  <main class="legal-page">
+    <div class="legal-wrap">
+
+      <section class="legal-hero">
+        <h1 class="legal-title">Privacy Policy</h1>
+        <p class="legal-meta" style="margin-top:8px;">
+          This policy explains how PureFyul collects, uses, and shares information when you use purefyul.com.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>1) Who we are</h2>
+        <p>
+          PureFyul provides nutrition + ingredient clarity features (ingredient analysis, allergen awareness cues, smoothie building).
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>2) Information we collect</h2>
+        <ul>
+          <li><strong>Account info (if you create an account):</strong> email and authentication data needed to sign you in (passwords are stored as secure hashes, not plain text).</li>
+          <li><strong>Messages you send:</strong> feedback/support requests and the content you choose to submit.</li>
+          <li><strong>Usage + device data:</strong> basic logs needed to operate, secure, and debug the Service (e.g., page requests, timestamps, error logs, browser type).</li>
+          <li><strong>Cookies / local storage:</strong> used for core functionality (sessions), preferences, security, and (if enabled) advertising.</li>
+        </ul>
+      </section>
+
+      <section class="legal-card">
+        <h2>3) How we use information</h2>
+        <ul>
+          <li>Provide and maintain the Service.</li>
+          <li>Authenticate users, maintain sessions, and protect accounts.</li>
+          <li>Improve reliability and performance (debugging, monitoring, preventing abuse).</li>
+          <li>Respond to support requests and user feedback.</li>
+          <li><strong>If ads are enabled:</strong> display ads and measure ad performance.</li>
+        </ul>
+      </section>
+
+      <section class="legal-card">
+        <h2>4) Cookies and advertising (Google AdSense)</h2>
+        <p>If we display ads, we may use Google AdSense and related ad technology partners. Required disclosures:</p>
+        <ul>
+          <li><strong>Third party vendors, including Google, use cookies</strong> to serve ads based on a user’s prior visits to this website or other websites.</li>
+          <li><strong>Google’s use of advertising cookies</strong> enables Google and its partners to serve ads to users based on their visit to this site and/or other sites on the Internet.</li>
+          <li>
+            You can <strong>opt out of personalized advertising</strong> via Google’s Ads Settings:
+            <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer">https://www.google.com/settings/ads</a>
+          </li>
+          <li>
+            You can opt out of some third-party vendors’ use of cookies for personalized advertising by visiting:
+            <a href="https://www.aboutads.info/" target="_blank" rel="noopener noreferrer">https://www.aboutads.info/</a>
+          </li>
+        </ul>
+      </section>
+
+      <section class="legal-card">
+        <h2>5) Consent for EEA/UK/Switzerland users</h2>
+        <p>
+          If we serve ads to users located in the EEA, the UK, or Switzerland, we will request consent where required.
+          Google may require a Google-certified Consent Management Platform (CMP) integrated with the IAB TCF for these regions.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>6) Sharing of information</h2>
+        <p>We may share information only in limited cases:</p>
+        <ul>
+          <li><strong>Service providers:</strong> hosting, database, security, and email providers used to run the Service.</li>
+          <li><strong>Advertising partners (if enabled):</strong> Google and ad tech partners may collect data through cookies/tags to provide ads and reporting.</li>
+          <li><strong>Legal / safety:</strong> if required by law or to protect users, the public, or the Service.</li>
+        </ul>
+      </section>
+
+      <section class="legal-card">
+        <h2>7) Data retention</h2>
+        <p>
+          We retain information only as long as needed for the purposes described above (operating the Service, maintaining security,
+          complying with legal obligations). Account deletion requests can be handled through support.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>8) Security</h2>
+        <p>
+          We use reasonable safeguards to protect information. No method of transmission or storage is 100% secure.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>9) Children’s privacy</h2>
+        <p>
+          The Service is not intended for children under 13 to create accounts. We do not knowingly collect personal information from children under 13.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>10) Your choices</h2>
+        <ul>
+          <li>You can manage cookies in your browser settings.</li>
+          <li>You can opt out of personalized ads using the links in Section 4.</li>
+          <li>You can request access, correction, or deletion of account information (subject to legal/security limits).</li>
+        </ul>
+      </section>
+
+      <section class="legal-card">
+        <h2>11) Changes to this policy</h2>
+        <p>We may update this Privacy Policy as the Service evolves. We will update the “Last updated” date above.</p>
+      </section>
+
+      <footer class="pf-legal-footer">
+        <a href="/privacy">Privacy Policy</a>
+        <span aria-hidden="true" style="opacity:.65;">•</span>
+        <a href="/terms">Terms</a>
+      </footer>
+
+    </div>
+  </main>
+</body>
+</html>

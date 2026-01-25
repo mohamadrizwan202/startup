@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="canonical" href="https://purefyul.com{{ request.path }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/legal.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service - PureFyul</title>
+</head>
+<body>
+  {% include "_navbar.html" %}
+
+  <main class="legal-page">
+    <div class="legal-wrap">
+
+      <section class="legal-hero">
+        <h1 class="legal-title">Terms of Service</h1>
+        <p class="legal-meta" style="margin-top:8px;">
+          PureFyul is a beta nutrition + ingredient clarity tool. Outputs are educational and not medical advice.
+          Always verify product labels and consult a qualified professional for medical concerns.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>1) Acceptance of these Terms</h2>
+        <p>By accessing or using purefyul.com (the “Service”), you agree to these Terms. If you do not agree, do not use the Service.</p>
+      </section>
+
+      <section class="legal-card">
+        <h2>2) The Service (BETA)</h2>
+        <p>
+          PureFyul provides tools such as ingredient analysis, allergen awareness cues, and smoothie-building features.
+          The Service may change, be interrupted, or be discontinued at any time.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>3) Eligibility</h2>
+        <p>You must be at least 13 years old to use the Service. If using the Service for an organization, you represent you have authority to bind it.</p>
+      </section>
+
+      <section class="legal-card">
+        <h2>4) Accounts and security</h2>
+        <ul>
+          <li>You are responsible for maintaining confidentiality of your login credentials.</li>
+          <li>You agree to provide accurate information and keep it reasonably up to date.</li>
+          <li>You are responsible for activity that occurs under your account.</li>
+        </ul>
+      </section>
+
+      <section class="legal-card">
+        <h2>5) User content</h2>
+        <p>
+          You may submit information such as recipes, presets, and feedback (“User Content”). You keep ownership of your User Content.
+          You grant PureFyul a limited license to store and process it only to operate and improve the Service (for example, saving a preset you created).
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>6) Prohibited activities</h2>
+        <p>You agree not to:</p>
+        <ul>
+          <li>Use the Service for unlawful purposes or to violate applicable laws.</li>
+          <li>Attempt to gain unauthorized access, probe, scan, or test vulnerabilities.</li>
+          <li>Scrape, reverse engineer, overload, or interfere with the Service.</li>
+          <li>Upload malware, harmful code, or abusive content.</li>
+          <li>Use the Service to make emergency or medical decisions.</li>
+        </ul>
+      </section>
+
+      <section class="legal-card">
+        <h2>7) Advertising integrity (if ads are enabled)</h2>
+        <p>If PureFyul displays ads, you agree not to engage in invalid activity, including:</p>
+        <ul>
+          <li>Clicking ads on your own sessions or encouraging others to click ads.</li>
+          <li>Using bots, scripts, or any method to inflate impressions, clicks, or conversions.</li>
+          <li>Interacting with the site in a way intended to generate accidental clicks.</li>
+        </ul>
+      </section>
+
+      <section class="legal-card">
+        <h2>8) Intellectual property</h2>
+        <p>
+          The Service, including its software, design, and branding, is owned by PureFyul and its licensors and is protected by applicable laws.
+          You may not copy, modify, distribute, sell, or lease any part of the Service without permission.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>9) Disclaimers</h2>
+        <ul>
+          <li><strong>No medical advice:</strong> The Service is informational/educational and not a substitute for professional advice.</li>
+          <li><strong>Accuracy:</strong> We aim for useful results, but do not guarantee completeness or error-free outputs.</li>
+          <li><strong>Availability:</strong> The Service is provided “as is” and “as available” without warranties of any kind.</li>
+        </ul>
+      </section>
+
+      <section class="legal-card">
+        <h2>10) Limitation of liability</h2>
+        <p>
+          To the fullest extent permitted by law, PureFyul will not be liable for indirect, incidental, special, consequential, or punitive damages,
+          or any loss of profits, data, or goodwill arising from your use of the Service.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>11) Termination</h2>
+        <p>
+          We may suspend or terminate access if we reasonably believe you violated these Terms or used the Service in a harmful or abusive way.
+          You may stop using the Service at any time.
+        </p>
+      </section>
+
+      <section class="legal-card">
+        <h2>12) Changes to these Terms</h2>
+        <p>We may update these Terms as the Service evolves. We will update the “Last updated” date above.</p>
+      </section>
+
+      <footer class="pf-legal-footer">
+        <a href="/privacy">Privacy Policy</a>
+        <span aria-hidden="true" style="opacity:.65;">•</span>
+        <a href="/terms">Terms</a>
+      </footer>
+
+    </div>
+  </main>
+</body>
+</html>
