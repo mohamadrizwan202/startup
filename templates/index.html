@@ -3012,7 +3012,7 @@
         <div class="goals-section">
           <div class="section-header-compact">
             <h3 class="section-title-compact">Health Goals</h3>
-            <input type="text" class="search-input-compact" id="goal-search" placeholder="Search goals..." />
+            <input type="text" class="search-input-compact" id="goal-search" placeholder="Search goals..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
           </div>
           <div class="goals-chips" id="category-list">
             <div class="empty-state">Loading categories...</div>
@@ -3035,7 +3035,7 @@
         <div class="ingredients-section" id="ingredients-section" style="display: none;">
           <div class="section-header-compact">
             <h3 class="section-title-compact">Ingredients</h3>
-            <input type="text" class="search-input-compact" id="ingredient-search" placeholder="Search ingredients..." />
+            <input type="text" class="search-input-compact" id="ingredient-search" placeholder="Search ingredients..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
           </div>
           
           <!-- Recommended Ingredients -->
@@ -4130,7 +4130,6 @@
 
     function renderCategories() {
       // Initialize state if not exists
-      window.pfGoalSearchTerm = window.pfGoalSearchTerm || '';
       window.pfGoalBrowseAllOpen = window.pfGoalBrowseAllOpen || false;
       
       const searchTerm = (window.pfGoalSearchTerm || '').trim().toLowerCase();
@@ -4180,6 +4179,11 @@
         }
         
         chip.addEventListener('click', () => {
+          const goalSearchEl = document.getElementById('goal-search');
+          if (goalSearchEl) goalSearchEl.value = '';
+          window.pfGoalBrowseAllOpen = false;
+          window.pfGoalSearchTerm = '';
+          
           [...categoryListEl.querySelectorAll('.goal-chip')].forEach(c => c.classList.remove('active'));
           chip.classList.add('active');
           selectedCategory = categoryValue; // Use value (original DB category) for API calls
@@ -4489,11 +4493,6 @@
       // Goal search
       const goalSearchEl = document.getElementById('goal-search');
       if (goalSearchEl) {
-        // Sync input value with state
-        if (window.pfGoalSearchTerm) {
-          goalSearchEl.value = window.pfGoalSearchTerm;
-        }
-
         // Bind once (safe if this function gets called multiple times)
         if (!goalSearchEl.dataset.listenerBound) {
           goalSearchEl.addEventListener('input', (e) => {
