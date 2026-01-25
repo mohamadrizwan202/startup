@@ -1,0 +1,93 @@
+{# -----------------------------
+   PureFyul SEO Head (no UI)
+   - Unique title/description per page
+   - Canonical
+   - OpenGraph + Twitter
+   - JSON-LD (nonce supported)
+   ----------------------------- #}
+
+{% set SITE_URL = "https://purefyul.com" %}
+{% set path = request.path.rstrip('/') %}
+{% if path == "" %}{% set path = "/" %}{% endif %}
+{% set canonical = SITE_URL ~ (request.path.rstrip('/') if request.path != "/" else "/") %}
+
+{# Safe default OG image that already exists on your site #}
+{% set og_image = SITE_URL ~ url_for('static', filename='favicon-48.png') %}
+
+{% set pages = {
+  "/": {
+    "title": "PureFyul – Ingredient Nutrition Facts & Allergen Checker + Smoothie Builder",
+    "description": "Search ingredients to view nutrition facts and allergen context, then build smoothie mixes around your goal. Educational only—not medical advice."
+  },
+  "/about": {
+    "title": "About PureFyul – Ingredient Analysis & Smoothie Builder",
+    "description": "Learn what PureFyul does, what the data means, and how to use ingredient analysis and smoothie planning responsibly."
+  },
+  "/pricing": {
+    "title": "Pricing – PureFyul",
+    "description": "See PureFyul pricing and what’s included for ingredient analysis, allergen context, and smoothie builder features."
+  },
+  "/contact": {
+    "title": "Contact – PureFyul Support & Feedback",
+    "description": "Contact PureFyul for support, bug reports, feedback, or partnership questions."
+  },
+  "/privacy": {
+    "title": "Privacy Policy – PureFyul",
+    "description": "Read how PureFyul handles data, privacy, and security. Clear, practical policy written for real users."
+  },
+  "/terms": {
+    "title": "Terms of Service – PureFyul",
+    "description": "Review the PureFyul terms of service for using ingredient analysis and smoothie builder features."
+  },
+  "/browser": {
+    "title": "Ingredient Browser – Goals, Subcategories & Ingredients | PureFyul",
+    "description": "Browse health goals, subcategories, and ingredients. Quickly find an ingredient and open its nutrition and allergen context."
+  }
+} %}
+
+{% set meta = pages.get(path, pages["/"]) %}
+
+<title>{{ meta.title }}</title>
+<meta name="description" content="{{ meta.description }}">
+<link rel="canonical" href="{{ canonical }}">
+
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+
+{# OpenGraph #}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PureFyul">
+<meta property="og:title" content="{{ meta.title }}">
+<meta property="og:description" content="{{ meta.description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:image" content="{{ og_image }}">
+
+{# Twitter #}
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ meta.title }}">
+<meta name="twitter:description" content="{{ meta.description }}">
+<meta name="twitter:image" content="{{ og_image }}">
+
+{# JSON-LD (CSP nonce supported).
+   lastmod note: keep structured data accurate and stable. #}
+{% set jsonld = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PureFyul",
+    "url": SITE_URL,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": SITE_URL ~ "/browser?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "PureFyul",
+    "url": SITE_URL,
+    "logo": og_image
+  }
+] %}
+
+<script type="application/ld+json" nonce="{{ g.csp_nonce|default('') }}">{{ jsonld|tojson }}</script>

@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <link rel="canonical" href="https://purefyul.com{{ request.path }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Categories Browser</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
     <style>
         * {
             margin: 0;
@@ -199,7 +195,8 @@
         }
     </style>
     <script src="{{ url_for('static', filename='js/security.js') }}"></script>
-  {% include "_adsense_head.html" %}
+    {% include "_seo_head.html" %}
+{% include "_adsense_head.html" %}
 </head>
 <body>
     <div class="container">

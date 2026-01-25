@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <link rel="canonical" href="https://purefyul.com{{ request.path }}">
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <meta charset="UTF-8"><link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact Us - PureFyul</title>
-  <style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
     * {
       margin: 0;
       padding: 0;
@@ -209,7 +205,8 @@
       }
     }
   </style>
-  {% include "_adsense_head.html" %}
+    {% include "_seo_head.html" %}
+{% include "_adsense_head.html" %}
 </head>
 <body>
   {% include "_navbar.html" %}

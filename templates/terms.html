@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <link rel="canonical" href="https://purefyul.com{{ request.path }}">
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <meta charset="UTF-8"><link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,9 +10,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/legal.css') }}?v=10">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Terms of Service - PureFyul</title>
-  {% include "_adsense_head.html" %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  {% include "_seo_head.html" %}
+{% include "_adsense_head.html" %}
 </head>
 <body>
   {% include "_navbar.html" %}

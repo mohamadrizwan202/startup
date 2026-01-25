@@ -2134,7 +2134,6 @@ if ENABLE_INTERNAL_ROUTES:
 
 
 @app.route('/browser')
-@login_required_single_session
 def browser():
     """Interactive UI for browsing health categories, subcategories, and ingredients"""
     return render_template('browser.html')
