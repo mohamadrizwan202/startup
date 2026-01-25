@@ -12,26 +12,12 @@
   --legal-shadow: 0 16px 44px rgba(2, 6, 23, 0.08);
 }
 
-@media (prefers-color-scheme: dark){
-  :root{
-    /* Dark defaults */
-    --legal-bg: #0b1220;
-    --legal-surface: rgba(255,255,255,0.06);
-    --legal-border: rgba(255,255,255,0.10);
-    --legal-text: rgba(255,255,255,0.92);
-    --legal-muted: rgba(255,255,255,0.72);
-    --legal-accent: #2aa6a1;
-    --legal-link: #7aa7ff;
-    --legal-shadow: 0 18px 52px rgba(0,0,0,0.35);
-  }
 }
 
 /* Main page wrapper */
 .legal-page{
-  background: var(--bg, var(--legal-bg));
-  color: var(--text, var(--legal-text));
-  font-family: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  min-height: 70vh;
+color: var(--text, var(--legal-text));
+min-height: 70vh;
   padding: 28px 16px 56px;
 }
 
@@ -44,8 +30,7 @@
 .legal-hero{
   position: relative;
   overflow: hidden;
-  background: var(--bg-secondary, rgba(0,0,0,0));
-  border: 1px solid var(--border, var(--legal-border));
+border: 1px solid var(--border, var(--legal-border));
   border-radius: 18px;
   padding: 22px 22px;
   box-shadow: var(--legal-shadow);
@@ -56,7 +41,7 @@
   position:absolute;
   left:0; top:0; right:0;
   height:4px;
-  background: linear-gradient(90deg, var(--legal-accent), transparent 70%);
+  background: radial-gradient(900px 220px at 10% 0%, rgba(42,166,161,0.18), transparent 60%),radial-gradient(900px 220px at 90% 0%, rgba(42,166,161,0.12), transparent 60%), linear-gradient(90deg, var(--legal-accent), transparent 70%);
   opacity: 0.9;
 }
 
@@ -130,4 +115,162 @@
 .pf-legal-footer a:hover{
   text-decoration: underline;
   opacity: 1;
+}
+
+
+
+
+/* Match site page background */
+body{background:#F6FEFE;}
+
+/* --- Teal brand accent (stronger + visible) --- */
+.legal-page{
+  /* subtle teal wash from the top so it feels branded but not "different site" */
+  background:
+    linear-gradient(180deg, rgba(42,166,161,0.16), rgba(42,166,161,0.00) 260px),
+    var(--bg, #F6FEFE);
+}
+
+.legal-hero{
+  /* make hero clearly teal-tinted */
+  background:
+    radial-gradient(900px 260px at 10% 0%, rgba(42,166,161,0.32), transparent 62%),
+    radial-gradient(900px 260px at 90% 0%, rgba(42,166,161,0.22), transparent 62%),
+    var(--bg-secondary, rgba(255,255,255,0.75)) !important;
+}
+
+/* --- Force teal page background (legal pages only) --- */
+body{
+  background:#0FB9B1 !important; /* PureFyul teal */
+}
+
+.legal-page{
+  background: transparent !important; /* let body show through */
+}
+
+.legal-hero,
+.legal-card{
+  background: rgba(255,255,255,0.92) !important;
+  border-color: rgba(255,255,255,0.30) !important;
+}
+
+.legal-title{
+  color: #062b2a !important;
+}
+
+.legal-meta,
+.legal-card p,
+.legal-card ul,
+.pf-legal-footer{
+  color: rgba(6,43,42,0.78) !important;
+}
+
+.pf-legal-footer{
+  border-top-color: rgba(255,255,255,0.30) !important;
+}
+
+/* --- Space below navbar on legal pages --- */
+.legal-page{
+  padding-top: 110px !important; /* ensures content clears header */
+}
+
+@media (max-width: 720px){
+  .legal-page{
+    padding-top: 96px !important;
+  }
+}
+
+/* --- Strong navbar clearance for legal pages --- */
+main.legal-page{
+  padding-top: 150px !important;  /* desktop */
+}
+
+@media (max-width: 720px){
+  main.legal-page{
+    padding-top: 120px !important; /* mobile */
+  }
+}
+
+/* --- Make content clearly separate from teal navbar (legal pages only) --- */
+.pf-header{
+  box-shadow: 0 14px 34px rgba(0,0,0,0.25) !important;
+}
+
+.legal-hero{
+  margin-top: 20px !important;
+}
+
+/* ============================
+   Responsive tuning (legal pages)
+   ============================ */
+
+/* Prevent long URLs from blowing up layout */
+.legal-card a{
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Tablets */
+@media (max-width: 900px){
+  main.legal-page{
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .legal-hero{
+    padding: 18px 18px !important;
+    border-radius: 16px !important;
+  }
+  .legal-card{
+    padding: 14px 14px !important;
+    border-radius: 14px !important;
+  }
+}
+
+/* Phones */
+@media (max-width: 520px){
+  main.legal-page{
+    padding-top: 116px !important; /* clears navbar */
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    padding-bottom: 44px !important;
+  }
+
+  .legal-title{
+    font-size: 1.55rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .legal-meta{
+    font-size: 0.95rem !important;
+  }
+
+  .legal-hero{
+    margin-top: 14px !important;
+    padding: 16px 14px !important;
+  }
+
+  .legal-card h2{
+    font-size: 1.05rem !important;
+  }
+
+  .legal-card p,
+  .legal-card li{
+    font-size: 0.96rem !important;
+    line-height: 1.65 !important;
+  }
+
+  .pf-legal-footer{
+    font-size: 0.92rem !important;
+    padding: 16px 10px !important;
+  }
+}
+
+/* Small phones */
+@media (max-width: 380px){
+  main.legal-page{
+    padding-top: 110px !important;
+  }
+  .legal-title{
+    font-size: 1.42rem !important;
+  }
 }
