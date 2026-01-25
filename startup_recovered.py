@@ -1733,6 +1733,16 @@ def about():
 def pricing():
     """Pricing page route"""
     return render_template('pricing.html')
+@app.route('/privacy')
+def privacy():
+    """Privacy Policy page route"""
+    return render_template('privacy.html')
+
+@app.route('/terms')
+def terms():
+    """Terms of Service page route"""
+    return render_template('terms.html')
+
 
 
 # ============================================================================
