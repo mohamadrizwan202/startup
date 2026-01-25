@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory, Response
 import time
 import logging
 import secrets
@@ -942,6 +942,12 @@ def sitemap():
 @app.get("/robots.txt")
 def robots():
     return send_from_directory("static", "robots.txt", mimetype="text/plain")
+    
+ADS_TXT = "google.com, pub-2189084482915714, DIRECT, f08c47fec0942fa0\n"
+
+@app.get("/ads.txt")
+def ads_txt():
+    return Response(ADS_TXT, mimetype="text/plain; charset=utf-8")
 
 
 # --- Helper: Detect if running on Render production ---
