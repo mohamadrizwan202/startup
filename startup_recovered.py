@@ -1385,26 +1385,53 @@ def add_security_headers(response):
 
     # Content-Security-Policy: XSS baseline with nonce-based scripts
     nonce = getattr(g, "csp_nonce", None)
+      
+      
+      
     csp_directives = [
         "default-src 'self'",
         "base-uri 'self'",
         "object-src 'none'",
         "frame-ancestors 'none'",
         "form-action 'self'",
-        "img-src 'self' data:",
+
+        # AdSense / CMP needs external images
+        "img-src 'self' data: https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com",
+
         "style-src 'self' 'unsafe-inline'",
     ]
+
+    # Scripts: keep nonce protection, but allow AdSense/CMP origins
     if nonce:
-        csp_directives.append(f"script-src 'self' 'nonce-{nonce}'")
+        csp_directives.append(
+            "script-src 'self' "
+            f"'nonce-{nonce}' "
+            "https://pagead2.googlesyndication.com "
+            "https://tpc.googlesyndication.com "
+            "https://www.googletagservices.com "
+            "https://fundingchoicesmessages.google.com"
+        )
     else:
-        # Fallback if nonce missing for some reason
-        csp_directives.append("script-src 'self'")
+        csp_directives.append(
+            "script-src 'self' "
+            "https://pagead2.googlesyndication.com "
+            "https://tpc.googlesyndication.com "
+            "https://www.googletagservices.com "
+            "https://fundingchoicesmessages.google.com"
+        )
+
     csp_directives.extend(
         [
-            "connect-src 'self'",
+            # AdSense/XHR beacons
+            "connect-src 'self' https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com",
+
+            # Ads + CMP load in iframes
+            "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.googlesyndication.com https://fundingchoicesmessages.google.com https://consent.google.com",
+
             "upgrade-insecure-requests",
         ]
     )
+
     csp_value = "; ".join(csp_directives)
     csp_report_only = os.getenv("CSP_REPORT_ONLY") == "1"
     # Only set CSP headers if none are already present
