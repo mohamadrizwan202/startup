@@ -4183,6 +4183,11 @@
           if (goalSearchEl) goalSearchEl.value = '';
           window.pfGoalBrowseAllOpen = false;
           window.pfGoalSearchTerm = '';
+
+          // Clear any previously selected subcategory label/value (new goal = new subcategories)
+          window.pfActiveSubcategoryLabel = null;
+          window.pfActiveSubcategoryValue = null;
+          selectedSubcategory = null;
           
           [...categoryListEl.querySelectorAll('.goal-chip')].forEach(c => c.classList.remove('active'));
           chip.classList.add('active');
@@ -4302,6 +4307,10 @@
           chip.classList.add('active');
           // IMPORTANT: use subcatValue (exists now)
           selectedSubcategory = subcatValue;
+          // store the UI label (so summary never needs to parse "label+count")
+          window.pfActiveSubcategoryLabel = subcatLabel;
+          window.pfActiveSubcategoryValue = subcatValue;
+
           
           // show ingredients section
           const ingSec = document.getElementById('ingredients-section');
@@ -4459,13 +4468,19 @@
         goalDisplay.textContent = window.pfActiveHealthGoalLabel || selectedCategory || 'None';
       }
       
-      // Always update subcategory: prefer active chip text, fallback to state, then 'None'
+      // Always update subcategory: prefer stored label, fallback to active chip label, then state, then 'None'
       if (subcatDisplay) {
-        const activeSubcatChip = document.querySelector('.subcategory-chip.active');
-        const subText = activeSubcatChip?.textContent?.trim();
-        // Remove count from chip text if present (e.g., "Fruits (25)" -> "Fruits")
-        const cleanSubText = subText ? subText.replace(/\s*\(\d+\)\s*$/, '').trim() : null;
-        subcatDisplay.textContent = cleanSubText || selectedSubcategory || 'None';
+        const storedLabel = (window.pfActiveSubcategoryLabel || '').trim();
+
+        if (storedLabel) {
+          subcatDisplay.textContent = storedLabel;
+        } else {
+          const activeSubcatChip = document.querySelector('.subcategory-chip.active');
+          const labelSpan = activeSubcatChip ? activeSubcatChip.querySelector('span:not(.count)') : null;
+          const labelText = (labelSpan ? labelSpan.textContent : '').trim();
+
+          subcatDisplay.textContent = labelText || selectedSubcategory || 'None';
+        }
       }
       
       // Always update Ingredient summary: show selected ingredient name (single-select mode)
