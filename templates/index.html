@@ -4493,16 +4493,20 @@
         if (window.pfGoalSearchTerm) {
           goalSearchEl.value = window.pfGoalSearchTerm;
         }
-        
-        goalSearchEl.addEventListener('input', (e) => {
-          const query = e.target.value.trim();
-          window.pfGoalSearchTerm = query;
-          // If search is cleared, collapse browse all
-          if (!query) {
-            window.pfGoalBrowseAllOpen = false;
-          }
-          renderCategories();
-        });
+
+        // Bind once (safe if this function gets called multiple times)
+        if (!goalSearchEl.dataset.listenerBound) {
+          goalSearchEl.addEventListener('input', (e) => {
+            const query = (e.target.value || '').trim();
+            window.pfGoalSearchTerm = query;
+
+            // If search is cleared, collapse browse all
+            if (!query) window.pfGoalBrowseAllOpen = false;
+
+            renderCategories();
+          });
+          goalSearchEl.dataset.listenerBound = 'true';
+        }
       }
       
       // Browse all goals toggle
@@ -4510,14 +4514,11 @@
 
       // Ingredient search
       const ingredientSearchEl = document.getElementById('ingredient-search');
-      if (ingredientSearchEl) {
+      if (ingredientSearchEl && !ingredientSearchEl.dataset.listenerBound) {
         ingredientSearchEl.addEventListener('input', (e) => {
           const q = (ingredientSearchEl.value || '').trim();
 
-          // If the user starts using the search bar, treat it as "replace mode":
-          // clear any browse-picked selected chips + textarea so old ingredient (e.g. Banana) disappears.
           if (q.length > 0) {
-            // Switching to search mode: clear old browse-picked UI/state immediately
             pfSetHBContext('search', null, null);
             window.pfActiveHealthGoalLabel = null;
             window.pfActiveHealthGoalValue = null;
@@ -4526,35 +4527,33 @@
             selectedCategory = null;
             selectedSubcategory = null;
 
-            // Clear any active chips in the browse UI
             document.querySelectorAll('.goal-chip.active').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.subcategory-chip.active').forEach(el => el.classList.remove('active'));
 
-            // Kill the visible selected chip list (this is what you're seeing)
             if (selectedIngredientsEl) {
               selectedIngredientsEl.innerHTML = '';
               selectedIngredientsEl.style.setProperty('display', 'none', 'important');
             }
 
-            // Optional: clear textarea so it doesn't lie
-            if (ingredientsInputEl) {
-              ingredientsInputEl.value = '';
-            }
+            if (ingredientsInputEl) ingredientsInputEl.value = '';
 
             try { updateSelectedSummary(); } catch (e) {}
             try { refreshAllIngredientButtons(); } catch (e) {}
           }
 
-          const query = e.target.value.toLowerCase().trim();
+          const query = (e.target.value || '').toLowerCase().trim();
           const items = ingredientListEl.querySelectorAll('.ingredient-item-compact');
           const recommendedListEl = document.getElementById('recommended-list');
           const recommendedItems = recommendedListEl ? recommendedListEl.querySelectorAll('.ingredient-item-compact') : [];
-          
+
           [...items, ...recommendedItems].forEach(item => {
-            const text = item.querySelector('span').textContent.toLowerCase();
+            const span = item.querySelector('span');
+            const text = (span ? span.textContent : '').toLowerCase();
             item.style.display = text.includes(query) ? '' : 'none';
           });
         });
+
+        ingredientSearchEl.dataset.listenerBound = 'true';
       }
 
       // Show all toggle for subcategories
@@ -4572,6 +4571,12 @@
         });
       }
     }
+
+    // Safety: bind search listeners even if init flow changes
+    try { initializeBrowseIngredientsFeatures(); } catch (e) { console.warn('[browse-init] bind failed', e); }
+    window.addEventListener('pageshow', () => {
+      try { initializeBrowseIngredientsFeatures(); } catch (e) {}
+    });
 
     function pfEnterSearchModeAndResetBrowseUI() {
       // Always force Health Benefits to "search flow" (show ALL benefits)
