@@ -4557,7 +4557,7 @@
 
       // Show all toggle for subcategories
       const toggleSubcatsBtn = document.getElementById('toggle-subcats');
-      if (toggleSubcatsBtn) {
+      if (toggleSubcatsBtn && !toggleSubcatsBtn.dataset.listenerBound) {
         toggleSubcatsBtn.addEventListener('click', () => {
           const isExpanded = subcatListEl.classList.contains('expanded');
           if (isExpanded) {
@@ -4568,6 +4568,7 @@
             toggleSubcatsBtn.textContent = 'Show less';
           }
         });
+        toggleSubcatsBtn.dataset.listenerBound = 'true';
       }
     }
 
