@@ -935,9 +935,52 @@ def health_check():
 def favicon():
     return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/vnd.microsoft.icon")
 
+SITEMAP_NS = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
+def _iso_date_from_mtime(path: Path) -> str | None:
+    try:
+        ts = path.stat().st_mtime
+        return datetime.fromtimestamp(ts, tz=timezone.utc).date().isoformat()
+    except Exception:
+        return None
+
+def _url(loc: str, lastmod: str | None = None) -> str:
+    if lastmod:
+        return f"<url><loc>{loc}</loc><lastmod>{lastmod}</lastmod></url>"
+    return f"<url><loc>{loc}</loc></url>"
+
 @app.get("/sitemap.xml")
-def sitemap():
-    return send_from_directory("static", "sitemap.xml", mimetype="application/xml")
+def sitemap_xml():
+    base = os.getenv("CANONICAL_BASE_URL", "https://purefyul.com").rstrip("/")
+    templates_dir = Path(app.root_path) / "templates"
+
+    # Only PUBLIC, crawlable pages
+    pages = [
+        ("/", "index.html"),
+        ("/about", "about.html"),
+        ("/pricing", "pricing.html"),
+        ("/contact", "contact.html"),
+        ("/privacy", "privacy.html"),
+        ("/terms", "terms.html"),
+        # Add more public pages here if they exist (e.g. /browser if you make it public)
+    ]
+
+    url_nodes = []
+    for path, template in pages:
+        loc = f"{base}{path if path.startswith('/') else '/' + path}"
+        lastmod = _iso_date_from_mtime(templates_dir / template)
+        url_nodes.append(_url(loc, lastmod))
+
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        f'<urlset xmlns="{SITEMAP_NS}">'
+        + "".join(url_nodes) +
+        "</urlset>"
+    )
+
+    resp = Response(xml, mimetype="application/xml; charset=utf-8")
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
 
 @app.get("/robots.txt")
 def robots():
