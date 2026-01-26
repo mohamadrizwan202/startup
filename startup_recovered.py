@@ -1818,6 +1818,36 @@ def privacy():
 def terms():
     """Terms of Service page route"""
     return render_template('terms.html')
+    
+@app.route('/ingredient/<slug>')
+def ingredient(slug):
+    """Public ingredient landing page (SEO). Start with banana only."""
+    ING = {
+        "banana": {
+            "name": "Banana",
+            "summary": "Bananas are commonly used in smoothies for natural sweetness and a creamy texture. This page is informational, not medical advice.",
+            "highlights": [
+                "Naturally sweet; pairs well with cocoa, peanut butter, oats",
+                "Helps thicken smoothies without added sugar",
+                "Contains potassium and fiber"
+            ],
+        }
+    }
+
+    data = ING.get(slug)
+    if not data:
+        abort(404)
+
+    canonical = f"https://purefyul.com/ingredient/{slug}"
+
+    return render_template(
+        "ingredient.html",
+        ingredient=data,
+        page_title=f"{data['name']} | PureFyul Ingredient Guide",
+        meta_description=f"Learn about {data['name']} for smoothies: quick facts, highlights, and usage ideas.",
+        canonical_url=canonical,
+        og_url=canonical,
+    )
 
 
 

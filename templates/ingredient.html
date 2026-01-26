@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "_seo_head.html" %}
+</head>
+<body>
+  <main style="max-width: 780px; margin: 40px auto; padding: 0 16px;">
+    <h1>{{ ingredient.name }}</h1>
+
+    {% if ingredient.summary %}
+      <p>{{ ingredient.summary }}</p>
+    {% endif %}
+
+    {% if ingredient.highlights %}
+      <ul>
+        {% for item in ingredient.highlights %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <p>
+      <a href="/?q={{ ingredient.name|urlencode }}">Open in PureFyul Analyzer</a>
+    </p>
+  </main>
+</body>
+</html>
+
