@@ -962,6 +962,7 @@ def sitemap_xml():
         ("/contact", "contact.html"),
         ("/privacy", "privacy.html"),
         ("/terms", "terms.html"),
+        ("/ingredients", "ingredients.html"),
 
         # Ingredient landing pages (SEO)
         ("/ingredient/banana", "ingredient.html"),
@@ -1823,11 +1824,9 @@ def privacy():
 def terms():
     """Terms of Service page route"""
     return render_template('terms.html')
-    
-@app.route('/ingredient/<slug>')
-def ingredient(slug):
-    """Public ingredient landing page (SEO). Start with banana only."""
-    INGREDIENTS = {
+
+# Ingredient registry (shared by /ingredient/<slug> and /ingredients routes)
+INGREDIENTS = {
         "banana": {
             "name": "Banana",
             "summary": "Bananas are commonly used in smoothies for natural sweetness and a creamy texture. This page is informational, not medical advice.",
@@ -1864,8 +1863,11 @@ def ingredient(slug):
                 "Often used as a starter green for beginners",
             ],
         },
-    }
+}
 
+@app.route('/ingredient/<slug>')
+def ingredient(slug):
+    """Public ingredient landing page (SEO). Start with banana only."""
     data = INGREDIENTS.get(slug)
     if not data:
         abort(404)
@@ -1877,6 +1879,30 @@ def ingredient(slug):
         ingredient=data,
         page_title=f"{data['name']} | PureFyul Ingredient Guide",
         meta_description=f"Learn about {data['name']} for smoothies: quick facts, highlights, and usage ideas.",
+        canonical_url=canonical,
+        og_url=canonical,
+    )
+
+
+@app.route("/ingredients")
+def ingredients():
+    """Public ingredient directory page (SEO)."""
+    items = []
+    for slug, data in INGREDIENTS.items():
+        items.append({
+            "slug": slug,
+            "name": data.get("name", slug.replace("-", " ").title()),
+            "summary": data.get("summary", ""),
+        })
+
+    items.sort(key=lambda x: x["name"].lower())
+
+    canonical = "https://purefyul.com/ingredients"
+    return render_template(
+        "ingredients.html",
+        ingredients=items,
+        page_title="Ingredient Directory | PureFyul",
+        meta_description="Browse common smoothie ingredients and open a simple ingredient guide for each one.",
         canonical_url=canonical,
         og_url=canonical,
     )
