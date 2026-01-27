@@ -962,7 +962,9 @@ def sitemap_xml():
         ("/contact", "contact.html"),
         ("/privacy", "privacy.html"),
         ("/terms", "terms.html"),
-        # Add more public pages here if they exist (e.g. /browser if you make it public)
+
+        # Ingredient landing pages (SEO)
+        ("/ingredient/banana", "ingredient.html"),
     ]
 
     url_nodes = []
