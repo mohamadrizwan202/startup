@@ -9,7 +9,9 @@
 {% set SITE_URL = "https://purefyul.com" %}
 {% set path = request.path.rstrip('/') %}
 {% if path == "" %}{% set path = "/" %}{% endif %}
-{% set canonical = SITE_URL ~ (request.path.rstrip('/') if request.path != "/" else "/") %}
+
+{% set canonical_default = SITE_URL ~ (request.path.rstrip('/') if request.path != "/" else "/") %}
+{% set canonical = canonical_url|default(canonical_default) %}
 
 {# Safe default OG image that already exists on your site #}
 {% set og_image = SITE_URL ~ url_for('static', filename='favicon-48.png') %}
@@ -46,9 +48,11 @@
 } %}
 
 {% set meta = pages.get(path, pages["/"]) %}
+{% set title = page_title|default(meta.title) %}
+{% set description = meta_description|default(meta.description) %}
 
-<title>{{ meta.title }}</title>
-<meta name="description" content="{{ meta.description }}">
+<title>{{ title }}</title>
+<meta name="description" content="{{ description }}">
 <link rel="canonical" href="{{ canonical }}">
 
 <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
@@ -56,15 +60,15 @@
 {# OpenGraph #}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PureFyul">
-<meta property="og:title" content="{{ meta.title }}">
-<meta property="og:description" content="{{ meta.description }}">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
 <meta property="og:url" content="{{ canonical }}">
 <meta property="og:image" content="{{ og_image }}">
 
 {# Twitter #}
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="{{ meta.title }}">
-<meta name="twitter:description" content="{{ meta.description }}">
+<meta name="twitter:title" content="{{ title }}">
+<meta name="twitter:description" content="{{ description }}">
 <meta name="twitter:image" content="{{ og_image }}">
 
 {# JSON-LD (CSP nonce supported).
@@ -77,7 +81,7 @@
     "url": SITE_URL,
     "potentialAction": {
       "@type": "SearchAction",
-      "target": SITE_URL ~ "/browser?q={search_term_string}",
+      "target": SITE_URL ~ "/ingredient/{search_term_string}",
       "query-input": "required name=search_term_string"
     }
   },
