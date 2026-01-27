@@ -965,6 +965,9 @@ def sitemap_xml():
 
         # Ingredient landing pages (SEO)
         ("/ingredient/banana", "ingredient.html"),
+        ("/ingredient/peanut-butter", "ingredient.html"),
+        ("/ingredient/blueberries", "ingredient.html"),
+        ("/ingredient/spinach", "ingredient.html"),
     ]
 
     url_nodes = []
@@ -1824,19 +1827,46 @@ def terms():
 @app.route('/ingredient/<slug>')
 def ingredient(slug):
     """Public ingredient landing page (SEO). Start with banana only."""
-    ING = {
+    INGREDIENTS = {
         "banana": {
             "name": "Banana",
             "summary": "Bananas are commonly used in smoothies for natural sweetness and a creamy texture. This page is informational, not medical advice.",
             "highlights": [
                 "Naturally sweet; pairs well with cocoa, peanut butter, oats",
                 "Helps thicken smoothies without added sugar",
-                "Contains potassium and fiber"
+                "Contains potassium and fiber",
             ],
-        }
+        },
+        "peanut-butter": {
+            "name": "Peanut Butter",
+            "summary": "Peanut butter is a popular smoothie add-in for richness and satiety. Choose options with minimal added sugar if possible. Informational only—not medical advice.",
+            "highlights": [
+                "Adds creamy texture and nutty flavor",
+                "Common in high-calorie or protein-style smoothies",
+                "Pairs well with banana, cocoa, oats, and milk/plant milk",
+            ],
+        },
+        "blueberries": {
+            "name": "Blueberries",
+            "summary": "Blueberries are widely used in smoothies for flavor and color. Fresh or frozen both work well. Informational only—not medical advice.",
+            "highlights": [
+                "Easy fruit base for many smoothie recipes",
+                "Pairs well with yogurt, oats, spinach, and banana",
+                "Works great frozen for thickness",
+            ],
+        },
+        "spinach": {
+            "name": "Spinach",
+            "summary": "Spinach is a common green-smoothie ingredient because it blends smoothly and is mild in taste when mixed with fruit. Informational only—not medical advice.",
+            "highlights": [
+                "Mild flavor; easy to 'hide' in fruit smoothies",
+                "Pairs well with banana, berries, and yogurt",
+                "Often used as a starter green for beginners",
+            ],
+        },
     }
 
-    data = ING.get(slug)
+    data = INGREDIENTS.get(slug)
     if not data:
         abort(404)
 
