@@ -963,16 +963,6 @@ def sitemap_xml():
         ("/privacy", "privacy.html"),
         ("/terms", "terms.html"),
         ("/ingredients", "ingredients.html"),
-
-        # Ingredient landing pages (SEO)
-        ("/ingredient/banana", "ingredient.html"),
-        ("/ingredient/peanut-butter", "ingredient.html"),
-        ("/ingredient/blueberries", "ingredient.html"),
-        ("/ingredient/spinach", "ingredient.html"),
-        ("/ingredient/strawberry", "ingredient.html"),
-        ("/ingredient/avocado", "ingredient.html"),
-        ("/ingredient/chia-seed", "ingredient.html"),
-        ("/ingredient/kale", "ingredient.html"),
     ]
 
     url_nodes = []
@@ -980,6 +970,15 @@ def sitemap_xml():
         loc = f"{base}{path if path.startswith('/') else '/' + path}"
         lastmod = _iso_date_from_mtime(templates_dir / template)
         url_nodes.append(_url(loc, lastmod))
+
+    # Auto-add ingredient landing pages from the registry (data/ingredients.json)
+    data_file = Path(app.root_path) / "data" / "ingredients.json"
+    data_lastmod = _iso_date_from_mtime(data_file)
+
+    for slug in sorted(INGREDIENTS.keys()):
+        ing_path = f"/ingredient/{slug}"
+        loc = f"{base}{ing_path}"
+        url_nodes.append(_url(loc, data_lastmod))
 
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>'
@@ -1830,80 +1829,22 @@ def terms():
     return render_template('terms.html')
 
 # Ingredient registry (shared by /ingredient/<slug> and /ingredients routes)
-INGREDIENTS = {
-        "banana": {
-            "name": "Banana",
-            "summary": "Bananas are commonly used in smoothies for natural sweetness and a creamy texture. This page is informational, not medical advice.",
-            "highlights": [
-                "Naturally sweet; pairs well with cocoa, peanut butter, oats",
-                "Helps thicken smoothies without added sugar",
-                "Contains potassium and fiber",
-            ],
-        },
-        "peanut-butter": {
-            "name": "Peanut Butter",
-            "summary": "Peanut butter is a popular smoothie add-in for richness and satiety. Choose options with minimal added sugar if possible. Informational only—not medical advice.",
-            "highlights": [
-                "Adds creamy texture and nutty flavor",
-                "Common in high-calorie or protein-style smoothies",
-                "Pairs well with banana, cocoa, oats, and milk/plant milk",
-            ],
-        },
-        "blueberries": {
-            "name": "Blueberries",
-            "summary": "Blueberries are widely used in smoothies for flavor and color. Fresh or frozen both work well. Informational only—not medical advice.",
-            "highlights": [
-                "Easy fruit base for many smoothie recipes",
-                "Pairs well with yogurt, oats, spinach, and banana",
-                "Works great frozen for thickness",
-            ],
-        },
-        "spinach": {
-            "name": "Spinach",
-            "summary": "Spinach is a common green-smoothie ingredient because it blends smoothly and is mild in taste when mixed with fruit. Informational only—not medical advice.",
-            "highlights": [
-                "Mild flavor; easy to 'hide' in fruit smoothies",
-                "Pairs well with banana, berries, and yogurt",
-                "Often used as a starter green for beginners",
-            ],
-        },
-        "strawberry": {
-            "name": "Strawberry",
-            "summary": "Strawberries are a classic smoothie fruit for flavor and natural sweetness. Fresh or frozen both work well. Informational only—not medical advice.",
-            "highlights": [
-                "Pairs well with banana, yogurt, oats, and chia",
-                "Frozen strawberries help thicken smoothies",
-                "Common in family-friendly blends"
-            ],
-        },
-        "avocado": {
-            "name": "Avocado",
-            "summary": "Avocado is used in smoothies for a creamy texture and mild flavor. It can increase calories and fats depending on portion. Informational only—not medical advice.",
-            "highlights": [
-                "Creates a creamy texture without dairy",
-                "Pairs well with spinach, cocoa, and berries",
-                "Common in 'green smoothie' recipes"
-            ],
-        },
-        "chia-seed": {
-            "name": "Chia Seed",
-            "summary": "Chia seeds are often added to smoothies for texture and fiber. They absorb liquid and can thicken blends. Informational only—not medical advice.",
-            "highlights": [
-                "Helps thicken smoothies (especially after resting)",
-                "Pairs well with berries, oats, and yogurt",
-                "Often used in meal-prep smoothies"
-            ],
-        },
-        "kale": {
-            "name": "Kale",
-            "summary": "Kale is a popular green smoothie ingredient with a stronger taste than spinach. Many people balance it with fruit. Informational only—not medical advice.",
-            "highlights": [
-                "Stronger flavor than spinach—fruit helps balance it",
-                "Pairs well with banana, pineapple, and berries",
-                "Common in nutrient-focused blends"
-            ],
-        },
-}
+def _load_ingredients_registry() -> dict:
+    path = Path(__file__).resolve().parent / "data" / "ingredients.json"
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict):
+            raise ValueError("ingredients.json must be a JSON object at the top level")
+        return data
+    except FileNotFoundError:
+        app.logger.warning("SEO registry missing: %s", path)
+        return {}
+    except Exception as e:
+        app.logger.warning("SEO registry invalid (%s): %s", path, e)
+        return {}
+
+INGREDIENTS = _load_ingredients_registry()
 
 @app.route('/ingredient/<slug>')
 def ingredient(slug):

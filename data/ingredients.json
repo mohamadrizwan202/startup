@@ -1,0 +1,74 @@
+{
+  "banana": {
+    "name": "Banana",
+    "summary": "Bananas are commonly used in smoothies for natural sweetness and a creamy texture. This page is informational, not medical advice.",
+    "highlights": [
+      "Naturally sweet; pairs well with cocoa, peanut butter, oats",
+      "Helps thicken smoothies without added sugar",
+      "Contains potassium and fiber"
+    ]
+  },
+  "peanut-butter": {
+    "name": "Peanut Butter",
+    "summary": "Peanut butter is a popular smoothie add-in for richness and satiety. Choose options with minimal added sugar if possible. Informational only—not medical advice.",
+    "highlights": [
+      "Adds creamy texture and nutty flavor",
+      "Common in high-calorie or protein-style smoothies",
+      "Pairs well with banana, cocoa, oats, and milk/plant milk"
+    ]
+  },
+  "blueberries": {
+    "name": "Blueberries",
+    "summary": "Blueberries are widely used in smoothies for flavor and color. Fresh or frozen both work well. Informational only—not medical advice.",
+    "highlights": [
+      "Easy fruit base for many smoothie recipes",
+      "Pairs well with yogurt, oats, spinach, and banana",
+      "Works great frozen for thickness"
+    ]
+  },
+  "spinach": {
+    "name": "Spinach",
+    "summary": "Spinach is a common green-smoothie ingredient because it blends smoothly and is mild in taste when mixed with fruit. Informational only—not medical advice.",
+    "highlights": [
+      "Mild flavor; easy to 'hide' in fruit smoothies",
+      "Pairs well with banana, berries, and yogurt",
+      "Often used as a starter green for beginners"
+    ]
+  },
+  "strawberry": {
+    "name": "Strawberry",
+    "summary": "Strawberries are commonly used in smoothies for sweetness and a bright flavor. Fresh or frozen both work well. Informational only—not medical advice.",
+    "highlights": [
+      "Classic smoothie fruit; easy to combine with banana and yogurt",
+      "Frozen strawberries help thicken smoothies",
+      "Pairs well with oats, chia, and spinach"
+    ]
+  },
+  "avocado": {
+    "name": "Avocado",
+    "summary": "Avocado is used in smoothies for a creamy texture and mild flavor. Informational only—not medical advice.",
+    "highlights": [
+      "Adds creaminess without dairy",
+      "Pairs well with cocoa, banana, and berries",
+      "Common in green smoothies with spinach or kale"
+    ]
+  },
+  "chia-seed": {
+    "name": "Chia Seed",
+    "summary": "Chia seeds are added to smoothies for texture and to thicken when soaked. Informational only—not medical advice.",
+    "highlights": [
+      "Can thicken smoothies if allowed to sit",
+      "Pairs well with berries, oats, and yogurt",
+      "Often used in fiber-focused blends"
+    ]
+  },
+  "kale": {
+    "name": "Kale",
+    "summary": "Kale is used in smoothies as a stronger-tasting leafy green than spinach. Pair with fruit for balance. Informational only—not medical advice.",
+    "highlights": [
+      "Stronger flavor; best balanced with banana or berries",
+      "Common in green smoothies",
+      "Pairs well with avocado and citrus"
+    ]
+  }
+}
