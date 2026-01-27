@@ -969,6 +969,10 @@ def sitemap_xml():
         ("/ingredient/peanut-butter", "ingredient.html"),
         ("/ingredient/blueberries", "ingredient.html"),
         ("/ingredient/spinach", "ingredient.html"),
+        ("/ingredient/strawberry", "ingredient.html"),
+        ("/ingredient/avocado", "ingredient.html"),
+        ("/ingredient/chia-seed", "ingredient.html"),
+        ("/ingredient/kale", "ingredient.html"),
     ]
 
     url_nodes = []
@@ -1861,6 +1865,42 @@ INGREDIENTS = {
                 "Mild flavor; easy to 'hide' in fruit smoothies",
                 "Pairs well with banana, berries, and yogurt",
                 "Often used as a starter green for beginners",
+            ],
+        },
+        "strawberry": {
+            "name": "Strawberry",
+            "summary": "Strawberries are a classic smoothie fruit for flavor and natural sweetness. Fresh or frozen both work well. Informational only—not medical advice.",
+            "highlights": [
+                "Pairs well with banana, yogurt, oats, and chia",
+                "Frozen strawberries help thicken smoothies",
+                "Common in family-friendly blends"
+            ],
+        },
+        "avocado": {
+            "name": "Avocado",
+            "summary": "Avocado is used in smoothies for a creamy texture and mild flavor. It can increase calories and fats depending on portion. Informational only—not medical advice.",
+            "highlights": [
+                "Creates a creamy texture without dairy",
+                "Pairs well with spinach, cocoa, and berries",
+                "Common in 'green smoothie' recipes"
+            ],
+        },
+        "chia-seed": {
+            "name": "Chia Seed",
+            "summary": "Chia seeds are often added to smoothies for texture and fiber. They absorb liquid and can thicken blends. Informational only—not medical advice.",
+            "highlights": [
+                "Helps thicken smoothies (especially after resting)",
+                "Pairs well with berries, oats, and yogurt",
+                "Often used in meal-prep smoothies"
+            ],
+        },
+        "kale": {
+            "name": "Kale",
+            "summary": "Kale is a popular green smoothie ingredient with a stronger taste than spinach. Many people balance it with fruit. Informational only—not medical advice.",
+            "highlights": [
+                "Stronger flavor than spinach—fruit helps balance it",
+                "Pairs well with banana, pineapple, and berries",
+                "Common in nutrient-focused blends"
             ],
         },
 }
