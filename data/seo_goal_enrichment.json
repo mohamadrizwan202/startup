@@ -59,6 +59,83 @@
       "ingredients": [],
       "add_primary": [],
       "add_related": []
+    },
+    "heart-support": {
+      "clusters": [
+        "heart_support"
+      ],
+      "ingredients": [
+        "avocado",
+        "blueberries",
+        "spinach",
+        "chia-seed",
+        "kale"
+      ],
+      "add_primary": [],
+      "add_related": []
+    },
+    "circulation-support": {
+      "clusters": [
+        "heart_support"
+      ],
+      "ingredients": [
+        "blueberries",
+        "spinach",
+        "avocado"
+      ],
+      "add_primary": [],
+      "add_related": []
+    },
+    "blood-pressure-support": {
+      "clusters": [
+        "heart_support"
+      ],
+      "ingredients": [
+        "banana",
+        "spinach",
+        "avocado"
+      ],
+      "add_primary": [],
+      "add_related": []
+    },
+    "inflammation-support": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "blueberries",
+        "kale",
+        "spinach",
+        "chia-seed"
+      ],
+      "add_primary": [],
+      "add_related": []
+    },
+    "immune-support": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "strawberry",
+        "blueberries",
+        "spinach",
+        "kale"
+      ],
+      "add_primary": [],
+      "add_related": []
+    },
+    "energy-stamina": {
+      "clusters": [
+        "metabolic_balance"
+      ],
+      "ingredients": [
+        "banana",
+        "peanut-butter",
+        "strawberry",
+        "chia-seed"
+      ],
+      "add_primary": [],
+      "add_related": []
     }
   }
 }
