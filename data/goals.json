@@ -6,8 +6,16 @@
       "name": "Iron Support",
       "summary": "Ingredients and smoothie ideas commonly associated with iron support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["iron support", "iron rich smoothies", "iron foods"],
-        "related": ["iron deficiency support", "iron absorption", "heme vs non heme iron"]
+        "primary": [
+          "iron support",
+          "iron rich smoothies",
+          "iron foods"
+        ],
+        "related": [
+          "iron deficiency support",
+          "iron absorption",
+          "heme vs non heme iron"
+        ]
       }
     },
     {
@@ -15,8 +23,16 @@
       "name": "Inflammation Support",
       "summary": "Ingredients and smoothie ideas commonly associated with inflammation support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["inflammation support", "anti inflammatory smoothie", "anti inflammatory foods"],
-        "related": ["reduce inflammation", "antioxidant rich smoothie", "omega 3 foods"]
+        "primary": [
+          "inflammation support",
+          "anti inflammatory smoothie",
+          "anti inflammatory foods"
+        ],
+        "related": [
+          "reduce inflammation",
+          "antioxidant rich smoothie",
+          "omega 3 foods"
+        ]
       }
     },
     {
@@ -24,8 +40,16 @@
       "name": "Circulation Support",
       "summary": "Ingredients and smoothie ideas commonly associated with circulation support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["circulation support", "blood flow support", "healthy circulation"],
-        "related": ["nitric oxide foods", "heart healthy foods", "vascular support"]
+        "primary": [
+          "circulation support",
+          "blood flow support",
+          "healthy circulation"
+        ],
+        "related": [
+          "nitric oxide foods",
+          "heart healthy foods",
+          "vascular support"
+        ]
       }
     },
     {
@@ -33,8 +57,16 @@
       "name": "Blood Pressure Support",
       "summary": "Ingredients and smoothie ideas commonly associated with blood pressure support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["blood pressure support", "bp friendly smoothie", "low sodium foods"],
-        "related": ["dash diet foods", "potassium rich foods", "magnesium foods"]
+        "primary": [
+          "blood pressure support",
+          "bp friendly smoothie",
+          "low sodium foods"
+        ],
+        "related": [
+          "dash diet foods",
+          "potassium rich foods",
+          "magnesium foods"
+        ]
       }
     },
     {
@@ -42,8 +74,16 @@
       "name": "Bone Strength",
       "summary": "Ingredients and smoothie ideas commonly associated with bone strength support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["bone strength", "bone health smoothie", "calcium rich foods"],
-        "related": ["vitamin d foods", "magnesium for bones", "osteoporosis support foods"]
+        "primary": [
+          "bone strength",
+          "bone health smoothie",
+          "calcium rich foods"
+        ],
+        "related": [
+          "vitamin d foods",
+          "magnesium for bones",
+          "osteoporosis support foods"
+        ]
       }
     },
     {
@@ -51,8 +91,16 @@
       "name": "Brain Focus",
       "summary": "Ingredients and smoothie ideas commonly associated with brain focus support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["brain focus", "focus support", "cognitive support"],
-        "related": ["mental clarity", "concentration support", "memory support foods"]
+        "primary": [
+          "brain focus",
+          "focus support",
+          "cognitive support"
+        ],
+        "related": [
+          "mental clarity",
+          "concentration support",
+          "memory support foods"
+        ]
       }
     },
     {
@@ -60,8 +108,18 @@
       "name": "Cholesterol Support",
       "summary": "Ingredients and smoothie ideas commonly associated with cholesterol support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["cholesterol support", "heart healthy smoothie", "fiber rich smoothie"],
-        "related": ["ldl support", "soluble fiber foods", "oats smoothie"]
+        "primary": [
+          "cholesterol support",
+          "heart healthy smoothie",
+          "fiber rich smoothie"
+        ],
+        "related": [
+          "ldl support",
+          "soluble fiber foods",
+          "oats smoothie",
+          "balanced smoothie",
+          "fiber and protein smoothie"
+        ]
       }
     },
     {
@@ -69,8 +127,16 @@
       "name": "Oral Health",
       "summary": "Ingredients and smoothie ideas commonly associated with oral health support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["oral health", "gum support foods", "teeth friendly foods"],
-        "related": ["low sugar smoothie", "vitamin c foods", "calcium foods"]
+        "primary": [
+          "oral health",
+          "gum support foods",
+          "teeth friendly foods"
+        ],
+        "related": [
+          "low sugar smoothie",
+          "vitamin c foods",
+          "calcium foods"
+        ]
       }
     },
     {
@@ -78,8 +144,21 @@
       "name": "Blood Sugar Support",
       "summary": "Ingredients and smoothie ideas commonly associated with blood sugar support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["blood sugar support", "low glycemic smoothie", "diabetic friendly smoothie"],
-        "related": ["fiber and protein smoothie", "reduce sugar spikes", "balanced smoothie"]
+        "primary": [
+          "blood sugar support",
+          "low glycemic smoothie",
+          "diabetic friendly smoothie"
+        ],
+        "related": [
+          "fiber and protein smoothie",
+          "reduce sugar spikes",
+          "balanced smoothie",
+          "chia seed",
+          "blueberries",
+          "spinach",
+          "avocado",
+          "peanut butter"
+        ]
       }
     },
     {
@@ -87,8 +166,18 @@
       "name": "Digestive Support",
       "summary": "Ingredients and smoothie ideas commonly associated with digestive support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["digestive support", "gut health smoothie", "digestion friendly foods"],
-        "related": ["fiber foods", "prebiotic foods", "probiotic foods"]
+        "primary": [
+          "digestive support",
+          "gut health smoothie",
+          "digestion friendly foods"
+        ],
+        "related": [
+          "fiber foods",
+          "prebiotic foods",
+          "probiotic foods",
+          "balanced smoothie",
+          "fiber and protein smoothie"
+        ]
       }
     },
     {
@@ -96,8 +185,16 @@
       "name": "Energy & Stamina",
       "summary": "Ingredients and smoothie ideas commonly associated with energy and stamina support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["energy smoothie", "stamina support", "pre workout smoothie"],
-        "related": ["post workout smoothie", "electrolytes", "protein smoothie"]
+        "primary": [
+          "energy smoothie",
+          "stamina support",
+          "pre workout smoothie"
+        ],
+        "related": [
+          "post workout smoothie",
+          "electrolytes",
+          "protein smoothie"
+        ]
       }
     },
     {
@@ -105,8 +202,16 @@
       "name": "Vision Support",
       "summary": "Ingredients and smoothie ideas commonly associated with vision support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["vision support", "eye health foods", "lutein foods"],
-        "related": ["zeaxanthin foods", "vitamin a foods", "beta carotene foods"]
+        "primary": [
+          "vision support",
+          "eye health foods",
+          "lutein foods"
+        ],
+        "related": [
+          "zeaxanthin foods",
+          "vitamin a foods",
+          "beta carotene foods"
+        ]
       }
     },
     {
@@ -114,8 +219,16 @@
       "name": "Heart Support",
       "summary": "Ingredients and smoothie ideas commonly associated with heart support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["heart support", "heart healthy smoothie", "cardiovascular support"],
-        "related": ["omega 3 foods", "fiber rich foods", "low sodium smoothie"]
+        "primary": [
+          "heart support",
+          "heart healthy smoothie",
+          "cardiovascular support"
+        ],
+        "related": [
+          "omega 3 foods",
+          "fiber rich foods",
+          "low sodium smoothie"
+        ]
       }
     },
     {
@@ -123,8 +236,16 @@
       "name": "Immune Support",
       "summary": "Ingredients and smoothie ideas commonly associated with immune support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["immune support", "immune boosting smoothie", "vitamin c foods"],
-        "related": ["zinc foods", "antioxidant foods", "seasonal wellness"]
+        "primary": [
+          "immune support",
+          "immune boosting smoothie",
+          "vitamin c foods"
+        ],
+        "related": [
+          "zinc foods",
+          "antioxidant foods",
+          "seasonal wellness"
+        ]
       }
     },
     {
@@ -132,8 +253,16 @@
       "name": "Joint Mobility",
       "summary": "Ingredients and smoothie ideas commonly associated with joint mobility support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["joint mobility", "joint support foods", "mobility support"],
-        "related": ["anti inflammatory foods", "omega 3 foods", "collagen smoothie ideas"]
+        "primary": [
+          "joint mobility",
+          "joint support foods",
+          "mobility support"
+        ],
+        "related": [
+          "anti inflammatory foods",
+          "omega 3 foods",
+          "collagen smoothie ideas"
+        ]
       }
     },
     {
@@ -141,8 +270,16 @@
       "name": "Liver Support",
       "summary": "Ingredients and smoothie ideas commonly associated with liver support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["liver support", "liver friendly foods", "healthy liver diet"],
-        "related": ["high fiber foods", "cruciferous vegetables", "antioxidants"]
+        "primary": [
+          "liver support",
+          "liver friendly foods",
+          "healthy liver diet"
+        ],
+        "related": [
+          "high fiber foods",
+          "cruciferous vegetables",
+          "antioxidants"
+        ]
       }
     },
     {
@@ -150,8 +287,16 @@
       "name": "Muscle Recovery",
       "summary": "Ingredients and smoothie ideas commonly associated with muscle recovery support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["muscle recovery smoothie", "post workout smoothie", "recovery support"],
-        "related": ["protein smoothie", "electrolytes", "carbs for recovery"]
+        "primary": [
+          "muscle recovery smoothie",
+          "post workout smoothie",
+          "recovery support"
+        ],
+        "related": [
+          "protein smoothie",
+          "electrolytes",
+          "carbs for recovery"
+        ]
       }
     },
     {
@@ -159,8 +304,16 @@
       "name": "Prenatal Support",
       "summary": "Ingredients and smoothie ideas commonly associated with prenatal support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["prenatal support", "pregnancy smoothie", "prenatal nutrition foods"],
-        "related": ["folate foods", "iron foods", "calcium foods"]
+        "primary": [
+          "prenatal support",
+          "pregnancy smoothie",
+          "prenatal nutrition foods"
+        ],
+        "related": [
+          "folate foods",
+          "iron foods",
+          "calcium foods"
+        ]
       }
     },
     {
@@ -168,8 +321,16 @@
       "name": "Skin Glow",
       "summary": "Ingredients and smoothie ideas commonly associated with skin glow support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["skin glow", "skin health smoothie", "glowing skin foods"],
-        "related": ["hydration foods", "vitamin c foods", "antioxidant foods"]
+        "primary": [
+          "skin glow",
+          "skin health smoothie",
+          "glowing skin foods"
+        ],
+        "related": [
+          "hydration foods",
+          "vitamin c foods",
+          "antioxidant foods"
+        ]
       }
     },
     {
@@ -177,8 +338,16 @@
       "name": "Stress Relief",
       "summary": "Ingredients and smoothie ideas commonly associated with stress relief support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["stress relief", "calming smoothie", "relaxation support"],
-        "related": ["magnesium foods", "sleep support foods", "adaptogen smoothie ideas"]
+        "primary": [
+          "stress relief",
+          "calming smoothie",
+          "relaxation support"
+        ],
+        "related": [
+          "magnesium foods",
+          "sleep support foods",
+          "adaptogen smoothie ideas"
+        ]
       }
     },
     {
@@ -186,8 +355,16 @@
       "name": "Thyroid Support",
       "summary": "Ingredients and smoothie ideas commonly associated with thyroid support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["thyroid support", "thyroid friendly foods", "iodine foods"],
-        "related": ["selenium foods", "zinc foods", "thyroid nutrition"]
+        "primary": [
+          "thyroid support",
+          "thyroid friendly foods",
+          "iodine foods"
+        ],
+        "related": [
+          "selenium foods",
+          "zinc foods",
+          "thyroid nutrition"
+        ]
       }
     },
     {
@@ -195,8 +372,17 @@
       "name": "Weight Balance",
       "summary": "Ingredients and smoothie ideas commonly associated with weight balance support. Educational only — not medical advice.",
       "keywords": {
-        "primary": ["weight balance", "weight management smoothie", "balanced smoothie"],
-        "related": ["high protein smoothie", "high fiber smoothie", "calorie controlled smoothie"]
+        "primary": [
+          "weight balance",
+          "weight management smoothie",
+          "balanced smoothie"
+        ],
+        "related": [
+          "high protein smoothie",
+          "high fiber smoothie",
+          "calorie controlled smoothie",
+          "fiber and protein smoothie"
+        ]
       }
     }
   ]

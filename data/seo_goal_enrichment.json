@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "defaults": {
+    "ingredient_bucket": "related",
+    "max_primary": 12,
+    "max_related": 18
+  },
+  "clusters": {
+    "metabolic_balance": [
+      "balanced smoothie",
+      "fiber and protein smoothie"
+    ],
+    "anti_inflammation": [
+      "anti inflammatory smoothie",
+      "antioxidant smoothie"
+    ],
+    "heart_support": [
+      "heart healthy smoothie",
+      "cholesterol support smoothie"
+    ]
+  },
+  "goal_map": {
+    "blood-sugar-support": {
+      "clusters": [
+        "metabolic_balance"
+      ],
+      "ingredients": [
+        "chia-seed",
+        "blueberries",
+        "spinach",
+        "avocado",
+        "peanut-butter"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "low glycemic smoothie"
+      ]
+    },
+    "weight-balance": {
+      "clusters": [
+        "metabolic_balance"
+      ],
+      "ingredients": [],
+      "add_primary": [],
+      "add_related": []
+    },
+    "cholesterol-support": {
+      "clusters": [
+        "metabolic_balance"
+      ],
+      "ingredients": [],
+      "add_primary": [],
+      "add_related": []
+    },
+    "digestive-support": {
+      "clusters": [
+        "metabolic_balance"
+      ],
+      "ingredients": [],
+      "add_primary": [],
+      "add_related": []
+    }
+  }
+}

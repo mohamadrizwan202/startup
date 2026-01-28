@@ -106,6 +106,36 @@
     </div>
 
     <section class="card">
+      <h2>Related goals</h2>
+      {% if related_goals and related_goals|length > 0 %}
+        <ul>
+          {% for g in related_goals %}
+            <li>
+              <a href="/goal/{{ g.slug }}">{{ g.name }}</a>
+              {% if g.summary %}<span class="muted"> — {{ g.summary }}</span>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">More related goals will appear as we expand keywords.</p>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h2>Suggested ingredients</h2>
+      {% if suggested_ingredients and suggested_ingredients|length > 0 %}
+        <div>
+          {% for ing in suggested_ingredients %}
+            <span class="pill"><a href="/ingredient/{{ ing.slug }}">{{ ing.name }}</a></span>
+          {% endfor %}
+        </div>
+        <p class="muted" style="margin-top:10px;">These suggestions are generated from keyword overlap and will improve as the registries grow.</p>
+      {% else %}
+        <p class="muted">No ingredient suggestions yet for this goal.</p>
+      {% endif %}
+    </section>
+
+    <section class="card">
       <h2>Smoothie ingredient ideas</h2>
 
       {% if goal.recommended_ingredients and goal.recommended_ingredients|length > 0 %}
