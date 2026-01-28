@@ -34,7 +34,7 @@ import contextlib
 
 # Import database helpers
 import db
-from utils.seo_links import compute_related_goals, compute_related_ingredients
+from utils.seo_links import compute_related_goals, compute_related_goals_for_ingredient, compute_related_ingredients
 from utils.seo_registry import get_goal_by_slug, get_goals_registry, get_ingredients_registry
 
 # Single database path constant (for SQLite fallback only)
@@ -1890,16 +1890,21 @@ GOALS = _load_goals_registry()
 
 @app.route('/ingredient/<slug>')
 def ingredient(slug):
-    """Public ingredient landing page (SEO). Start with banana only."""
+    """Public ingredient landing page (SEO)."""
     data = INGREDIENTS.get(slug)
     if not data:
         abort(404)
 
     canonical = f"https://purefyul.com/ingredient/{slug}"
 
+    goals_reg = get_goals_registry()
+    ingredients_reg = get_ingredients_registry()
+    related_goals = compute_related_goals_for_ingredient(slug, goals_reg, ingredients_reg, limit=10)
+
     return render_template(
         "ingredient.html",
         ingredient=data,
+        related_goals=related_goals,
         page_title=f"{data['name']} | PureFyul Ingredient Guide",
         meta_description=f"Learn about {data['name']} for smoothies: quick facts, highlights, and usage ideas.",
         canonical_url=canonical,

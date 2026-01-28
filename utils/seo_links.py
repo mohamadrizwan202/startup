@@ -109,6 +109,94 @@ def compute_related_goals(
     return out
 
 
+def _ingredient_candidates(slug: str, ingredients_registry: Dict[str, Any]) -> List[str]:
+    """Build normalized candidate strings for matching: slug, slug-with-spaces, name."""
+    out: List[str] = []
+    s = (slug or "").strip().lower()
+    if s:
+        out.append(s)
+        out.append(s.replace("-", " "))
+    obj = ingredients_registry.get(slug) if isinstance(ingredients_registry, dict) else None
+    if obj is not None:
+        name = None
+        if isinstance(obj, dict):
+            name = obj.get("display_name") or obj.get("name") or obj.get("ingredient")
+        elif isinstance(obj, str):
+            name = obj
+        if name:
+            n = _norm_kw(name)
+            if n and n not in out:
+                out.append(n)
+            n2 = n.replace(" ", "-") if n else ""
+            if n2 and n2 not in out:
+                out.append(n2)
+    return [x for x in out if x]
+
+
+def compute_related_goals_for_ingredient(
+    ingredient_slug: str,
+    goals_registry: Dict[str, Any],
+    ingredients_registry: Dict[str, Any],
+    limit: int = 10,
+) -> List[Dict[str, Any]]:
+    """
+    Related goals for an ingredient page (SEO backlinks).
+    Scoring: +3 if keyword contains ingredient (primary), +1 (related).
+    Match: keyword contains ingredient slug/name token (case-insensitive).
+    Returns 6–10 links max; exclude score 0. Sort by score desc, name, slug.
+    """
+    if not ingredient_slug or not isinstance(goals_registry, dict):
+        return []
+    goals = goals_registry.get("goals") or []
+    if not isinstance(goals, list):
+        return []
+    ing_reg = ingredients_registry if isinstance(ingredients_registry, dict) else {}
+    candidates = _ingredient_candidates(ingredient_slug, ing_reg)
+    if not candidates:
+        return []
+
+    def matches(kw_normalized: str) -> bool:
+        for c in candidates:
+            if c in kw_normalized:
+                return True
+        return False
+
+    scored: List[Tuple[int, str, str, Dict[str, Any]]] = []
+    for g in goals:
+        if not isinstance(g, dict):
+            continue
+        s = g.get("slug")
+        if not s:
+            continue
+        p, r = _goal_keywords(g)
+        score = 0
+        for k in p:
+            if matches(k):
+                score += 3
+        for k in r:
+            if matches(k):
+                score += 1
+        if score <= 0:
+            continue
+        name = (g.get("name") or s.replace("-", " ").title()).strip()
+        scored.append((score, name.lower(), s, g))
+
+    scored.sort(key=lambda t: (-t[0], t[1], t[2]))
+    cap = max(6, min(10, max(0, int(limit))))
+    out: List[Dict[str, Any]] = []
+    for score, _nl, s, g in scored[:cap]:
+        name = (g.get("name") or s.replace("-", " ").title()).strip()
+        out.append(
+            {
+                "slug": s,
+                "name": name,
+                "summary": (g.get("summary") or "").strip(),
+                "score": score,
+            }
+        )
+    return out
+
+
 def compute_related_ingredients(
     goal: Dict[str, Any],
     ingredients_registry: Dict[str, Any],
