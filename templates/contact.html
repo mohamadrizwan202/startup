@@ -204,6 +204,32 @@
         padding: 20px 10px;
       }
     }
+
+    /* Support email box */
+    .contact-email {
+      margin: 14px auto 18px;
+      padding: 10px 14px;
+      max-width: 520px;
+      width: 100%;
+      background: rgba(16, 185, 129, 0.10);
+      border: 1px solid rgba(16, 185, 129, 0.30);
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 600;
+      color: #0f766e;
+    }
+
+    .contact-email a {
+      color: #0b5ed7;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+      border-bottom: none;
+    }
+
+    .contact-email a:hover {
+      text-decoration-thickness: 3px;
+    }
   </style>
     {% include "_seo_head.html" %}
 {% include "_adsense_head.html" %}
@@ -216,6 +242,13 @@
     <div class="contact-card">
       <h1>Get in Touch</h1>
       <p class="subtitle">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+      <p class="subtitle" style="margin-top:10px;">
+        <div class="contact-email">
+          Prefer email? <a href="mailto:support@purefyul.com">support@purefyul.com</a>
+        </div>
+        
+      </p>
+      
       
       <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
