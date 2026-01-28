@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory, Response
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory, Response, current_app
 import time
 import logging
 import secrets
@@ -34,6 +34,7 @@ import contextlib
 
 # Import database helpers
 import db
+from utils.seo_registry import get_goal_by_slug, get_goals_registry
 
 # Single database path constant (for SQLite fallback only)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1932,17 +1933,23 @@ def ingredients():
 @app.route('/goal/<slug>')
 def goal(slug):
     """Public goal landing page (SEO)."""
-    data = GOALS.get(slug)
+    try:
+        data = get_goal_by_slug(slug)
+    except Exception:
+        current_app.logger.exception("Goal registry load failed for slug=%s", slug)
+        abort(500)
+
     if not data:
         abort(404)
 
+    name = data.get("name") or slug.replace("-", " ").title()
     canonical = f"https://purefyul.com/goal/{slug}"
 
     return render_template(
         "goal.html",
         goal=data,
-        page_title=f"{data['name']} | PureFyul Health Goals",
-        meta_description=data.get("summary", f"Learn about {data['name']} - ingredients and smoothie ideas."),
+        page_title=f"{name} | PureFyul Health Goals",
+        meta_description=data.get("summary") or f"Learn about {name} - ingredients and smoothie ideas.",
         canonical_url=canonical,
         og_url=canonical,
     )
@@ -1951,12 +1958,25 @@ def goal(slug):
 @app.route("/goals")
 def goals():
     """Public goals directory page (SEO)."""
+    try:
+        reg = get_goals_registry()
+        goals_list = reg.get("goals", [])
+    except Exception:
+        current_app.logger.exception("Goals registry load failed for /goals")
+        abort(500)
+
     items = []
-    for slug, data in GOALS.items():
+    for g in goals_list:
+        if not isinstance(g, dict):
+            continue
+        slug = g.get("slug")
+        if not slug:
+            continue
+        name = g.get("name") or slug.replace("-", " ").title()
         items.append({
             "slug": slug,
-            "name": data.get("name", slug.replace("-", " ").title()),
-            "summary": data.get("summary", ""),
+            "name": name,
+            "summary": g.get("summary", "") or "",
         })
 
     items.sort(key=lambda x: x["name"].lower())
@@ -1965,8 +1985,8 @@ def goals():
     return render_template(
         "goals.html",
         goals=items,
-        page_title="Health Goals | PureFyul",
-        meta_description="Explore health goals and discover ingredients and smoothie ideas commonly associated with each one.",
+        page_title="Health Goals Directory | PureFyul",
+        meta_description="Browse health goals and discover ingredients and smoothie ideas that support each goal.",
         canonical_url=canonical,
         og_url=canonical,
     )
