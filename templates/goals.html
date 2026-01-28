@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  {% include "_seo_head.html" %}
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 40px; line-height: 1.5; }
+    .wrap { max-width: 860px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; }
+    p { margin: 0 0 16px; color: #333; }
+    ul { padding-left: 18px; }
+    li { margin: 12px 0; }
+    a { text-decoration: underline; }
+    .muted { color: #555; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Health Goals</h1>
+    <p class="muted">Educational only — not medical advice.</p>
+
+    <ul>
+      {% for g in goals %}
+        <li>
+          <a href="{{ url_for('goal', slug=g.slug) }}">{{ g.name }}</a>
+          {% if g.summary %}
+            <div class="muted">{{ g.summary }}</div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+
+    <p style="margin-top:18px;">
+      <a href="/">Open PureFyul Analyzer</a>
+    </p>
+  </div>
+</body>
+</html>
