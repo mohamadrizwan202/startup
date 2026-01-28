@@ -963,6 +963,7 @@ def sitemap_xml():
         ("/privacy", "privacy.html"),
         ("/terms", "terms.html"),
         ("/ingredients", "ingredients.html"),
+        ("/goals", "goals.html"),
     ]
 
     url_nodes = []
@@ -972,13 +973,26 @@ def sitemap_xml():
         url_nodes.append(_url(loc, lastmod))
 
     # Auto-add ingredient landing pages from the registry (data/ingredients.json)
-    data_file = Path(app.root_path) / "data" / "ingredients.json"
-    data_lastmod = _iso_date_from_mtime(data_file)
+    ingredients_data_file = Path(app.root_path) / "data" / "ingredients.json"
+    ingredients_data_lastmod = _iso_date_from_mtime(ingredients_data_file)
 
     for slug in sorted(INGREDIENTS.keys()):
         ing_path = f"/ingredient/{slug}"
         loc = f"{base}{ing_path}"
-        url_nodes.append(_url(loc, data_lastmod))
+        url_nodes.append(_url(loc, ingredients_data_lastmod))
+
+    # Auto-add goal landing pages from the registry (data/goals.json)
+    goals_data_file = Path(app.root_path) / "data" / "goals.json"
+    goals_template_file = templates_dir / "goal.html"
+    goals_data_mtime = _iso_date_from_mtime(goals_data_file)
+    goals_template_mtime = _iso_date_from_mtime(goals_template_file)
+    # Use the max of data file mtime and template mtime
+    goals_lastmod = max(goals_data_mtime or "", goals_template_mtime or "") or None
+
+    for slug in sorted(GOALS.keys()):
+        goal_path = f"/goal/{slug}"
+        loc = f"{base}{goal_path}"
+        url_nodes.append(_url(loc, goals_lastmod))
 
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>'
@@ -1846,6 +1860,32 @@ def _load_ingredients_registry() -> dict:
 
 INGREDIENTS = _load_ingredients_registry()
 
+# Goals registry (shared by /goal/<slug> and /goals routes)
+def _load_goals_registry() -> dict:
+    """Load goals from data/goals.json and return dict keyed by slug."""
+    path = Path(__file__).resolve().parent / "data" / "goals.json"
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+        if not isinstance(data, dict) or "goals" not in data:
+            raise ValueError("goals.json must have a 'goals' array")
+        result = {}
+        for g in data.get("goals", []):
+            slug = g.get("slug")
+            if slug:
+                # Ensure slug is in the goal object
+                g["slug"] = slug
+                result[slug] = g
+        return result
+    except FileNotFoundError:
+        app.logger.warning("Goals registry missing: %s", path)
+        return {}
+    except Exception as e:
+        app.logger.warning("Goals registry invalid (%s): %s", path, e)
+        return {}
+
+GOALS = _load_goals_registry()
+
 @app.route('/ingredient/<slug>')
 def ingredient(slug):
     """Public ingredient landing page (SEO). Start with banana only."""
@@ -1888,6 +1928,48 @@ def ingredients():
         og_url=canonical,
     )
 
+
+@app.route('/goal/<slug>')
+def goal(slug):
+    """Public goal landing page (SEO)."""
+    data = GOALS.get(slug)
+    if not data:
+        abort(404)
+
+    canonical = f"https://purefyul.com/goal/{slug}"
+
+    return render_template(
+        "goal.html",
+        goal=data,
+        page_title=f"{data['name']} | PureFyul Health Goals",
+        meta_description=data.get("summary", f"Learn about {data['name']} - ingredients and smoothie ideas."),
+        canonical_url=canonical,
+        og_url=canonical,
+    )
+
+
+@app.route("/goals")
+def goals():
+    """Public goals directory page (SEO)."""
+    items = []
+    for slug, data in GOALS.items():
+        items.append({
+            "slug": slug,
+            "name": data.get("name", slug.replace("-", " ").title()),
+            "summary": data.get("summary", ""),
+        })
+
+    items.sort(key=lambda x: x["name"].lower())
+
+    canonical = "https://purefyul.com/goals"
+    return render_template(
+        "goals.html",
+        goals=items,
+        page_title="Health Goals | PureFyul",
+        meta_description="Explore health goals and discover ingredients and smoothie ideas commonly associated with each one.",
+        canonical_url=canonical,
+        og_url=canonical,
+    )
 
 
 # ============================================================================
