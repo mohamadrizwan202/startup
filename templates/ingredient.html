@@ -2,6 +2,20 @@
 <html lang="en">
 <head>
   {% include "_seo_head.html" %}
+  {# BreadcrumbList JSON-LD (helps SEO) #}
+  <script type="application/ld+json" nonce="{{ csp_nonce() }}">
+{{ {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://purefyul.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Ingredient Directory", "item": "https://purefyul.com/ingredients"},
+    {"@type": "ListItem", "position": 3, "name": (ingredient.name or ingredient.display_name or "Ingredient"), "item": canonical_url}
+  ]
+} | tojson }}
+  </script>
+
+
 </head>
 <body>
   <main style="max-width: 780px; margin: 40px auto; padding: 0 16px;">

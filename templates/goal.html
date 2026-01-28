@@ -27,9 +27,23 @@
     .cta a { display: inline-block; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(15,23,42,.14); text-decoration: none; }
   </style>
 
-  {# Optional: FAQ structured data (helps SEO) #}
+  
+  {# BreadcrumbList JSON-LD (helps SEO) #}
+  <script type="application/ld+json" nonce="{{ csp_nonce() }}">
+{{ {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://purefyul.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Health Goals", "item": "https://purefyul.com/goals"},
+    {"@type": "ListItem", "position": 3, "name": (goal.name or "Goal"), "item": canonical_url}
+  ]
+} | tojson }}
+  </script>
+
+{# Optional: FAQ structured data (helps SEO) #}
   {% if goal.faq and goal.faq|length > 0 %}
-    <script type="application/ld+json">
+    <script type="application/ld+json" nonce="{{ csp_nonce() }}">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
