@@ -40,25 +40,45 @@
       "clusters": [
         "metabolic_balance"
       ],
-      "ingredients": [],
+      "ingredients": [
+        "banana",
+        "strawberry",
+        "chia-seed",
+        "peanut-butter"
+      ],
       "add_primary": [],
-      "add_related": []
+      "add_related": [
+        "fiber and protein smoothie"
+      ]
     },
     "cholesterol-support": {
       "clusters": [
-        "metabolic_balance"
+        "metabolic_balance",
+        "heart_support"
       ],
-      "ingredients": [],
+      "ingredients": [
+        "avocado",
+        "chia-seed",
+        "blueberries"
+      ],
       "add_primary": [],
-      "add_related": []
+      "add_related": [
+        "heart healthy smoothie"
+      ]
     },
     "digestive-support": {
       "clusters": [
         "metabolic_balance"
       ],
-      "ingredients": [],
+      "ingredients": [
+        "banana",
+        "chia-seed",
+        "spinach"
+      ],
       "add_primary": [],
-      "add_related": []
+      "add_related": [
+        "fiber and protein smoothie"
+      ]
     },
     "heart-support": {
       "clusters": [
@@ -216,6 +236,87 @@
       "ingredients": [
         "blueberries",
         "spinach"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "balanced smoothie"
+      ]
+    },
+    "iron-support": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "spinach",
+        "kale"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "balanced smoothie"
+      ]
+    },
+    "bone-strength": {
+      "clusters": [
+        "metabolic_balance"
+      ],
+      "ingredients": [
+        "spinach",
+        "chia-seed"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "balanced smoothie"
+      ]
+    },
+    "brain-focus": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "blueberries",
+        "chia-seed"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "antioxidant smoothie"
+      ]
+    },
+    "vision-support": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "spinach",
+        "kale",
+        "blueberries"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "antioxidant smoothie"
+      ]
+    },
+    "muscle-recovery": {
+      "clusters": [
+        "metabolic_balance"
+      ],
+      "ingredients": [
+        "banana",
+        "peanut-butter",
+        "strawberry"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "protein smoothie"
+      ]
+    },
+    "prenatal-support": {
+      "clusters": [
+        "metabolic_balance"
+      ],
+      "ingredients": [
+        "spinach",
+        "blueberries",
+        "chia-seed"
       ],
       "add_primary": [],
       "add_related": [
