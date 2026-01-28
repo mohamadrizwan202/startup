@@ -22,6 +22,24 @@
     <p>
       <a href="/?q={{ ingredient.name|urlencode }}">Open in PureFyul Analyzer</a>
     </p>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">Related health goals</h2>
+      {% if related_goals and related_goals|length > 0 %}
+        <ul style="margin: 0; padding-left: 18px;">
+          {% for g in related_goals %}
+            <li>
+              <a href="/goal/{{ g.slug }}">{{ g.name }}</a>
+              {% if g.summary %}
+                <span style="color: #555; font-size: 0.9rem;">— {{ g.summary }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="color: #555; font-size: 0.9rem; margin: 0;">No related goals yet.</p>
+      {% endif %}
+    </section>
   </main>
 </body>
 </html>
