@@ -3,7 +3,7 @@
 <head>
   {% include "_seo_head.html" %}
   {# BreadcrumbList JSON-LD (helps SEO) #}
-  <script type="application/ld+json" nonce="{{ csp_nonce() }}">
+  <script type="application/ld+json" nonce="{{ csp_nonce }}">
 {{ {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",

@@ -29,7 +29,7 @@
 
   
   {# BreadcrumbList JSON-LD (helps SEO) #}
-  <script type="application/ld+json" nonce="{{ csp_nonce() }}">
+  <script type="application/ld+json" nonce="{{ csp_nonce }}">
 {{ {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -43,7 +43,7 @@
 
 {# Optional: FAQ structured data (helps SEO) #}
   {% if goal.faq and goal.faq|length > 0 %}
-    <script type="application/ld+json" nonce="{{ csp_nonce() }}">
+    <script type="application/ld+json" nonce="{{ csp_nonce }}">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
