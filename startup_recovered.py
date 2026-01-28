@@ -1945,24 +1945,14 @@ def goal(slug):
     name = data.get("name") or slug.replace("-", " ").title()
     canonical = f"https://purefyul.com/goal/{slug}"
 
-    try:
-        return render_template(
-            "goal.html",
-            goal=data,
-            page_title=f"{name} | PureFyul Health Goals",
-            meta_description=data.get("summary") or f"Learn about {name} - ingredients and smoothie ideas.",
-            canonical_url=canonical,
-            og_url=canonical,
-        )
-    except Exception:
-        # TEMP DEBUG: prints the goal payload keys and slug so we can fix template assumptions
-        current_app.logger.exception(
-            "Template render failed for /goal/%s | goal_keys=%s | keywords=%s",
-            slug,
-            sorted(list(data.keys())),
-            data.get("keywords"),
-        )
-        raise
+    return render_template(
+        "goal.html",
+        goal=data,
+        page_title=f"{name} | PureFyul Health Goals",
+        meta_description=data.get("summary") or f"Learn about {name} - ingredients and smoothie ideas.",
+        canonical_url=canonical,
+        og_url=canonical,
+    )
 
 
 @app.route("/goals")

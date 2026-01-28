@@ -30,14 +30,22 @@
   {# Optional: FAQ structured data (helps SEO) #}
   {% if goal.faq and goal.faq|length > 0 %}
     <script type="application/ld+json">
-      {{ {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-          {"@type":"Question","name": item.q, "acceptedAnswer":{"@type":"Answer","text": item.a}}
-          for item in goal.faq
-        ]
-      } | tojson }}
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for item in (goal.faq or []) %}
+    {
+      "@type": "Question",
+      "name": {{ (item.question or item.q or '') | tojson }},
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": {{ (item.answer or item.a or '') | tojson }}
+      }
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
     </script>
   {% endif %}
 </head>
