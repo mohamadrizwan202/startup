@@ -4,48 +4,146 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   {% include "_seo_head.html" %}
+
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 40px; line-height: 1.5; }
-    .wrap { max-width: 860px; margin: 0 auto; }
-    h1 { margin: 0 0 8px; }
-    p { margin: 0 0 16px; color: #333; }
-    a { text-decoration: underline; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; line-height: 1.55; }
+    main { max-width: 920px; margin: 0 auto; padding: 28px 16px 44px; }
+    .crumbs { font-size: 14px; color: #555; margin-bottom: 14px; }
+    .crumbs a { color: inherit; text-decoration: underline; }
+    h1 { margin: 0 0 10px; font-size: 34px; }
+    .lead { margin: 0 0 18px; color: #222; font-size: 16px; }
+    .card { border: 1px solid rgba(15,23,42,.10); border-radius: 14px; padding: 16px; margin: 16px 0; }
+    h2 { margin: 0 0 10px; font-size: 20px; }
+    ul { padding-left: 18px; margin: 0; }
+    li { margin: 8px 0; }
     .muted { color: #555; font-size: 14px; }
-    .pill { display:inline-block; margin: 6px 6px 0 0; padding: 6px 10px; border:1px solid rgba(0,0,0,.12); border-radius:999px; font-size: 13px; }
+    .grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+    .pill { display: inline-block; border: 1px solid rgba(15,23,42,.12); border-radius: 999px; padding: 7px 10px; margin: 6px 6px 0 0; font-size: 14px; }
+    .pill a { text-decoration: none; color: inherit; }
+    details { border: 1px solid rgba(15,23,42,.10); border-radius: 14px; padding: 12px 14px; margin: 10px 0; }
+    summary { cursor: pointer; font-weight: 650; }
+    .cta { margin-top: 18px; }
+    .cta a { display: inline-block; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(15,23,42,.14); text-decoration: none; }
   </style>
+
+  {# Optional: FAQ structured data (helps SEO) #}
+  {% if goal.faq and goal.faq|length > 0 %}
+    <script type="application/ld+json">
+      {{ {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {"@type":"Question","name": item.q, "acceptedAnswer":{"@type":"Answer","text": item.a}}
+          for item in goal.faq
+        ]
+      } | tojson }}
+    </script>
+  {% endif %}
 </head>
+
 <body>
-  <div class="wrap">
+  {# Keep navbar consistent with site; doesn't expose anything "internal" #}
+  {% include "_navbar.html" %}
+
+  <main>
+    <div class="crumbs">
+      <a href="/">Home</a> › <a href="/goals">Health Goals</a> › {{ goal.name }}
+    </div>
+
     <h1>{{ goal.name }}</h1>
-    <p class="muted">Educational only — not medical advice.</p>
 
     {% if goal.summary %}
-      <p>{{ goal.summary }}</p>
+      <p class="lead">{{ goal.summary }}</p>
     {% endif %}
 
-    {% if goal.keywords and goal.keywords.primary %}
-      <h2 style="margin:18px 0 8px; font-size:18px;">Common searches</h2>
-      <div>
-        {% for k in goal.keywords.primary %}
-          <span class="pill">{{ k }}</span>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    {% if goal.keywords and goal.keywords.related %}
-      <h2 style="margin:18px 0 8px; font-size:18px;">Related searches</h2>
-      <div>
-        {% for k in goal.keywords.related %}
-          <span class="pill">{{ k }}</span>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <p style="margin-top:22px;">
-      <a href="/goals">Back to goals</a>
-      <span aria-hidden="true"> · </span>
-      <a href="/">Open PureFyul Analyzer</a>
+    <p class="muted">
+      Educational only — not medical advice.
     </p>
-  </div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>What this goal usually means</h2>
+        {% if goal.details %}
+          <p class="muted">{{ goal.details }}</p>
+        {% else %}
+          <p class="muted">
+            This page explains the goal in smoothie terms: what people typically search for, what ingredients they often pair,
+            and how to use PureFyul to explore ingredients. (Not medical advice.)
+          </p>
+        {% endif %}
+      </section>
+
+      <section class="card">
+        <h2>Popular searches</h2>
+        {% set prim = (goal.keywords.primary if goal.keywords and goal.keywords.primary else []) %}
+        {% set rel  = (goal.keywords.related if goal.keywords and goal.keywords.related else []) %}
+
+        {% if prim|length == 0 and rel|length == 0 %}
+          <p class="muted">Keywords not available yet.</p>
+        {% else %}
+          <div>
+            {% for k in prim[:10] %}
+              <span class="pill"><a href="/?q={{ k|urlencode }}">{{ k }}</a></span>
+            {% endfor %}
+            {% for k in rel[:14] %}
+              <span class="pill"><a href="/?q={{ k|urlencode }}">{{ k }}</a></span>
+            {% endfor %}
+          </div>
+          <p class="muted" style="margin-top:10px;">
+            Tip: click a keyword to open PureFyul with a search query.
+          </p>
+        {% endif %}
+      </section>
+    </div>
+
+    <section class="card">
+      <h2>Smoothie ingredient ideas</h2>
+
+      {% if goal.recommended_ingredients and goal.recommended_ingredients|length > 0 %}
+        <ul>
+          {% for slug in goal.recommended_ingredients %}
+            <li>
+              <a href="{{ url_for('ingredient', slug=slug) }}">{{ slug.replace('-', ' ').title() }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">
+          We'll add goal-specific ingredient suggestions here next. For now, use the directory:
+          <a href="/ingredients">Ingredient Directory</a>
+        </p>
+      {% endif %}
+    </section>
+
+    {% if goal.tips and goal.tips|length > 0 %}
+      <section class="card">
+        <h2>How people use this goal in smoothies</h2>
+        <ul>
+          {% for t in goal.tips %}
+            <li>{{ t }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+
+    {% if goal.faq and goal.faq|length > 0 %}
+      <section class="card">
+        <h2>FAQ</h2>
+        {% for item in goal.faq %}
+          <details>
+            <summary>{{ item.q }}</summary>
+            <div class="muted" style="margin-top:8px;">{{ item.a }}</div>
+          </details>
+        {% endfor %}
+      </section>
+    {% endif %}
+
+    <div class="cta">
+      <a href="/?q={{ goal.name|urlencode }}">Open this goal in PureFyul Analyzer</a>
+    </div>
+  </main>
+
+  {% include "_legal_footer.html" %}
 </body>
 </html>
