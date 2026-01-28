@@ -34,7 +34,8 @@ import contextlib
 
 # Import database helpers
 import db
-from utils.seo_registry import get_goal_by_slug, get_goals_registry
+from utils.seo_links import compute_related_goals, compute_related_ingredients
+from utils.seo_registry import get_goal_by_slug, get_goals_registry, get_ingredients_registry
 
 # Single database path constant (for SQLite fallback only)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1945,9 +1946,16 @@ def goal(slug):
     name = data.get("name") or slug.replace("-", " ").title()
     canonical = f"https://purefyul.com/goal/{slug}"
 
+    goals_reg = get_goals_registry()
+    ingredients_reg = get_ingredients_registry()
+    related_goals = compute_related_goals(slug, goals_reg, limit=10)
+    suggested_ingredients = compute_related_ingredients(data, ingredients_reg, limit=12)
+
     return render_template(
         "goal.html",
         goal=data,
+        related_goals=related_goals,
+        suggested_ingredients=suggested_ingredients,
         page_title=f"{name} | PureFyul Health Goals",
         meta_description=data.get("summary") or f"Learn about {name} - ingredients and smoothie ideas.",
         canonical_url=canonical,
