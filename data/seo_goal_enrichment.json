@@ -136,6 +136,91 @@
       ],
       "add_primary": [],
       "add_related": []
+    },
+    "skin-glow": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "strawberry",
+        "blueberries",
+        "spinach",
+        "kale",
+        "chia-seed"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "antioxidant smoothie"
+      ]
+    },
+    "joint-mobility": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "blueberries",
+        "kale",
+        "spinach",
+        "chia-seed"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "anti inflammatory smoothie"
+      ]
+    },
+    "stress-relief": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "banana",
+        "strawberry",
+        "blueberries"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "balanced smoothie"
+      ]
+    },
+    "liver-support": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "blueberries",
+        "spinach",
+        "kale"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "antioxidant smoothie"
+      ]
+    },
+    "oral-health": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "strawberry",
+        "blueberries"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "low sugar smoothie"
+      ]
+    },
+    "thyroid-support": {
+      "clusters": [
+        "anti_inflammation"
+      ],
+      "ingredients": [
+        "blueberries",
+        "spinach"
+      ],
+      "add_primary": [],
+      "add_related": [
+        "balanced smoothie"
+      ]
     }
   }
 }
