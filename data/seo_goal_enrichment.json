@@ -33,7 +33,9 @@
       ],
       "add_primary": [],
       "add_related": [
-        "low glycemic smoothie"
+        "low glycemic smoothie",
+        "balanced smoothie",
+        "fiber and protein smoothie"
       ]
     },
     "weight-balance": {
@@ -48,7 +50,8 @@
       ],
       "add_primary": [],
       "add_related": [
-        "fiber and protein smoothie"
+        "fiber and protein smoothie",
+        "balanced smoothie"
       ]
     },
     "cholesterol-support": {
@@ -63,7 +66,10 @@
       ],
       "add_primary": [],
       "add_related": [
-        "heart healthy smoothie"
+        "heart healthy smoothie",
+        "balanced smoothie",
+        "fiber and protein smoothie",
+        "cholesterol support smoothie"
       ]
     },
     "digestive-support": {
@@ -77,12 +83,14 @@
       ],
       "add_primary": [],
       "add_related": [
-        "fiber and protein smoothie"
+        "fiber and protein smoothie",
+        "balanced smoothie"
       ]
     },
     "heart-support": {
       "clusters": [
-        "heart_support"
+        "heart_support",
+        "metabolic_balance"
       ],
       "ingredients": [
         "avocado",
@@ -92,7 +100,12 @@
         "kale"
       ],
       "add_primary": [],
-      "add_related": []
+      "add_related": [
+        "balanced smoothie",
+        "fiber and protein smoothie",
+        "heart healthy smoothie",
+        "cholesterol support smoothie"
+      ]
     },
     "circulation-support": {
       "clusters": [
@@ -104,7 +117,10 @@
         "avocado"
       ],
       "add_primary": [],
-      "add_related": []
+      "add_related": [
+        "heart healthy smoothie",
+        "cholesterol support smoothie"
+      ]
     },
     "blood-pressure-support": {
       "clusters": [
@@ -116,7 +132,10 @@
         "avocado"
       ],
       "add_primary": [],
-      "add_related": []
+      "add_related": [
+        "heart healthy smoothie",
+        "cholesterol support smoothie"
+      ]
     },
     "inflammation-support": {
       "clusters": [
@@ -129,7 +148,10 @@
         "chia-seed"
       ],
       "add_primary": [],
-      "add_related": []
+      "add_related": [
+        "anti inflammatory smoothie",
+        "antioxidant smoothie"
+      ]
     },
     "immune-support": {
       "clusters": [
@@ -142,7 +164,10 @@
         "kale"
       ],
       "add_primary": [],
-      "add_related": []
+      "add_related": [
+        "anti inflammatory smoothie",
+        "antioxidant smoothie"
+      ]
     },
     "energy-stamina": {
       "clusters": [
@@ -155,7 +180,10 @@
         "chia-seed"
       ],
       "add_primary": [],
-      "add_related": []
+      "add_related": [
+        "balanced smoothie",
+        "fiber and protein smoothie"
+      ]
     },
     "skin-glow": {
       "clusters": [
@@ -170,7 +198,8 @@
       ],
       "add_primary": [],
       "add_related": [
-        "antioxidant smoothie"
+        "antioxidant smoothie",
+        "anti inflammatory smoothie"
       ]
     },
     "joint-mobility": {
@@ -185,12 +214,14 @@
       ],
       "add_primary": [],
       "add_related": [
-        "anti inflammatory smoothie"
+        "anti inflammatory smoothie",
+        "antioxidant smoothie"
       ]
     },
     "stress-relief": {
       "clusters": [
-        "anti_inflammation"
+        "anti_inflammation",
+        "metabolic_balance"
       ],
       "ingredients": [
         "banana",
@@ -199,12 +230,16 @@
       ],
       "add_primary": [],
       "add_related": [
-        "balanced smoothie"
+        "balanced smoothie",
+        "fiber and protein smoothie",
+        "anti inflammatory smoothie",
+        "antioxidant smoothie"
       ]
     },
     "liver-support": {
       "clusters": [
-        "anti_inflammation"
+        "anti_inflammation",
+        "metabolic_balance"
       ],
       "ingredients": [
         "blueberries",
@@ -213,7 +248,10 @@
       ],
       "add_primary": [],
       "add_related": [
-        "antioxidant smoothie"
+        "antioxidant smoothie",
+        "balanced smoothie",
+        "fiber and protein smoothie",
+        "anti inflammatory smoothie"
       ]
     },
     "oral-health": {
@@ -226,12 +264,15 @@
       ],
       "add_primary": [],
       "add_related": [
-        "low sugar smoothie"
+        "low sugar smoothie",
+        "anti inflammatory smoothie",
+        "antioxidant smoothie"
       ]
     },
     "thyroid-support": {
       "clusters": [
-        "anti_inflammation"
+        "anti_inflammation",
+        "metabolic_balance"
       ],
       "ingredients": [
         "blueberries",
@@ -239,12 +280,16 @@
       ],
       "add_primary": [],
       "add_related": [
-        "balanced smoothie"
+        "balanced smoothie",
+        "fiber and protein smoothie",
+        "anti inflammatory smoothie",
+        "antioxidant smoothie"
       ]
     },
     "iron-support": {
       "clusters": [
-        "anti_inflammation"
+        "anti_inflammation",
+        "metabolic_balance"
       ],
       "ingredients": [
         "spinach",
@@ -252,7 +297,10 @@
       ],
       "add_primary": [],
       "add_related": [
-        "balanced smoothie"
+        "balanced smoothie",
+        "fiber and protein smoothie",
+        "anti inflammatory smoothie",
+        "antioxidant smoothie"
       ]
     },
     "bone-strength": {
@@ -265,7 +313,8 @@
       ],
       "add_primary": [],
       "add_related": [
-        "balanced smoothie"
+        "balanced smoothie",
+        "fiber and protein smoothie"
       ]
     },
     "brain-focus": {
@@ -278,7 +327,8 @@
       ],
       "add_primary": [],
       "add_related": [
-        "antioxidant smoothie"
+        "antioxidant smoothie",
+        "anti inflammatory smoothie"
       ]
     },
     "vision-support": {
@@ -292,7 +342,8 @@
       ],
       "add_primary": [],
       "add_related": [
-        "antioxidant smoothie"
+        "antioxidant smoothie",
+        "anti inflammatory smoothie"
       ]
     },
     "muscle-recovery": {
@@ -306,7 +357,9 @@
       ],
       "add_primary": [],
       "add_related": [
-        "protein smoothie"
+        "protein smoothie",
+        "balanced smoothie",
+        "fiber and protein smoothie"
       ]
     },
     "prenatal-support": {
@@ -320,7 +373,8 @@
       ],
       "add_primary": [],
       "add_related": [
-        "balanced smoothie"
+        "balanced smoothie",
+        "fiber and protein smoothie"
       ]
     }
   }
