@@ -134,7 +134,10 @@ def _csp_nonce():
 @app.context_processor
 def inject_csp_nonce():
     """Inject CSP nonce into templates."""
-    return {"csp_nonce": getattr(g, "csp_nonce", "")}
+    return {
+        "csp_nonce": getattr(g, "csp_nonce", ""),
+        "GA_MEASUREMENT_ID": os.getenv("GA_MEASUREMENT_ID", "").strip(),
+    }
 
 # Configure logging to ensure app.logger.info prints to stdout
 app.logger.setLevel(logging.INFO)
@@ -1464,7 +1467,7 @@ def add_security_headers(response):
         "form-action 'self'",
 
         # AdSense / CMP needs external images
-        "img-src 'self' data: https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com",
+        "img-src 'self' data: https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://www.google-analytics.com",
 
         "style-src 'self' 'unsafe-inline'",
     ]
@@ -1477,7 +1480,8 @@ def add_security_headers(response):
             "https://pagead2.googlesyndication.com "
             "https://tpc.googlesyndication.com "
             "https://www.googletagservices.com "
-            "https://fundingchoicesmessages.google.com"
+            "https://fundingchoicesmessages.google.com "
+            "https://www.googletagmanager.com"
         )
     else:
         csp_directives.append(
@@ -1485,13 +1489,14 @@ def add_security_headers(response):
             "https://pagead2.googlesyndication.com "
             "https://tpc.googlesyndication.com "
             "https://www.googletagservices.com "
-            "https://fundingchoicesmessages.google.com"
+            "https://fundingchoicesmessages.google.com "
+            "https://www.googletagmanager.com"
         )
 
     csp_directives.extend(
         [
             # AdSense/XHR beacons
-            "connect-src 'self' https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com",
+            "connect-src 'self' https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://www.google-analytics.com https://region1.google-analytics.com",
 
             # Ads + CMP load in iframes
             "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.googlesyndication.com https://fundingchoicesmessages.google.com https://consent.google.com",
