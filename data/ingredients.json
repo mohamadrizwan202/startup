@@ -70,5 +70,66 @@
       "Common in green smoothies",
       "Pairs well with avocado and citrus"
     ]
+  },
+  "oats": {
+    "name": "Oats",
+    "summary": "Oats are a common smoothie add-in for a thicker, more filling texture. This page is informational, not medical advice.",
+    "highlights": [
+      "Adds a mild, neutral base and thicker texture",
+      "Pairs well with banana, berries, peanut butter, and cinnamon",
+      "Easy way to add fiber and make smoothies feel more satisfying"
+    ],
+    "clusters": [
+      "metabolic_balance"
+    ]
+  },
+  "almond-milk": {
+    "name": "Almond Milk",
+    "summary": "Almond milk is a popular smoothie liquid base with a light, nutty flavor. This page is informational, not medical advice.",
+    "highlights": [
+      "Light, smooth base for blending",
+      "Pairs well with berries, banana, and oats",
+      "Useful when you want a thinner smoothie without adding water"
+    ],
+    "clusters": [
+      "metabolic_balance"
+    ]
+  },
+  "greek-yogurt": {
+    "name": "Greek Yogurt",
+    "summary": "Greek yogurt is often used in smoothies for creaminess and a richer texture. This page is informational, not medical advice.",
+    "highlights": [
+      "Creamy texture and tangy flavor",
+      "Commonly used to make smoothies feel more \"meal-like\"",
+      "Pairs well with berries, banana, and honey"
+    ],
+    "clusters": [
+      "metabolic_balance"
+    ]
+  },
+  "flaxseed": {
+    "name": "Flaxseed",
+    "summary": "Flaxseed is a common smoothie add-in for texture and nutrition. This page is informational, not medical advice.",
+    "highlights": [
+      "Often added as ground flax for better blending",
+      "Pairs well with berries, banana, oats, and yogurt",
+      "Adds a mild nutty taste and can help thicken slightly"
+    ],
+    "clusters": [
+      "anti_inflammation",
+      "metabolic_balance"
+    ]
+  },
+  "apple": {
+    "name": "Apple",
+    "summary": "Apple can add fresh sweetness and a lighter fruit flavor to smoothies. This page is informational, not medical advice.",
+    "highlights": [
+      "Fresh sweetness and bright flavor",
+      "Pairs well with spinach, berries, banana, and cinnamon",
+      "Works well in lighter, fruit-forward smoothies"
+    ],
+    "clusters": [
+      "metabolic_balance"
+    ]
   }
 }

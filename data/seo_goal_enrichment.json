@@ -29,7 +29,12 @@
         "blueberries",
         "spinach",
         "avocado",
-        "peanut-butter"
+        "peanut-butter",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -46,7 +51,12 @@
         "banana",
         "strawberry",
         "chia-seed",
-        "peanut-butter"
+        "peanut-butter",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -62,7 +72,12 @@
       "ingredients": [
         "avocado",
         "chia-seed",
-        "blueberries"
+        "blueberries",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -79,7 +94,12 @@
       "ingredients": [
         "banana",
         "chia-seed",
-        "spinach"
+        "spinach",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -97,7 +117,12 @@
         "blueberries",
         "spinach",
         "chia-seed",
-        "kale"
+        "kale",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -145,7 +170,8 @@
         "blueberries",
         "kale",
         "spinach",
-        "chia-seed"
+        "chia-seed",
+        "flaxseed"
       ],
       "add_primary": [],
       "add_related": [
@@ -161,7 +187,8 @@
         "strawberry",
         "blueberries",
         "spinach",
-        "kale"
+        "kale",
+        "flaxseed"
       ],
       "add_primary": [],
       "add_related": [
@@ -177,7 +204,12 @@
         "banana",
         "peanut-butter",
         "strawberry",
-        "chia-seed"
+        "chia-seed",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -194,7 +226,8 @@
         "blueberries",
         "spinach",
         "kale",
-        "chia-seed"
+        "chia-seed",
+        "flaxseed"
       ],
       "add_primary": [],
       "add_related": [
@@ -210,7 +243,8 @@
         "blueberries",
         "kale",
         "spinach",
-        "chia-seed"
+        "chia-seed",
+        "flaxseed"
       ],
       "add_primary": [],
       "add_related": [
@@ -226,7 +260,12 @@
       "ingredients": [
         "banana",
         "strawberry",
-        "blueberries"
+        "blueberries",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -244,7 +283,12 @@
       "ingredients": [
         "blueberries",
         "spinach",
-        "kale"
+        "kale",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -260,7 +304,8 @@
       ],
       "ingredients": [
         "strawberry",
-        "blueberries"
+        "blueberries",
+        "flaxseed"
       ],
       "add_primary": [],
       "add_related": [
@@ -276,7 +321,12 @@
       ],
       "ingredients": [
         "blueberries",
-        "spinach"
+        "spinach",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -293,7 +343,12 @@
       ],
       "ingredients": [
         "spinach",
-        "kale"
+        "kale",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -309,7 +364,12 @@
       ],
       "ingredients": [
         "spinach",
-        "chia-seed"
+        "chia-seed",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -323,7 +383,8 @@
       ],
       "ingredients": [
         "blueberries",
-        "chia-seed"
+        "chia-seed",
+        "flaxseed"
       ],
       "add_primary": [],
       "add_related": [
@@ -338,7 +399,8 @@
       "ingredients": [
         "spinach",
         "kale",
-        "blueberries"
+        "blueberries",
+        "flaxseed"
       ],
       "add_primary": [],
       "add_related": [
@@ -353,7 +415,12 @@
       "ingredients": [
         "banana",
         "peanut-butter",
-        "strawberry"
+        "strawberry",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [
@@ -369,7 +436,12 @@
       "ingredients": [
         "spinach",
         "blueberries",
-        "chia-seed"
+        "chia-seed",
+        "almond-milk",
+        "apple",
+        "flaxseed",
+        "greek-yogurt",
+        "oats"
       ],
       "add_primary": [],
       "add_related": [

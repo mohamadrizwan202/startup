@@ -153,6 +153,53 @@ def pick_ingredients_from_clusters(clusters: List[str], existing_ingredient_slug
     return out
 
 
+def apply_ingredient_clusters_to_goals(cfg: dict, goals_reg: dict, ings_reg: dict) -> bool:
+    """
+    For each ingredient that has clusters, add it to any goal that shares a cluster.
+    Returns True if cfg changed.
+    """
+    defaults = cfg.get("defaults", {})
+    max_primary = int(defaults.get("max_primary", 12))
+
+    goal_map = cfg.setdefault("goal_map", {})
+    changed = False
+
+    # deterministic order so diffs are stable
+    ingredient_slugs = sorted(ings_reg.keys())
+
+    for gslug, g in goal_map.items():
+        g_clusters = set(g.get("clusters") or [])
+        if not g_clusters:
+            continue
+
+        ing_list = list(g.get("ingredients") or [])
+        ing_set = set(ing_list)
+
+        for islug in ingredient_slugs:
+            ing = ings_reg.get(islug) or {}
+            i_clusters = set(ing.get("clusters") or [])
+            if not i_clusters:
+                continue
+
+            if g_clusters.isdisjoint(i_clusters):
+                continue
+
+            if islug in ing_set:
+                continue
+
+            # cap so we don't overstuff
+            if len(ing_list) >= max_primary:
+                break
+
+            ing_list.append(islug)
+            ing_set.add(islug)
+            changed = True
+
+        g["ingredients"] = ing_list
+
+    return changed
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--write", action="store_true", help="write changes + run seo_enrich_goals.py --write")
@@ -182,6 +229,8 @@ def main() -> int:
     cfg.setdefault("goal_map", {})
 
     goal_map: Dict[str, dict] = cfg["goal_map"]
+
+    clusters_changed = apply_ingredient_clusters_to_goals(cfg, goals_reg, ingredients_reg)
 
     touched = 0
     report: List[Tuple[str, dict]] = []
@@ -238,13 +287,16 @@ def main() -> int:
             if args.limit and touched >= args.limit:
                 break
 
-    if touched == 0:
+    if touched == 0 and not clusters_changed:
         print("No changes proposed.")
         return 0
 
-    print(f"Autopilot proposed changes for {touched} goal(s):")
-    for slug, gm in report[:30]:
-        print(f"- {slug}: clusters={gm.get('clusters', [])} ingredients={gm.get('ingredients', [])}")
+    if touched > 0:
+        print(f"Autopilot proposed changes for {touched} goal(s):")
+        for slug, gm in report[:30]:
+            print(f"- {slug}: clusters={gm.get('clusters', [])} ingredients={gm.get('ingredients', [])}")
+    elif clusters_changed:
+        print("Autopilot applied ingredient-cluster updates to goal_map.")
 
     if not args.write:
         print("\nDRY RUN only. Re-run with --write to apply + enrich goals.json.")
