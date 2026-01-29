@@ -2270,6 +2270,12 @@ def contact():
             conn.close()
             
             # Automation: send auto-ack email, admin alert, and Telegram notification (non-blocking)
+            # TEMP: Disable notifications to avoid blocking user response
+            if os.getenv('CONTACT_NOTIFICATIONS_ENABLED', '1') != '1':
+                app.logger.info(f"Contact notifications disabled: msg_id={msg_id}")
+                flash('Thank you for your message! We\'ll get back to you soon.', 'success')
+                return redirect(url_for('contact', sent='1'), code=303)
+
             auto_ack_sent = False
             admin_alert_sent = False
             telegram_notified = False
@@ -2309,7 +2315,7 @@ def contact():
             
             app.logger.info(f"Contact form saved: msg_id={msg_id}, auto_ack_sent={auto_ack_sent}, admin_alert_sent={admin_alert_sent}, telegram_notified={telegram_notified}")
             flash('Thank you for your message! We\'ll get back to you soon.', 'success')
-            return redirect(url_for('contact'))
+            return redirect(url_for('contact', sent='1'), code=303)
         
         except Exception as e:
             app.logger.exception('Contact form DB insert failed')
