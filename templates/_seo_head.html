@@ -71,26 +71,33 @@
 <meta name="twitter:description" content="{{ description }}">
 <meta name="twitter:image" content="{{ og_image }}">
 
-{# JSON-LD (CSP nonce supported).
-   lastmod note: keep structured data accurate and stable. #}
+{# JSON-LD (CSP nonce supported) #}
+{% set ORG_ID  = SITE_URL ~ "/#organization" %}
+{% set SITE_ID = SITE_URL ~ "/#website" %}
+
 {% set jsonld = [
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
+    "@type": "Organization",
+    "@id": ORG_ID,
     "name": "PureFyul",
+    "alternateName": ["Purefyul"],
     "url": SITE_URL,
+    "logo": og_image
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": SITE_ID,
+    "name": "PureFyul",
+    "alternateName": ["Purefyul"],
+    "url": SITE_URL,
+    "publisher": {"@id": ORG_ID},
     "potentialAction": {
       "@type": "SearchAction",
       "target": SITE_URL ~ "/ingredient/{search_term_string}",
       "query-input": "required name=search_term_string"
     }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "PureFyul",
-    "url": SITE_URL,
-    "logo": og_image
   }
 ] %}
 
