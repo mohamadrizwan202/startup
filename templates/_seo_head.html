@@ -71,6 +71,17 @@
 <meta name="twitter:description" content="{{ description }}">
 <meta name="twitter:image" content="{{ og_image }}">
 
+{% if GA_MEASUREMENT_ID %}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ GA_MEASUREMENT_ID }}"></script>
+<script nonce="{{ csp_nonce }}">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{ GA_MEASUREMENT_ID }}');
+</script>
+{% endif %}
+
 {# JSON-LD (CSP nonce supported) #}
 {% set ORG_ID  = SITE_URL ~ "/#organization" %}
 {% set SITE_ID = SITE_URL ~ "/#website" %}
