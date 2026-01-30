@@ -2117,19 +2117,14 @@ def _send_contact_auto_ack(name, email, subject, message):
         return False
     
     ack_subject = "Thank you for contacting PureFyul"
-    ack_body = f"""Hello {name},
+    ack_body = f"""Hi {name},
 
-Thank you for reaching out to us! We've received your message:
+Thanks — we received your message about: {subject}.
 
-Subject: {subject}
+Our support team will review it and reply as soon as possible.
+If you need to add details, reply to this email.
 
-Your message:
-{message}
-
-We'll review your message and get back to you as soon as possible.
-
-Best regards,
-The PureFyul Team
+— PureFyul Support
 """
     return _send_email_smtp(email, ack_subject, ack_body)
 
@@ -2269,53 +2264,28 @@ def contact():
             cursor.close()
             conn.close()
             
-            # Automation: send auto-ack email, admin alert, and Telegram notification (non-blocking)
-            # TEMP: Disable notifications to avoid blocking user response
-            if os.getenv('CONTACT_NOTIFICATIONS_ENABLED', '1') != '1':
-                app.logger.info(f"Contact notifications disabled: msg_id={msg_id}")
-                flash('Thank you for your message! We\'ll get back to you soon.', 'success')
-                return redirect(url_for('contact', sent='1'), code=303)
-
-            auto_ack_sent = False
-            admin_alert_sent = False
-            telegram_notified = False
-            
-            if msg_id:
-                # Send auto-acknowledgment email
-                try:
-                    auto_ack_sent = _send_contact_auto_ack(name, email, subject, message)
-                except Exception as e:
-                    app.logger.warning(f"Auto-ack failed: {type(e).__name__}")
-                
-                # Send admin alert email
-                try:
-                    admin_alert_sent = _send_admin_alert_email(name, email, subject, message, msg_id, request)
-                except Exception as e:
-                    app.logger.warning(f"Admin alert email failed: {type(e).__name__}")
-                
-                # Send Telegram notification
-                if _truthy(os.getenv('TELEGRAM_NOTIFY_ENABLED', '')):
-                    try:
-                        message_preview = message[:400] + ('...' if len(message) > 400 else '')
-                        admin_url = f"{request.host_url.rstrip('/')}{url_for('admin_contact_detail', msg_id=msg_id)}"
-                        # Escape HTML entities in user-provided content
-                        telegram_text = f"""<b>New Contact Form Submission</b>
-
-<b>Name:</b> {html.escape(name)}
-<b>Email:</b> {html.escape(email)}
-<b>Subject:</b> {html.escape(subject)}
-
-<b>Message:</b>
-{html.escape(message_preview)}
-
-<a href="{admin_url}">View in Admin</a>"""
-                        telegram_notified = _notify_telegram(telegram_text)
-                    except Exception as e:
-                        app.logger.warning(f"Telegram notify failed: {type(e).__name__}")
-            
-            app.logger.info(f"Contact form saved: msg_id={msg_id}, auto_ack_sent={auto_ack_sent}, admin_alert_sent={admin_alert_sent}, telegram_notified={telegram_notified}")
+            # Automation: user auto-reply email (async so the form stays instant)
             flash('Thank you for your message! We\'ll get back to you soon.', 'success')
-            return redirect(url_for('contact', sent='1'), code=303)
+            resp = redirect(url_for('contact', sent='1'), code=303)
+
+            if msg_id and os.getenv('CONTACT_NOTIFICATIONS_ENABLED', '1') == '1':
+                import threading
+
+                def _auto_ack_async():
+                    sent_ok = False
+                    try:
+                        sent_ok = _send_contact_auto_ack(name, email, subject, message)
+                    except Exception as e:
+                        app.logger.warning(f"Auto-ack failed: {type(e).__name__}")
+                    app.logger.info(f"Contact auto-ack done: msg_id={msg_id}, auto_ack_sent={sent_ok}")
+
+                threading.Thread(target=_auto_ack_async, daemon=True).start()
+            else:
+                app.logger.info(f"Contact auto-ack skipped: msg_id={msg_id}")
+
+            app.logger.info(f"Contact form saved: msg_id={msg_id}")
+            return resp
+
         
         except Exception as e:
             app.logger.exception('Contact form DB insert failed')
