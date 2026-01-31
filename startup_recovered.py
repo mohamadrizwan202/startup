@@ -2140,6 +2140,40 @@ If you need to add details, reply to this email.
     return _send_email_smtp(email, ack_subject, ack_body)
 
 
+def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
+    """
+    Send admin notification email for new contact submission.
+    Uses _send_email_smtp (which you rewired to Resend).
+    Returns True on success, False on failure.
+    """
+    admin_email = (os.getenv("CONTACT_NOTIFY_TO") or "").strip()
+    if not admin_email:
+        app.logger.warning("Admin notify skipped: CONTACT_NOTIFY_TO not set.")
+        return False
+
+    alert_subject = f"[PureFyul] New contact #{msg_id}"
+
+    message_preview = (message or "").strip()
+    if len(message_preview) > 2000:
+        message_preview = message_preview[:2000] + "..."
+
+    alert_body = f"""New contact form submission:
+
+ID: {msg_id}
+Name: {name}
+Email: {email}
+Subject: {subject}
+
+Message:
+{message_preview}
+
+View in admin: {admin_url}
+"""
+
+    # reply_to = user's email so you can reply directly
+    return _send_email_smtp(admin_email, alert_subject, alert_body, reply_to=email)
+
+
 def _notify_telegram(text):
     """Send Telegram notification. Returns True on success, False on failure."""
     try:
@@ -2280,6 +2314,7 @@ def contact():
             resp = redirect(url_for('contact', sent='1'), code=303)
 
             if msg_id and os.getenv('CONTACT_NOTIFICATIONS_ENABLED', '1') == '1':
+                admin_url = f"{request.host_url.rstrip('/')}{url_for('admin_contact_detail', msg_id=msg_id)}"
                 import threading
 
                 def _auto_ack_async():
@@ -2289,6 +2324,8 @@ def contact():
                     except Exception as e:
                         app.logger.warning(f"Auto-ack failed: {type(e).__name__}")
                     app.logger.info(f"Contact auto-ack done: msg_id={msg_id}, auto_ack_sent={sent_ok}")
+
+                    admin_ok = _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url)
 
                 threading.Thread(target=_auto_ack_async, daemon=True).start()
             else:
