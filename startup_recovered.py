@@ -26,6 +26,7 @@ import smtplib
 import ssl
 from email.message import EmailMessage
 import urllib.request
+import urllib.error
 import urllib.parse
 import json
 import html
@@ -2050,65 +2051,75 @@ def _force_ipv4_create_connection():
         socket.create_connection = orig
 
 
-def _send_email_smtp(to_email, subject, body_text, reply_to=None):
-    smtp_host = os.getenv('SMTP_HOST', '').strip()
-    smtp_port_raw = os.getenv('SMTP_PORT', '587').strip()
-    smtp_user = os.getenv('SMTP_USER', '').strip()
-    smtp_pass = os.getenv('SMTP_PASS', '').strip()
-    smtp_from = os.getenv('SMTP_FROM', '').strip() or smtp_user
-
-    try:
-        smtp_port = int(smtp_port_raw)
-    except Exception:
-        smtp_port = 587
-
-    use_ssl = _truthy(os.getenv('SMTP_USE_SSL', '')) or smtp_port == 465
-    timeout_s = float(os.getenv('SMTP_TIMEOUT', '6') or '6')
-
-    if not (smtp_host and smtp_user and smtp_pass and to_email):
-        app.logger.warning("SMTP not configured (missing host/user/pass/to). Skipping.")
+def _send_email_resend(to_email, subject, body_text, reply_to=None):
+    """
+    Send email using Resend HTTPS API.
+    Returns True if accepted by Resend, False otherwise.
+    """
+    api_key = (os.getenv("RESEND_API_KEY") or "").strip()
+    from_addr = (os.getenv("RESEND_FROM") or "").strip()
+    if not api_key or not from_addr or not to_email:
+        app.logger.warning("Resend not configured (missing RESEND_API_KEY/RESEND_FROM/to). Skipping.")
         return False
 
-    msg = EmailMessage()
-    msg["From"] = smtp_from
-    msg["To"] = to_email
-    msg["Subject"] = subject
-    if reply_to:
-        msg["Reply-To"] = reply_to
-    msg.set_content(body_text)
+    # Prefer explicit reply-to env var, else use passed reply_to
+    reply_to_env = (os.getenv("RESEND_REPLY_TO") or "").strip()
+    reply_to_final = reply_to_env or reply_to or None
 
-    ctx = ssl.create_default_context()
+    payload = {
+        "from": from_addr,
+        "to": [to_email],
+        "subject": subject,
+        "text": body_text,
+    }
+    if reply_to_final:
+        payload["reply_to"] = [reply_to_final]
+
+    data = json.dumps(payload).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=data,
+        method="POST",
+        headers={
+            "Authorization": "Bearer " + api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "PureFyul/1.0 (+https://purefyul.com) contact-auto-ack",
+        },
+    )
+
+    timeout_s = float((os.getenv("RESEND_TIMEOUT") or "6").strip() or "6")
 
     try:
-        force_ipv4 = _truthy(os.getenv("SMTP_FORCE_IPV4", ""))
-
-        cm = _force_ipv4_create_connection() if force_ipv4 else contextlib.nullcontext()
-        with cm:
-            if use_ssl:
-                with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=timeout_s, context=ctx) as s:
-                    s.login(smtp_user, smtp_pass)
-                    s.send_message(msg)
-            else:
-                with smtplib.SMTP(smtp_host, smtp_port, timeout=timeout_s) as s:
-                    s.ehlo()
-                    s.starttls(context=ctx)
-                    s.ehlo()
-                    s.login(smtp_user, smtp_pass)
-                    s.send_message(msg)
-
-        return True
-
+        with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+            out = json.loads(raw) if raw else {}
+            email_id = out.get("id") or (out.get("data") or {}).get("id")
+            if email_id:
+                app.logger.info("Resend accepted: id=%s to=%s", email_id, to_email)
+                return True
+            app.logger.warning("Resend response missing id (to=%s).", to_email)
+            return False
+    except urllib.error.HTTPError as e:
+        try:
+            err = e.read().decode("utf-8", errors="replace")
+        except Exception:
+            err = ""
+        snippet = err[:300] + ("..." if len(err) > 300 else "")
+        app.logger.warning("Resend failed http=%s to=%s body=%s", e.code, to_email, snippet)
+        return False
     except Exception as e:
-        # DO NOT log secrets. This is safe.
-        app.logger.warning(
-            "SMTP send failed: %s: %s (host=%s port=%s ssl=%s)",
-            type(e).__name__,
-            str(e)[:200],
-            smtp_host,
-            smtp_port,
-            use_ssl,
-        )
+        app.logger.warning("Resend failed: %s to=%s", type(e).__name__, to_email)
         return False
+
+
+def _send_email_smtp(to_email, subject, body_text, reply_to=None):
+    """
+    Legacy name, but now uses Resend (SMTP from Render times out).
+    Returns True on success, False otherwise.
+    """
+    return _send_email_resend(to_email, subject, body_text, reply_to=reply_to)
 
 
 def _send_contact_auto_ack(name, email, subject, message):
