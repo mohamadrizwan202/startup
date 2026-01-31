@@ -2064,7 +2064,7 @@ def _send_email_resend(to_email, subject, body_text, reply_to=None):
 
     # Prefer explicit reply-to env var, else use passed reply_to
     reply_to_env = (os.getenv("RESEND_REPLY_TO") or "").strip()
-    reply_to_final = reply_to_env or reply_to or None
+    reply_to_final = reply_to or reply_to_env or None
 
     payload = {
         "from": from_addr,
@@ -2201,34 +2201,6 @@ def _notify_telegram(text):
     except Exception as e:
         app.logger.warning(f"Telegram notification failed: {type(e).__name__}")
         return False
-
-
-def _send_admin_alert_email(name, email, subject, message, msg_id, request):
-    """Send admin alert email for new contact submission. Returns True on success, False on failure."""
-    if not _truthy(os.getenv('ADMIN_ALERT_EMAIL_ENABLED', '')):
-        return False
-    
-    admin_email = os.getenv('ADMIN_ALERT_EMAIL_TO', '').strip()
-    if not admin_email:
-        app.logger.warning("ADMIN_ALERT_EMAIL_TO not set, skipping admin alert")
-        return False
-    
-    alert_subject = f"[PureFyul] New contact #{msg_id}"
-    message_preview = message[:400] + ('...' if len(message) > 400 else '')
-    admin_url = f"{request.host_url.rstrip('/')}{url_for('admin_contact_detail', msg_id=msg_id)}"
-    
-    alert_body = f"""New contact form submission:
-
-Name: {name}
-Email: {email}
-Subject: {subject}
-
-Message:
-{message_preview}
-
-View in admin: {admin_url}
-"""
-    return _send_email_smtp(admin_email, alert_subject, alert_body, reply_to=email)
 
 
 @app.route('/contact', methods=['GET', 'POST'])
