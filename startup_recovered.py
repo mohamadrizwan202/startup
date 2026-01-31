@@ -2122,22 +2122,33 @@ def _send_email_smtp(to_email, subject, body_text, reply_to=None):
     return _send_email_resend(to_email, subject, body_text, reply_to=reply_to)
 
 
-def _send_contact_auto_ack(name, email, subject, message):
+def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
     """Send auto-acknowledgment email to contact form submitter."""
-    if not _truthy(os.getenv('AUTO_ACK_ENABLED', '')):
+    if not _truthy(os.getenv("AUTO_ACK_ENABLED", "")):
         return False
-    
-    ack_subject = "Thank you for contacting PureFyul"
-    ack_body = f"""Hi {name},
 
-Thanks — we received your message about: {subject}.
+    to_email = (email or "").strip()
+    if not to_email:
+        return False
 
-Our support team will review it and reply as soon as possible.
-If you need to add details, reply to this email.
+    user_name = (name or "").strip() or "there"
+    topic = (subject or "").strip() or "your message"
 
-— PureFyul Support
-"""
-    return _send_email_smtp(email, ack_subject, ack_body)
+    ack_subject = "We received your message"
+    ref = f"#{msg_id}" if msg_id else "N/A"
+
+    ack_body = (
+        f"Hi {user_name},\n\n"
+        f"Thanks for contacting PureFyul. We've received your message ({topic}).\n\n"
+        f"We'll review it and reply to this email.\n"
+        f"To add details, please use https://purefyul.com/contact and include the reference number below.\n\n"
+        f"Reference: {ref}\n\n"
+        f"— PureFyul Support\n"
+        f"support@purefyul.com\n"
+    )
+
+    # Keep reply_to=None so RESEND_REPLY_TO (support@purefyul.com) is used.
+    return _send_email_smtp(to_email, ack_subject, ack_body, reply_to=None)
 
 
 def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
@@ -2292,7 +2303,7 @@ def contact():
                 def _auto_ack_async():
                     sent_ok = False
                     try:
-                        sent_ok = _send_contact_auto_ack(name, email, subject, message)
+                        sent_ok = _send_contact_auto_ack(name, email, subject, message, msg_id=msg_id)
                     except Exception as e:
                         app.logger.warning(f"Auto-ack failed: {type(e).__name__}")
                     app.logger.info(f"Contact auto-ack done: msg_id={msg_id}, auto_ack_sent={sent_ok}")
