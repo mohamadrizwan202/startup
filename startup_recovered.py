@@ -1732,6 +1732,10 @@ def register():
             }
             conn.commit()
             conn.close()
+
+            # Welcome email (async; never blocks registration)
+            user_name = (request.form.get("name", "") or "").strip() or None
+            queue_welcome_email(email, user_name)
             
             if not user_id:
                 raise Exception("Failed to get user_id after insert")
@@ -2149,6 +2153,223 @@ def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
 
     # Keep reply_to=None so RESEND_REPLY_TO (support@purefyul.com) is used.
     return _send_email_smtp(to_email, ack_subject, ack_body, reply_to=None)
+
+
+def _send_welcome_email(user_email: str, user_name: str | None = None) -> bool:
+    """
+    Welcome email (HTML + text fallback) via Resend.
+    Beautiful layout, logo support, and safe language (no timelines/guarantees).
+    """
+    if not _truthy(os.getenv("WELCOME_EMAIL_ENABLED", "1")):
+        return False
+
+    to_email = (user_email or "").strip()
+    if not to_email:
+        return False
+
+    name = (user_name or "").strip() or "there"
+
+    # Required Resend config
+    api_key = (os.getenv("RESEND_API_KEY") or "").strip()
+    from_addr = (os.getenv("RESEND_FROM") or "").strip()
+    reply_to = (os.getenv("RESEND_REPLY_TO") or "support@purefyul.com").strip()
+    timeout_s = float(os.getenv("RESEND_TIMEOUT", "6") or "6")
+
+    if not api_key or not from_addr:
+        app.logger.warning("Resend not configured for welcome (missing RESEND_API_KEY/RESEND_FROM). Skipping.")
+        return False
+
+    # Optional branding
+    app_url = (os.getenv("APP_URL") or "https://purefyul.com/").strip()
+    logo_url = (os.getenv("EMAIL_LOGO_URL") or "").strip()  # must be absolute https url to show in email
+
+    subject = "Welcome to PureFyul"
+
+    # ---- text fallback (always delivered) ----
+    text_body = (
+        f"Hi {name},\n\n"
+        "Welcome to PureFyul.\n\n"
+        "Quick start:\n"
+        "1) Choose a goal that matches what you want\n"
+        "2) Search an ingredient and review the details\n"
+        "3) Build your blend and refine it ingredient-by-ingredient\n\n"
+        f"Open PureFyul: {app_url}\n\n"
+        "If you need help, reply to this email and tell us what you were trying to do.\n\n"
+        "— PureFyul Support\n"
+        "support@purefyul.com\n"
+    )
+
+    # ---- HTML body (designed) ----
+    import html as _html
+
+    preheader = "Welcome to PureFyul — quick start inside."
+    safe_name = _html.escape(name)
+    safe_app_url = _html.escape(app_url)
+
+    logo_block = ""
+    if logo_url:
+        safe_logo_url = _html.escape(logo_url)
+        logo_block = f"""
+  <a href="{safe_app_url}" style="text-decoration:none;">
+    <img src="{safe_logo_url}" height="44" alt="PureFyul"
+         style="display:block;border:0;outline:none;text-decoration:none;height:44px;width:auto;border-radius:10px;">
+  </a>
+""".strip()
+    else:
+        logo_block = """<div style="font-size:18px;font-weight:800;letter-spacing:.2px;color:#0f172a;">PureFyul</div>"""
+
+    html_body = f"""\
+<!doctype html>
+<html>
+  <body style="margin:0;padding:0;background:#f6f7fb;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+      {_html.escape(preheader)}
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7fb;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0"
+                 style="width:600px;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;">
+            <tr>
+              <td style="background:#0ea5a4;height:6px;line-height:6px;font-size:0;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td style="padding:18px 22px 10px 22px;background:#f0fdfa;">
+                {logo_block}
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 22px 18px 22px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#0f172a;">
+                <div style="font-size:22px;font-weight:800;line-height:1.25;margin:12px 0 10px 0;">
+                  Welcome
+                </div>
+
+                <div style="font-size:14px;line-height:1.65;color:#0f172a;">
+                  <div style="margin:0 0 10px 0;">Hi {safe_name},</div>
+                  <div style="margin:0 0 12px 0;">
+                    Welcome to PureFyul. Here's a quick way to get value in under a minute:
+                  </div>
+
+                  <div style="margin:0 0 14px 0;padding:12px 12px;background:#f8fafc;border-radius:10px;">
+                    <div style="margin:0 0 6px 0;">1) Choose a goal that matches what you want</div>
+                    <div style="margin:0 0 6px 0;">2) Search an ingredient and review the details</div>
+                    <div style="margin:0;">3) Build your blend and refine it ingredient-by-ingredient</div>
+                  </div>
+
+                  <a href="{safe_app_url}"
+                     style="display:inline-block;background:#0ea5a4;color:#ffffff;text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:700;">
+                    Open PureFyul
+                  </a>
+
+                  <div style="margin-top:14px;font-size:13px;color:#334155;">
+                    If you need help, reply to this email and tell us what you were trying to do.
+                  </div>
+
+                  <div style="margin-top:18px;font-size:12px;line-height:1.5;color:#64748b;">
+                    You're receiving this because an account was created on PureFyul.
+                    If this wasn't you, you can ignore this email.
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:14px 22px 18px 22px;
+                         font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+                         background:#f8fafc;
+                         border-top:1px solid #e2e8f0;
+                         color:#64748b;
+                         font-size:12px;
+                         line-height:1.6;">
+                <div style="font-weight:800;color:#0f172a;">— PureFyul Support</div>
+
+                <div style="margin-top:6px;">
+                  Need help? Reply to this email, or write to
+                  <a href="mailto:support@purefyul.com"
+                     style="color:#0ea5a4;text-decoration:none;font-weight:800;">support@purefyul.com</a>
+                </div>
+
+                <div style="margin-top:6px;">
+                  <a href="{safe_app_url}" style="color:#0ea5a4;text-decoration:none;">purefyul.com</a>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="background:#0ea5a4;height:6px;line-height:6px;font-size:0;padding:0;">&nbsp;</td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+"""
+
+    # ---- send via Resend (HTML + text fallback) ----
+    import json, urllib.request, urllib.error
+
+    payload = {
+        "from": from_addr,
+        "to": [to_email],
+        "subject": subject,
+        "text": text_body,
+        "html": html_body,
+        "reply_to": [reply_to],
+    }
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=json.dumps(payload).encode("utf-8"),
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "PureFyul/1.0 (+https://purefyul.com)",
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
+            if 200 <= resp.status < 300:
+                try:
+                    out = json.loads(body)
+                    email_id = out.get("id")
+                except Exception:
+                    email_id = None
+                app.logger.info("Welcome email accepted: id=%s to=%s", email_id, to_email)
+                return True
+
+            app.logger.warning("Welcome email failed http=%s to=%s body=%s", resp.status, to_email, body[:2000])
+            return False
+
+    except urllib.error.HTTPError as e:
+        err = e.read().decode("utf-8", errors="replace") if hasattr(e, "read") else ""
+        app.logger.warning("Welcome email HTTPError: http=%s to=%s body=%s", getattr(e, "code", "?"), to_email, err[:2000])
+        return False
+    except Exception as e:
+        app.logger.warning("Welcome email exception: %s", type(e).__name__)
+        return False
+
+
+def queue_welcome_email(user_email: str, user_name: str | None = None) -> None:
+    """Async wrapper so signup stays instant."""
+    import threading
+
+    def _welcome_async():
+        ok = False
+        try:
+            ok = _send_welcome_email(user_email, user_name)
+        except Exception as e:
+            app.logger.warning("Welcome email failed: %s", type(e).__name__)
+        app.logger.info("Welcome email done: to=%s ok=%s", (user_email or ""), ok)
+
+    threading.Thread(target=_welcome_async, daemon=True).start()
 
 
 def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
