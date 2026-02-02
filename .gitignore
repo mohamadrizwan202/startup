@@ -60,3 +60,7 @@ myenv/
 !templates/admin/login.html
 
 templates/index.html.bak_ssm_*
+
+# local email previews
+email_*_preview.html
+email_shell_preview.html

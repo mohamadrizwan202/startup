@@ -25,6 +25,7 @@ from importlib import metadata
 import smtplib
 import ssl
 from email.message import EmailMessage
+import requests
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -2055,75 +2056,186 @@ def _force_ipv4_create_connection():
         socket.create_connection = orig
 
 
-def _send_email_resend(to_email, subject, body_text, reply_to=None):
+# -----------------------------
+# Email: branded shell (HTML + text)
+# -----------------------------
+from datetime import datetime
+from html import escape as _html_escape
+
+PUREFYUL_SITE_URL = (os.getenv("SITE_URL") or "https://purefyul.com").rstrip("/")
+
+# Prefer Render env, otherwise fall back to production asset.
+EMAIL_LOGO_URL = (os.getenv("EMAIL_LOGO_URL") or f"{PUREFYUL_SITE_URL}/static/img/logo-email-mark-768-hd.png").strip()
+
+EMAIL_THEME = {
+    "teal": "#0ea5a4",
+    "ink": "#0f172a",
+    "muted": "#334155",
+    "bg": "#f8fafc",
+    "panel": "#ffffff",
+    "border": "#e2e8f0",
+    "subtle": "#f1f5f9",
+}
+
+def build_email_html(*, title: str, body_html: str, preheader: str = "") -> str:
     """
-    Send email using Resend HTTPS API.
-    Returns True if accepted by Resend, False otherwise.
+    Table-based, inline-styled email shell.
+    body_html is trusted markup constructed by us (escape user fields before inserting later).
+    """
+    year = datetime.utcnow().year
+    title_safe = _html_escape(title or "")
+    preheader_safe = _html_escape(preheader or "")
+
+    return f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>{title_safe}</title>
+  </head>
+  <body style="margin:0;padding:0;background:{EMAIL_THEME['bg']};">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;visibility:hidden;mso-hide:all;">
+      {preheader_safe}
+    </div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:{EMAIL_THEME['bg']};">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+                 style="width:600px;max-width:600px;background:{EMAIL_THEME['panel']};border:1px solid {EMAIL_THEME['border']};border-radius:14px;overflow:hidden;">
+            <!-- Header (match welcome email) -->
+            <tr>
+              <td style="background:{EMAIL_THEME['teal']};height:6px;line-height:6px;font-size:0;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td style="padding:18px 22px 10px 22px;background:#f0fdfa;">
+                <a href="{PUREFYUL_SITE_URL}" style="text-decoration:none;">
+                  <img src="{EMAIL_LOGO_URL}" height="44" alt="PureFyul"
+                       style="display:block;border:0;outline:none;text-decoration:none;height:44px;width:auto;border-radius:10px;">
+                </a>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:22px 24px 8px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:{EMAIL_THEME['ink']};">
+                <h1 style="margin:0;font-size:22px;line-height:28px;font-weight:700;color:{EMAIL_THEME['ink']};">
+                  {title_safe}
+                </h1>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 24px 24px 24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:{EMAIL_THEME['ink']};font-size:15px;line-height:22px;">
+                {body_html}
+              </td>
+            </tr>
+
+            <!-- Footer (match welcome email) -->
+            <tr>
+              <td style="padding:14px 22px 18px 22px;
+                         font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+                         background:#f8fafc;
+                         border-top:1px solid #e2e8f0;
+                         color:#64748b;
+                         font-size:12px;
+                         line-height:1.6;">
+                <div style="font-weight:800;color:#0f172a;">— PureFyul Support</div>
+
+                <div style="margin-top:6px;">
+                  Need help? Reply to this email, or write to
+                  <a href="mailto:support@purefyul.com"
+                     style="color:#0ea5a4;text-decoration:none;font-weight:800;">support@purefyul.com</a>
+                </div>
+
+                <div style="margin-top:6px;">
+                  <a href="{PUREFYUL_SITE_URL}" style="color:#0ea5a4;text-decoration:none;">purefyul.com</a>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="background:#0ea5a4;height:6px;line-height:6px;font-size:0;padding:0;">&nbsp;</td>
+            </tr>
+          </table>
+</td>
+      </tr>
+    </table>
+  </body>
+</html>
+"""
+
+def build_email_text(*, title: str, body_text: str, preheader: str = "") -> str:
+    title = (title or "").strip()
+    body_text = (body_text or "").rstrip()
+    preheader = (preheader or "").strip()
+
+    parts = []
+    if preheader:
+        parts += [preheader, ""]
+
+    parts += ["PureFyul", title, "", body_text, "", "--", f"PureFyul • {PUREFYUL_SITE_URL}"]
+    return "\n".join([p for p in parts if p is not None]).strip() + "\n"
+
+
+def send_branded_email(*, to_email: str, subject: str, title: str, preheader: str, text_body: str, inner_html: str, reply_to: str | None = None) -> bool:
+    """
+    Sends a branded HTML email using the shared shell + a required plain-text fallback.
+    inner_html must be trusted markup constructed by us (escape user-provided fields before inserting).
+    """
+    html_body = build_email_html(title=title, preheader=preheader, body_html=inner_html)
+    return _send_email_smtp(to_email, subject, text_body, body_html=html_body, reply_to=reply_to)
+
+
+def _send_email_resend(to_email, subject, body_text, body_html=None, reply_to=None):
+    """
+    Resend sender. Supports plain-text only (legacy) or text+html.
+    Keep body_text always present for deliverability/fallback.
     """
     api_key = (os.getenv("RESEND_API_KEY") or "").strip()
-    from_addr = (os.getenv("RESEND_FROM") or "").strip()
-    if not api_key or not from_addr or not to_email:
+    from_email = (os.getenv("RESEND_FROM") or "").strip()
+    if not api_key or not from_email or not to_email:
         app.logger.warning("Resend not configured (missing RESEND_API_KEY/RESEND_FROM/to). Skipping.")
         return False
 
-    # Prefer explicit reply-to env var, else use passed reply_to
-    reply_to_env = (os.getenv("RESEND_REPLY_TO") or "").strip()
-    reply_to_final = reply_to or reply_to_env or None
-
     payload = {
-        "from": from_addr,
+        "from": from_email,
         "to": [to_email],
         "subject": subject,
-        "text": body_text,
+        "text": body_text or "",
     }
-    if reply_to_final:
-        payload["reply_to"] = [reply_to_final]
+    if reply_to:
+        payload["reply_to"] = reply_to
 
-    data = json.dumps(payload).encode("utf-8")
-
-    req = urllib.request.Request(
-        "https://api.resend.com/emails",
-        data=data,
-        method="POST",
-        headers={
-            "Authorization": "Bearer " + api_key,
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "User-Agent": "PureFyul/1.0 (+https://purefyul.com) contact-auto-ack",
-        },
-    )
-
-    timeout_s = float((os.getenv("RESEND_TIMEOUT") or "6").strip() or "6")
+    # Only include HTML when provided
+    if body_html:
+        payload["html"] = body_html
 
     try:
-        with urllib.request.urlopen(req, timeout=timeout_s) as resp:
-            raw = resp.read().decode("utf-8", errors="replace")
-            out = json.loads(raw) if raw else {}
-            email_id = out.get("id") or (out.get("data") or {}).get("id")
-            if email_id:
-                app.logger.info("Resend accepted: id=%s to=%s", email_id, to_email)
-                return True
-            app.logger.warning("Resend response missing id (to=%s).", to_email)
-            return False
-    except urllib.error.HTTPError as e:
-        try:
-            err = e.read().decode("utf-8", errors="replace")
-        except Exception:
-            err = ""
-        snippet = err[:300] + ("..." if len(err) > 300 else "")
-        app.logger.warning("Resend failed http=%s to=%s body=%s", e.code, to_email, snippet)
-        return False
+        resp = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=20,
+        )
+        ok = (200 <= resp.status_code < 300)
+        if not ok:
+            app.logger.warning("Resend send failed: status=%s body=%s", resp.status_code, resp.text[:5000])
+        return ok
     except Exception as e:
-        app.logger.warning("Resend failed: %s to=%s", type(e).__name__, to_email)
+        app.logger.warning("Resend send failed: %r", e)
         return False
 
 
-def _send_email_smtp(to_email, subject, body_text, reply_to=None):
+def _send_email_smtp(to_email, subject, body_text, body_html=None, reply_to=None):
     """
     Legacy name, but now uses Resend (SMTP from Render times out).
     Returns True on success, False otherwise.
     """
-    return _send_email_resend(to_email, subject, body_text, reply_to=reply_to)
+    return _send_email_resend(to_email, subject, body_text, body_html=body_html, reply_to=reply_to)
 
 
 def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
@@ -2147,12 +2259,46 @@ def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
         f"We'll review it and reply to this email.\n"
         f"To add details, please use https://purefyul.com/contact and include the reference number below.\n\n"
         f"Reference: {ref}\n\n"
-        f"— PureFyul Support\n"
-        f"support@purefyul.com\n"
     )
 
+    # --- HTML version (theme shell) ---
+    safe_user_name = _html_escape(user_name)
+    safe_topic = _html_escape(topic)
+    safe_ref = _html_escape(ref)
+
+    ack_inner_html = f"""
+<p style="margin:0 0 12px 0;">Hi {safe_user_name},</p>
+
+<p style="margin:0 0 12px 0;">
+  Thanks for contacting PureFyul. We've received your message ({safe_topic}).
+</p>
+
+<p style="margin:0 0 12px 0;">
+  We'll review it and reply to this email.
+</p>
+
+<div style="margin:14px 0 14px 0;padding:12px 12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+  <div style="font-weight:700;color:#0f172a;margin:0 0 6px 0;">Reference</div>
+  <div style="color:#334155;margin:0;">{safe_ref}</div>
+</div>
+
+<p style="margin:0;">
+  To add details, please use
+  <a href="{PUREFYUL_SITE_URL}/contact" style="color:#0ea5a4;text-decoration:none;font-weight:700;">purefyul.com/contact</a>
+  and include the reference above.
+</p>
+""".strip()
+
     # Keep reply_to=None so RESEND_REPLY_TO (support@purefyul.com) is used.
-    return _send_email_smtp(to_email, ack_subject, ack_body, reply_to=None)
+    return send_branded_email(
+        to_email=to_email,
+        subject=ack_subject,
+        title="We received your message",
+        preheader="PureFyul Support — we received your message.",
+        text_body=ack_body,
+        inner_html=ack_inner_html,
+        reply_to=None,
+    )
 
 
 def _send_welcome_email(user_email: str, user_name: str | None = None) -> bool:
@@ -2195,7 +2341,6 @@ def _send_welcome_email(user_email: str, user_name: str | None = None) -> bool:
         "3) Build your blend and refine it ingredient-by-ingredient\n\n"
         f"Open PureFyul: {app_url}\n\n"
         "If you need help, reply to this email and tell us what you were trying to do.\n\n"
-        "— PureFyul Support\n"
         "support@purefyul.com\n"
     )
 
@@ -2402,8 +2547,43 @@ Message:
 View in admin: {admin_url}
 """
 
+    safe_id = _html_escape(str(msg_id))
+    safe_name = _html_escape(name or "")
+    safe_email = _html_escape(email or "")
+    safe_subject = _html_escape(subject or "")
+    safe_admin_url = _html_escape(admin_url or "")
+    safe_message = _html_escape(message_preview or "").replace("\n", "<br>")
+
+    admin_inner_html = f"""
+<p style="margin:0 0 12px 0;"><b>New contact form submission</b></p>
+
+<div style="margin:12px 0 0 0;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
+  <div style="margin:0 0 6px 0;"><b>ID:</b> {safe_id}</div>
+  <div style="margin:0 0 6px 0;"><b>Name:</b> {safe_name}</div>
+  <div style="margin:0 0 6px 0;"><b>Email:</b> {safe_email}</div>
+  <div style="margin:0;"><b>Subject:</b> {safe_subject}</div>
+</div>
+
+<div style="margin:12px 0 0 0;padding:12px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;">
+  <div style="font-weight:700;color:#0f172a;margin:0 0 6px 0;">Message</div>
+  <div style="white-space:normal;color:#334155;margin:0;">{safe_message}</div>
+</div>
+
+<p style="margin:12px 0 0 0;">
+  <a href="{safe_admin_url}" style="color:#0ea5a4;text-decoration:none;font-weight:700;">View in admin</a>
+</p>
+""".strip()
+
     # reply_to = user's email so you can reply directly
-    return _send_email_smtp(admin_email, alert_subject, alert_body, reply_to=email)
+    return send_branded_email(
+        to_email=admin_email,
+        subject=alert_subject,
+        title=alert_subject,
+        preheader=f"New contact form submission #{msg_id}",
+        text_body=alert_body,
+        inner_html=admin_inner_html,
+        reply_to=email,
+    )
 
 
 def _notify_telegram(text):
