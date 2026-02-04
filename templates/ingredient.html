@@ -54,7 +54,55 @@
         <p style="color: #555; font-size: 0.9rem; margin: 0;">No related goals yet.</p>
       {% endif %}
     </section>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">How to use {{ ingredient.name }} in smoothies</h2>
+      <p style="color:#444; margin: 0 0 10px;">
+        A simple way to use <strong>{{ ingredient.name }}</strong> is to start small, blend, taste, and adjust.
+        If you're not sure what pairs well, open the analyzer and experiment with 2–4 ingredients.
+      </p>
+      <ul style="margin: 0; padding-left: 18px;">
+        <li>Start with a small amount first, then increase gradually based on taste and tolerance.</li>
+        <li>Balance sweetness, acidity, and thickness by adjusting your liquids and complementary ingredients.</li>
+        <li>Keep it simple: fewer ingredients usually means a better, more predictable flavor.</li>
+      </ul>
+      <p style="color:#555; font-size: 0.92rem; margin: 10px 0 0;">
+        Tip: use <a href="/?q={{ ingredient.name|urlencode }}">PureFyul Analyzer</a> to see how this ingredient fits your goal.
+      </p>
+    </section>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">Shopping + storage</h2>
+      <ul style="margin: 0; padding-left: 18px;">
+        <li>Choose fresh, clean, and good-quality versions of {{ ingredient.name }} when possible.</li>
+        <li>Store properly to avoid spoilage; if freshness is an issue, consider freezing for smoothies.</li>
+        <li>Wash and prep safely (especially for produce).</li>
+      </ul>
+    </section>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">Cautions</h2>
+      <p style="color:#444; margin: 0 0 10px;">
+        This page is informational only and not medical advice. If you have allergies, sensitivities, or a medical condition,
+        check ingredients and consult a qualified professional when needed.
+      </p>
+      <ul style="margin: 0; padding-left: 18px;">
+        <li>If you feel any adverse reaction, stop using the ingredient and seek appropriate help.</li>
+        <li>Be careful with portion sizes if you’re tracking sugar, sodium, or calories.</li>
+      </ul>
+    </section>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">Explore more</h2>
+      <ul style="margin: 0; padding-left: 18px;">
+        <li><a href="/ingredients">Browse Ingredient Directory</a></li>
+        <li><a href="/goals">Browse Health Goals</a></li>
+        <li><a href="/?q={{ ingredient.name|urlencode }}">Open {{ ingredient.name }} in PureFyul Analyzer</a></li>
+      </ul>
+    </section>
   </main>
+
+  {% include "_legal_footer.html" %}
 </body>
 </html>
 
