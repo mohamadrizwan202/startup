@@ -2725,7 +2725,9 @@ def contact():
                         app.logger.warning(f"Auto-ack failed: {type(e).__name__}")
                     app.logger.info(f"Contact auto-ack done: msg_id={msg_id}, auto_ack_sent={sent_ok}")
 
-                    admin_ok = _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url)
+                    admin_ok = False
+                    if os.getenv("CONTACT_ADMIN_ALERT_ENABLED", "0") == "1":
+                        admin_ok = _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url)
 
                     app.logger.info(f"Contact admin alert done: msg_id={msg_id}, admin_alert_sent={admin_ok}")
 
