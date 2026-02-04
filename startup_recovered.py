@@ -2306,7 +2306,7 @@ def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
         return True
 
     except Exception as e:
-        app.logger.warning("Auto-ack failed: %s", type(e).__name__)
+        app.logger.warning("Auto-ack failed: %s: %s", type(e).__name__, str(e)[:800])
         return False
 
 def _send_welcome_email(user_email: str, user_name: str | None = None) -> bool:
@@ -2528,11 +2528,16 @@ def queue_welcome_email(user_email: str, user_name: str | None = None) -> None:
 def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
     """
     Send support/admin notification email for new contact submission via Resend using Jinja templates.
+    Recipient logic:
+      - If CONTACT_NOTIFY_TO is set, send there (e.g., your personal inbox)
+      - Else fallback to SUPPORT_EMAIL
     Returns True on success, False otherwise.
     """
-    support_email = (os.getenv("SUPPORT_EMAIL") or os.getenv("CONTACT_NOTIFY_TO") or "").strip()
-    if not support_email:
-        app.logger.warning("Admin notify skipped: SUPPORT_EMAIL/CONTACT_NOTIFY_TO not set.")
+    notify_to = (os.getenv("CONTACT_NOTIFY_TO") or "").strip()
+    support_email = (os.getenv("SUPPORT_EMAIL") or "support@purefyul.com").strip()
+    to_email = notify_to or support_email
+    if not to_email:
+        app.logger.warning("Admin notify skipped: no CONTACT_NOTIFY_TO and no SUPPORT_EMAIL")
         return False
 
     site_url = (os.getenv("SITE_URL") or os.getenv("APP_URL") or PUREFYUL_SITE_URL or "https://purefyul.com").strip().rstrip("/")
@@ -2549,7 +2554,6 @@ def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
     alert_subject = f"[PureFyul] New contact {('#' + str(msg_id)) if msg_id else ''}".strip()
     preheader = f"New contact submission #{msg_id}" if msg_id else "New contact submission"
 
-    # Plain-text fallback
     text_body = (
         "New contact form submission:\n\n"
         f"ID: {msg_id}\n"
@@ -2557,8 +2561,7 @@ def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
         f"Email: {user_email}\n"
         f"Subject: {topic}\n\n"
         "Message:\n"
-        f"{message_preview}\n\n"
-        f"View in admin: {admin_url}\n"
+        f"{message_preview}\n"
     )
 
     try:
@@ -2580,16 +2583,14 @@ def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
                 ],
                 message=message_preview or "",
                 site_url=site_url,
-                support_email=support_email,
+                support_email=support_email,   # footer/support identity
                 logo_url=logo_url,
                 brand_tagline="PureFyul Support",
             )
 
-        # reply_to = user's email so support can reply directly
         reply_to = user_email if user_email else None
-
         send_email_resend(
-            to=support_email,
+            to=to_email,               # actual recipient
             subject=alert_subject,
             html=html_body,
             text=text_body,
@@ -2597,8 +2598,8 @@ def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
         )
         return True
 
-    except Exception:
-        app.logger.warning("Admin alert failed: %s", "exception")
+    except Exception as e:
+        app.logger.warning("Admin alert failed: %s: %s", type(e).__name__, str(e)[:800])
         return False
 
 def _notify_telegram(text):
@@ -2725,6 +2726,8 @@ def contact():
                     app.logger.info(f"Contact auto-ack done: msg_id={msg_id}, auto_ack_sent={sent_ok}")
 
                     admin_ok = _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url)
+
+                    app.logger.info(f"Contact admin alert done: msg_id={msg_id}, admin_alert_sent={admin_ok}")
 
                 threading.Thread(target=_auto_ack_async, daemon=True).start()
             else:
