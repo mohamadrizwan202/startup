@@ -2239,8 +2239,8 @@ def _send_email_smtp(to_email, subject, body_text, body_html=None, reply_to=None
 
 
 def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
-    """Send auto-acknowledgment email to contact form submitter."""
-    if not _truthy(os.getenv("AUTO_ACK_ENABLED", "")):
+    """Send auto-ack email to contact form submitter via Resend using Jinja templates."""
+    if not _truthy(os.getenv("AUTO_ACK_ENABLED", "1")):
         return False
 
     to_email = (email or "").strip()
@@ -2248,58 +2248,66 @@ def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
         return False
 
     user_name = (name or "").strip() or "there"
+    first_name = user_name.split(" ")[0] if user_name else ""
     topic = (subject or "").strip() or "your message"
 
-    ack_subject = "We received your message"
-    ref = f"#{msg_id}" if msg_id else "N/A"
+    support_email = (os.getenv("SUPPORT_EMAIL") or os.getenv("RESEND_REPLY_TO") or "support@purefyul.com").strip()
+    site_url = (os.getenv("SITE_URL") or os.getenv("APP_URL") or PUREFYUL_SITE_URL or "https://purefyul.com").strip().rstrip("/")
+    logo_url = (os.getenv("LOGO_URL") or os.getenv("EMAIL_LOGO_URL") or "https://purefyul.com/static/img/logo-email-mark-192.png").strip()
 
-    ack_body = (
+    reference_id = f"#{msg_id}" if msg_id else None
+
+    summary = (message or "").strip()
+    if len(summary) > 240:
+        summary = summary[:240].rstrip() + "..."
+
+    ack_subject = "We received your message — PureFyul"
+    preheader = f"Reference {reference_id} — we'll reply soon." if reference_id else "We received your message — we'll reply soon."
+
+    text_body = (
         f"Hi {user_name},\n\n"
         f"Thanks for contacting PureFyul. We've received your message ({topic}).\n\n"
-        f"We'll review it and reply to this email.\n"
-        f"To add details, please use https://purefyul.com/contact and include the reference number below.\n\n"
-        f"Reference: {ref}\n\n"
+        "We'll review it and reply to this email.\n"
+        f"If you need to add details, use {site_url}/contact"
     )
+    if reference_id:
+        text_body += f" and include Reference {reference_id}.\n\nReference: {reference_id}\n"
+    else:
+        text_body += ".\n"
+    text_body += f"\n{support_email}\n{site_url}\n"
 
-    # --- HTML version (theme shell) ---
-    safe_user_name = _html_escape(user_name)
-    safe_topic = _html_escape(topic)
-    safe_ref = _html_escape(ref)
+    try:
+        from flask import render_template
+        from utils.emailer_resend import send_email_resend
 
-    ack_inner_html = f"""
-<p style="margin:0 0 12px 0;">Hi {safe_user_name},</p>
+        # This function runs in a background thread. Template rendering needs an app context.
+        with app.app_context():
+            html_body = render_template(
+                "email/received.html",
+                subject=ack_subject,
+                preheader=preheader,
+                first_name=first_name,
+                user_message_summary=summary,
+                reference_id=reference_id,
+                reference_hint=("Keep this for faster support." if reference_id else None),
+                site_url=site_url,
+                support_email=support_email,
+                logo_url=logo_url,
+                brand_tagline="PureFyul Support",
+            )
 
-<p style="margin:0 0 12px 0;">
-  Thanks for contacting PureFyul. We've received your message ({safe_topic}).
-</p>
+        send_email_resend(
+            to=to_email,
+            subject=ack_subject,
+            html=html_body,
+            text=text_body,
+            reply_to=support_email,
+        )
+        return True
 
-<p style="margin:0 0 12px 0;">
-  We'll review it and reply to this email.
-</p>
-
-<div style="margin:14px 0 14px 0;padding:12px 12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
-  <div style="font-weight:700;color:#0f172a;margin:0 0 6px 0;">Reference</div>
-  <div style="color:#334155;margin:0;">{safe_ref}</div>
-</div>
-
-<p style="margin:0;">
-  To add details, please use
-  <a href="{PUREFYUL_SITE_URL}/contact" style="color:#0ea5a4;text-decoration:none;font-weight:700;">purefyul.com/contact</a>
-  and include the reference above.
-</p>
-""".strip()
-
-    # Keep reply_to=None so RESEND_REPLY_TO (support@purefyul.com) is used.
-    return send_branded_email(
-        to_email=to_email,
-        subject=ack_subject,
-        title="We received your message",
-        preheader="PureFyul Support — we received your message.",
-        text_body=ack_body,
-        inner_html=ack_inner_html,
-        reply_to=None,
-    )
-
+    except Exception as e:
+        app.logger.warning("Auto-ack failed: %s", type(e).__name__)
+        return False
 
 def _send_welcome_email(user_email: str, user_name: str | None = None) -> bool:
     """
