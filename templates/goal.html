@@ -131,7 +131,7 @@
           {% endfor %}
         </ul>
       {% else %}
-        <p class="muted">More related goals will appear as we expand keywords.</p>
+        <p class="muted">No related goals to show yet.</p>
       {% endif %}
     </section>
 
@@ -143,7 +143,7 @@
             <span class="pill"><a href="/ingredient/{{ ing.slug }}">{{ ing.name }}</a></span>
           {% endfor %}
         </div>
-        <p class="muted" style="margin-top:10px;">These suggestions are generated from keyword overlap and will improve as the registries grow.</p>
+        <p class="muted" style="margin-top:10px;">These are starter ingredients associated with this goal in our library.</p>
       {% else %}
         <p class="muted">No ingredient suggestions yet for this goal.</p>
       {% endif %}
@@ -161,10 +161,18 @@
           {% endfor %}
         </ul>
       {% else %}
-        <p class="muted">
-          We'll add goal-specific ingredient suggestions here next. For now, use the directory:
-          <a href="/ingredients">Ingredient Directory</a>
-        </p>
+        <div class="muted">
+          <p>Use this goal as a simple filter when building a smoothie.</p>
+          <ul>
+            <li>Start with 2–4 ingredients from “Suggested ingredients” above.</li>
+            <li>Prefer whole foods and keep added sugars minimal.</li>
+            <li>Adjust based on taste, tolerance, and your personal needs.</li>
+          </ul>
+          <p>
+            Browse the full <a href="/ingredients">Ingredient Directory</a> or
+            <a href="/?q={{ goal.name|urlencode }}">open this goal in the analyzer</a>.
+          </p>
+        </div>
       {% endif %}
     </section>
 
