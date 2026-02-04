@@ -2527,72 +2527,79 @@ def queue_welcome_email(user_email: str, user_name: str | None = None) -> None:
 
 def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
     """
-    Send admin notification email for new contact submission.
-    Uses _send_email_smtp (which you rewired to Resend).
-    Returns True on success, False on failure.
+    Send support/admin notification email for new contact submission via Resend using Jinja templates.
+    Returns True on success, False otherwise.
     """
-    admin_email = (os.getenv("CONTACT_NOTIFY_TO") or "").strip()
-    if not admin_email:
-        app.logger.warning("Admin notify skipped: CONTACT_NOTIFY_TO not set.")
+    support_email = (os.getenv("SUPPORT_EMAIL") or os.getenv("CONTACT_NOTIFY_TO") or "").strip()
+    if not support_email:
+        app.logger.warning("Admin notify skipped: SUPPORT_EMAIL/CONTACT_NOTIFY_TO not set.")
         return False
 
-    alert_subject = f"[PureFyul] New contact #{msg_id}"
+    site_url = (os.getenv("SITE_URL") or os.getenv("APP_URL") or PUREFYUL_SITE_URL or "https://purefyul.com").strip().rstrip("/")
+    logo_url = (os.getenv("LOGO_URL") or os.getenv("EMAIL_LOGO_URL") or "https://purefyul.com/static/img/logo-email-mark-192.png").strip()
+
+    user_email = (email or "").strip()
+    user_name = (name or "").strip()
+    topic = (subject or "").strip()
 
     message_preview = (message or "").strip()
-    if len(message_preview) > 2000:
-        message_preview = message_preview[:2000] + "..."
+    if len(message_preview) > 4000:
+        message_preview = message_preview[:4000].rstrip() + "..."
 
-    alert_body = f"""New contact form submission:
+    alert_subject = f"[PureFyul] New contact {('#' + str(msg_id)) if msg_id else ''}".strip()
+    preheader = f"New contact submission #{msg_id}" if msg_id else "New contact submission"
 
-ID: {msg_id}
-Name: {name}
-Email: {email}
-Subject: {subject}
-
-Message:
-{message_preview}
-
-View in admin: {admin_url}
-"""
-
-    safe_id = _html_escape(str(msg_id))
-    safe_name = _html_escape(name or "")
-    safe_email = _html_escape(email or "")
-    safe_subject = _html_escape(subject or "")
-    safe_admin_url = _html_escape(admin_url or "")
-    safe_message = _html_escape(message_preview or "").replace("\n", "<br>")
-
-    admin_inner_html = f"""
-<p style="margin:0 0 12px 0;"><b>New contact form submission</b></p>
-
-<div style="margin:12px 0 0 0;padding:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;">
-  <div style="margin:0 0 6px 0;"><b>ID:</b> {safe_id}</div>
-  <div style="margin:0 0 6px 0;"><b>Name:</b> {safe_name}</div>
-  <div style="margin:0 0 6px 0;"><b>Email:</b> {safe_email}</div>
-  <div style="margin:0;"><b>Subject:</b> {safe_subject}</div>
-</div>
-
-<div style="margin:12px 0 0 0;padding:12px;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;">
-  <div style="font-weight:700;color:#0f172a;margin:0 0 6px 0;">Message</div>
-  <div style="white-space:normal;color:#334155;margin:0;">{safe_message}</div>
-</div>
-
-<p style="margin:12px 0 0 0;">
-  <a href="{safe_admin_url}" style="color:#0ea5a4;text-decoration:none;font-weight:700;">View in admin</a>
-</p>
-""".strip()
-
-    # reply_to = user's email so you can reply directly
-    return send_branded_email(
-        to_email=admin_email,
-        subject=alert_subject,
-        title=alert_subject,
-        preheader=f"New contact form submission #{msg_id}",
-        text_body=alert_body,
-        inner_html=admin_inner_html,
-        reply_to=email,
+    # Plain-text fallback
+    text_body = (
+        "New contact form submission:\n\n"
+        f"ID: {msg_id}\n"
+        f"Name: {user_name}\n"
+        f"Email: {user_email}\n"
+        f"Subject: {topic}\n\n"
+        "Message:\n"
+        f"{message_preview}\n\n"
+        f"View in admin: {admin_url}\n"
     )
 
+    try:
+        from flask import render_template
+        from utils.emailer_resend import send_email_resend
+
+        with app.app_context():
+            html_body = render_template(
+                "email/notification.html",
+                subject=alert_subject,
+                preheader=preheader,
+                headline="New contact submission",
+                intro="A new message was submitted via the contact form.",
+                details=[
+                    ("ID", f"#{msg_id}" if msg_id else "N/A"),
+                    ("Name", user_name or "—"),
+                    ("Email", user_email or "—"),
+                    ("Subject", topic or "—"),
+                ],
+                message=message_preview or "",
+                site_url=site_url,
+                support_email=support_email,
+                logo_url=logo_url,
+                brand_tagline="PureFyul Support",
+            )
+
+        # reply_to = user's email so support can reply directly
+        reply_to = user_email if user_email else None
+
+        send_email_resend(
+            to=support_email,
+            subject=alert_subject,
+            html=html_body,
+            text=text_body,
+            reply_to=reply_to,
+        )
+        return True
+
+    except Exception:
+        app.logger.warning("Admin alert failed: %s", "exception")
+        return False
 
 def _notify_telegram(text):
     """Send Telegram notification. Returns True on success, False on failure."""

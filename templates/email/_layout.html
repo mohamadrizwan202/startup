@@ -8,49 +8,55 @@
     <title>{{ subject or "PureFyul" }}</title>
   </head>
 
-  <body style="margin:0; padding:0; background-color:#F4F7F7;">
+  <body style="margin:0; padding:0; background:#F6F7FB;">
     <!-- Preheader (hidden preview text in inbox) -->
     <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
       {{ preheader or "" }}
     </div>
 
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F4F7F7;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F6F7FB;">
       <tr>
         <td align="center" style="padding:24px 12px;">
-          <!-- Container -->
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600"
-                 style="width:100%; max-width:600px; background-color:#FFFFFF; border-radius:14px; overflow:hidden;">
-            <!-- Header band -->
+
+          <!-- Card -->
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+                 style="width:100%; max-width:600px; background:#FFFFFF; border-radius:18px; overflow:hidden; border:1px solid #E7EEF4;">
+            <!-- Top accent bar -->
             <tr>
-              <td style="background-color:#0F766E; padding:16px 18px;">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              <td style="background:#0F766E; height:6px; line-height:6px; font-size:0;">&nbsp;</td>
+            </tr>
+
+            <!-- Mint header area with logo -->
+            <tr>
+              <td style="padding:18px 22px 14px 22px; background:#F0FDFA;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                   <tr>
                     <td align="left" valign="middle">
-                      <img src="{{ logo_url }}" width="40" height="40" alt="PureFyul"
-                           style="display:block; border:0; outline:none; text-decoration:none; border-radius:10px;">
+                      <img src="{{ logo_url }}" height="44" alt="PureFyul"
+                           style="display:block; border:0; outline:none; text-decoration:none; height:44px; width:auto; border-radius:12px;">
                     </td>
                     <td align="right" valign="middle"
-                        style="font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#D1FAE5;">
-                      {{ brand_tagline or "PureFyul Support" }}
+                        style="font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#0F766E; font-weight:700;">
+                      {{ brand_tagline or "" }}
                     </td>
                   </tr>
                 </table>
               </td>
             </tr>
 
-            <!-- Body -->
+            <!-- Main body -->
             <tr>
-              <td style="padding:22px 18px 10px 18px; font-family:Arial, Helvetica, sans-serif; color:#0F172A;">
-                <div style="font-size:22px; line-height:28px; font-weight:700; margin:0 0 10px 0;">
+              <td style="padding:0 22px 18px 22px; font-family:Arial, Helvetica, sans-serif; color:#0F172A;">
+                <div style="font-size:34px; font-weight:800; line-height:1.15; margin:16px 0 10px 0;">
                   {% block headline %}{{ headline or "Hello" }}{% endblock %}
                 </div>
 
-                <div style="font-size:14px; line-height:21px; color:#334155;">
+                <div style="font-size:16px; line-height:1.7; color:#0F172A;">
                   {% block content %}{% endblock %}
                 </div>
 
                 {% if help_note %}
-                  <div style="margin-top:14px; font-size:13px; line-height:20px; color:#475569;">
+                  <div style="margin-top:14px; font-size:14px; line-height:1.6; color:#334155;">
                     {{ help_note }}
                   </div>
                 {% endif %}
@@ -60,19 +66,19 @@
             <!-- Optional Reference card -->
             {% if reference_id %}
             <tr>
-              <td style="padding:0 18px 10px 18px;">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
-                       style="background-color:#F1F5F9; border:1px solid #E2E8F0; border-radius:12px;">
+              <td style="padding:0 22px 18px 22px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                       style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:14px;">
                   <tr>
-                    <td style="padding:12px 12px; font-family:Arial, Helvetica, sans-serif;">
-                      <div style="font-size:12px; line-height:16px; color:#475569; font-weight:700; margin-bottom:6px;">
-                        Reference #
+                    <td style="padding:16px 16px; font-family:Arial, Helvetica, sans-serif;">
+                      <div style="font-size:22px; font-weight:800; color:#0F172A; margin:0 0 8px 0;">
+                        Reference
                       </div>
-                      <div style="font-size:14px; line-height:18px; color:#0F172A; font-family:Consolas, Menlo, Monaco, monospace;">
+                      <div style="font-size:18px; color:#0F172A; font-family:Consolas, Menlo, Monaco, monospace;">
                         {{ reference_id }}
                       </div>
                       {% if reference_hint %}
-                      <div style="margin-top:6px; font-size:12px; line-height:16px; color:#64748B;">
+                      <div style="margin-top:10px; font-size:13px; line-height:1.5; color:#475569;">
                         {{ reference_hint }}
                       </div>
                       {% endif %}
@@ -83,30 +89,29 @@
             </tr>
             {% endif %}
 
-            <!-- Footer -->
+            <!-- Footer block -->
             <tr>
-              <td style="padding:14px 18px 22px 18px; font-family:Arial, Helvetica, sans-serif;">
-                <div style="border-top:1px solid #E2E8F0; padding-top:12px; font-size:12px; line-height:18px; color:#64748B;">
-                  Need help? Email
-                  <a href="mailto:{{ support_email }}" style="color:#0F766E; text-decoration:none;">{{ support_email }}</a>
-                  <br>
-                  <a href="{{ site_url }}" style="color:#0F766E; text-decoration:none;">{{ site_url }}</a>
+              <td style="padding:16px 22px 18px 22px; background:#F8FAFC; border-top:1px solid #E2E8F0;
+                         font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:1.7; color:#475569;">
+                <div style="font-weight:800; color:#0F172A;">— PureFyul Support</div>
+                <div style="margin-top:8px;">
+                  Need help? Reply to this email, or write to
+                  <a href="mailto:{{ support_email }}" style="color:#0F766E; text-decoration:none; font-weight:800;">{{ support_email }}</a>
+                </div>
+                <div style="margin-top:8px;">
+                  <a href="{{ site_url }}" style="color:#0F766E; text-decoration:none;">purefyul.com</a>
                 </div>
               </td>
             </tr>
-          </table>
 
-          <!-- Small print -->
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%; max-width:600px;">
+            <!-- Bottom accent bar -->
             <tr>
-              <td align="center" style="padding-top:10px; font-family:Arial, Helvetica, sans-serif; font-size:11px; line-height:16px; color:#94A3B8;">
-                You’re receiving this email because you interacted with PureFyul.
-              </td>
+              <td style="background:#0F766E; height:6px; line-height:6px; font-size:0;">&nbsp;</td>
             </tr>
           </table>
+
         </td>
       </tr>
     </table>
   </body>
 </html>
-
