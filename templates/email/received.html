@@ -1,0 +1,28 @@
+{# templates/email/received.html #}
+{% extends "email/_layout.html" %}
+
+{% block headline %}
+We received your message
+{% endblock %}
+
+{% block content %}
+  <p style="margin:0 0 10px 0;">
+    Hi{{ (" " ~ first_name) if first_name else "" }},
+  </p>
+
+  <p style="margin:0 0 10px 0;">
+    Thanks for reaching out to PureFyul. Our support team received your message and will respond as soon as possible.
+  </p>
+
+  <p style="margin:0 0 10px 0;">
+    If you reply to this email, it will go directly to our support inbox.
+  </p>
+
+  {% if user_message_summary %}
+  <p style="margin:0 0 10px 0;">
+    <span style="font-weight:700; color:#0F172A;">Your message (summary):</span><br>
+    {{ user_message_summary }}
+  </p>
+  {% endif %}
+{% endblock %}
+

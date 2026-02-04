@@ -1,0 +1,112 @@
+{# templates/email/_layout.html #}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ subject or "PureFyul" }}</title>
+  </head>
+
+  <body style="margin:0; padding:0; background-color:#F4F7F7;">
+    <!-- Preheader (hidden preview text in inbox) -->
+    <div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
+      {{ preheader or "" }}
+    </div>
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F4F7F7;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <!-- Container -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600"
+                 style="width:100%; max-width:600px; background-color:#FFFFFF; border-radius:14px; overflow:hidden;">
+            <!-- Header band -->
+            <tr>
+              <td style="background-color:#0F766E; padding:16px 18px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td align="left" valign="middle">
+                      <img src="{{ logo_url }}" width="40" height="40" alt="PureFyul"
+                           style="display:block; border:0; outline:none; text-decoration:none; border-radius:10px;">
+                    </td>
+                    <td align="right" valign="middle"
+                        style="font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#D1FAE5;">
+                      {{ brand_tagline or "PureFyul Support" }}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:22px 18px 10px 18px; font-family:Arial, Helvetica, sans-serif; color:#0F172A;">
+                <div style="font-size:22px; line-height:28px; font-weight:700; margin:0 0 10px 0;">
+                  {% block headline %}{{ headline or "Hello" }}{% endblock %}
+                </div>
+
+                <div style="font-size:14px; line-height:21px; color:#334155;">
+                  {% block content %}{% endblock %}
+                </div>
+
+                {% if help_note %}
+                  <div style="margin-top:14px; font-size:13px; line-height:20px; color:#475569;">
+                    {{ help_note }}
+                  </div>
+                {% endif %}
+              </td>
+            </tr>
+
+            <!-- Optional Reference card -->
+            {% if reference_id %}
+            <tr>
+              <td style="padding:0 18px 10px 18px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                       style="background-color:#F1F5F9; border:1px solid #E2E8F0; border-radius:12px;">
+                  <tr>
+                    <td style="padding:12px 12px; font-family:Arial, Helvetica, sans-serif;">
+                      <div style="font-size:12px; line-height:16px; color:#475569; font-weight:700; margin-bottom:6px;">
+                        Reference #
+                      </div>
+                      <div style="font-size:14px; line-height:18px; color:#0F172A; font-family:Consolas, Menlo, Monaco, monospace;">
+                        {{ reference_id }}
+                      </div>
+                      {% if reference_hint %}
+                      <div style="margin-top:6px; font-size:12px; line-height:16px; color:#64748B;">
+                        {{ reference_hint }}
+                      </div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            {% endif %}
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding:14px 18px 22px 18px; font-family:Arial, Helvetica, sans-serif;">
+                <div style="border-top:1px solid #E2E8F0; padding-top:12px; font-size:12px; line-height:18px; color:#64748B;">
+                  Need help? Email
+                  <a href="mailto:{{ support_email }}" style="color:#0F766E; text-decoration:none;">{{ support_email }}</a>
+                  <br>
+                  <a href="{{ site_url }}" style="color:#0F766E; text-decoration:none;">{{ site_url }}</a>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Small print -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%; max-width:600px;">
+            <tr>
+              <td align="center" style="padding-top:10px; font-family:Arial, Helvetica, sans-serif; font-size:11px; line-height:16px; color:#94A3B8;">
+                You’re receiving this email because you interacted with PureFyul.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+
