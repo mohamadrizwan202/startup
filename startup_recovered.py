@@ -2240,7 +2240,10 @@ def _send_email_smtp(to_email, subject, body_text, body_html=None, reply_to=None
 
 def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
     """Send auto-ack email to contact form submitter via Resend using Jinja templates."""
-    if not _truthy(os.getenv("AUTO_ACK_ENABLED", "1")):
+    flag = (os.getenv("AUTO_ACK_ENABLED") or "1").strip().lower()
+    auto_ack_enabled = flag in ("1", "true", "yes", "y", "on", "t")
+    app.logger.info("Auto-ack enabled=%s (AUTO_ACK_ENABLED=%r)", auto_ack_enabled, os.getenv("AUTO_ACK_ENABLED"))
+    if not auto_ack_enabled:
         return False
 
     to_email = (email or "").strip()
@@ -2279,6 +2282,8 @@ def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
     try:
         from flask import render_template
         from utils.emailer_resend import send_email_resend
+
+        app.logger.info("Auto-ack send attempt: msg_id=%s resend_key=%s resend_from=%s", msg_id, bool(os.getenv("RESEND_API_KEY")), bool(os.getenv("RESEND_FROM")))
 
         # This function runs in a background thread. Template rendering needs an app context.
         with app.app_context():
