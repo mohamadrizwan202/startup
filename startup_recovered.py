@@ -2279,13 +2279,9 @@ def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
         text_body += ".\n"
     text_body += f"\n{support_email}\n{site_url}\n"
 
+    html_body = None
     try:
         from flask import render_template
-        from utils.emailer_resend import send_email_resend
-
-        app.logger.info("Auto-ack send attempt: msg_id=%s resend_key=%s resend_from=%s", msg_id, bool(os.getenv("RESEND_API_KEY")), bool(os.getenv("RESEND_FROM")))
-
-        # This function runs in a background thread. Template rendering needs an app context.
         with app.app_context():
             html_body = render_template(
                 "email/received.html",
@@ -2300,19 +2296,19 @@ def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
                 logo_url=logo_url,
                 brand_tagline="PureFyul Support",
             )
-
-        send_email_resend(
-            to=to_email,
-            subject=ack_subject,
-            html=html_body,
-            text=text_body,
-            reply_to=support_email,
-        )
-        return True
-
     except Exception as e:
-        app.logger.warning("Auto-ack failed: %s: %s", type(e).__name__, str(e)[:800])
-        return False
+        app.logger.warning("Auto-ack HTML render failed: %s: %s", type(e).__name__, str(e))
+
+    # Send via the internal requests-based Resend sender (single codepath)
+    ok = _send_email_resend(
+        to_email=to_email,
+        subject=ack_subject,
+        body_text=text_body,
+        body_html=html_body,     # can be None -> text-only fallback
+        reply_to=support_email,
+    )
+    app.logger.info("Auto-ack resend result: msg_id=%s ok=%s", msg_id, ok)
+    return ok
 
 def _send_welcome_email(user_email: str, user_name: str | None = None) -> bool:
     """
