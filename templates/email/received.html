@@ -19,6 +19,20 @@ We received your message
     <p style="margin:0 0 10px 0;">
       If you want to add more detail, just reply to this email. More context helps us respond faster and more accurately.
     </p>
+
+  {% elif contact_subject|lower == 'support' %}
+    <p style="margin:0 0 10px 0;">
+      We received your support request and logged it under reference <strong>#{{ msg_id }}</strong>.
+    </p>
+    <p style="margin:0 0 10px 0;">
+      If you reply with the details below, we can usually resolve it faster:
+    </p>
+    <ul style="margin:0 0 10px 18px; padding:0;">
+      <li style="margin:0 0 6px 0;">What you were trying to do</li>
+      <li style="margin:0 0 6px 0;">What went wrong (exact error text if any)</li>
+      <li style="margin:0 0 6px 0;">Device + browser (mobile/desktop)</li>
+    </ul>
+
   {% else %}
     <p style="margin:0 0 10px 0;">
       Thanks for reaching out to PureFyul. Our support team received your message and will respond as soon as possible.
