@@ -10,11 +10,11 @@ We received your message
     Hi{{ (" " ~ first_name) if first_name else "" }},
   </p>
 
-  {% set contact_subject = (subject|default('', true)).strip() %}
+  {% set contact_subject = (contact_topic|default('', true)).strip() %}
 
   {% if contact_subject|lower == 'general inquiry' %}
     <p style="margin:0 0 10px 0;">
-      Thanks for reaching out to PureFyul. We've received your general inquiry and logged it under reference <strong>#{{ msg_id }}</strong>.
+      Thanks for reaching out to PureFyul. We've received your general inquiry and logged it under reference <strong>{{ reference_id }}</strong>.
     </p>
     <p style="margin:0 0 10px 0;">
       If you want to add more detail, just reply to this email. More context helps us respond faster and more accurately.
@@ -22,7 +22,7 @@ We received your message
 
   {% elif contact_subject|lower == 'support' %}
     <p style="margin:0 0 10px 0;">
-      We received your support request and logged it under reference <strong>#{{ msg_id }}</strong>.
+      We received your support request and logged it under reference <strong>{{ reference_id }}</strong>.
     </p>
     <p style="margin:0 0 10px 0;">
       If you reply with the details below, we can usually resolve it faster:
@@ -35,7 +35,7 @@ We received your message
 
   {% elif contact_subject|lower == 'feedback' %}
     <p style="margin:0 0 10px 0;">
-      Thanks for the feedback — we logged it under reference <strong>#{{ msg_id }}</strong>.
+      Thanks for the feedback — we logged it under reference <strong>{{ reference_id }}</strong>.
     </p>
     <p style="margin:0 0 10px 0;">
       We read every message and use it to improve PureFyul over time. If you want to add context or screenshots, just reply to this email.
@@ -43,7 +43,7 @@ We received your message
 
   {% elif ('business' in contact_subject|lower) or ('partnership' in contact_subject|lower) or ('sales' in contact_subject|lower) %}
     <p style="margin:0 0 10px 0;">
-      Thanks — we received your business inquiry and logged it under reference <strong>#{{ msg_id }}</strong>.
+      Thanks — we received your business inquiry and logged it under reference <strong>{{ reference_id }}</strong>.
     </p>
     <p style="margin:0 0 10px 0;">
       If you're proposing a partnership or offering a service, replying with these details helps us review it faster:

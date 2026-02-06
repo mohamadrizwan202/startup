@@ -2289,6 +2289,7 @@ def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
                 preheader=preheader,
                 first_name=first_name,
                 user_message_summary=summary,
+                contact_topic=topic,
                 reference_id=reference_id,
                 reference_hint=("Keep this for faster support." if reference_id else None),
                 site_url=site_url,
