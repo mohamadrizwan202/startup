@@ -41,6 +41,19 @@ We received your message
       We read every message and use it to improve PureFyul over time. If you want to add context or screenshots, just reply to this email.
     </p>
 
+  {% elif ('business' in contact_subject|lower) or ('partnership' in contact_subject|lower) or ('sales' in contact_subject|lower) %}
+    <p style="margin:0 0 10px 0;">
+      Thanks — we received your business inquiry and logged it under reference <strong>#{{ msg_id }}</strong>.
+    </p>
+    <p style="margin:0 0 10px 0;">
+      If you're proposing a partnership or offering a service, replying with these details helps us review it faster:
+    </p>
+    <ul style="margin:0 0 10px 18px; padding:0;">
+      <li style="margin:0 0 6px 0;">Company name + website</li>
+      <li style="margin:0 0 6px 0;">What you're proposing (1–2 sentences)</li>
+      <li style="margin:0 0 6px 0;">Timeline + best way to contact you</li>
+    </ul>
+
   {% else %}
     <p style="margin:0 0 10px 0;">
       Thanks for reaching out to PureFyul. Our support team received your message and will respond as soon as possible.
