@@ -4,4 +4,5 @@ Hi {{ user_name }},
 
 Reference: #{{ msg_id }}
 
-Need more help? Reply to this email or write to {{ support_email }}.
+— PureFyul Support
+{{ support_email }}

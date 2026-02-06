@@ -52164,12 +52164,18 @@ def admin_contact_reply(msg_id):
 
     support_email = os.getenv("SUPPORT_EMAIL", "support@purefyul.com").strip() or "support@purefyul.com"
 
-    html_body = render_template(
+    inner_html = render_template(
         "emails/admin_reply.html",
         user_name=user_name,
         reply_body=reply_body,
         msg_id=msg_id,
         support_email=support_email,
+    )
+
+    html_body = build_email_html(
+        title="PureFyul Support",
+        preheader=f"Reply to your message #{msg_id}",
+        body_html=inner_html,
     )
 
     text_body = render_template(
