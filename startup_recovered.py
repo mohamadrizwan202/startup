@@ -52117,6 +52117,94 @@ def admin_contact_detail(msg_id):
     msg = _row_to_dict(row, desc)
     return render_template("admin/contact_detail.html", msg=msg), 200, {"Cache-Control": "no-store"}
 
+
+@app.route('/admin/contacts/<int:msg_id>/reply', methods=['POST'])
+def admin_contact_reply(msg_id):
+    """Admin: reply to the user via Resend (no Hostinger manual compose)."""
+    if not session.get('is_admin'):
+        abort(403)
+
+    if not db.USE_POSTGRES:
+        return "Postgres disabled", 503, {"Cache-Control": "no-store"}
+
+    reply_body = (request.form.get('reply_body') or '').strip()
+    reply_subject = (request.form.get('reply_subject') or '').strip()
+
+    if not reply_body:
+        flash('Reply message is required.', 'error')
+        return redirect(url_for('admin_contact_detail', msg_id=msg_id))
+
+    # Fetch the original message (prevents form tampering)
+    conn = db.get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, name, email, subject
+        FROM public.contact_messages
+        WHERE id = %s
+    """, (msg_id,))
+    row = cur.fetchone()
+    desc = cur.description
+    cur.close()
+    conn.close()
+
+    if not row:
+        abort(404)
+
+    msg = _row_to_dict(row, desc)
+    user_email = (msg.get('email') or '').strip()
+    user_name = (msg.get('name') or 'there').strip()
+    orig_subject = (msg.get('subject') or 'your message to PureFyul').strip()
+
+    if not user_email:
+        flash('User email missing; cannot send reply.', 'error')
+        return redirect(url_for('admin_contact_detail', msg_id=msg_id))
+
+    if not reply_subject:
+        reply_subject = f"Re: {orig_subject}"
+
+    # Minimal branded HTML (clean + safe)
+    safe_body_html = (reply_body
+                      .replace("&", "&amp;")
+                      .replace("<", "&lt;")
+                      .replace(">", "&gt;")
+                      .replace("\n", "<br>"))
+    safe_user_name = html.escape(user_name)
+
+    html_body = f"""
+    <div style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; line-height: 1.5;">
+      <h2 style="margin: 0 0 12px;">PureFyul Support</h2>
+      <p style="margin: 0 0 12px;">Hi {safe_user_name},</p>
+      <p style="margin: 0 0 12px;">{safe_body_html}</p>
+      <hr style="border: none; border-top: 1px solid #e6e6e6; margin: 16px 0;">
+      <p style="margin: 0; color: #374151;">— PureFyul Support<br>support@purefyul.com</p>
+    </div>
+    """
+
+    text = f"""Hi {user_name},
+
+{reply_body}
+
+— PureFyul Support
+support@purefyul.com
+"""
+
+    # From is support@purefyul.com; do NOT set reply_to so user replies go to Hostinger inbox.
+    try:
+        resend_id = resend_send_email(
+            to_email=user_email,
+            subject=reply_subject,
+            html=html_body,
+            text=text,
+        )
+        app.logger.info("Admin reply sent: msg_id=%s to=%s resend_id=%s", msg_id, user_email, resend_id)
+        flash('Reply sent to the user.', 'success')
+    except Exception as e:
+        app.logger.exception("Admin reply FAILED: msg_id=%s to=%s err=%s", msg_id, user_email, str(e))
+        flash('Failed to send reply. Check logs.', 'error')
+
+    return redirect(url_for('admin_contact_detail', msg_id=msg_id))
+
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))
     debug = True # os.getenv("FLASK_DEBUG", "0") == "1"
