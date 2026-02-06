@@ -52162,31 +52162,23 @@ def admin_contact_reply(msg_id):
     if not reply_subject:
         reply_subject = f"Re: {orig_subject}"
 
-    # Minimal branded HTML (clean + safe)
-    safe_body_html = (reply_body
-                      .replace("&", "&amp;")
-                      .replace("<", "&lt;")
-                      .replace(">", "&gt;")
-                      .replace("\n", "<br>"))
-    safe_user_name = html.escape(user_name)
+    support_email = os.getenv("SUPPORT_EMAIL", "support@purefyul.com").strip() or "support@purefyul.com"
 
-    html_body = f"""
-    <div style="font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; line-height: 1.5;">
-      <h2 style="margin: 0 0 12px;">PureFyul Support</h2>
-      <p style="margin: 0 0 12px;">Hi {safe_user_name},</p>
-      <p style="margin: 0 0 12px;">{safe_body_html}</p>
-      <hr style="border: none; border-top: 1px solid #e6e6e6; margin: 16px 0;">
-      <p style="margin: 0; color: #374151;">— PureFyul Support<br>support@purefyul.com</p>
-    </div>
-    """
+    html_body = render_template(
+        "emails/admin_reply.html",
+        user_name=user_name,
+        reply_body=reply_body,
+        msg_id=msg_id,
+        support_email=support_email,
+    )
 
-    text = f"""Hi {user_name},
-
-{reply_body}
-
-— PureFyul Support
-support@purefyul.com
-"""
+    text_body = render_template(
+        "emails/admin_reply.txt",
+        user_name=user_name,
+        reply_body=reply_body,
+        msg_id=msg_id,
+        support_email=support_email,
+    )
 
     # From is support@purefyul.com; do NOT set reply_to so user replies go to Hostinger inbox.
     try:
@@ -52194,7 +52186,7 @@ support@purefyul.com
             to_email=user_email,
             subject=reply_subject,
             html=html_body,
-            text=text,
+            text=text_body,
         )
         app.logger.info("Admin reply sent: msg_id=%s to=%s resend_id=%s", msg_id, user_email, resend_id)
         flash('Reply sent to the user.', 'success')
