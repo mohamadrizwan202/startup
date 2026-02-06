@@ -33,6 +33,14 @@ We received your message
       <li style="margin:0 0 6px 0;">Device + browser (mobile/desktop)</li>
     </ul>
 
+  {% elif contact_subject|lower == 'feedback' %}
+    <p style="margin:0 0 10px 0;">
+      Thanks for the feedback — we logged it under reference <strong>#{{ msg_id }}</strong>.
+    </p>
+    <p style="margin:0 0 10px 0;">
+      We read every message and use it to improve PureFyul over time. If you want to add context or screenshots, just reply to this email.
+    </p>
+
   {% else %}
     <p style="margin:0 0 10px 0;">
       Thanks for reaching out to PureFyul. Our support team received your message and will respond as soon as possible.
