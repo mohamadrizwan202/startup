@@ -2526,6 +2526,59 @@ def queue_welcome_email(user_email: str, user_name: str | None = None) -> None:
     threading.Thread(target=_welcome_async, daemon=True).start()
 
 
+def resend_send_email(*, to_email: str, subject: str, html: str, text: str = "", reply_to: str | None = None) -> str:
+    """Resend wrapper (don't swallow errors). Uses resend SDK."""
+    import resend
+    resend.api_key = os.environ["RESEND_API_KEY"]
+    payload = {
+        "from": os.environ["RESEND_FROM"],
+        "to": [to_email],
+        "subject": subject,
+        "html": html,
+    }
+    if text:
+        payload["text"] = text
+    if reply_to:
+        payload["reply_to"] = reply_to
+    resp = resend.Emails.send(payload)  # raises on failure
+    email_id = resp.get("id") or ""
+    app.logger.info("Resend OK: to=%s id=%s subject=%s", to_email, email_id, subject)
+    return email_id
+
+
+def send_admin_alert(*, name: str, email: str, message: str, msg_id: int | None = None) -> str | None:
+    """Send admin alert for new contact form submission."""
+    if os.getenv("ADMIN_ALERT_ENABLED", "1") != "1":
+        return None
+    admin_to = os.getenv("ADMIN_ALERT_EMAIL_TO", "").strip()
+    if not admin_to:
+        app.logger.warning("ADMIN_ALERT_EMAIL_TO missing; skipping admin email")
+        return None
+    subject = f"[PureFyul] New contact form submission" + (f" (#{msg_id})" if msg_id else "")
+    html = f"""
+    <h2>New Contact Form Submission</h2>
+    <p><b>Name:</b> {name}</p>
+    <p><b>Email:</b> {email}</p>
+    <p><b>Message:</b><br>{message.replace('\n', '<br>')}</p>
+    <hr>
+    <p>Reply directly to this email to respond to the user.</p>
+    """
+    text = f"""New Contact Form Submission
+Name: {name}
+Email: {email}
+
+Message:
+{message}
+"""
+    return resend_send_email(
+        to_email=admin_to,
+        subject=subject,
+        html=html,
+        text=text,
+        reply_to=email,
+    )
+
+
 def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
     """
     Send support/admin notification email for new contact submission via Resend using Jinja templates.
@@ -2709,6 +2762,18 @@ def contact():
             conn.commit()
             cursor.close()
             conn.close()
+
+            # Send admin alert to Hostinger inbox
+            try:
+                email_id = send_admin_alert(
+                    name=name,
+                    email=email,
+                    message=message,
+                    msg_id=msg_id,
+                )
+                app.logger.info("admin_alert_sent=True msg_id=%s resend_id=%s", msg_id, email_id)
+            except Exception as e:
+                app.logger.exception("admin_alert_sent=False msg_id=%s err=%s", msg_id, str(e))
             
             # Automation: user auto-reply email (async so the form stays instant)
             flash('Thank you for your message! We\'ll get back to you soon.', 'success')
