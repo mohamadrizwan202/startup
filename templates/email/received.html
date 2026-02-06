@@ -10,9 +10,20 @@ We received your message
     Hi{{ (" " ~ first_name) if first_name else "" }},
   </p>
 
-  <p style="margin:0 0 10px 0;">
-    Thanks for reaching out to PureFyul. Our support team received your message and will respond as soon as possible.
-  </p>
+  {% set contact_subject = (subject|default('', true)).strip() %}
+
+  {% if contact_subject|lower == 'general inquiry' %}
+    <p style="margin:0 0 10px 0;">
+      Thanks for reaching out to PureFyul. We've received your general inquiry and logged it under reference <strong>#{{ msg_id }}</strong>.
+    </p>
+    <p style="margin:0 0 10px 0;">
+      If you want to add more detail, just reply to this email. More context helps us respond faster and more accurately.
+    </p>
+  {% else %}
+    <p style="margin:0 0 10px 0;">
+      Thanks for reaching out to PureFyul. Our support team received your message and will respond as soon as possible.
+    </p>
+  {% endif %}
 
   <p style="margin:0 0 10px 0;">
     If you reply to this email, it will go directly to our support inbox.
