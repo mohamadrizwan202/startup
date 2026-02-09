@@ -2778,7 +2778,7 @@ def contact():
             
             # Automation: user auto-reply email (async so the form stays instant)
             flash('Thank you for your message! We\'ll get back to you soon.', 'success')
-            resp = redirect(url_for('contact', sent='1'), code=303)
+            resp = redirect(url_for('contact', sent='1', topic=subject), code=303)
 
             if msg_id and os.getenv('CONTACT_NOTIFICATIONS_ENABLED', '1') == '1':
                 admin_url = f"{request.host_url.rstrip('/')}{url_for('admin_contact_detail', msg_id=msg_id)}"

@@ -264,7 +264,11 @@
 {% if request.args.get('sent') == '1' %}
 <script nonce="{{ csp_nonce }}">
   if (typeof gtag === 'function') {
-    gtag('event', 'generate_lead', { method: 'contact_form' });
+    gtag('event', 'generate_lead', {
+      method: 'contact_form',
+      topic: '{{ request.args.get('topic', '')|e }}',
+      transport_type: 'beacon'
+    });
   }
 </script>
 {% endif %}
