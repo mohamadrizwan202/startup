@@ -2873,6 +2873,16 @@
       to { width: 100%; opacity: 1; }
     }
 
+    /* Ingredient tab: center the search card */
+    #ingredient-tab-content .search-area-container{
+      display: flex;
+      justify-content: center;
+    }
+
+    #ingredient-tab-content #ingredient-search-card{
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto 18px auto;
+    }
 
   </style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
@@ -2938,17 +2948,17 @@
     <!-- Main App Tabs: Ingredient vs Smoothie -->
     <div class="main-tabs-container">
       <div class="main-tabs">
-        <button class="main-tab active" data-main-tab="ingredient">
-          <span>🥗</span> Ingredient Analysis
-        </button>
-        <button class="main-tab" data-main-tab="smoothie">
+        <button class="main-tab active" data-main-tab="smoothie">
           <span>🥤</span> Smoothie Builder
+        </button>
+        <button class="main-tab" data-main-tab="ingredient">
+          <span>🥗</span> Ingredient Analysis
         </button>
       </div>
     </div>
 
     <!-- Ingredient Analysis Tab Content -->
-    <div id="ingredient-tab-content" class="main-tab-content active">
+    <div id="ingredient-tab-content" class="main-tab-content">
       <!-- Search Area - Centered -->
       <div class="search-area-container">
         <div class="search-container" id="ingredient-search-card">
@@ -3187,7 +3197,7 @@
     </div>
 
     <!-- Smoothie Builder Tab Content -->
-    <div id="smoothie-tab-content" class="main-tab-content">
+    <div id="smoothie-tab-content" class="main-tab-content active">
      
       <div class="main-content-grid">
         <!-- Left: Smoothie Builder -->
