@@ -230,6 +230,18 @@
     .contact-email a:hover {
       text-decoration-thickness: 3px;
     }
+
+    /* Honeypot: visually hidden but still in DOM */
+    .pf-hp-wrap{
+      position: absolute !important;
+      left: -10000px !important;
+      top: auto !important;
+      width: 1px !important;
+      height: 1px !important;
+      overflow: hidden !important;
+      clip: rect(1px, 1px, 1px, 1px) !important;
+      white-space: nowrap !important;
+    }
   </style>
     {% include "_seo_head.html" %}
 {% include "_adsense_head.html" %}
@@ -263,21 +275,40 @@
 
 {% if request.args.get('sent') == '1' %}
 <script nonce="{{ csp_nonce }}">
-  if (typeof gtag === 'function') {
-    gtag('event', 'generate_lead', {
-      method: 'contact_form',
-      topic: '{{ request.args.get('topic', '')|e }}',
-      transport_type: 'beacon'
-    });
-  }
+  (function(){
+    try {
+      const key = 'pf_contact_topic';
+      const topic = sessionStorage.getItem(key);
+      sessionStorage.removeItem(key);
+      if (!topic) return;
+      if (typeof gtag === 'function') {
+        gtag('event', 'generate_lead', {
+          method: 'contact_form',
+          topic: topic,
+          transport_type: 'beacon'
+        });
+      }
+    } catch (e) {}
+  })();
 </script>
 {% endif %}
       
       <!-- Contact Form -->
       <form method="POST" action="{{ url_for('contact') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        <input type="text" name="company" autocomplete="off" style="display:none">
-        
+        <!-- Honeypot (anti-spam). Humans won't see this. Bots often fill it. -->
+        <div class="pf-hp-wrap" aria-hidden="true">
+          <label for="company">Company</label>
+          <input
+            type="text"
+            id="company"
+            name="company"
+            tabindex="-1"
+            autocomplete="off"
+            inputmode="text"
+          />
+        </div>
+
         <div class="form-group">
           <label for="name">Full Name</label>
           <input 
@@ -328,6 +359,20 @@
         
         <button type="submit" class="submit-button">Send Message</button>
       </form>
+
+      <script nonce="{{ csp_nonce }}">
+        (function(){
+          var form = document.querySelector('.contact-card form');
+          if (form) {
+            form.addEventListener('submit', function() {
+              var sel = form.querySelector('select[name="subject"]');
+              if (sel && sel.value) {
+                try { sessionStorage.setItem('pf_contact_topic', sel.value); } catch (e) {}
+              }
+            });
+          }
+        })();
+      </script>
     </div>
   </div>
   {% include "_feedback.html" %}
