@@ -293,8 +293,7 @@
 </script>
 {% endif %}
       
-      <!-- Contact Form -->
-      <form method="POST" action="{{ url_for('contact') }}">
+      <!-- Contact Form --><form method="POST" action="{{ url_for('contact') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <!-- Honeypot (anti-spam). Humans won't see this. Bots often fill it. -->
         <div class="pf-hp-wrap" aria-hidden="true">
@@ -378,9 +377,6 @@
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
 
   {% include "_legal_footer.html" %}
-
-
-  {% include "_feedback.html" %}
 </body>
 </html>
 
