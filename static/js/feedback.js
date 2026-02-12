@@ -23,8 +23,9 @@
   const submitText = submitBtn.querySelector('.pf-feedback-submit-text');
   const submitSpinner = submitBtn.querySelector('.pf-feedback-submit-spinner');
 
+  let pfBtnHoldTimer = null;
   let pfCloseTimer = null;
-  const PF_CLOSE_DELAY_MS = 220; // matches CSS backdrop transition (~0.2s)
+  const PF_BTN_HOLD_MS = 220;
 
   // Get current page URL
   function getCurrentPage() {
@@ -39,6 +40,9 @@
 
     if (isHidden) {
       if (pfCloseTimer) { clearTimeout(pfCloseTimer); pfCloseTimer = null; }
+      if (pfBtnHoldTimer) { clearTimeout(pfBtnHoldTimer); pfBtnHoldTimer = null; }
+      widget?.classList.remove('is-closing');
+      btn?.classList.remove('pf-feedback-btn-hold');
       widget?.classList.add('is-open');
       backdrop?.classList.add('is-open');
       backdrop?.setAttribute('aria-hidden', 'false');
@@ -48,27 +52,30 @@
         if (firstInput) firstInput.focus();
       }, 100);
     } else {
-      if (pfCloseTimer) clearTimeout(pfCloseTimer);
-      pfCloseTimer = setTimeout(() => {
-        widget?.classList.remove('is-open');
-        pfCloseTimer = null;
-      }, PF_CLOSE_DELAY_MS);
-      backdrop?.classList.remove('is-open');
-      backdrop?.setAttribute('aria-hidden', 'true');
+      closePanel();
     }
   }
 
-  // Close panel
+  // Close panel — is-closing allows click-through; delay widget is-open removal to avoid flash
   function closePanel() {
-    panel.setAttribute('aria-hidden', 'true');
-    btn.setAttribute('aria-expanded', 'false');
+    widget?.classList.add('is-closing');
+    panel?.setAttribute('aria-hidden', 'true');
+    btn?.setAttribute('aria-expanded', 'false');
+    backdrop?.classList.remove('is-open');
+    backdrop?.setAttribute('aria-hidden', 'true');
     if (pfCloseTimer) clearTimeout(pfCloseTimer);
     pfCloseTimer = setTimeout(() => {
       widget?.classList.remove('is-open');
+      widget?.classList.remove('is-closing');
       pfCloseTimer = null;
-    }, PF_CLOSE_DELAY_MS);
-    backdrop?.classList.remove('is-open');
-    backdrop?.setAttribute('aria-hidden', 'true');
+    }, 220);
+    // prevent 1-frame shadow flash on close
+    btn?.classList.add('pf-feedback-btn-hold');
+    if (pfBtnHoldTimer) clearTimeout(pfBtnHoldTimer);
+    pfBtnHoldTimer = setTimeout(() => {
+      btn?.classList.remove('pf-feedback-btn-hold');
+      pfBtnHoldTimer = null;
+    }, PF_BTN_HOLD_MS);
     clearMessage();
   }
 
@@ -235,13 +242,6 @@
     }
   });
 
-  // Close when clicking outside
-  document.addEventListener('click', function(e) {
-    if (panel.getAttribute('aria-hidden') === 'false' && 
-        !widget.contains(e.target)) {
-      closePanel();
-    }
-  });
 
   // Initialize character count
   if (charCountEl && messageTextarea) {

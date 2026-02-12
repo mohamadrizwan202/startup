@@ -36,6 +36,11 @@
   transform: translateX(0);
 }
 
+.pf-feedback-btn.pf-feedback-btn-hold {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .pf-feedback-btn-text {
   display: block;
 }
@@ -393,4 +398,20 @@
     inset: auto !important;   /* kills any 0px offsets */
     margin: 0 auto !important;
   }
+}
+
+/* Prevent 1-frame button/shadow flash after close */
+.pf-feedback-btn.pf-feedback-btn-hold{
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* While closing: keep layout stable but don't block clicks behind it */
+#pf-feedback-widget.is-closing{
+  pointer-events: none !important;
+}
+
+#pf-feedback-widget.is-closing #pf-feedback-panel,
+#pf-feedback-widget.is-closing #pf-feedback-backdrop{
+  pointer-events: none !important;
 }
