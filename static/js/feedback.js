@@ -2,6 +2,9 @@
 (function() {
   'use strict';
 
+  if (window.__pfFeedbackInit) return;
+  window.__pfFeedbackInit = true;
+
   const FEEDBACK_API_URL = '/api/feedback';
   const MAX_MESSAGE_LENGTH = 1500;
   const MIN_MESSAGE_LENGTH = 5;
@@ -10,6 +13,7 @@
   const widget = document.getElementById('pf-feedback-widget');
   const btn = document.getElementById('pf-feedback-btn');
   const panel = document.getElementById('pf-feedback-panel');
+  const backdrop = document.getElementById('pf-feedback-backdrop');
   const closeBtn = document.getElementById('pf-feedback-close');
   const form = document.getElementById('pf-feedback-form');
   const messageEl = document.getElementById('pf-feedback-message');
@@ -18,6 +22,9 @@
   const submitBtn = document.getElementById('pf-feedback-submit');
   const submitText = submitBtn.querySelector('.pf-feedback-submit-text');
   const submitSpinner = submitBtn.querySelector('.pf-feedback-submit-spinner');
+
+  let pfCloseTimer = null;
+  const PF_CLOSE_DELAY_MS = 220; // matches CSS backdrop transition (~0.2s)
 
   // Get current page URL
   function getCurrentPage() {
@@ -29,13 +36,25 @@
     const isHidden = panel.getAttribute('aria-hidden') === 'true';
     panel.setAttribute('aria-hidden', !isHidden);
     btn.setAttribute('aria-expanded', isHidden);
-    
-    if (!isHidden) {
+
+    if (isHidden) {
+      if (pfCloseTimer) { clearTimeout(pfCloseTimer); pfCloseTimer = null; }
+      widget?.classList.add('is-open');
+      backdrop?.classList.add('is-open');
+      backdrop?.setAttribute('aria-hidden', 'false');
       // Focus on first input when opening
       setTimeout(() => {
         const firstInput = form.querySelector('input, textarea, select');
         if (firstInput) firstInput.focus();
       }, 100);
+    } else {
+      if (pfCloseTimer) clearTimeout(pfCloseTimer);
+      pfCloseTimer = setTimeout(() => {
+        widget?.classList.remove('is-open');
+        pfCloseTimer = null;
+      }, PF_CLOSE_DELAY_MS);
+      backdrop?.classList.remove('is-open');
+      backdrop?.setAttribute('aria-hidden', 'true');
     }
   }
 
@@ -43,6 +62,13 @@
   function closePanel() {
     panel.setAttribute('aria-hidden', 'true');
     btn.setAttribute('aria-expanded', 'false');
+    if (pfCloseTimer) clearTimeout(pfCloseTimer);
+    pfCloseTimer = setTimeout(() => {
+      widget?.classList.remove('is-open');
+      pfCloseTimer = null;
+    }, PF_CLOSE_DELAY_MS);
+    backdrop?.classList.remove('is-open');
+    backdrop?.setAttribute('aria-hidden', 'true');
     clearMessage();
   }
 
@@ -188,6 +214,10 @@
 
   if (closeBtn) {
     closeBtn.addEventListener('click', closePanel);
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener('click', closePanel);
   }
 
   if (form) {

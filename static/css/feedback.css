@@ -256,3 +256,141 @@
     padding: 16px;
   }
 }
+
+/* ============================
+   Feedback widget: responsive fix
+   (mobile centered + safe margins)
+   ============================ */
+
+.pf-feedback-panel{
+  max-width: calc(100vw - 32px);
+}
+
+/* Mobile: center modal-like panel with breathing room */
+@media (max-width: 520px){
+  .pf-feedback-panel{
+    left: 50% !important;
+    right: auto !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+
+    width: min(440px, calc(100vw - 32px)) !important;
+    max-height: calc(100vh - 32px) !important; /* top+bottom margin */
+    overflow: auto !important;
+
+    border-radius: 18px;
+  }
+
+  /* keep the button reachable and not stuck to edges */
+  .pf-feedback-btn{
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+}
+
+.pf-feedback-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.45);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+  z-index: 9998;
+}
+
+/* stacking order: backdrop < button < panel (closed) */
+.pf-feedback-backdrop{ z-index: 9998; }
+.pf-feedback-btn{ z-index: 9997; }      /* <-- BELOW backdrop so it can't overlap modal */
+.pf-feedback-panel{ z-index: 10000; }
+
+.pf-feedback-backdrop.is-open{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Mobile: force center EVEN when panel is open (open-state rules were overriding transform) */
+@media (max-width: 520px){
+  .pf-feedback-panel,
+  .pf-feedback-panel[aria-hidden="false"]{
+    left: 50% !important;
+    top: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+  }
+}
+
+/* Mobile: bulletproof centering using flex wrapper when open */
+@media (max-width: 640px){
+  .pf-feedback-widget.is-open{
+    position: fixed;
+    inset: 0;
+    padding: 16px;                 /* top/bottom margin */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;                /* wrapper above page */
+  }
+
+  .pf-feedback-widget.is-open .pf-feedback-backdrop{
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .pf-feedback-widget.is-open .pf-feedback-panel{
+    position: relative !important; /* stop fixed right/bottom logic */
+    z-index: 1;
+
+    width: min(440px, calc(100vw - 32px)) !important;
+    max-height: calc(100vh - 32px) !important;
+    overflow: auto !important;
+
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+}
+
+/* Mobile: when open, treat panel as a normal flex item (no offsets) + hide the toggle */
+@media (max-width: 640px){
+  .pf-feedback-widget.is-open .pf-feedback-btn{
+    display: none !important;     /* stronger than opacity */
+  }
+
+  .pf-feedback-widget.is-open .pf-feedback-panel{
+    position: relative !important;
+    inset: auto !important;       /* kills left/top/right/bottom:0 from any prior rule */
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+  }
+}
+
+/* Mobile: when open, ONLY show the panel (button must disappear or it will push panel off-center) */
+@media (max-width: 640px){
+  #pf-feedback-widget.is-open{
+    position: fixed !important;
+    inset: 0 !important;
+    padding: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #pf-feedback-widget.is-open #pf-feedback-btn{
+    display: none !important;
+  }
+
+  #pf-feedback-widget.is-open #pf-feedback-panel{
+    position: relative !important;
+    inset: auto !important;   /* kills any 0px offsets */
+    margin: 0 auto !important;
+  }
+}

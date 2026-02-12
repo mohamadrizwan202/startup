@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         * {
             margin: 0;
@@ -470,9 +470,11 @@
             }
         })();
     </script>
-    {% include "_feedback.html" %}
-    <script src="{{ url_for('static', filename='js/feedback.js') }}" defer></script>
+
   {% include "_legal_footer.html" %}
+
+
+  {% include "_feedback.html" %}
 </body>
 </html>
 

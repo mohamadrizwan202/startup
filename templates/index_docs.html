@@ -5,7 +5,7 @@
     <link rel="canonical" href="https://purefyul.com{{ request.path }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nutrition & Allergen API</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -104,8 +104,10 @@
             <p>API Version: 1.0</p>
         </div>
     </div>
-    {% include "_feedback.html" %}
-    <script src="{{ url_for('static', filename='js/feedback.js') }}" defer></script>
+
   {% include "_legal_footer.html" %}
+
+
+  {% include "_feedback.html" %}
 </body>
 </html>

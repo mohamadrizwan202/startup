@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/legal.css') }}?v=10">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">  {% include "_seo_head.html" %}
 {% include "_adsense_head.html" %}
@@ -134,5 +134,8 @@
     </div>
   </main>
   <script defer src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+
+
+  {% include "_feedback.html" %}
 </body>
 </html>

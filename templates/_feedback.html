@@ -1,9 +1,13 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+<script src="{{ url_for('static', filename='js/feedback.js') }}" defer></script>
 <!-- Floating Feedback Widget -->
 <div id="pf-feedback-widget" class="pf-feedback-widget">
   <!-- Feedback Button -->
   <button id="pf-feedback-btn" class="pf-feedback-btn" aria-label="Open feedback form">
     <span class="pf-feedback-btn-text">Feedback</span>
   </button>
+
+  <div id="pf-feedback-backdrop" class="pf-feedback-backdrop" aria-hidden="true"></div>
 
   <!-- Feedback Form Panel -->
   <div id="pf-feedback-panel" class="pf-feedback-panel" aria-hidden="true">

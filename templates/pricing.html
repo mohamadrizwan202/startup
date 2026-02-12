@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pricing.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">  {% include "_seo_head.html" %}
 {% include "_adsense_head.html" %}
 </head>
@@ -159,10 +159,12 @@
       <p class="pricing-disclaimer-text">Information only — not medical advice. For medical decisions, consult a qualified professional.</p>
     </div>
   </main>
-  {% include "_feedback.html" %}
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
-  <script src="{{ url_for('static', filename='js/feedback.js') }}" defer></script>
+
   {% include "_legal_footer.html" %}
+
+
+  {% include "_feedback.html" %}
 </body>
 </html>
 
