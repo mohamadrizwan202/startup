@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>{{ page_title or "PureFyul" }}</title>
+  {% if meta_description %}<meta name="description" content="{{ meta_description }}">{% endif %}
+
+  {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
+  {% if og_url %}<meta property="og:url" content="{{ og_url }}">{% endif %}
+  <meta property="og:title" content="{{ page_title or 'PureFyul' }}">
+  {% if meta_description %}<meta property="og:description" content="{{ meta_description }}">{% endif %}
+
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; }
+    header { border-bottom: 1px solid #e5e7eb; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 18px 16px; }
+    nav a { margin-right: 12px; text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    h1 { margin: 18px 0 8px; }
+    p { line-height: 1.6; }
+    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin: 14px 0; }
+    ul, ol { line-height: 1.7; }
+    footer { border-top: 1px solid #e5e7eb; margin-top: 24px; }
+    small { color: #6b7280; }
+    .btn { display:inline-block; padding:10px 14px; border-radius:10px; border:1px solid #0f766e; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <nav>
+        <a href="/">Home</a>
+        <a href="/app">App</a>
+        <a href="/ingredients">Ingredients</a>
+        <a href="/contact">Contact</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>PureFyul</h1>
+    <p>
+      PureFyul helps you explore common smoothie ingredients with simple, practical nutrition insights.
+      <strong>This is informational content and not medical advice.</strong>
+    </p>
+
+    <div class="card">
+      <h2 style="margin-top:0;">Start</h2>
+      <p>
+        <a class="btn" href="/app">Open the app</a>
+        &nbsp; <a href="/ingredients">Browse ingredient guides</a>
+      </p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0;">How it works</h2>
+      <ol>
+        <li>Browse ingredient guides for quick facts and usage ideas.</li>
+        <li>Use the app to review a blend summary.</li>
+        <li>Adjust ingredients based on your preferences and dietary needs.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0;">Transparency</h2>
+      <p>
+        We only publish pages that are ready. If something isn’t ready, it isn’t indexed or shown.
+      </p>
+    </div>
+
+    <footer class="wrap">
+      <small>© {{ (time.time()|int) if time else "" }} PureFyul</small>
+    </footer>
+  </main>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory, Response, current_app
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory, Response, current_app, make_response
 import time
 import logging
 import secrets
@@ -513,7 +513,7 @@ else:
 
 @app.route("/home")
 def home():
-    return render_template("index.html")
+    return redirect("/app", code=302)
 
 if ENABLE_INTERNAL_ROUTES:
     @app.route("/debug/session")
@@ -1654,9 +1654,32 @@ def handle_csrf_error(error):
 # ============================================================================
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('index.html', time=time)
+    canonical = "https://purefyul.com/"
+    return render_template(
+        "home_public.html",
+        page_title="PureFyul | Ingredient insights for smarter blends",
+        meta_description="Explore ingredient guides and build better smoothies with clear, simple nutrition insights.",
+        canonical_url=canonical,
+        og_url=canonical,
+    )
+
+
+@app.route("/app")
+def app_home():
+    canonical = "https://purefyul.com/app"
+    html = render_template(
+        "index.html",
+        time=time,
+        page_title="PureFyul App",
+        meta_description="Use the PureFyul app to analyze ingredients and review blend summaries.",
+        canonical_url=canonical,
+        og_url=canonical,
+    )
+    resp = make_response(html)
+    resp.headers["X-Robots-Tag"] = "noindex, follow"
+    return resp
 
 
 @app.route('/register', methods=['GET', 'POST'])
