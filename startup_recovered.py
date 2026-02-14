@@ -11,7 +11,7 @@ from flask_limiter.util import get_remote_address  # pyright: ignore[reportMissi
 from flask_limiter.errors import RateLimitExceeded  # pyright: ignore[reportMissingImports]
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from functools import wraps
 from flask import jsonify # pyright: ignore[reportMissingImports]
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
@@ -90,6 +90,26 @@ if is_production and is_truthy(os.getenv("FLASK_DEBUG")):
 # Force core debug/testing config flags to False at import time.
 app.config["DEBUG"] = False
 app.config["TESTING"] = False
+
+# Only these slugs are considered "published" (AdSense-safe).
+PUBLISHED_INGREDIENTS = {
+    "almond-milk",
+    "apple",
+    "avocado",
+    "banana",
+    "blueberries",
+    "chia-seed",
+    "flaxseed",
+    "greek-yogurt",
+    "kale",
+    "oats",
+    "peanut-butter",
+    "spinach",
+    "strawberry",
+}
+
+# If your goal detail pages aren't designed yet, keep this EMPTY for now.
+PUBLISHED_GOALS = set()
 
 # Trust Render / Cloudflare proxy headers so request.is_secure and URL generation work correctly
 # behind the proxy (X-Forwarded-For, X-Forwarded-Proto, X-Forwarded-Host, X-Forwarded-Port).
@@ -962,59 +982,32 @@ def _url(loc: str, lastmod: str | None = None) -> str:
 
 @app.get("/sitemap.xml")
 def sitemap_xml():
-    base = os.getenv("CANONICAL_BASE_URL", "https://purefyul.com").rstrip("/")
-    templates_dir = Path(app.root_path) / "templates"
+    base = "https://purefyul.com"
+    today = date.today().isoformat()
 
-    # Only PUBLIC, crawlable pages
-    pages = [
-        ("/", "index.html"),
-        ("/about", "about.html"),
-        ("/pricing", "pricing.html"),
-        ("/contact", "contact.html"),
-        ("/privacy", "privacy.html"),
-        ("/terms", "terms.html"),
-        ("/ingredients", "ingredients.html"),
-        ("/goals", "goals.html"),
+    # Always-allowed public pages
+    paths = [
+        "/", "/about", "/pricing", "/contact", "/privacy", "/terms",
+        "/ingredients", "/goals",
     ]
 
-    url_nodes = []
-    for path, template in pages:
-        loc = f"{base}{path if path.startswith('/') else '/' + path}"
-        lastmod = _iso_date_from_mtime(templates_dir / template)
-        url_nodes.append(_url(loc, lastmod))
+    # Only published ingredient detail pages
+    for slug in sorted(PUBLISHED_INGREDIENTS):
+        paths.append(f"/ingredient/{slug}")
 
-    # Auto-add ingredient landing pages from the registry (data/ingredients.json)
-    ingredients_data_file = Path(app.root_path) / "data" / "ingredients.json"
-    ingredients_data_lastmod = _iso_date_from_mtime(ingredients_data_file)
+    # Only published goal detail pages (empty for now)
+    for slug in sorted(PUBLISHED_GOALS):
+        paths.append(f"/goal/{slug}")
 
-    for slug in sorted(INGREDIENTS.keys()):
-        ing_path = f"/ingredient/{slug}"
-        loc = f"{base}{ing_path}"
-        url_nodes.append(_url(loc, ingredients_data_lastmod))
-
-    # Auto-add goal landing pages from the registry (data/goals.json)
-    goals_data_file = Path(app.root_path) / "data" / "goals.json"
-    goals_template_file = templates_dir / "goal.html"
-    goals_data_mtime = _iso_date_from_mtime(goals_data_file)
-    goals_template_mtime = _iso_date_from_mtime(goals_template_file)
-    # Use the max of data file mtime and template mtime
-    goals_lastmod = max(goals_data_mtime or "", goals_template_mtime or "") or None
-
-    for slug in sorted(GOALS.keys()):
-        goal_path = f"/goal/{slug}"
-        loc = f"{base}{goal_path}"
-        url_nodes.append(_url(loc, goals_lastmod))
-
-    xml = (
-        '<?xml version="1.0" encoding="UTF-8"?>'
+    xml = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
         f'<urlset xmlns="{SITEMAP_NS}">'
-        + "".join(url_nodes) +
-        "</urlset>"
-    )
+    ]
+    for p in paths:
+        xml.append(f"<url><loc>{base}{p}</loc><lastmod>{today}</lastmod></url>")
+    xml.append("</urlset>")
 
-    resp = Response(xml, mimetype="application/xml; charset=utf-8")
-    resp.headers["Cache-Control"] = "public, max-age=3600"
-    return resp
+    return Response("".join(xml), mimetype="application/xml")
 
 @app.get("/robots.txt")
 def robots():
@@ -1906,6 +1899,8 @@ GOALS = _load_goals_registry()
 @app.route('/ingredient/<slug>')
 def ingredient(slug):
     """Public ingredient landing page (SEO)."""
+    if slug not in PUBLISHED_INGREDIENTS:
+        abort(404)
     data = INGREDIENTS.get(slug)
     if not data:
         abort(404)
@@ -1932,6 +1927,8 @@ def ingredients():
     """Public ingredient directory page (SEO)."""
     items = []
     for slug, data in INGREDIENTS.items():
+        if slug not in PUBLISHED_INGREDIENTS:
+            continue
         items.append({
             "slug": slug,
             "name": data.get("name", slug.replace("-", " ").title()),
@@ -1954,6 +1951,8 @@ def ingredients():
 @app.route('/goal/<slug>')
 def goal(slug):
     """Public goal landing page (SEO)."""
+    if slug not in PUBLISHED_GOALS:
+        abort(404)
     try:
         data = get_goal_by_slug(slug)
     except Exception:
@@ -1986,6 +1985,9 @@ def goal(slug):
 @app.route("/goals")
 def goals():
     """Public goals directory page (SEO)."""
+    if not PUBLISHED_GOALS:
+        return redirect("/ingredients", code=302)
+
     try:
         reg = get_goals_registry()
         goals_list = reg.get("goals", [])
@@ -1998,7 +2000,7 @@ def goals():
         if not isinstance(g, dict):
             continue
         slug = g.get("slug")
-        if not slug:
+        if not slug or slug not in PUBLISHED_GOALS:
             continue
         name = g.get("name") or slug.replace("-", " ").title()
         items.append({
