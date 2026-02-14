@@ -1,5 +1,16 @@
-  <!-- Google AdSense (site code) -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2189084482915714" crossorigin="anonymous"></script>
+{# AdSense should only load on public, indexable pages. #}
+{% set p = request.path %}
+{% set q = request.args.get('q') %}
 
-  <!-- Optional: AdSense account meta -->
+{% if not (
+  p.startswith('/app')
+  or p.startswith('/api/')
+  or p.startswith('/admin')
+  or p.startswith('/login')
+  or p.startswith('/register')
+  or (p == '/ingredients' and q)
+) %}
   <meta name="google-adsense-account" content="ca-pub-2189084482915714">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2189084482915714"
+          crossorigin="anonymous"></script>
+{% endif %}
