@@ -253,7 +253,24 @@
     <!-- Contact Card -->
     <div class="contact-card">
       <h1>Get in Touch</h1>
-      <p class="subtitle">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+
+<div class="card" style="margin:14px 0; border:1px solid #e5e7eb; border-radius:12px; padding:16px;">
+  <h2 style="margin:0 0 8px;">Before you send</h2>
+  <ul style="margin:0; padding-left:18px; line-height:1.7;">
+    <li>If you’re reporting a bug, include the page URL and what you expected vs what happened.</li>
+    <li>If you’re requesting an ingredient page, tell us what ingredient and what you want to learn.</li>
+    <li>For privacy details, review the <a href="/privacy">Privacy Policy</a>.</li>
+  </ul>
+
+  <h2 style="margin:14px 0 8px;">Common questions</h2>
+  <ul style="margin:0; padding-left:18px; line-height:1.7;">
+    <li><strong>Do you store my health data?</strong> We aim to keep data collection minimal. See <a href="/privacy">Privacy</a>.</li>
+    <li><strong>Can you correct content?</strong> Yes—send the page link and what should be corrected.</li>
+    <li><strong>Is this medical advice?</strong> No. Content is educational only.</li>
+  </ul>
+</div>
+
+<p class="subtitle">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
       <p class="subtitle" style="margin-top:10px;">
         <div class="contact-email">
           Prefer email? <a href="mailto:support@purefyul.com">support@purefyul.com</a>
@@ -377,6 +394,38 @@
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
 
   {% include "_legal_footer.html" %}
+<!-- PF_CONTACT_SUPPORT_START -->
+<div class="card" style="margin:14px 0; border:1px solid #e5e7eb; border-radius:12px; padding:16px;">
+  <h2 style="margin:0 0 8px;">Response expectations</h2>
+  <p style="margin:0; line-height:1.7;">
+    We try to respond as soon as possible. If you don’t hear back, check your spam folder and then send one follow-up message with the original subject.
+    Please don’t include passwords or sensitive medical details.
+  </p>
+
+  <h2 style="margin:14px 0 8px;">More FAQs</h2>
+  <ul style="margin:0; padding-left:18px; line-height:1.7;">
+    <li><strong>Advertising and cookies:</strong> Some pages may show ads and use cookies for measurement. See <a href="/privacy">Privacy</a>.</li>
+    <li><strong>Content corrections:</strong> Send the page URL and the exact line you think is wrong.</li>
+    <li><strong>Allergies:</strong> Always verify ingredients on product labels. Do not rely on this site for allergy safety.</li>
+    <li><strong>Account help:</strong> Tell us what error you saw and what page you were on (don’t send passwords).</li>
+  </ul>
+</div>
+
+<!-- PF_CONTACT_SUPPORT_END -->
+<div class="card" style="margin:14px 0; border:1px solid #e5e7eb; border-radius:12px; padding:16px;">
+  <h2 style="margin:0 0 8px;">How to get help faster</h2>
+  <p style="margin:0; line-height:1.7;">
+    When you contact us, include the exact page URL and a short step-by-step of what you clicked.
+    If it’s a bug, tell us your device (phone/desktop) and browser (Chrome/Safari/Firefox).
+    If it’s a content request, include the ingredient/goal name and what you want added or corrected.
+  </p>
+  <ul style="margin:10px 0 0; padding-left:18px; line-height:1.7;">
+    <li><strong>Do not send passwords</strong> or private medical details.</li>
+    <li><strong>Medical disclaimer:</strong> we provide educational info only, not diagnosis or treatment.</li>
+    <li><strong>Privacy:</strong> see <a href="/privacy">Privacy</a> for what we collect and why.</li>
+  </ul>
+</div>
+
 </body>
 </html>
 
