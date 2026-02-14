@@ -1968,9 +1968,25 @@ def ingredient(slug):
     )
 
 
+def _slugify(s: str) -> str:
+    s = (s or "").strip().lower()
+    s = re.sub(r"[^a-z0-9\s-]", "", s)
+    s = re.sub(r"[\s_]+", "-", s)
+    s = re.sub(r"-{2,}", "-", s).strip("-")
+    return s
+
+
 @app.route("/ingredients")
 def ingredients():
     """Public ingredient directory page (SEO)."""
+    q = (request.args.get("q") or "").strip()
+    q_slug = _slugify(q) if q else ""
+
+    # exact match → redirect (NO noindex header here)
+    if q_slug and q_slug in INGREDIENTS:
+        return redirect(url_for("ingredient", slug=q_slug), code=301)
+
+    # otherwise render the directory page
     items = []
     for slug, data in INGREDIENTS.items():
         if slug not in PUBLISHED_INGREDIENTS:
@@ -1981,17 +1997,29 @@ def ingredients():
             "summary": data.get("summary", ""),
         })
 
+    # Optional filtering when q provided (substring match)
+    if q:
+        ql = q.lower()
+        items = [it for it in items if ql in it["name"].lower() or q_slug in it["slug"]]
+
     items.sort(key=lambda x: x["name"].lower())
 
     canonical = "https://purefyul.com/ingredients"
-    return render_template(
+    html = render_template(
         "ingredients.html",
         ingredients=items,
         page_title="Ingredient Directory | PureFyul",
         meta_description="Browse common smoothie ingredients and open a simple ingredient guide for each one.",
         canonical_url=canonical,
         og_url=canonical,
+        query=q,
     )
+
+    resp = make_response(html)
+    # only noindex when q is present AND we are NOT redirecting
+    if q:
+        resp.headers["X-Robots-Tag"] = "noindex, follow"
+    return resp
 
 
 @app.route('/goal/<slug>')

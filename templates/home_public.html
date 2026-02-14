@@ -1,133 +1,142 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/home_public.css') }}">
 
-  <title>{{ page_title or "PureFyul" }}</title>
-  {% if meta_description %}<meta name="description" content="{{ meta_description }}">{% endif %}
-
-  {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
-  {% if og_url %}<meta property="og:url" content="{{ og_url }}">{% endif %}
-  <meta property="og:title" content="{{ page_title or 'PureFyul' }}">
-  {% if meta_description %}<meta property="og:description" content="{{ meta_description }}">{% endif %}
-
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; }
-    header { border-bottom: 1px solid #e5e7eb; }
-    .wrap { max-width: 920px; margin: 0 auto; padding: 18px 16px; }
-    nav a { margin-right: 12px; text-decoration: none; }
-    nav a:hover { text-decoration: underline; }
-    h1 { margin: 18px 0 8px; }
-    p { line-height: 1.6; }
-    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin: 14px 0; }
-    ul, ol { line-height: 1.7; }
-    footer { border-top: 1px solid #e5e7eb; margin-top: 24px; }
-    small { color: #6b7280; }
-    .btn { display:inline-block; padding:10px 14px; border-radius:10px; border:1px solid #0f766e; text-decoration:none; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% include "_seo_head.html" %}
+  {% include "_adsense_head.html" %}
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <nav>
-        <a href="/">Home</a>
-        <a href="/app">App</a>
-        <a href="/ingredients">Ingredients</a>
-        <a href="/contact">Contact</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-      </nav>
+  {% include "_navbar.html" %}
+
+  <div class="pf-page-bg" aria-hidden="true"></div>
+
+  <main class="home-public">
+    <div class="pf-container">
+
+      <section class="pf-hero">
+        <div class="pf-hero-grid">
+          <div>
+            <h1 class="pf-h1">Know what an ingredient does — and what it doesn't.</h1>
+            <p class="pf-lead">
+              PureFyul explains ingredients with cautious wording, clear scope, and transparent standards.
+              No hype. No medical promises.
+            </p>
+
+            <ul class="pf-chips">
+              <li class="pf-chip">Outfit-based theme</li>
+              <li class="pf-chip">No medical claims</li>
+              <li class="pf-chip">Clear editorial standards</li>
+            </ul>
+
+            <div class="pf-actions">
+              <a class="pf-btn pf-btn-primary" href="/ingredients">Browse Ingredients</a>
+              <a class="pf-btn pf-btn-ghost" href="/goals">Explore Goals</a>
+              <a class="pf-btn pf-btn-outline" href="/app" rel="nofollow">Open App</a>
+            </div>
+
+            <form class="pf-search" action="/ingredients" method="get" autocomplete="off">
+              <input class="pf-input" name="q" placeholder="Search an ingredient (e.g., ginger, magnesium)">
+              <button class="pf-btn pf-btn-ghost" type="submit">Search</button>
+            </form>
+          </div>
+
+          <aside class="pf-side">
+            <div class="pf-mini">
+              <h3>What you'll find</h3>
+              <p>Ingredient pages and goal browsing with honest scope and readable summaries.</p>
+            </div>
+            <div class="pf-mini">
+              <h3>What you won't find</h3>
+              <p>No diagnosis, no "guaranteed results," no treatment claims.</p>
+            </div>
+            <div class="pf-mini">
+              <h3>Need help?</h3>
+              <p>Use Contact with clear details so we can respond faster.</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="pf-section">
+        <h2 class="pf-section-title">Start here</h2>
+
+        <div class="pf-cards">
+          <div class="pf-card">
+            <h3>Browse Ingredients</h3>
+            <p>Clean ingredient pages written to avoid exaggeration and keep scope clear.</p>
+            <a class="pf-btn pf-btn-primary" href="/ingredients">Open Ingredients</a>
+          </div>
+
+          <div class="pf-card">
+            <h3>Explore Goals</h3>
+            <p>Goal pages linking to relevant ingredients without medical promises.</p>
+            <a class="pf-btn pf-btn-ghost" href="/goals">Open Goals</a>
+          </div>
+
+          <div class="pf-card">
+            <h3>Open the App</h3>
+            <p>Interactive UI for users who want the full experience (not indexed).</p>
+            <a class="pf-btn pf-btn-outline" href="/app" rel="nofollow">Open App</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="pf-section">
+        <h2 class="pf-section-title">Trust & safety</h2>
+
+        <div class="pf-safety">
+          <div class="pf-box">
+            <h3>Not medical advice</h3>
+            <p>Educational content only. Consult a qualified professional for medical decisions.</p>
+          </div>
+          <div class="pf-box">
+            <h3>Editorial standards</h3>
+            <p>We use cautious wording, clear scope, and transparent evaluation rules.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="pf-section">
+        <h2 class="pf-section-title">Quick links</h2>
+
+        <div class="pf-links">
+          <div class="pf-linklist">
+            <h3>Popular ingredients</h3>
+            <div class="pf-linkgrid">
+              <a class="pf-link" href="/ingredient/ginger">Ginger</a>
+              <a class="pf-link" href="/ingredient/turmeric">Turmeric</a>
+              <a class="pf-link" href="/ingredient/magnesium">Magnesium</a>
+              <a class="pf-link" href="/ingredient/vitamin-d">Vitamin D</a>
+            </div>
+          </div>
+
+          <div class="pf-linklist">
+            <h3>Popular goals</h3>
+            <div class="pf-linkgrid">
+              <a class="pf-link" href="/goal/blood-sugar-support">Blood Sugar Support</a>
+              <a class="pf-link" href="/goal/gut-health">Gut Health</a>
+              <a class="pf-link" href="/goal/sleep-support">Sleep Support</a>
+              <a class="pf-link" href="/goal/energy-support">Energy Support</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
-  </header>
+  </main>
 
-  <main class="wrap">
-    <h1>PureFyul</h1>
-    <p>
-      PureFyul helps you explore common smoothie ingredients with simple, practical nutrition insights.
-      <strong>This is informational content and not medical advice.</strong>
-    </p>
-
-    <div class="card">
-      <h2 style="margin-top:0;">Start</h2>
-      <p>
-        <a class="btn" href="/app">Open the app</a>
-        &nbsp; <a href="/ingredients">Browse ingredient guides</a>
-      </p>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0;">How it works</h2>
-      <ol>
-        <li>Browse ingredient guides for quick facts and usage ideas.</li>
-        <li>Use the app to review a blend summary.</li>
-        <li>Adjust ingredients based on your preferences and dietary needs.</li>
-      </ol>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0;">Transparency</h2>
-      <p>
-        We only publish pages that are ready. If something isn’t ready, it isn’t indexed or shown.
-      </p>
-    </div>
-
-    <footer class="wrap">
-      <small>© {{ (time.time()|int) if time else "" }} PureFyul</small>
-    </footer>
-      <div class="card">
-      <h2 style="margin-top:0;">What you’ll find on PureFyul</h2>
-      <ul>
-        <li><strong>Ingredient guides</strong> written to be simple and practical—what it is, why people use it, and how it fits in a smoothie.</li>
-        <li><strong>Common combinations</strong> so you can balance taste (sweet, creamy, fresh) and nutrition goals.</li>
-        <li><strong>Clarity first</strong>: we avoid exaggerated claims. This site is informational and not medical advice.</li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0;">How we publish content</h2>
-      <p>
-        Only pages that are ready are listed in the public sitemap. If a page is not published, it will return 404 and won’t be shown to search engines.
-        We focus on quality over quantity.
-      </p>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0;">Quick links</h2>
-      <ul>
-        <li><a href="/ingredients">Browse all ingredient guides</a></li>
-        <li><a href="/app">Open the app</a></li>
-        <li><a href="/contact">Contact support</a></li>
-        <li><a href="/privacy">Privacy</a> and <a href="/terms">Terms</a></li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0;">Editorial standards</h2>
-      <ul>
-        <li><strong>Educational only:</strong> PureFyul does not provide medical advice, diagnosis, or treatment.</li>
-        <li><strong>No exaggerated claims:</strong> We avoid promises like “cures” or “guaranteed results.”</li>
-        <li><strong>Context matters:</strong> Nutrition needs vary by person, allergies, and medications. Use common sense and consult a professional for health decisions.</li>
-        <li><strong>Transparency:</strong> Pages are published only when ready. Unpublished pages are not listed in the sitemap.</li>
-      </ul>
-      <p>
-        If you spot an error or want to request a new ingredient guide, use the <a href="/contact">contact page</a>.
-      </p>
-    </div>
-
-    <div class="card">
-      <h2 style="margin-top:0;">Safety and content scope</h2>
-      <p>
-        Ingredient information on PureFyul is simplified for everyday smoothie planning. Nutrition data can vary by brand, ripeness, preparation,
-        and serving size. If you are managing a medical condition (for example diabetes, kidney disease, pregnancy, or food allergies),
-        do not rely on this site for health decisions—use it as a starting point and confirm details with labels and a qualified professional.
-      </p>
-      <p>
-        We do not publish pages that are empty or unfinished. Only pages listed in the public sitemap are meant for search engines and ad review.
-        If something looks wrong, please tell us on the <a href="/contact">contact page</a>.
-      </p>
-    </div>
-
-</main>
+  <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
+  {% include "_legal_footer.html" %}
+  {% include "_feedback.html" %}
 </body>
 </html>
