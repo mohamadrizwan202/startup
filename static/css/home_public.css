@@ -1,74 +1,82 @@
-/* HOME ONLY (scoped) */
-.home-public{
-  --pf-teal: #0F766E;
-  --pf-teal-2: #129286;
+/* HOME ONLY — SKIN MATCHED TO WEBAPP (dark + glass + teal) */
+.page-home{
+  --pf-teal:#0F766E;
+  --pf-teal-2:#129286;
+
+  --pf-ink:#ffffff;
+  --pf-muted: rgba(255,255,255,.78);
+  --pf-muted-2: rgba(255,255,255,.62);
+
   --pf-border: rgba(255,255,255,.16);
+  --pf-card: rgba(255,255,255,.08);
+  --pf-card-2: rgba(255,255,255,.10);
 
-  --pf-card: rgba(255,255,255,.92);
-  --pf-card-2: rgba(255,255,255,.86);
-  --pf-ink: #081518;
-  --pf-muted: rgba(8,21,24,.68);
+  --radius:18px;
+  --shadow: 0 16px 44px rgba(0,0,0,.22);
+  --shadow-sm: 0 10px 26px rgba(0,0,0,.18);
 
-  --pf-radius: 18px;
-  --pf-shadow: 0 14px 40px rgba(0,0,0,.20);
-  --pf-shadow-sm: 0 8px 22px rgba(0,0,0,.16);
-
-  padding: 28px 0 36px;
-}
-
-/* Dark background layer behind the sticky transparent navbar */
-.pf-page-bg{
-  position: fixed;
-  inset: 0;
-  z-index: -1;
+  /* Match the webapp teal background feel */
   background:
-    radial-gradient(900px 520px at 18% -10%, rgba(18,146,134,.35), transparent 60%),
-    radial-gradient(750px 520px at 92% 0%, rgba(15,118,110,.26), transparent 55%),
-    linear-gradient(180deg, #041a1d 0%, #052427 40%, #061c1f 100%);
+    radial-gradient(900px 520px at 18% -10%, rgba(255,255,255,.10), transparent 60%),
+    radial-gradient(750px 520px at 92% 0%, rgba(0,0,0,.10), transparent 55%),
+    linear-gradient(180deg, #0CA6A4 0%, #0B8E8B 55%, #086B6A 100%);
+  min-height: 100vh;
 }
 
+/* Container */
 .home-public .pf-container{
   max-width: 1120px;
   margin: 0 auto;
-  padding: 0 18px;
+  padding: 18px 18px 44px;
 }
+
+/* IMPORTANT:
+   Do NOT override navbar to dark text anymore.
+   Your navbar.css already matches this dark background (white text + glass). */
 
 /* HERO */
 .home-public .pf-hero{
+  background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.14);
-  border-radius: calc(var(--pf-radius) + 6px);
-  box-shadow: var(--pf-shadow);
-  background: rgba(255,255,255,.10);
+  border-radius: calc(var(--radius) + 6px);
+  box-shadow: var(--shadow);
   backdrop-filter: blur(12px);
   padding: 22px;
 }
 
 .home-public .pf-hero-grid{
-  display: grid;
-  grid-template-columns: 1.25fr .75fr;
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
   gap: 18px;
   align-items: start;
 }
 
 .home-public .pf-h1{
-  margin: 0 0 10px 0;
-  font-size: clamp(28px, 3.1vw, 44px);
-  line-height: 1.12;
-  letter-spacing: -0.6px;
-  color: #fff;
+  margin:0 0 10px 0;
+  font-size: clamp(32px, 3.6vw, 54px);
+  line-height: 1.05;
+  letter-spacing: -0.9px;
+  color: var(--pf-ink);
 }
 
 .home-public .pf-lead{
-  margin: 0 0 16px 0;
+  margin:0 0 14px 0;
   font-size: clamp(15px, 1.15vw, 18px);
-  color: rgba(255,255,255,.80);
+  color: var(--pf-muted);
 }
 
+.home-public .pf-footnote{
+  margin: 12px 0 0 0;
+  font-size: 12.5px;
+  color: rgba(255,255,255,.62);
+}
+
+/* Chips */
 .home-public .pf-chips{
   display:flex;
   flex-wrap:wrap;
   gap:10px;
-  margin: 0 0 16px 0;
+  margin: 0 0 14px 0;
   padding:0;
   list-style:none;
 }
@@ -82,14 +90,15 @@
   border: 1px solid rgba(255,255,255,.16);
   font-weight: 800;
   font-size: 13px;
-  color: rgba(255,255,255,.90);
+  color: rgba(255,255,255,.92);
 }
 
+/* Actions */
 .home-public .pf-actions{
   display:flex;
   flex-wrap:wrap;
   gap:10px;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 /* Buttons */
@@ -106,24 +115,27 @@
   cursor: pointer;
   transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
 }
-
 .home-public .pf-btn:hover{
   transform: translateY(-1px);
-  box-shadow: var(--pf-shadow-sm);
-  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  text-decoration:none;
+}
+.home-public .pf-btn:focus-visible{
+  outline: 3px solid rgba(18,146,134,.25);
+  outline-offset: 2px;
 }
 
 .home-public .pf-btn-primary{
   background: var(--pf-teal);
-  color: #fff;
+  color:#fff;
 }
+.home-public .pf-btn-primary:hover{ background: var(--pf-teal-2); }
 
 .home-public .pf-btn-ghost{
   background: rgba(255,255,255,.12);
   border-color: rgba(255,255,255,.18);
   color: #fff;
 }
-
 .home-public .pf-btn-outline{
   background: transparent;
   border-color: rgba(255,255,255,.28);
@@ -132,12 +144,11 @@
 
 /* Search */
 .home-public .pf-search{
-  margin-top: 14px;
+  margin-top: 12px;
   display:flex;
   gap:10px;
   align-items:center;
 }
-
 .home-public .pf-input{
   width:100%;
   padding: 11px 12px;
@@ -147,98 +158,928 @@
   color: #fff;
   font-size: 14px;
 }
-
-.home-public .pf-input::placeholder{ color: rgba(255,255,255,.70); }
-
+.home-public .pf-input::placeholder{
+  color: rgba(255,255,255,.70);
+}
 .home-public .pf-input:focus{
-  outline: none;
+  outline:none;
   border-color: rgba(255,255,255,.38);
   box-shadow: 0 0 0 4px rgba(18,146,134,.22);
 }
 
-/* Side panels on hero */
-.home-public .pf-side{ display:grid; gap:12px; }
-
-.home-public .pf-mini{
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: var(--pf-radius);
-  padding: 14px;
-  background: rgba(255,255,255,.08);
-  backdrop-filter: blur(12px);
-  color: rgba(255,255,255,.88);
+/* Preview panel */
+.home-public .pf-preview{
+  display:grid;
+  gap: 12px;
+}
+.home-public .pf-preview-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.home-public .pf-badge{
+  font-weight:900;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.16);
+  color: rgba(255,255,255,.92);
+}
+.home-public .pf-preview-note{
+  font-size: 12.5px;
+  color: rgba(255,255,255,.70);
 }
 
-.home-public .pf-mini h3{ margin: 0 0 6px 0; font-size: 14px; color:#fff; }
-.home-public .pf-mini p{ margin: 0; font-size: 13px; color: rgba(255,255,255,.78); }
+.home-public .pf-preview-card{
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+  display:grid;
+  gap: 12px;
+  backdrop-filter: blur(12px);
+}
+.home-public .pf-row{
+  display:flex;
+  gap: 10px;
+  align-items:flex-start;
+}
+.home-public .pf-dot{
+  width:10px;height:10px;
+  border-radius:999px;
+  background: rgba(18,146,134,.55);
+  margin-top: 6px;
+}
+.home-public .pf-row-title{
+  font-weight: 900;
+  font-size: 14px;
+  color: rgba(255,255,255,.92);
+}
+.home-public .pf-row-sub{
+  font-size: 12.5px;
+  color: rgba(255,255,255,.70);
+}
+.home-public .pf-preview-cta{
+  width:100%;
+}
 
-/* Sections below hero (light cards for readability) */
-.home-public .pf-section{ padding: 18px 0 0; }
+/* Trust row */
+.home-public .pf-trust{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.home-public .pf-trust-item{
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 14px;
+  padding: 10px 12px;
+  backdrop-filter: blur(12px);
+}
+.home-public .pf-trust-k{
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(255,255,255,.90);
+}
+.home-public .pf-trust-v{
+  font-size: 12px;
+  color: rgba(255,255,255,.68);
+}
 
-.home-public .pf-section-title{
+/* Sections */
+.home-public .pf-section{ padding-top: 18px; }
+.home-public .pf-h2{
   margin: 18px 0 12px 0;
   font-size: 18px;
   letter-spacing: -.2px;
   color: rgba(255,255,255,.92);
 }
 
+/* Cards */
 .home-public .pf-cards{
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 14px;
 }
-
 .home-public .pf-card{
-  background: var(--pf-card);
-  border: 1px solid rgba(255,255,255,.25);
-  border-radius: var(--pf-radius);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: var(--radius);
   padding: 16px;
-  box-shadow: var(--pf-shadow-sm);
-  color: var(--pf-ink);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
 }
+.home-public .pf-card h3{ margin:0 0 6px 0; font-size: 16px; color: rgba(255,255,255,.92); }
+.home-public .pf-card p{ margin:0 0 12px 0; color: rgba(255,255,255,.72); font-size: 14px; }
 
-.home-public .pf-card p{ color: var(--pf-muted); }
-
-/* Two-column blocks */
-.home-public .pf-safety,
+/* Quick links */
 .home-public .pf-links{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
-
-.home-public .pf-box,
 .home-public .pf-linklist{
-  background: var(--pf-card-2);
-  border: 1px solid rgba(255,255,255,.25);
-  border-radius: var(--pf-radius);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: var(--radius);
   padding: 16px;
-  box-shadow: var(--pf-shadow-sm);
-  color: var(--pf-ink);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
 }
-
+.home-public .pf-linklist h3{
+  color: rgba(255,255,255,.92);
+}
 .home-public .pf-linkgrid{
   display:grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 8px;
 }
-
 .home-public .pf-link{
   display:block;
   padding: 8px 10px;
   border-radius: 12px;
-  border: 1px solid rgba(15,118,110,.14);
-  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.10);
   font-size: 13.5px;
-  color: var(--pf-ink);
+  color: rgba(255,255,255,.88);
   text-decoration:none;
 }
-
 .home-public .pf-link:hover{
-  border-color: rgba(15,118,110,.26);
+  border-color: rgba(18,146,134,.45);
 }
 
+/* Responsive */
 @media (max-width: 900px){
   .home-public .pf-hero-grid{ grid-template-columns: 1fr; }
-  .home-public .pf-safety,
+  .home-public .pf-trust{ grid-template-columns: 1fr; }
   .home-public .pf-links{ grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce){
+  .home-public .pf-btn{ transition:none; }
+  .home-public .pf-btn:hover{ transform:none; }
+}
+
+/* ===== Container usability upgrade (append at END of file) ===== */
+
+/* Use white surfaces for content blocks (like /app) */
+.page-home{
+  --pf-surface: rgba(255,255,255,.96);
+  --pf-surface-2: rgba(255,255,255,.92);
+  --pf-surface-border: rgba(0,0,0,.08);
+  --pf-surface-ink: #0b1220;
+  --pf-surface-muted: rgba(11,18,32,.62);
+  --pf-surface-shadow: 0 14px 34px rgba(0,0,0,.16);
+  --pf-surface-shadow-sm: 0 10px 24px rgba(0,0,0,.12);
+}
+
+/* Main "card" containers: Start here cards + Quick links boxes + Preview panel + Trust chips */
+.page-home .home-public .pf-card,
+.page-home .home-public .pf-linklist,
+.page-home .home-public .pf-preview-card,
+.page-home .home-public .pf-trust-item{
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-surface-border);
+  box-shadow: var(--pf-surface-shadow-sm);
+  backdrop-filter: none; /* crisp text */
+}
+
+/* Headings + text inside those containers should be dark */
+.page-home .home-public .pf-card h3,
+.page-home .home-public .pf-linklist h3,
+.page-home .home-public .pf-row-title,
+.page-home .home-public .pf-trust-k{
+  color: var(--pf-surface-ink) !important;
+}
+
+.page-home .home-public .pf-card p,
+.page-home .home-public .pf-row-sub,
+.page-home .home-public .pf-trust-v{
+  color: var(--pf-surface-muted) !important;
+}
+
+/* Make "Start here" cards more usable: consistent button placement */
+.page-home .home-public .pf-card{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 170px;
+}
+.page-home .home-public .pf-card .pf-btn{
+  margin-top: auto;
+  width: fit-content;
+}
+
+/* Quick links: make links look clickable and readable */
+.page-home .home-public .pf-link{
+  background: var(--pf-surface-2);
+  border: 1px solid rgba(0,0,0,.08);
+  color: var(--pf-surface-ink);
+}
+.page-home .home-public .pf-link:hover{
+  border-color: rgba(15,118,110,.35);
+  box-shadow: 0 8px 18px rgba(0,0,0,.10);
+}
+
+/* Preview block inside hero: make rows cleaner */
+.page-home .home-public .pf-dot{
+  background: rgba(15,118,110,.55);
+}
+
+/* Optional: slightly lift containers on hover (feels "interactive" but not noisy) */
+@media (hover:hover){
+  .page-home .home-public .pf-card:hover,
+  .page-home .home-public .pf-linklist:hover,
+  .page-home .home-public .pf-preview-card:hover{
+    transform: translateY(-2px);
+    transition: transform .12s ease, box-shadow .12s ease;
+    box-shadow: var(--pf-surface-shadow);
+  }
+}
+
+/* ===== HERO: App-first (primary CTA = Open App) ===== */
+
+.page-home .home-public .pf-hero.pf-hero-appfirst{
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.page-home .home-public .pf-hero-appfirst-inner{
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 26px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.18);
+  backdrop-filter: blur(10px);
+}
+
+.page-home .home-public .pf-hero-primary{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.page-home .home-public .pf-btn-lg{
+  height: 54px;
+  padding: 0 22px;
+  font-size: 16px;
+  border-radius: 16px;
+  font-weight: 900;
+}
+
+.page-home .home-public .pf-hero-note{
+  font-size: 13px;
+  color: rgba(255,255,255,.78);
+}
+
+.page-home .home-public .pf-hero-secondary{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.page-home .home-public .pf-search-secondary{
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.page-home .home-public .pf-search-secondary .pf-input{
+  height: 46px;
+  font-size: 15px;
+}
+
+.page-home .home-public .pf-search-secondary .pf-btn{
+  height: 46px;
+  padding: 0 14px;
+}
+
+/* Mobile: stack button + search nicely */
+@media (max-width: 640px){
+  .page-home .home-public .pf-hero-appfirst-inner{ padding: 18px; }
+  .page-home .home-public .pf-search-secondary{ grid-template-columns: 1fr; }
+  .page-home .home-public .pf-search-secondary .pf-btn{ width: 100%; }
+}
+
+/* ===== Hero redesign: clean app-style surface card ===== */
+
+.page-home .home-public .pf-hero.pf-hero-surface{
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.page-home .home-public .pf-hero-surface-inner{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 18px 0;
+}
+
+.page-home .home-public .pf-hero-surface-grid{
+  display: grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap: 18px;
+  padding: 22px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.96);
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 16px 44px rgba(0,0,0,.16);
+}
+
+.page-home .home-public .pf-hero-surface .pf-h1{
+  color: #0b1220;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 1.03;
+  margin: 0 0 10px 0;
+}
+
+.page-home .home-public .pf-hero-surface .pf-lead{
+  color: rgba(11,18,32,.62);
+  margin: 0 0 14px 0;
+  max-width: 70ch;
+}
+
+.page-home .home-public .pf-hero-cta{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.page-home .home-public .pf-btn-lg{
+  height: 54px;
+  padding: 0 22px;
+  font-size: 16px;
+  border-radius: 16px;
+  font-weight: 900;
+}
+
+.page-home .home-public .pf-mini-note{
+  font-size: 13px;
+  color: rgba(11,18,32,.55);
+}
+
+.page-home .home-public .pf-hero-links{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.page-home .home-public .pf-link-min{
+  color: rgba(11,18,32,.70);
+  font-weight: 800;
+  text-decoration: none;
+}
+.page-home .home-public .pf-link-min:hover{
+  color: rgba(11,18,32,.88);
+  text-decoration: underline;
+}
+
+.page-home .home-public .pf-hero-surface .pf-footnote{
+  color: rgba(11,18,32,.55);
+}
+
+/* Right side panel */
+.page-home .home-public .pf-hero-side{
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(15,118,110,.08);
+  border: 1px solid rgba(15,118,110,.14);
+}
+
+.page-home .home-public .pf-side-title{
+  font-weight: 900;
+  color: #0b1220;
+  margin-bottom: 10px;
+}
+
+.page-home .home-public .pf-side-list{
+  margin: 0 0 12px 18px;
+  padding: 0;
+  color: rgba(11,18,32,.70);
+  line-height: 1.35;
+}
+
+.page-home .home-public .pf-side-tag{
+  display: inline-flex;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(15,118,110,.10);
+  border: 1px solid rgba(15,118,110,.14);
+  color: rgba(11,18,32,.78);
+  font-weight: 900;
+  font-size: 12.5px;
+}
+
+/* Mobile */
+@media (max-width: 900px){
+  .page-home .home-public .pf-hero-surface-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== FIX: container usability on white surfaces (buttons + text) ===== */
+
+/* Make all white containers consistent */
+.page-home .home-public .pf-hero-surface-grid,
+.page-home .home-public .pf-card,
+.page-home .home-public .pf-linklist{
+  background: rgba(255,255,255,.96) !important;
+  border: 1px solid rgba(0,0,0,.08) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.14) !important;
+  backdrop-filter: none !important;
+}
+
+/* Text inside white containers must be dark */
+.page-home .home-public .pf-hero-surface-grid *,
+.page-home .home-public .pf-card *,
+.page-home .home-public .pf-linklist *{
+  color: inherit;
+}
+
+.page-home .home-public .pf-hero-surface-grid,
+.page-home .home-public .pf-card,
+.page-home .home-public .pf-linklist{
+  color: #0b1220;
+}
+
+.page-home .home-public .pf-card p{
+  color: rgba(11,18,32,.62) !important;
+}
+
+/* THIS is the main bug: ghost/outline buttons were designed for dark background.
+   On white cards they look dead. Force proper button styles on white containers. */
+.page-home .home-public .pf-hero-surface-grid .pf-btn-ghost,
+.page-home .home-public .pf-card .pf-btn-ghost,
+.page-home .home-public .pf-linklist .pf-btn-ghost,
+.page-home .home-public .pf-hero-surface-grid .pf-btn-outline,
+.page-home .home-public .pf-card .pf-btn-outline,
+.page-home .home-public .pf-linklist .pf-btn-outline{
+  background: rgba(15,118,110,.08) !important;
+  border: 1px solid rgba(15,118,110,.18) !important;
+  color: #0b1220 !important;
+  box-shadow: none !important;
+}
+
+.page-home .home-public .pf-hero-surface-grid .pf-btn-ghost:hover,
+.page-home .home-public .pf-card .pf-btn-ghost:hover,
+.page-home .home-public .pf-hero-surface-grid .pf-btn-outline:hover,
+.page-home .home-public .pf-card .pf-btn-outline:hover{
+  background: rgba(15,118,110,.12) !important;
+  border-color: rgba(15,118,110,.28) !important;
+}
+
+/* Primary button stays teal and strong everywhere */
+.page-home .home-public .pf-btn-primary{
+  background: #0F766E !important;
+  color: #fff !important;
+}
+.page-home .home-public .pf-btn-primary:hover{
+  background: #129286 !important;
+}
+
+/* Make Start cards feel clickable + structured */
+.page-home .home-public .pf-card{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 170px;
+}
+.page-home .home-public .pf-card .pf-btn{
+  margin-top: auto;
+  width: fit-content;
+}
+
+/* ===== HERO CONTAINER REDESIGN: Launchpad (no dead space) ===== */
+
+.page-home .home-public .pf-hero.pf-hero-launch{
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.page-home .home-public .pf-hero-launch-inner{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 18px 0;
+}
+
+.page-home .home-public .pf-hero-launch-grid{
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 18px;
+
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(255,255,255,.96);
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 18px 46px rgba(0,0,0,.16);
+}
+
+/* subtle accent stripe so it feels "designed" */
+.page-home .home-public .pf-hero-launch-grid::after{
+  content:"";
+  position:absolute;
+  inset: 10px 10px 10px auto;
+  width: 28%;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(15,118,110,.14), rgba(15,118,110,.06));
+  pointer-events:none;
+}
+
+/* Ensure content stays above accent stripe */
+.page-home .home-public .pf-launch-copy,
+.page-home .home-public .pf-launch-panels{
+  position: relative;
+  z-index: 1;
+}
+
+.page-home .home-public .pf-launch-badge{
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15,118,110,.10);
+  border: 1px solid rgba(15,118,110,.16);
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(11,18,32,.78);
+  margin-bottom: 10px;
+}
+
+.page-home .home-public .pf-hero-launch .pf-h1{
+  color: #0b1220;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 1.03;
+  margin: 0 0 10px 0;
+}
+
+.page-home .home-public .pf-hero-launch .pf-lead{
+  color: rgba(11,18,32,.62);
+  margin: 0 0 14px 0;
+  max-width: 70ch;
+}
+
+.page-home .home-public .pf-launch-actions{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.page-home .home-public .pf-btn-lg{
+  height: 54px;
+  padding: 0 22px;
+  font-size: 16px;
+  border-radius: 16px;
+  font-weight: 900;
+}
+
+.page-home .home-public .pf-launch-note{
+  font-size: 13px;
+  color: rgba(11,18,32,.55);
+}
+
+.page-home .home-public .pf-launch-links{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.page-home .home-public .pf-link-min{
+  color: rgba(11,18,32,.70);
+  font-weight: 900;
+  text-decoration: none;
+}
+.page-home .home-public .pf-link-min:hover{
+  color: rgba(11,18,32,.88);
+  text-decoration: underline;
+}
+
+.page-home .home-public .pf-hero-launch .pf-footnote{
+  color: rgba(11,18,32,.55);
+}
+
+/* Right panels: compact + "app-like" */
+.page-home .home-public .pf-launch-panels{
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding-top: 6px;
+}
+
+.page-home .home-public .pf-mini-panel{
+  display:flex;
+  gap: 10px;
+  align-items:flex-start;
+  padding: 12px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 10px 22px rgba(0,0,0,.10);
+}
+
+.page-home .home-public .pf-mini-dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15,118,110,.55);
+  margin-top: 6px;
+  flex: 0 0 auto;
+}
+
+.page-home .home-public .pf-mini-title{
+  font-weight: 900;
+  color: #0b1220;
+  font-size: 14px;
+}
+
+.page-home .home-public .pf-mini-sub{
+  font-size: 12.5px;
+  color: rgba(11,18,32,.62);
+}
+
+.page-home .home-public .pf-mini-tag{
+  justify-self: start;
+  margin-top: 6px;
+  display:inline-flex;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(15,118,110,.10);
+  border: 1px solid rgba(15,118,110,.14);
+  color: rgba(11,18,32,.78);
+  font-weight: 900;
+  font-size: 12.5px;
+}
+
+/* Mobile */
+@media (max-width: 900px){
+  .page-home .home-public .pf-hero-launch-grid{
+    grid-template-columns: 1fr;
+  }
+  .page-home .home-public .pf-hero-launch-grid::after{
+    width: 100%;
+    inset: auto 10px 10px 10px;
+    height: 110px;
+  }
+}
+
+/* ===== App Preview Hero (research-backed) ===== */
+
+.page-home .home-public .pf-hero-apppreview{
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.page-home .home-public .pf-hero-apppreview-inner{
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 18px 18px 0;
+}
+
+.page-home .home-public .pf-hero-grid{
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 18px;
+
+  padding: 24px;
+  border-radius: 24px;
+
+  background: rgba(255,255,255,.96);
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 18px 46px rgba(0,0,0,.16);
+}
+
+.page-home .home-public .pf-hero-badge{
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15,118,110,.10);
+  border: 1px solid rgba(15,118,110,.16);
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(11,18,32,.78);
+  margin-bottom: 10px;
+}
+
+.page-home .home-public .pf-hero-title{
+  margin: 0 0 10px 0;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 1.02;
+  color: #0b1220;
+  letter-spacing: -0.02em;
+}
+
+.page-home .home-public .pf-hero-subtitle{
+  margin: 0 0 14px 0;
+  color: rgba(11,18,32,.62);
+  max-width: 70ch;
+}
+
+.page-home .home-public .pf-hero-cta{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.page-home .home-public .pf-btn-lg{
+  height: 54px;
+  padding: 0 22px;
+  font-size: 16px;
+  border-radius: 16px;
+  font-weight: 900;
+}
+
+.page-home .home-public .pf-hero-note{
+  font-size: 13px;
+  color: rgba(11,18,32,.55);
+}
+
+.page-home .home-public .pf-hero-trust{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.page-home .home-public .pf-trust-chip{
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(15,118,110,.08);
+  border: 1px solid rgba(15,118,110,.14);
+  color: rgba(11,18,32,.76);
+  font-weight: 900;
+  font-size: 12.5px;
+}
+
+.page-home .home-public .pf-hero-links{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.page-home .home-public .pf-link-min{
+  color: rgba(11,18,32,.70);
+  font-weight: 900;
+  text-decoration: none;
+}
+.page-home .home-public .pf-link-min:hover{
+  color: rgba(11,18,32,.88);
+  text-decoration: underline;
+}
+
+.page-home .home-public .pf-hero-footnote{
+  margin-top: 10px;
+  color: rgba(11,18,32,.55);
+}
+
+/* Preview frame */
+.page-home .home-public .pf-hero-preview{
+  align-self: center;
+}
+
+.page-home .home-public .pf-preview-frame{
+  border-radius: 22px;
+  padding: 12px;
+  background: rgba(15,118,110,.08);
+  border: 1px solid rgba(15,118,110,.16);
+  box-shadow: 0 14px 34px rgba(0,0,0,.12);
+}
+
+.page-home .home-public .pf-preview-frame img{
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+/* Mobile */
+@media (max-width: 960px){
+  .page-home .home-public .pf-hero-grid{
+    grid-template-columns: 1fr;
+  }
+  .page-home .home-public .pf-hero-preview{
+    order: 2;
+  }
+}
+
+/* ===== App preview: CSS-only tabs ===== */
+
+.pf-preview{
+  margin-top: 16px;
+}
+
+/* Segmented control on light hero */
+.pf-preview-switch{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.pf-preview-switch input{
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Default: visible on white */
+.pf-preview-switch label{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 14px;
+  border-radius: 999px;
+
+  background: rgba(15, 118, 110, 0.10);
+  border: 1px solid rgba(15, 118, 110, 0.20);
+
+  color: #0B1220;
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 1;
+
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.pf-preview-switch label:hover{
+  background: rgba(15, 118, 110, 0.16);
+}
+
+/* Selected state: teal pill */
+#pfPrevBuilder:checked + label,
+#pfPrevAnalysis:checked + label{
+  background: #0F766E;
+  border-color: #0F766E;
+  color: #FFFFFF;
+  box-shadow: 0 14px 30px rgba(0,0,0,.14);
+}
+
+.pf-preview-panels{
+  width: 100%;
+  margin-top: 10px;
+}
+
+.pf-preview-panel{
+  display: none;
+}
+
+/* Robust show/hide */
+#pfPrevBuilder:checked ~ .pf-preview-panels .pf-preview-panel--builder{
+  display: block;
+}
+
+#pfPrevAnalysis:checked ~ .pf-preview-panels .pf-preview-panel--analysis{
+  display: block;
+}
+
+/* Preview frame */
+.pf-preview-panel img{
+  width: 100%;
+  height: auto;
+  display: block;
+
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: #FFFFFF;
+  box-shadow: 0 18px 44px rgba(0,0,0,.14);
+}
+
+/* Mobile: full-width tabs */
+@media (max-width: 640px){
+  .pf-preview-switch{
+    gap: 8px;
+  }
+  .pf-preview-switch label{
+    flex: 1 1 100%;
+    width: 100%;
+  }
 }

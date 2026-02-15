@@ -1677,15 +1677,54 @@ def handle_csrf_error(error):
 # ============================================================================
 
 
+def _pick_existing(items_dict, published_set, preferred_slugs, limit=6):
+    out = []
+    for slug in preferred_slugs:
+        if slug in items_dict and slug in published_set:
+            out.append(slug)
+        if len(out) >= limit:
+            return out
+    for slug in published_set:
+        if slug in items_dict and slug not in out:
+            out.append(slug)
+        if len(out) >= limit:
+            break
+    return out
+
+
 @app.route("/")
 def index():
     canonical = "https://purefyul.com/"
+
+    popular_ingredient_slugs = _pick_existing(
+        INGREDIENTS,
+        PUBLISHED_INGREDIENTS,
+        preferred_slugs=["ginger", "turmeric", "magnesium", "vitamin-d", "green-tea", "apple-cider-vinegar"],
+        limit=6,
+    )
+    popular_goal_slugs = _pick_existing(
+        GOALS,
+        PUBLISHED_GOALS,
+        preferred_slugs=["blood-sugar-support", "gut-health", "sleep-support", "energy-support", "heart-health", "immune-support"],
+        limit=6,
+    )
+    popular_ingredients = [
+        {"name": INGREDIENTS[s].get("name", s.replace("-", " ").title()), "url": url_for("ingredient", slug=s)}
+        for s in popular_ingredient_slugs
+    ]
+    popular_goals = [
+        {"name": GOALS[s].get("name", s.replace("-", " ").title()), "url": url_for("goal", slug=s)}
+        for s in popular_goal_slugs
+    ]
+
     return render_template(
         "home_public.html",
         page_title="PureFyul | Ingredient insights for smarter blends",
         meta_description="Explore ingredient guides and build better smoothies with clear, simple nutrition insights.",
         canonical_url=canonical,
         og_url=canonical,
+        popular_ingredients=popular_ingredients,
+        popular_goals=popular_goals,
     )
 
 
