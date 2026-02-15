@@ -16,124 +16,136 @@
   {% include "_adsense_head.html" %}
 </head>
 <body>
+<div class="page-home">
   {% include "_navbar.html" %}
-
-  <div class="pf-page-bg" aria-hidden="true"></div>
 
   <main class="home-public">
     <div class="pf-container">
+      <!-- HERO -->
+      <section class="pf-hero pf-hero-apppreview">
+        <div class="pf-hero-apppreview-inner">
+          <div class="pf-hero-grid">
+            <div class="pf-hero-copy">
+              <div class="pf-hero-badge">Start here</div>
 
-      <section class="pf-hero">
-        <div class="pf-hero-grid">
-          <div>
-            <h1 class="pf-h1">Know what an ingredient does — and what it doesn't.</h1>
-            <p class="pf-lead">
-              PureFyul explains ingredients with cautious wording, clear scope, and transparent standards.
-              No hype. No medical promises.
-            </p>
+              <h1 class="pf-hero-title">Ingredient clarity without hype.</h1>
 
-            <ul class="pf-chips">
-              <li class="pf-chip">Outfit-based theme</li>
-              <li class="pf-chip">No medical claims</li>
-              <li class="pf-chip">Clear editorial standards</li>
-            </ul>
+              <p class="pf-hero-subtitle">
+                Open the app first — it's the fastest way to explore ingredients and build a clean workflow.
+                Public pages exist mainly for browsing and SEO.
+              </p>
 
-            <div class="pf-actions">
-              <a class="pf-btn pf-btn-primary" href="/ingredients">Browse Ingredients</a>
-              <a class="pf-btn pf-btn-ghost" href="/goals">Explore Goals</a>
-              <a class="pf-btn pf-btn-outline" href="/app" rel="nofollow">Open App</a>
+              <div class="pf-hero-cta">
+                <a class="pf-btn pf-btn-primary pf-btn-lg" href="/app" rel="nofollow">Open App</a>
+                <span class="pf-hero-note">App pages are not indexed.</span>
+              </div>
+
+              <div class="pf-hero-trust">
+                <div class="pf-trust-chip">No medical promises</div>
+                <div class="pf-trust-chip">Clear editorial scope</div>
+                <div class="pf-trust-chip">Privacy-first</div>
+              </div>
+
+              <div class="pf-hero-links">
+                <a class="pf-link-min" href="/ingredients">Browse Ingredients</a>
+                <a class="pf-link-min" href="/goals">Explore Goals</a>
+                <a class="pf-link-min" href="/contact">Contact</a>
+              </div>
+
+              <p class="pf-hero-footnote">
+                Educational content only — not medical advice. For health decisions, consult a qualified professional.
+              </p>
             </div>
 
-            <form class="pf-search" action="/ingredients" method="get" autocomplete="off">
-              <input class="pf-input" name="q" placeholder="Search an ingredient (e.g., ginger, magnesium)">
-              <button class="pf-btn pf-btn-ghost" type="submit">Search</button>
-            </form>
+            <div class="pf-hero-preview" aria-label="App preview">
+              <div class="pf-preview">
+                <div class="pf-preview-switch" role="tablist" aria-label="App preview tabs">
+                  <input type="radio" name="pfPreview" id="pfPrevBuilder" checked>
+                  <label for="pfPrevBuilder" role="tab" aria-controls="pfPanelBuilder">Smoothie Builder</label>
+
+                  <input type="radio" name="pfPreview" id="pfPrevAnalysis">
+                  <label for="pfPrevAnalysis" role="tab" aria-controls="pfPanelAnalysis">Ingredient Analysis</label>
+
+                  <div class="pf-preview-panels">
+                    <div class="pf-preview-panel pf-preview-panel--builder" id="pfPanelBuilder" role="tabpanel">
+                      <img src="{{ url_for('static', filename='img/app-preview-builder.svg') }}"
+                           alt="PureFyul preview: Smoothie Builder"
+                           loading="eager"
+                           decoding="async">
+                    </div>
+
+                    <div class="pf-preview-panel pf-preview-panel--analysis" id="pfPanelAnalysis" role="tabpanel">
+                      <img src="{{ url_for('static', filename='img/app-preview-analysis.svg') }}"
+                           alt="PureFyul preview: Ingredient Analysis"
+                           loading="lazy"
+                           decoding="async">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <aside class="pf-side">
-            <div class="pf-mini">
-              <h3>What you'll find</h3>
-              <p>Ingredient pages and goal browsing with honest scope and readable summaries.</p>
-            </div>
-            <div class="pf-mini">
-              <h3>What you won't find</h3>
-              <p>No diagnosis, no "guaranteed results," no treatment claims.</p>
-            </div>
-            <div class="pf-mini">
-              <h3>Need help?</h3>
-              <p>Use Contact with clear details so we can respond faster.</p>
-            </div>
-          </aside>
         </div>
       </section>
 
+      <!-- ACTION CARDS -->
       <section class="pf-section">
-        <h2 class="pf-section-title">Start here</h2>
+        <h2 class="pf-h2">Start here</h2>
 
         <div class="pf-cards">
-          <div class="pf-card">
+          <article class="pf-card">
             <h3>Browse Ingredients</h3>
-            <p>Clean ingredient pages written to avoid exaggeration and keep scope clear.</p>
+            <p>Clean ingredient pages with honest scope and readable summaries.</p>
             <a class="pf-btn pf-btn-primary" href="/ingredients">Open Ingredients</a>
-          </div>
+          </article>
 
-          <div class="pf-card">
+          <article class="pf-card">
             <h3>Explore Goals</h3>
-            <p>Goal pages linking to relevant ingredients without medical promises.</p>
+            <p>Goal pages that link to relevant ingredients without medical claims.</p>
             <a class="pf-btn pf-btn-ghost" href="/goals">Open Goals</a>
-          </div>
+          </article>
 
-          <div class="pf-card">
-            <h3>Open the App</h3>
-            <p>Interactive UI for users who want the full experience (not indexed).</p>
+          <article class="pf-card">
+            <h3>Use the App</h3>
+            <p>Interactive UI when you want it. (Not indexed by search.)</p>
             <a class="pf-btn pf-btn-outline" href="/app" rel="nofollow">Open App</a>
-          </div>
+          </article>
         </div>
       </section>
 
+      <!-- QUICK LINKS (your new dynamic lists, no 404) -->
+      {% if popular_ingredients or popular_goals %}
       <section class="pf-section">
-        <h2 class="pf-section-title">Trust & safety</h2>
-
-        <div class="pf-safety">
-          <div class="pf-box">
-            <h3>Not medical advice</h3>
-            <p>Educational content only. Consult a qualified professional for medical decisions.</p>
-          </div>
-          <div class="pf-box">
-            <h3>Editorial standards</h3>
-            <p>We use cautious wording, clear scope, and transparent evaluation rules.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="pf-section">
-        <h2 class="pf-section-title">Quick links</h2>
+        <h2 class="pf-h2">Quick links</h2>
 
         <div class="pf-links">
+          {% if popular_ingredients %}
           <div class="pf-linklist">
             <h3>Popular ingredients</h3>
             <div class="pf-linkgrid">
-              <a class="pf-link" href="/ingredient/ginger">Ginger</a>
-              <a class="pf-link" href="/ingredient/turmeric">Turmeric</a>
-              <a class="pf-link" href="/ingredient/magnesium">Magnesium</a>
-              <a class="pf-link" href="/ingredient/vitamin-d">Vitamin D</a>
+              {% for it in popular_ingredients %}
+                <a class="pf-link" href="{{ it.url }}">{{ it.name }}</a>
+              {% endfor %}
             </div>
           </div>
+          {% endif %}
 
+          {% if popular_goals %}
           <div class="pf-linklist">
             <h3>Popular goals</h3>
             <div class="pf-linkgrid">
-              <a class="pf-link" href="/goal/blood-sugar-support">Blood Sugar Support</a>
-              <a class="pf-link" href="/goal/gut-health">Gut Health</a>
-              <a class="pf-link" href="/goal/sleep-support">Sleep Support</a>
-              <a class="pf-link" href="/goal/energy-support">Energy Support</a>
+              {% for it in popular_goals %}
+                <a class="pf-link" href="{{ it.url }}">{{ it.name }}</a>
+              {% endfor %}
             </div>
           </div>
+          {% endif %}
         </div>
       </section>
-
+      {% endif %}
     </div>
   </main>
+</div>
 
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
   {% include "_legal_footer.html" %}
