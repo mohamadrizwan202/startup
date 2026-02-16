@@ -434,11 +434,6 @@
   font-weight: 900;
 }
 
-.page-home .home-public .pf-hero-note{
-  font-size: 13px;
-  color: rgba(255,255,255,.78);
-}
-
 .page-home .home-public .pf-hero-secondary{
   display: flex;
   flex-wrap: wrap;
@@ -882,11 +877,6 @@
   font-size: 16px;
   border-radius: 16px;
   font-weight: 900;
-}
-
-.page-home .home-public .pf-hero-note{
-  font-size: 13px;
-  color: rgba(11,18,32,.55);
 }
 
 .page-home .home-public .pf-hero-trust{
