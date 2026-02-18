@@ -117,4 +117,4 @@
   }
 ] %}
 
-<script type="application/ld+json" nonce="{{ g.csp_nonce|default('') }}">{{ jsonld|tojson }}</script>
+<script type="application/ld+json" nonce="{{ csp_nonce }}">{{ jsonld|tojson }}</script>
