@@ -1,338 +1,990 @@
-/* Contact help panels — PureFyul */
+/* static/css/contact.css
+   PureFyul Contact Page — modern SaaS, teal, Outfit
+*/
 
-.pf-help{
-  margin-top: 18px;
-  display: grid;
-  gap: 16px;
+:root{
+  --pf-teal: #0F766E;
+  --pf-teal-2: #115E59;
+  --pf-ink: #0b1220;
+  --pf-muted: rgba(11,18,32,.70);
+  --pf-border: rgba(15, 23, 42, 0.12);
+  --pf-soft: rgba(15,118,110,0.10);
+  --pf-soft-2: rgba(15,118,110,0.06);
+  --pf-card: rgba(255,255,255,0.95);
+  --pf-shadow: 0 14px 40px rgba(2, 6, 23, 0.12);
+  --pf-radius: 18px;
+  --pf-radius-sm: 14px;
 }
 
-.pf-help-grid{
-  display: grid;
-  grid-template-columns: 1.1fr .9fr;
-  gap: 16px;
+.pf-contact{
+  font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--pf-ink);
+  min-height: calc(100vh - 60px);
+  background:
+    radial-gradient(900px 420px at 14% 12%, var(--pf-soft), transparent 62%),
+    radial-gradient(900px 420px at 86% 18%, var(--pf-soft-2), transparent 58%),
+    linear-gradient(180deg, rgba(255,255,255,0.0), rgba(255,255,255,0.0));
 }
 
-.pf-panel{
-  position: relative;
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(15,118,110,.20);
-  border-radius: 22px;
-  padding: 22px;
-  box-shadow: 0 18px 44px rgba(0,0,0,.10);
+.pf-contact-hero{
+  padding: clamp(18px, 3vw, 28px) 0 10px;
+}
+
+.pf-contact-hero__inner{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.pf-contact-hero h1{
+  margin: 0 0 8px;
+  font-size: clamp(28px, 3.6vw, 42px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.pf-contact-hero__lead{
+  margin: 0 0 10px;
+  color: var(--pf-muted);
+  font-size: 1.05rem;
+  max-width: 78ch;
+}
+
+.pf-contact-hero__meta{
+  margin: 0;
+  color: var(--pf-muted);
+  font-size: 0.98rem;
+}
+
+.pf-contact-hero a{
+  color: var(--pf-teal);
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(15,118,110,0.35);
+}
+.pf-contact-hero a:hover{ border-bottom-color: var(--pf-teal); }
+
+.pf-contact-shell{
+  padding: 12px 0 clamp(26px, 4vw, 46px);
+}
+
+.pf-contact-grid{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Cards */
+.pf-card{
+  background: var(--pf-card);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  box-shadow: var(--pf-shadow);
   overflow: hidden;
 }
 
-.pf-panel::before{
-  content:"";
-  position:absolute;
-  inset: 0 auto 0 0;
-  width: 10px;
-  background: linear-gradient(180deg, rgba(15,118,110,.55), rgba(15,118,110,.18));
+.pf-card__head{
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--pf-border);
+  background: linear-gradient(180deg, rgba(15,118,110,0.07), transparent);
 }
 
-.pf-panel > *{
-  position: relative;
-  z-index: 1;
+.pf-card__title{
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
 }
 
-.pf-panel h3{
-  margin: 0 0 8px;
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  color: #0b1220;
+.pf-card__sub{
+  margin: 0;
+  color: var(--pf-muted);
+  font-size: 0.98rem;
+  line-height: 1.35;
 }
 
-.pf-panel p{
-  margin: 0 0 12px;
-  color: rgba(11,18,32,.74);
-  line-height: 1.5;
-  font-size: 15.5px;
+/* Sticky right panel on desktop */
+.pf-card--help{
+  position: sticky;
+  top: 84px;
+}
+
+.pf-contact-email{
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--pf-radius-sm);
+  background: rgba(16, 185, 129, 0.10);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: rgba(11,18,32,.82);
+  font-weight: 650;
+}
+
+.pf-contact-email a{
+  color: var(--pf-teal-2);
+  font-weight: 900;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(15,118,110,0.35);
+}
+.pf-contact-email a:hover{ border-bottom-color: var(--pf-teal-2); }
+
+/* Flashes */
+.pf-flashes{
+  padding: 14px 18px 0;
+  display: grid;
+  gap: 10px;
+}
+
+.pf-flash{
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--pf-border);
+  font-weight: 650;
+  font-size: 0.95rem;
+}
+
+.pf-flash--success{
+  background: rgba(16,185,129,0.12);
+  border-color: rgba(16,185,129,0.25);
+  color: rgba(6,95,70,0.98);
+}
+
+.pf-flash--error{
+  background: rgba(239,68,68,0.10);
+  border-color: rgba(239,68,68,0.25);
+  color: rgba(153,27,27,0.98);
+}
+
+.pf-flash--info{
+  background: rgba(59,130,246,0.10);
+  border-color: rgba(59,130,246,0.25);
+  color: rgba(30,64,175,0.98);
+}
+
+/* Form */
+.pf-form{
+  padding: 16px 18px 18px;
+}
+
+.pf-row{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pf-field{
+  margin-bottom: 12px;
+}
+
+.pf-field label{
+  display: inline-block;
+  margin: 0 0 6px;
+  font-weight: 750;
+  font-size: 0.95rem;
+}
+
+.pf-field input,
+.pf-field select,
+.pf-field textarea{
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--pf-border);
+  background: #fff;
+  color: var(--pf-ink);
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.pf-field textarea{
+  resize: vertical;
+  min-height: 160px;
+}
+
+.pf-field input:focus,
+.pf-field select:focus,
+.pf-field textarea:focus{
+  border-color: rgba(15,118,110,0.55);
+  box-shadow: 0 0 0 4px rgba(15,118,110,0.14);
+}
+
+.pf-field select{
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235b667a' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.pf-hint{
+  margin: 8px 0 0;
+  color: var(--pf-muted);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.pf-actions{
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.pf-contact .pf-btn{
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-weight: 850;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.pf-contact .pf-btn:active{ transform: translateY(1px); }
+
+.pf-contact .pf-btn--primary{
+  background: var(--pf-teal);
+  color: #fff;
+  box-shadow: 0 10px 18px rgba(15,118,110,0.22);
+}
+.pf-contact .pf-btn--primary:hover{ background: var(--pf-teal-2); }
+
+.pf-contact .pf-btn--ghost{
+  background: rgba(15,118,110,0.10);
+  border-color: rgba(15,118,110,0.20);
+  color: var(--pf-teal-2);
+  padding: 10px 12px;
+}
+.pf-contact .pf-btn--ghost:hover{
+  background: rgba(15,118,110,0.14);
+  border-color: rgba(15,118,110,0.30);
+}
+
+.pf-disclaimer{
+  margin: 0;
+  color: var(--pf-muted);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+/* Honeypot (must exist for backend) */
+.pf-hp-wrap{
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+
+/* Help panel blocks */
+.pf-help-links{
+  margin-top: 10px;
+  color: var(--pf-muted);
+  font-size: 0.95rem;
+}
+.pf-help-links a{
+  color: var(--pf-teal);
+  font-weight: 900;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(15,118,110,0.35);
+}
+.pf-help-links a:hover{ border-bottom-color: var(--pf-teal); }
+
+.pf-help-block{
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--pf-border);
+}
+.pf-help-block:last-child{ border-bottom: 0; }
+
+.pf-help-title{
+  margin: 0 0 10px;
+  font-size: 1.0rem;
+  letter-spacing: -0.01em;
 }
 
 .pf-list{
   margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 10px;
-}
-
-.pf-list li{
-  display: grid;
-  grid-template-columns: 18px 1fr;
-  gap: 10px;
-  align-items: start;
-  color: rgba(11,18,32,.78);
-  line-height: 1.45;
-  font-size: 15px;
-}
-
-.pf-list li::before{
-  content: "";
-  width: 10px;
-  height: 10px;
-  margin-top: 6px;
-  border-radius: 999px;
-  background: rgba(15,118,110,.45);
-  box-shadow: 0 0 0 4px rgba(15,118,110,.12);
-}
-
-.pf-faq{
-  margin: 0;
   padding-left: 18px;
+  color: var(--pf-muted);
   display: grid;
+  gap: 8px;
+}
+.pf-list li{ line-height: 1.45; }
+
+/* Template */
+.pf-template-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
-  color: rgba(11,18,32,.78);
-  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.pf-template-box{
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--pf-border);
+  background: rgba(15,118,110,0.05);
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92rem;
+  color: var(--pf-ink);
+}
+
+/* Accordion */
+.pf-acc{
+  border: 1px solid var(--pf-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.pf-acc-item + .pf-acc-item{
+  border-top: 1px solid var(--pf-border);
+}
+
+.pf-acc-btn{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  background: #fff;
+  border: 0;
+  cursor: pointer;
+  font-weight: 900;
+  color: var(--pf-ink);
+}
+
+.pf-acc-btn:focus{
+  outline: none;
+  box-shadow: inset 0 0 0 3px rgba(15,118,110,0.18);
+}
+
+.pf-acc-ico{
+  transition: transform 160ms ease;
+}
+
+.pf-acc-btn[aria-expanded="true"] .pf-acc-ico{
+  transform: rotate(180deg);
+}
+
+.pf-acc-panel{
+  overflow: hidden;
+  max-height: 0px;
+  transition: max-height 180ms ease;
+  background: rgba(15,118,110,0.03);
+}
+
+.pf-acc-inner{
+  padding: 12px 12px 14px;
+  color: var(--pf-muted);
+  line-height: 1.45;
+}
+.pf-acc-inner p{ margin: 0 0 10px; }
+.pf-acc-inner p:last-child{ margin-bottom: 0; }
+
+/* Copy live region */
+.pf-sr{
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 920px){
+  .pf-contact-grid{ grid-template-columns: 1fr; }
+  .pf-card--help{ position: static; top: auto; }
+}
+
+@media (max-width: 560px){
+  .pf-row{ grid-template-columns: 1fr; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  *{ transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ===== CONTACT: center-only step (no backend changes) ===== */
+
+/* Center the hero/title */
+.pf-contact-hero__inner,
+.pf-contact-hero__inner h1,
+.pf-contact-hero__lead,
+.pf-contact-hero__meta {
+  text-align: center;
+}
+
+.pf-contact-hero__lead,
+.pf-contact-hero__meta {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Make the contact area a single centered column */
+.pf-contact-grid{
+  grid-template-columns: 1fr !important;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Hide the right panel (we'll design it later) */
+.pf-card--help{
+  display: none !important;
+}
+
+/* ===== CONTACT FORM v2 (clean SaaS form) ===== */
+.pf-form { padding-top: 6px; }
+
+.pf-form-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.pf-field{ margin-top: 14px; }
+
+.pf-label{
+  display:block;
+  font-weight: 850;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: rgba(11,18,32,.86);
+}
+
+.pf-input{
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(11,18,32,.14);
+  background: #ffffff;
+  padding: 12px 12px;
   font-size: 15px;
+  color: #0b1220;
+  outline: none;
+  transition: box-shadow .15s ease, border-color .15s ease;
 }
 
-.pf-faq strong{
-  color: rgba(11,18,32,.92);
+.pf-input:focus{
+  border-color: rgba(15,118,110,.55);
+  box-shadow: 0 0 0 4px rgba(15,118,110,.14);
 }
 
-.pf-help a{
+.pf-textarea{ resize: vertical; min-height: 160px; }
+
+.pf-select{
+  appearance: none;
+  padding-right: 42px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(11,18,32,.55) 50%),
+    linear-gradient(135deg, rgba(11,18,32,.55) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 13px) calc(50% - 3px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.pf-helptext{
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: rgba(11,18,32,.62);
+}
+
+.pf-contact .pf-btn{
+  margin-top: 16px;
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-weight: 950;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.pf-contact .pf-btn--primary{
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e 0%, #0ea5a4 100%);
+  box-shadow: 0 14px 30px rgba(15,118,110,.20);
+}
+
+.pf-contact .pf-btn--primary:hover{ filter: brightness(1.02); }
+
+.pf-legal{
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: rgba(11,18,32,.62);
+}
+.pf-legal a{
   color: rgba(15,118,110,.98);
-  font-weight: 800;
+  font-weight: 900;
   text-decoration: none;
 }
-.pf-help a:hover{
-  text-decoration: underline;
+.pf-legal a:hover{ text-decoration: underline; }
+
+@media (max-width: 720px){
+  .pf-form-grid{ grid-template-columns: 1fr; }
 }
 
-@media (max-width: 900px){
-  .pf-help-grid{ grid-template-columns: 1fr; }
+/* ===== CONTACT: Center-only layout (Step 1) ===== */
+/* Uses exact classes from templates/contact.html: pf-contact-hero__inner, pf-contact-shell, pf-contact-grid, pf-card--help */
+
+/* Give the page breathing room below navbar (safe) */
+.pf-contact{
+  padding: 24px 0 56px;
 }
 
-@media (max-width: 520px){
-  .pf-panel{ padding: 18px; border-radius: 18px; }
-  .pf-panel h3{ font-size: 22px; }
+/* Center hero/title block */
+.pf-contact-hero{
+  padding: 18px 0 10px;
+}
+.pf-contact-hero__inner{
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  padding: 0 16px;
+}
+.pf-contact-hero__lead,
+.pf-contact-hero__meta{
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 70ch;
 }
 
-/* ===== Right sidebar v2 (Help & FAQs) ===== */
-/* ensure the right card stretches the full grid row height */
-.pf-contact-columns > .contact-card{
-  height: 100%;
-}
-.pf-contact-help-card{ padding: 0; overflow: hidden; }
-.pf-help-shell{
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  gap: 12px;
+/* Center the whole form area */
+.pf-contact-shell{
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 16px;
 }
 
-/* Make the 2-column row equal height (override any old sticky/start rules) */
-.pf-contact-columns{ align-items: stretch !important; }
-.pf-contact-help-card{
-  height: 100% !important;
-  align-self: stretch !important;
-  position: static !important;   /* kills sticky */
-  top: auto !important;
+/* Force single column and keep it centered */
+.pf-contact-grid{
+  display: grid;
+  grid-template-columns: 1fr !important;
+  gap: 16px;
 }
 
-/* Header */
-.pf-help-header{
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(15,118,110,.08);
+/* Hide right panel for now (we'll design later) */
+.pf-card--help{
+  display: none !important;
+}
+
+/* ===== CONTACT: Form card polish (Step 2) ===== */
+
+/* Page tone */
+.pf-contact{
+  font-family: "Outfit", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #0b1220;
+}
+
+/* Hero typography */
+.pf-contact-hero__inner h1{
+  margin: 0;
+  font-size: clamp(28px, 3vw, 40px);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+.pf-contact-hero__lead{
+  margin-top: 10px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: rgba(11,18,32,.72);
+}
+.pf-contact-hero__meta{
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: rgba(11,18,32,.62);
+}
+.pf-contact-hero__meta a{
+  color: rgba(15,118,110,.98);
+  font-weight: 900;
+  text-decoration: none;
+}
+.pf-contact-hero__meta a:hover{ text-decoration: underline; }
+
+/* Card styling (scoped so it doesn't mess other pages) */
+.pf-contact .pf-card{
+  background: rgba(255,255,255,.96);
   border: 1px solid rgba(15,118,110,.16);
+  border-radius: 22px;
+  box-shadow: 0 18px 44px rgba(0,0,0,.08);
+  overflow: hidden;
 }
-.pf-help-kicker{
-  display:inline-flex; align-items:center;
-  font-weight:900; font-size:12px;
-  letter-spacing:.06em; text-transform:uppercase;
-  color: rgba(11,18,32,.70);
+
+.pf-contact .pf-card__head{
+  padding: 18px 18px 0;
 }
-.pf-help-title{
-  margin: 8px 0 0;
+.pf-contact .pf-card__title{
+  margin: 0;
   font-size: 18px;
   font-weight: 950;
   letter-spacing: -0.02em;
-  color: #0b1220;
 }
-.pf-help-sub{
+.pf-contact .pf-card__sub{
   margin: 6px 0 0;
   font-size: 13.5px;
-  line-height: 1.45;
-  color: rgba(11,18,32,.68);
-}
-.pf-help-chips{
-  margin-top: 10px;
-  display:flex; flex-wrap:wrap; gap:8px;
-}
-.pf-chip{
-  display:inline-flex; align-items:center;
-  height:34px; padding:0 12px;
-  border-radius:999px;
-  border:1px solid rgba(11,18,32,.12);
-  background: rgba(255,255,255,.70);
-  color: rgba(11,18,32,.78);
-  text-decoration:none;
-  font-weight:900; font-size:13px;
-}
-.pf-chip:hover{ background: rgba(255,255,255,.92); }
-.pf-chip--primary{
-  border-color: rgba(15,118,110,.22);
-  background: rgba(15,118,110,.14);
-  color: rgba(11,18,32,.88);
+  color: rgba(11,18,32,.64);
 }
 
-/* Copy template */
-.pf-help-template{
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(255,255,255,.86);
-  border: 1px solid rgba(11,18,32,.10);
-  box-shadow: 0 10px 22px rgba(0,0,0,.06);
-}
-.pf-help-template-head{
-  display:flex; align-items:baseline; justify-content:space-between;
-  gap:10px; margin-bottom:8px;
-}
-.pf-help-template-title{ font-weight:950; color:#0b1220; }
-.pf-help-template-note{ font-size:12.5px; color:rgba(11,18,32,.60); font-weight:800; }
-.pf-help-pre{
-  margin:0; padding:10px 12px;
-  border-radius:14px;
-  background: rgba(11,18,32,.04);
-  border: 1px solid rgba(11,18,32,.08);
-  color: rgba(11,18,32,.78);
-  font-size:13px; line-height:1.45;
-  white-space: pre-wrap;
-}
-
-/* Accordion v2 */
-.pf-accv2{
-  display:grid;
-  gap:10px;
-  flex: 1;
-  align-content: start;
-}
-.pf-acc-item{
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid rgba(11,18,32,.10);
-  background: rgba(255,255,255,.90);
-  box-shadow: 0 10px 22px rgba(0,0,0,.06);
-  transition: box-shadow 200ms ease, border-color 200ms ease;
-}
-.pf-acc-btn{
-  width:100%;
-  text-align:left;
-  border:0;
-  background:transparent;
-  padding:12px 14px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  font-weight:950;
-  color: rgba(11,18,32,.90);
-}
-.pf-acc-btn:hover{ background: rgba(15,118,110,.06); }
-.pf-acc-btn:focus-visible{
-  outline: 3px solid rgba(15,118,110,.35);
-  outline-offset: 3px;
-  border-radius: 12px;
-}
-.pf-acc-icon{
-  width:18px; height:18px; position:relative; opacity:.75;
-}
-.pf-acc-icon::before,.pf-acc-icon::after{
-  content:"";
-  position:absolute;
-  left:50%; top:50%;
-  width:12px; height:2px;
-  background: rgba(11,18,32,.65);
-  transform: translate(-50%,-50%);
-  border-radius:2px;
-}
-.pf-acc-icon::after{ transform: translate(-50%,-50%) rotate(90deg); }
-.pf-acc-item.is-open .pf-acc-icon::after{ display:none; }
-
-/* panel slide */
-.pf-acc-panel{
-  border-top: 1px solid rgba(11,18,32,.08);
-  padding: 0 14px;         /* real padding applied when open via JS */
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 240ms ease, padding 240ms ease;
-  color: rgba(11,18,32,.76);
-  line-height: 1.6;
-}
-.pf-acc-item.is-open .pf-acc-panel{
-  padding: 10px 14px 12px;
-}
-
-/* flash highlight on open */
-.pf-acc-item.is-opening{
-  box-shadow: 0 18px 40px rgba(15,118,110,.16);
-  border-color: rgba(15,118,110,.22);
-}
-
-.pf-acc-list{ margin: 8px 0 0; padding-left: 18px; }
-.pf-acc-list li{ margin: 6px 0; }
-.pf-acc-panel a{ color:#0f766e; font-weight:900; text-decoration:none; }
-.pf-acc-panel a:hover{ text-decoration: underline; }
-
-.pf-help-callout{
-  margin-top: 10px;
+/* Support email chip */
+.pf-contact-email{
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(15,118,110,.06);
+  border: 1px solid rgba(15,118,110,.14);
+  color: rgba(11,18,32,.72);
+  font-size: 13px;
+  font-weight: 750;
+}
+.pf-contact-email a{
+  color: rgba(15,118,110,.98);
+  font-weight: 950;
+  text-decoration: none;
+}
+.pf-contact-email a:hover{ text-decoration: underline; }
+
+/* Flash messages */
+.pf-contact .pf-flashes{
+  padding: 12px 18px 0;
+  display: grid;
+  gap: 10px;
+}
+.pf-contact .pf-flash{
   border-radius: 14px;
-  background: rgba(15,118,110,.08);
-  border: 1px solid rgba(15,118,110,.16);
-  color: rgba(11,18,32,.74);
-}
-
-/* ===== Right sidebar v2 polish (less boxy, more readable) ===== */
-.pf-help-shell{ gap: 14px; }
-
-/* header: more breathing room */
-.pf-help-header{
-  padding: 16px;
-  background: rgba(15,118,110,.07);
-}
-
-/* template: look like a tool, not another card */
-.pf-help-template{
-  box-shadow: none;
-  background: rgba(255,255,255,.78);
-}
-.pf-help-pre{
-  background: rgba(11,18,32,.03);
+  padding: 10px 12px;
+  font-weight: 800;
   font-size: 13.5px;
 }
+.pf-contact .pf-flash--success{
+  background: rgba(16,185,129,.12);
+  border: 1px solid rgba(16,185,129,.25);
+  color: #065f46;
+}
+.pf-contact .pf-flash--error{
+  background: rgba(239,68,68,.10);
+  border: 1px solid rgba(239,68,68,.25);
+  color: #991b1b;
+}
+.pf-contact .pf-flash--info{
+  background: rgba(59,130,246,.10);
+  border: 1px solid rgba(59,130,246,.20);
+  color: #1e40af;
+}
 
-/* accordion items: flatter + "list row" feel */
-.pf-acc-item{
-  box-shadow: none;
-  background: rgba(255,255,255,.82);
-}
-.pf-acc-btn{
-  padding: 14px 14px;
-}
-.pf-acc-panel{
-  background: rgba(255,255,255,.70);
+/* Form spacing inside the card */
+.pf-contact .pf-form{
+  padding: 16px 18px 18px;
 }
 
-.pf-copy-btn{
-  height: 30px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(11,18,32,.12);
-  background: rgba(255,255,255,.85);
+/* Input feel upgrade (still uses your existing pf-* form styles) */
+.pf-contact .pf-input{
+  border-radius: 14px;
+  border: 1px solid rgba(11,18,32,.14);
+  background: #fff;
+}
+.pf-contact .pf-input:focus{
+  border-color: rgba(15,118,110,.55);
+  box-shadow: 0 0 0 4px rgba(15,118,110,.14);
+}
+
+/* Mobile padding */
+@media (max-width: 520px){
+  .pf-contact-hero__inner{ padding: 0 14px; }
+  .pf-contact-shell{ padding: 0 14px; }
+  .pf-contact .pf-card__head{ padding: 16px 16px 0; }
+  .pf-contact .pf-form{ padding: 14px 16px 16px; }
+}
+
+/* ===== CONTACT: UX hardening (Step 3) ===== */
+
+/* 1) Honeypot: keep it in DOM for bots, invisible for humans (NOT display:none) */
+.pf-contact .pf-hp-wrap{
+  position: absolute !important;
+  left: -10000px !important;
+  top: auto !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  white-space: nowrap !important;
+}
+
+/* 2) Subtle background so the centered card looks intentional */
+.pf-contact{
+  position: relative;
+  background: linear-gradient(180deg, rgba(15,118,110,.06) 0%, rgba(15,118,110,0) 60%);
+}
+
+/* 3) Button polish + accessible focus */
+.pf-contact .pf-btn--primary{
+  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+.pf-contact .pf-btn--primary:hover{
+  filter: brightness(1.02);
+  box-shadow: 0 18px 40px rgba(15,118,110,.22);
+}
+.pf-contact .pf-btn--primary:active{
+  transform: translateY(1px);
+}
+.pf-contact .pf-btn--primary:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(15,118,110,.16), 0 18px 40px rgba(15,118,110,.18);
+}
+
+/* Inputs: focus-visible ring (keyboard users) */
+.pf-contact .pf-input:focus-visible{
+  outline: none;
+  border-color: rgba(15,118,110,.55);
+  box-shadow: 0 0 0 4px rgba(15,118,110,.14);
+}
+
+/* Textarea placeholder readability */
+.pf-contact .pf-textarea::placeholder{
+  color: rgba(11,18,32,.46);
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce){
+  .pf-contact .pf-btn--primary{ transition: none; }
+}
+
+/* ===== CONTACT FIX: remove header divider + kill email pill ===== */
+
+/* Remove the divider under "Send a message" */
+.pf-contact .pf-card__head{
+  border-bottom: 0 !important;
+  padding-bottom: 8px !important;
+}
+
+/* Make the email line minimal (no pill, no box) */
+.pf-contact .pf-contact-email{
+  display: flex !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  margin-top: 10px !important;
+
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  color: rgba(11,18,32,.62) !important;
+}
+
+/* Keep link clean (underline, not bottom-border hacks) */
+.pf-contact .pf-contact-email a{
+  border-bottom: 0 !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+  color: rgba(15,118,110,.98) !important;
+  font-weight: 950 !important;
+}
+.pf-contact .pf-contact-email a:hover{
+  text-decoration: underline !important;
+}
+
+/* ===== CONTACT: form header v3 (clean, no "prefer email" vibe) ===== */
+
+.pf-contact .pf-formhead{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  padding: 22px 22px 12px !important;
+
+  /* hard override old card-head styling that makes it look "boxed" */
+  background: transparent !important;
+  border-bottom: 0 !important;
+}
+
+.pf-contact .pf-formhead__title{
+  min-width: 0;
+}
+
+.pf-contact .pf-formhead .pf-card__title{
+  margin: 0;
+  font-size: 20px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.pf-contact .pf-formhead__meta{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.pf-contact .pf-formhead__kicker{
+  font-size: 11px;
   font-weight: 900;
-  font-size: 12.5px;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: rgba(11,18,32,.48);
+}
+
+.pf-contact .pf-formhead__email{
+  font-size: 14px;
+  font-weight: 950;
+  color: rgba(15,118,110,.98);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.pf-contact .pf-formhead__email:hover{
+  filter: brightness(.95);
+}
+
+/* Mobile: stack cleanly without centering weirdness */
+@media (max-width: 640px){
+  .pf-contact .pf-formhead{
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px 18px 10px !important;
+    gap: 10px;
+  }
+
+  .pf-contact .pf-formhead__meta{
+    align-items: flex-start;
+  }
+}
+
+/* ===== CONTACT: disable legacy pf-contact-email rules (header migrated to pf-emailchip) ===== */
+.pf-contact .pf-contact-email{
+  display: none !important;
+}
+
+/* ===== CONTACT: button visibility fix ===== */
+.pf-contact .pf-btn--primary{
+  opacity: 1 !important;
+  color: #fff !important;
+  font-weight: 950 !important;
+  letter-spacing: .01em;
+  text-shadow: 0 1px 0 rgba(0,0,0,.18);
+
+  background: linear-gradient(135deg, #0f766e 0%, #0ea5a4 100%) !important;
+  box-shadow: 0 18px 40px rgba(15,118,110,.28) !important;
+}
+
+.pf-contact .pf-btn--primary:hover{
+  filter: brightness(1.03);
+}
+
+.pf-contact .pf-btn--primary:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(15,118,110,.18), 0 18px 40px rgba(15,118,110,.26) !important;
+}
+
+
+/* ===== CONTACT: FINAL FIXES (bg + submit contrast + navbar isolation) ===== */
+
+
+/* Make submit button obviously readable + strong */
+.pf-contact .pf-btn--primary{
+  color: #ffffff !important;
+  font-weight: 950 !important;
+  letter-spacing: .01em;
+}
+
+/* ===== CONTACT: FINAL background + submit button ===== */
+
+/* Teal page background (contact page only; this CSS file is only loaded on /contact) */
+body{
+  background: linear-gradient(135deg, var(--pf-teal) 0%, var(--pf-teal-2) 55%, var(--pf-teal) 100%);
+  background-attachment: fixed;
+}
+
+/* Let the teal show through */
+.pf-contact{
+  background: transparent !important;
+}
+
+/* High-contrast submit button (does not touch navbar) */
+.pf-contact .pf-contact-submit{
+  width: 100%;
+  border: 0;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-weight: 950;
+  font-size: 16px;
+  letter-spacing: .01em;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e 0%, #0ea5a4 100%);
+  box-shadow: 0 18px 44px rgba(15,118,110,.30);
   cursor: pointer;
 }
-.pf-copy-btn:hover{ background: rgba(255,255,255,.98); }
-.pf-copy-btn:active{ transform: translateY(1px); }
 
-/* Mobile */
-@media (max-width: 980px){
-  .pf-contact-help-card{ height: auto !important; }
-  .pf-help-shell{ height: auto; padding: 14px; }
+.pf-contact .pf-contact-submit:hover{
+  filter: brightness(1.04);
+}
+
+.pf-contact .pf-contact-submit:active{
+  transform: translateY(1px);
+}
+
+.pf-contact .pf-contact-submit:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(255,255,255,.65), 0 18px 44px rgba(15,118,110,.30);
+}
+
+
+/* ===== CONTACT: FORCE BACKGROUND COLOR ===== */
+body{
+  background: #0ea5a4 !important;
+  background-attachment: fixed;
+}
+
+/* ===== CONTACT: HERO COLORS + SPACING (override v2) ===== */
+
+/* Title + hero text should be readable on teal */
+.pf-contact .pf-contact-hero__inner h1{
+  color: #ffffff !important;
+  text-shadow: 0 2px 14px rgba(0,0,0,.14) !important;
+}
+
+.pf-contact .pf-contact-hero__lead{
+  color: rgba(255,255,255,.92) !important;
+}
+
+.pf-contact .pf-contact-hero__meta{
+  color: rgba(255,255,255,.85) !important;
+}
+
+/* Privacy / Terms links */
+.pf-contact .pf-contact-hero__meta a{
+  color: #ffffff !important;
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+  border-bottom: 0 !important; /* kill legacy border-bottom style */
+}
+.pf-contact .pf-contact-hero__meta a:hover{
+  opacity: .92 !important;
+}
+
+/* More space between hero and form card */
+.pf-contact .pf-contact-shell{
+  margin-top: 24px !important;
 }

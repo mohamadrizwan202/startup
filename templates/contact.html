@@ -1,543 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    :root {
-      --primary: #0EA5A4;
-      --primary-dark: #0B7F7E;
-      --secondary: #0B7F7E;
-      --accent: #0EA5A4;
-      --success: #10b981;
-      --danger: #ef4444;
-      --text-primary: #1a202c;
-      --text-secondary: #4a5568;
-      --bg-primary: #ffffff;
-      --bg-secondary: #f7fafc;
-      --border: #e2e8f0;
-      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-      --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
-      --radius: 12px;
-      --radius-lg: 16px;
-    }
+  {# Provide SEO vars for _seo_head.html (no assumptions about its internals) #}
+  {% set page_title = "Contact Support | PureFyul" %}
+  {% set meta_description = "Contact PureFyul support for site help, content corrections, or account issues. Educational-only information. No medical advice." %}
+  {% set canonical_url = "https://purefyul.com/contact" %}
+  {% set og_url = canonical_url %}
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 50%, #0EA5A4 100%);
-      background-attachment: fixed;
-      min-height: 100vh;
-      color: var(--text-primary);
-      line-height: 1.6;
-      padding: 0;
-      margin: 0;
-    }
-
-    .contact-container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-
-    /* Contact Card */
-    .contact-card {
-      background: white;
-      border-radius: var(--radius-lg);
-      padding: 50px;
-      box-shadow: var(--shadow-xl);
-      margin-bottom: 30px;
-    }
-
-    .contact-card h1 {
-      font-size: 2.5rem;
-      color: var(--primary);
-      margin-bottom: 15px;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .contact-card .subtitle {
-      font-size: 1.1rem;
-      color: var(--text-secondary);
-      margin-bottom: 40px;
-      text-align: center;
-    }
-
-    /* Flash Messages */
-    .flash-messages {
-      margin-bottom: 30px;
-    }
-
-    .flash-message {
-      padding: 15px 20px;
-      border-radius: var(--radius);
-      margin-bottom: 15px;
-      font-weight: 500;
-      font-size: 0.95rem;
-    }
-
-    .flash-message.success {
-      background: #d1fae5;
-      color: #065f46;
-      border-left: 4px solid var(--success);
-    }
-
-    .flash-message.error {
-      background: #fee2e2;
-      color: #991b1b;
-      border-left: 4px solid var(--danger);
-    }
-
-    .flash-message.info {
-      background: #dbeafe;
-      color: #1e40af;
-      border-left: 4px solid var(--primary);
-    }
-
-    /* Form Styles */
-    .form-group {
-      margin-bottom: 25px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 8px;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 12px 16px;
-      font-size: 1rem;
-      border: 2px solid var(--border);
-      border-radius: var(--radius);
-      font-family: inherit;
-      transition: all 0.2s ease;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .form-group input::placeholder,
-    .form-group textarea::placeholder {
-      color: var(--text-secondary);
-      opacity: 0.6;
-    }
-
-    .form-group textarea {
-      min-height: 150px;
-      resize: vertical;
-      font-family: inherit;
-    }
-
-    .form-group select {
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 40px;
-    }
-
-    /* Submit Button */
-    .submit-button {
-      width: 100%;
-      padding: 15px 30px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: white;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: var(--shadow-lg);
-      margin-top: 10px;
-    }
-
-    .submit-button:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-xl);
-    }
-
-    .submit-button:active {
-      transform: translateY(0);
-    }
-
-    .submit-button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .contact-card {
-        padding: 30px 25px;
-      }
-
-      .contact-card h1 {
-        font-size: 1.75rem;
-      }
-
-      .contact-container {
-        padding: 20px 10px;
-      }
-    }
-
-    /* Support email box */
-    .contact-email {
-      margin: 14px auto 18px;
-      padding: 10px 14px;
-      max-width: 520px;
-      width: 100%;
-      background: rgba(16, 185, 129, 0.10);
-      border: 1px solid rgba(16, 185, 129, 0.30);
-      border-radius: 12px;
-      text-align: center;
-      font-weight: 600;
-      color: #0f766e;
-    }
-
-    .contact-email a {
-      color: #0b5ed7;
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-      text-underline-offset: 3px;
-      border-bottom: none;
-    }
-
-    .contact-email a:hover {
-      text-decoration-thickness: 3px;
-    }
-
-    /* Honeypot: visually hidden but still in DOM */
-    .pf-hp-wrap{
-      position: absolute !important;
-      left: -10000px !important;
-      top: auto !important;
-      width: 1px !important;
-      height: 1px !important;
-      overflow: hidden !important;
-      clip: rect(1px, 1px, 1px, 1px) !important;
-      white-space: nowrap !important;
-    }
-  </style>
-    {% include "_seo_head.html" %}
-{% include "_adsense_head.html" %}
+  {% include "_seo_head.html" %}
+  {% include "_adsense_head.html" %}
 </head>
+
 <body>
   {% include "_navbar.html" %}
 
-  <div class="contact-container">
-  <div class="pf-contact-grid">
-    <div class="contact-card pf-contact-left">
-      <h1>Get in Touch</h1>
-
-<p class="subtitle">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
-      <p class="subtitle" style="margin-top:10px;">
-        <div class="contact-email">
-          Prefer email? <a href="mailto:support@purefyul.com">support@purefyul.com</a>
-        </div>
-        
-      </p>
-      
-      
-      <!-- Flash Messages -->
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <div class="flash-messages">
-            {% for category, message in messages %}
-              <div class="flash-message {{ category }}">{{ message }}</div>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% endwith %}
-
-{% if request.args.get('sent') == '1' %}
-<script nonce="{{ csp_nonce }}">
-  (function(){
-    try {
-      const key = 'pf_contact_topic';
-      const topic = sessionStorage.getItem(key);
-      sessionStorage.removeItem(key);
-      if (!topic) return;
-      if (typeof gtag === 'function') {
-        gtag('event', 'generate_lead', {
-          method: 'contact_form',
-          topic: topic,
-          transport_type: 'beacon'
-        });
-      }
-    } catch (e) {}
-  })();
-</script>
-{% endif %}
-      
-      <!-- Contact Form --><form method="POST" action="{{ url_for('contact') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        <!-- Honeypot (anti-spam). Humans won't see this. Bots often fill it. -->
-        <div class="pf-hp-wrap" aria-hidden="true">
-          <label for="company">Company</label>
-          <input
-            type="text"
-            id="company"
-            name="company"
-            tabindex="-1"
-            autocomplete="off"
-            inputmode="text"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="name">Full Name</label>
-          <input 
-            type="text" 
-            id="name" 
-            name="name" 
-            required
-            placeholder="John Doe"
-            autocomplete="name"
-            value="{{ request.form.name if request.form }}"
-          >
-        </div>
-        
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input 
-            type="email" 
-            id="email" 
-            name="email" 
-            required
-            placeholder="your.email@example.com"
-            autocomplete="email"
-            value="{{ request.form.email if request.form }}"
-          >
-        </div>
-        
-        <div class="form-group">
-          <label for="subject">Subject</label>
-          <select id="subject" name="subject" required>
-            <option value="">Select a subject</option>
-            <option value="general" {{ 'selected' if request.form and request.form.subject == 'general' }}>General Inquiry</option>
-            <option value="support" {{ 'selected' if request.form and request.form.subject == 'support' }}>Support</option>
-            <option value="feedback" {{ 'selected' if request.form and request.form.subject == 'feedback' }}>Feedback</option>
-            <option value="business" {{ 'selected' if request.form and request.form.subject == 'business' }}>Business Inquiry</option>
-            <option value="other" {{ 'selected' if request.form and request.form.subject == 'other' }}>Other</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label for="message">Message</label>
-          <textarea 
-            id="message" 
-            name="message" 
-            required
-            placeholder="Tell us how we can help you..."
-          >{{ request.form.message if request.form }}</textarea>
-        </div>
-        
-        <button type="submit" class="submit-button">Send Message</button>
-      </form>
-
-      <script nonce="{{ csp_nonce }}">
-        (function(){
-          var form = document.querySelector('.contact-card form');
-          if (form) {
-            form.addEventListener('submit', function() {
-              var sel = form.querySelector('select[name="subject"]');
-              if (sel && sel.value) {
-                try { sessionStorage.setItem('pf_contact_topic', sel.value); } catch (e) {}
-              }
-            });
-          }
-        })();
-      </script>
-</div>
-<aside class="contact-card pf-contact-help-card" aria-label="Help and FAQs">
-  <div class="pf-help-shell">
-    <header class="pf-help-header">
-      <div class="pf-help-kicker">Help & FAQs</div>
-      <h2 class="pf-help-title">Send a message we can answer fast</h2>
-      <p class="pf-help-sub">Use this to avoid back-and-forth.</p>
-
-      <div class="pf-help-chips" aria-label="Quick links">
-        <a class="pf-chip" href="/privacy">Privacy</a>
-        <a class="pf-chip" href="/terms">Terms</a>
-        <a class="pf-chip pf-chip--primary" href="/app" rel="nofollow">Open App</a>
+  <main class="pf-contact" role="main">
+    <header class="pf-contact-hero">
+      <div class="pf-contact-hero__inner">
+        <h1>Contact PureFyul</h1>
+        <p class="pf-contact-hero__lead">
+          Get help with the website, content corrections, or account issues. PureFyul is educational only — not medical advice.
+        </p>
+        <p class="pf-contact-hero__meta">
+          Review <a href="/privacy">Privacy</a> and <a href="/terms">Terms</a>.
+        </p>
       </div>
     </header>
 
-    <section class="pf-help-template" aria-label="Copy format">
-      <div class="pf-help-template-head">
-        <span class="pf-help-template-title">Copy this format</span>
-        <button class="pf-copy-btn" type="button">Copy</button>
-      </div>
-      <pre class="pf-help-pre">URL:
-What happened:
-Expected:
-Device/Browser:</pre>
-    </section>
+    <section class="pf-contact-shell" aria-label="Contact support">
+      <div class="pf-contact-grid">
 
-    <section class="pf-accv2" aria-label="Help topics">
-      <div class="pf-acc-item" data-acc-item>
-        <button class="pf-acc-btn" type="button" aria-expanded="true" aria-controls="pfAcc1">
-          <span>Before you send</span>
-          <span class="pf-acc-icon" aria-hidden="true"></span>
-        </button>
-        <div id="pfAcc1" class="pf-acc-panel" role="region">
-          <ul class="pf-acc-list">
-            <li><strong>Bug:</strong> page URL + expected vs happened.</li>
-            <li><strong>Content:</strong> ingredient/goal name + what to add/correct.</li>
-            <li><strong>No passwords</strong> or private medical details.</li>
-          </ul>
-        </div>
-      </div>
+        <!-- LEFT: form -->
+        <section class="pf-card pf-card--form" aria-label="Contact form">
+          <div class="pf-card__head pf-formhead">
+            <div class="pf-formhead__title">
+              <h2 class="pf-card__title">Send a message</h2>
+            </div>
 
-      <div class="pf-acc-item" data-acc-item>
-        <button class="pf-acc-btn" type="button" aria-expanded="false" aria-controls="pfAcc2">
-          <span>Common questions</span>
-          <span class="pf-acc-icon" aria-hidden="true"></span>
-        </button>
-        <div id="pfAcc2" class="pf-acc-panel" role="region" hidden>
-          <ul class="pf-acc-list">
-            <li><strong>Ads/cookies:</strong> measurement may use cookies. See <a href="/privacy">Privacy</a>.</li>
-            <li><strong>Corrections:</strong> send page link + exact line.</li>
-            <li><strong>Allergies:</strong> verify labels. Don't rely on this site for safety.</li>
-            <li><strong>Account help:</strong> error text + page you were on.</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="pf-acc-item" data-acc-item>
-        <button class="pf-acc-btn" type="button" aria-expanded="false" aria-controls="pfAcc3">
-          <span>Response expectations</span>
-          <span class="pf-acc-icon" aria-hidden="true"></span>
-        </button>
-        <div id="pfAcc3" class="pf-acc-panel" role="region" hidden>
-          <ul class="pf-acc-list">
-            <li>Check spam first.</li>
-            <li>Then send one follow-up with the same subject.</li>
-            <li>We keep replies simple and honest — no medical promises.</li>
-          </ul>
-          <div class="pf-help-callout">
-            <strong>Reminder:</strong> educational content only, not medical advice.
+            <div class="pf-formhead__meta">
+              <span class="pf-formhead__kicker">Email support</span>
+              <a class="pf-formhead__email" href="mailto:support@purefyul.com">support@purefyul.com</a>
+            </div>
           </div>
-        </div>
+
+          <!-- Flash Messages (exact behavior preserved) -->
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <div class="pf-flashes" role="status" aria-live="polite">
+                {% for category, message in messages %}
+                  <div class="pf-flash pf-flash--{{ category }}">{{ message }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endwith %}
+
+          {% if request.args.get('sent') == '1' %}
+          <script nonce="{{ csp_nonce }}">
+            (function(){
+              try {
+                const key = 'pf_contact_topic';
+                const topic = sessionStorage.getItem(key);
+                sessionStorage.removeItem(key);
+                if (!topic) return;
+                if (typeof gtag === 'function') {
+                  gtag('event', 'generate_lead', {
+                    method: 'contact_form',
+                    topic: topic,
+                    transport_type: 'beacon'
+                  });
+                }
+              } catch (e) {}
+            })();
+          </script>
+          {% endif %}
+
+          <form class="pf-form" method="POST" action="{{ url_for('contact') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+  <!-- Honeypot (anti-spam). Keep name="company" because backend expects it. -->
+  <div class="pf-hp-wrap" aria-hidden="true">
+    <label for="company">Company</label>
+    <input
+      type="text"
+      id="company"
+      name="company"
+      tabindex="-1"
+      autocomplete="off"
+      inputmode="text"
+    />
+  </div>
+
+  <div class="pf-form-grid">
+    <div class="pf-field">
+      <label class="pf-label" for="name">Full name</label>
+      <input
+        class="pf-input"
+        type="text"
+        id="name"
+        name="name"
+        required
+        autocomplete="name"
+        placeholder="Your name"
+        value="{{ request.form.name if request.form }}"
+      >
+    </div>
+
+    <div class="pf-field">
+      <label class="pf-label" for="email">Email</label>
+      <input
+        class="pf-input"
+        type="email"
+        id="email"
+        name="email"
+        required
+        autocomplete="email"
+        placeholder="you@example.com"
+        value="{{ request.form.email if request.form }}"
+      >
+    </div>
+  </div>
+
+  <div class="pf-field">
+    <label class="pf-label" for="subject">Topic</label>
+    <select class="pf-input pf-select" id="subject" name="subject" required>
+      <option value="">Select a topic</option>
+      <option value="support"  {{ 'selected' if request.form and request.form.subject == 'support' }}>Bug / Support</option>
+      <option value="feedback" {{ 'selected' if request.form and request.form.subject == 'feedback' }}>Feedback</option>
+      <option value="general"  {{ 'selected' if request.form and request.form.subject == 'general' }}>General question</option>
+      <option value="business" {{ 'selected' if request.form and request.form.subject == 'business' }}>Business</option>
+      <option value="other"    {{ 'selected' if request.form and request.form.subject == 'other' }}>Other</option>
+    </select>
+    <div class="pf-helptext">For faster help, include the page URL and your device/browser.</div>
+  </div>
+
+  <div class="pf-field">
+    <label class="pf-label" for="message">Message</label>
+    <textarea
+      class="pf-input pf-textarea"
+      id="message"
+      name="message"
+      required
+      minlength="10"
+      rows="7"
+    >{{ request.form.message if request.form }}</textarea>
+    <div class="pf-helptext">Don’t include passwords or sensitive personal health details.</div>
+  </div>
+
+  <button type="submit" class="pf-contact-submit">Send message</button>
+
+  <p class="pf-legal">
+    By sending this message you agree to our <a href="/privacy">Privacy</a> and <a href="/terms">Terms</a>.
+  </p>
+</form>
+
+          <script nonce="{{ csp_nonce }}">
+            (function(){
+              var form = document.querySelector('.pf-form');
+              if (!form) return;
+              form.addEventListener('submit', function(){
+                var sel = form.querySelector('select[name="subject"]');
+                if (sel && sel.value) {
+                  try { sessionStorage.setItem('pf_contact_topic', sel.value); } catch (e) {}
+                }
+              });
+            })();
+          </script>
+        </section>
+
+        <!-- RIGHT: support console -->
+        <aside class="pf-card pf-card--help" aria-label="Support help panel">
+          <div class="pf-card__head">
+            <h2 class="pf-card__title">Help us resolve it faster</h2>
+
+            <div class="pf-help-links" aria-label="Quick links">
+              <a href="/privacy">Privacy</a>
+              <span aria-hidden="true">·</span>
+              <a href="/terms">Terms</a>
+              <span aria-hidden="true">·</span>
+              <a href="/app" rel="nofollow">Open app</a>
+            </div>
+          </div>
+
+          <div class="pf-help-block">
+            <h3 class="pf-help-title">Before you send</h3>
+            <ul class="pf-list">
+              <li>Include the exact page URL.</li>
+              <li>Write expected vs. what happened.</li>
+              <li>Add device + browser.</li>
+              <li>If it's a bug: steps to reproduce.</li>
+            </ul>
+          </div>
+
+          <div class="pf-help-block">
+            <div class="pf-template-head">
+              <h3 class="pf-help-title">Copy/paste template</h3>
+              <button class="pf-btn pf-btn--ghost" type="button" id="pf_copy_btn">Copy</button>
+            </div>
+
+            <textarea class="pf-template-box" id="pf_template" rows="9" readonly>URL:
+Expected:
+Happened:
+Steps to reproduce:
+Device/OS:
+Browser:
+Viewport:
+Extra notes:</textarea>
+
+            <div class="pf-sr" aria-live="polite" id="pf_copy_live"></div>
+            <p class="pf-hint">Paste this into your message and fill it out.</p>
+          </div>
+
+          <div class="pf-help-block">
+            <div class="pf-acc" data-pf-acc>
+              <section class="pf-acc-item">
+                <button class="pf-acc-btn" type="button" aria-expanded="true" aria-controls="pfAcc1" id="pfAccBtn1">
+                  Common questions <span class="pf-acc-ico" aria-hidden="true">▾</span>
+                </button>
+                <div class="pf-acc-panel" id="pfAcc1" role="region" aria-labelledby="pfAccBtn1">
+                  <div class="pf-acc-inner">
+                    <p><strong>Is this medical advice?</strong> No. PureFyul is educational only.</p>
+                    <p><strong>Content correction?</strong> Send the page URL + what's wrong (and source if you have one).</p>
+                    <p><strong>Bug?</strong> Include steps + device/browser + what you expected.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="pf-acc-item">
+                <button class="pf-acc-btn" type="button" aria-expanded="false" aria-controls="pfAcc2" id="pfAccBtn2">
+                  Response expectations <span class="pf-acc-ico" aria-hidden="true">▾</span>
+                </button>
+                <div class="pf-acc-panel" id="pfAcc2" role="region" aria-labelledby="pfAccBtn2" hidden>
+                  <div class="pf-acc-inner">
+                    <p><strong>Typical reply time:</strong> 1–2 business days.</p>
+                    <p><strong>Priority:</strong> clear bug reports + clear corrections.</p>
+                    <p><strong>Privacy:</strong> don't send passwords or sensitive data.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section class="pf-acc-item">
+                <button class="pf-acc-btn" type="button" aria-expanded="false" aria-controls="pfAcc3" id="pfAccBtn3">
+                  What we can't do <span class="pf-acc-ico" aria-hidden="true">▾</span>
+                </button>
+                <div class="pf-acc-panel" id="pfAcc3" role="region" aria-labelledby="pfAccBtn3" hidden>
+                  <div class="pf-acc-inner">
+                    <p>We can't provide diagnosis, treatment plans, or guaranteed outcomes.</p>
+                    <p>We can help with site issues, clarity, corrections, and general educational content questions.</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <script nonce="{{ csp_nonce }}">
+            (function(){
+              // Fill template with URL + env
+              var t = document.getElementById('pf_template');
+              if (t) {
+                try {
+                  var ua = navigator.userAgent || 'Unknown';
+                  var plat = navigator.platform || 'Unknown';
+                  var vw = window.innerWidth || '';
+                  var vh = window.innerHeight || '';
+                  var lines = t.value.split('\n');
+                  lines[0] = 'URL: ' + window.location.href;
+                  lines[4] = 'Device/OS: ' + plat;
+                  lines[5] = 'Browser: ' + ua;
+                  lines[6] = 'Viewport: ' + vw + 'x' + vh;
+                  t.value = lines.join('\n');
+                } catch(e){}
+              }
+
+              // Copy button
+              var btn = document.getElementById('pf_copy_btn');
+              var live = document.getElementById('pf_copy_live');
+              function announce(msg){ if(live){ live.textContent = msg; } }
+
+              async function copyTemplate(){
+                if (!t) return;
+                var text = t.value;
+                try {
+                  await navigator.clipboard.writeText(text);
+                  announce('Template copied.');
+                } catch (e) {
+                  t.focus(); t.select();
+                  try { document.execCommand('copy'); announce('Template copied.'); }
+                  catch (e2) { announce('Copy failed. Select and copy manually.'); }
+                  t.setSelectionRange(0, 0);
+                }
+              }
+              if (btn) btn.addEventListener('click', copyTemplate);
+
+              // Accordion: only one open at a time + smooth max-height
+              var root = document.querySelector('[data-pf-acc]');
+              if (!root) return;
+
+              var buttons = root.querySelectorAll('.pf-acc-btn');
+
+              function setPanel(btn, open){
+                var id = btn.getAttribute('aria-controls');
+                var panel = document.getElementById(id);
+                if (!panel) return;
+
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+                if (open) {
+                  panel.hidden = false;
+                  panel.style.maxHeight = panel.scrollHeight + 'px';
+                } else {
+                  panel.style.maxHeight = panel.scrollHeight + 'px';
+                  requestAnimationFrame(function(){
+                    panel.style.maxHeight = '0px';
+                    window.setTimeout(function(){ panel.hidden = true; }, 180);
+                  });
+                }
+              }
+
+              // init
+              buttons.forEach(function(btn){
+                var open = btn.getAttribute('aria-expanded') === 'true';
+                setPanel(btn, open);
+              });
+
+              function closeAll(exceptBtn){
+                buttons.forEach(function(btn){
+                  if (btn === exceptBtn) return;
+                  setPanel(btn, false);
+                });
+              }
+
+              buttons.forEach(function(btn){
+                btn.addEventListener('click', function(){
+                  var isOpen = btn.getAttribute('aria-expanded') === 'true';
+                  if (isOpen) return; // keep one open; no collapsing active
+                  closeAll(btn);
+                  setPanel(btn, true);
+                });
+              });
+            })();
+          </script>
+        </aside>
+
       </div>
     </section>
-  </div>
-</aside>
-  </div>
-</div>
-  <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
-
-  {% include "_legal_footer.html" %}
-
-<script nonce="{{ csp_nonce }}">
-(function(){
-  const root = document.querySelector('.pf-accv2');
-  if (!root) return;
-
-  const items = Array.from(root.querySelectorAll('[data-acc-item]'));
-
-  // Copy template
-  const copyBtn = document.querySelector('.pf-copy-btn');
-  const pre = document.querySelector('.pf-help-pre');
-  if (copyBtn && pre) {
-    copyBtn.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(pre.innerText.trim());
-        copyBtn.textContent = 'Copied';
-        setTimeout(() => (copyBtn.textContent = 'Copy'), 900);
-      } catch (e) {
-        copyBtn.textContent = 'Copy failed';
-        setTimeout(() => (copyBtn.textContent = 'Copy'), 900);
-      }
-    });
-  }
-
-  function setPanelHeight(it, open){
-    const panel = it.querySelector('.pf-acc-panel');
-    if (!panel) return;
-
-    if (open){
-      // set to content height for smooth slide
-      panel.style.maxHeight = panel.scrollHeight + 'px';
-    } else {
-      panel.style.maxHeight = '0px';
-    }
-  }
-
-  function closeItem(it){
-    const btn = it.querySelector('.pf-acc-btn');
-    it.classList.remove('is-open','is-opening');
-    if (btn) btn.setAttribute('aria-expanded','false');
-    setPanelHeight(it, false);
-  }
-
-  function openItem(it){
-    const btn = it.querySelector('.pf-acc-btn');
-    it.classList.add('is-open','is-opening');
-    if (btn) btn.setAttribute('aria-expanded','true');
-    // allow layout to compute then animate
-    requestAnimationFrame(() => setPanelHeight(it, true));
-    setTimeout(() => it.classList.remove('is-opening'), 260);
-  }
-
-  // Init: close all, then open any aria-expanded=true
-  items.forEach(it => {
-    const btn = it.querySelector('.pf-acc-btn');
-    const expanded = btn && btn.getAttribute('aria-expanded') === 'true';
-    closeItem(it);
-    if (expanded) openItem(it);
-  });
-
-  // Click: single-open behavior
-  items.forEach(it => {
-    const btn = it.querySelector('.pf-acc-btn');
-    if (!btn) return;
-
-    btn.addEventListener('click', () => {
-      const isOpen = it.classList.contains('is-open');
-
-      // close others
-      items.forEach(other => { if (other !== it) closeItem(other); });
-
-      // toggle this
-      if (isOpen) closeItem(it);
-      else openItem(it);
-    });
-  });
-
-  // If content wraps/resizes, keep open panel height correct
-  window.addEventListener('resize', () => {
-    items.forEach(it => {
-      if (it.classList.contains('is-open')) setPanelHeight(it, true);
-    });
-  });
-})();
-</script>
+  </main>
 </body>
 </html>
-
