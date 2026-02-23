@@ -1258,3 +1258,330 @@
   outline: 3px solid rgba(15,118,110,.40);
   outline-offset: 2px;
 }
+
+
+
+/* ===== PureFyul: PREMIUM MICRO SECTION (pf-micro) ===== */
+.pf-micro{
+  padding: 54px 0;
+}
+
+.pf-micro .pf-h2{
+  color: rgba(255,255,255,.95);
+  letter-spacing: -0.02em;
+  margin: 0 0 10px 0;
+}
+
+.pf-micro-sub{
+  color: rgba(255,255,255,.72);
+  font-size: 18px;
+  font-weight: 520;
+  line-height: 1.5;
+  max-width: 64ch;
+  margin: 0;
+}
+
+/* turn bullets into premium 3-column feature points */
+.pf-micro-list{
+  list-style: none;
+  padding: 0;
+  margin: 26px 0 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 56px;
+}
+
+.pf-micro-list li{
+  margin: 0;
+  padding-top: 14px;
+  position: relative;
+  color: rgba(255,255,255,.72);
+  font-size: 15px;
+  line-height: 1.65;
+  max-width: 36ch;
+  text-wrap: balance;
+}
+
+/* subtle overline (premium, minimal) */
+.pf-micro-list li::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 1px;
+  background: rgba(255,255,255,.28);
+}
+
+/* label styling */
+.pf-micro-list li strong{
+  color: rgba(255,255,255,.92);
+  font-weight: 650;
+}
+
+/* mobile */
+@media (max-width: 900px){
+  .pf-micro-list{
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .pf-micro-list li{
+    max-width: none;
+  }
+}
+.pf-dot{
+  display:inline-block;
+  margin: 0 10px;
+  opacity: .55;
+}
+/* ===== END PREMIUM MICRO SECTION ===== */
+
+/* ===== PureFyul: pf-micro grid (premium) ===== */
+.pf-micro-grid{
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 56px;
+}
+
+.pf-micro-item{
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.14);
+}
+
+.pf-micro-item-title{
+  margin: 0 0 10px 0;
+  color: rgba(255,255,255,.94);
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.pf-micro-item-text{
+  margin: 0;
+  color: rgba(255,255,255,.72);
+  font-size: 15px;
+  line-height: 1.65;
+  max-width: 34ch;
+  text-wrap: balance;
+}
+
+@media (max-width: 900px){
+  .pf-micro-grid{
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .pf-micro-item-text{
+    max-width: none;
+  }
+}
+/* ===== end pf-micro grid ===== */
+
+/* ===== PureFyul: pf-micro grid polish (premium) ===== */
+.pf-micro{
+  padding: 64px 0;
+}
+
+.pf-micro .pf-h2{
+  font-size: clamp(26px, 2.2vw, 34px);
+  font-weight: 750;
+}
+
+.pf-micro-sub{
+  font-size: 19px;
+  line-height: 1.55;
+  color: rgba(255,255,255,.70);
+  max-width: 60ch;
+}
+
+.pf-micro-grid{
+  margin-top: 34px;
+  gap: 64px;
+}
+
+/* thinner, cleaner divider */
+.pf-micro-item{
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+
+/* title slightly tighter + brighter */
+.pf-micro-item-title{
+  font-size: 17px;
+  letter-spacing: -0.015em;
+  color: rgba(255,255,255,.96);
+}
+
+/* body smaller + calmer */
+.pf-micro-item-text{
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: rgba(255,255,255,.68);
+  max-width: 32ch;
+}
+
+/* make it feel aligned: reduce "floating" look */
+@media (min-width: 1000px){
+  .pf-micro-grid{
+    align-items: start;
+  }
+  .pf-micro-item{
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 900px){
+  .pf-micro{
+    padding: 48px 0;
+  }
+  .pf-micro-grid{
+    gap: 22px;
+    margin-top: 24px;
+  }
+  .pf-micro-item-text{
+    max-width: none;
+  }
+}
+/* ===== end pf-micro grid polish ===== */
+
+/* ===== PureFyul: PREMIUM MICRO vFINAL (numbered feature grid) ===== */
+.pf-micro{
+  padding: 72px 0 !important;
+}
+
+.pf-micro .pf-h2{
+  color: rgba(255,255,255,.96) !important;
+  font-size: clamp(28px, 2.6vw, 40px) !important;
+  font-weight: 780 !important;
+  letter-spacing: -0.03em !important;
+  margin: 0 0 12px 0 !important;
+}
+
+.pf-micro-sub{
+  color: rgba(255,255,255,.68) !important;
+  font-size: 18px !important;
+  font-weight: 520 !important;
+  line-height: 1.55 !important;
+  max-width: 62ch !important;
+  margin: 0 !important;
+}
+
+.pf-micro-grid{
+  margin-top: 38px !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 56px !important;
+  counter-reset: pfmicro !important;
+}
+
+/* each column */
+.pf-micro-item{
+  position: relative !important;
+  padding-top: 22px !important;
+  border-top: 0 !important; /* kill long lines */
+  counter-increment: pfmicro !important;
+}
+
+/* small overline (short + quiet) */
+.pf-micro-item::after{
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 34px !important;
+  height: 1px !important;
+  background: rgba(255,255,255,.18) !important;
+}
+
+/* number label */
+.pf-micro-item::before{
+  content: counter(pfmicro, decimal-leading-zero) !important;
+  display: block !important;
+  margin-bottom: 10px !important;
+  font-size: 12px !important;
+  letter-spacing: 0.14em !important;
+  font-weight: 750 !important;
+  color: rgba(255,255,255,.40) !important;
+}
+
+/* title + text */
+.pf-micro-item-title{
+  margin: 0 0 10px 0 !important;
+  color: rgba(255,255,255,.94) !important;
+  font-size: 16px !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.25 !important;
+}
+
+.pf-micro-item-text{
+  margin: 0 !important;
+  color: rgba(255,255,255,.68) !important;
+  font-size: 15px !important;
+  line-height: 1.7 !important;
+  max-width: 34ch !important;
+  text-wrap: balance;
+}
+
+/* subtle premium motion (optional but clean) */
+@media (hover:hover){
+  .pf-micro-item{
+    transition: transform 160ms ease, opacity 160ms ease;
+  }
+  .pf-micro-item:hover{
+    transform: translateY(-2px);
+  }
+}
+
+/* mobile */
+@media (max-width: 900px){
+  .pf-micro{
+    padding: 52px 0 !important;
+  }
+  .pf-micro-grid{
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+    margin-top: 26px !important;
+  }
+  .pf-micro-item-text{
+    max-width: none !important;
+  }
+}
+/* ===== END PureFyul: PREMIUM MICRO vFINAL ===== */
+
+/* ===== PureFyul: pf-micro color tune (content only) ===== */
+.pf-micro .pf-h2{
+  color: rgba(255,255,255,.96) !important;
+}
+
+.pf-micro-sub{
+  color: rgba(255,255,255,.78) !important;
+}
+
+/* small line above each column */
+.pf-micro-item::after{
+  background: rgba(255,255,255,.18) !important;
+}
+
+/* numbers */
+.pf-micro-item::before{
+  color: rgba(255,255,255,.50) !important;
+}
+
+/* feature titles */
+.pf-micro-item-title{
+  color: rgba(255,255,255,.92) !important;
+}
+
+/* feature descriptions */
+.pf-micro-item-text{
+  color: rgba(255,255,255,.74) !important;
+}
+/* ===== end pf-micro color tune ===== */
+
+/* Homepage: Quick links title */
+.page-home .home-public .pf-section .pf-h2{
+  font-size: 28px !important;
+  color: rgba(255,255,255,.88) !important;
+}
