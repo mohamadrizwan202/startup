@@ -1717,7 +1717,7 @@ def index():
         for s in popular_goal_slugs
     ]
 
-    return render_template(
+    html = render_template(
         "home_public.html",
         page_title="PureFyul | Ingredient insights for smarter blends",
         meta_description="Explore ingredient guides and build better smoothies with clear, simple nutrition insights.",
@@ -1726,6 +1726,10 @@ def index():
         popular_ingredients=popular_ingredients,
         popular_goals=popular_goals,
     )
+    resp = make_response(html)
+    if request.args.get("q"):
+        resp.headers["X-Robots-Tag"] = "noindex, follow"
+    return resp
 
 
 @app.route("/app")
