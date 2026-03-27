@@ -1580,8 +1580,161 @@
 }
 /* ===== end pf-micro color tune ===== */
 
-/* Homepage: Quick links title */
+/* Homepage: Quick links title + clarity line wrap */
 .page-home .home-public .pf-section .pf-h2{
   font-size: 28px !important;
   color: rgba(255,255,255,.88) !important;
+  line-height: 1.25;
+  max-width: 28ch;
+}
+
+/* Clarity copy pass: longer hero headline + subtitle */
+.page-home .home-public .pf-hero-title{
+  line-height: 1.08;
+  max-width: 42ch;
+}
+.page-home .home-public .pf-hero-subtitle{
+  line-height: 1.55;
+  max-width: 52ch;
+}
+
+/* Micro section: spacing + readability (longer subtitle + card copy) */
+.page-home .home-public .pf-micro .pf-micro-sub{
+  max-width: 58ch !important;
+  line-height: 1.6 !important;
+  margin-bottom: 0;
+}
+.page-home .home-public .pf-micro-grid{
+  margin-top: 40px !important;
+}
+.page-home .home-public .pf-micro-item-text{
+  max-width: 38ch !important;
+}
+@media (max-width: 900px){
+  .page-home .home-public .pf-micro-item-text{
+    max-width: none !important;
+  }
+}
+
+/* ===== Micro: inner glass panel + light cards (teal section unchanged) ===== */
+.page-home .home-public section.pf-micro{
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  opacity: 1 !important;
+}
+
+.page-home .home-public .pf-micro-inner{
+  max-width: 100%;
+  margin: 0 auto;
+  padding: clamp(26px, 4vw, 40px) clamp(18px, 3vw, 28px);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12);
+  backdrop-filter: saturate(120%) blur(12px);
+  -webkit-backdrop-filter: saturate(120%) blur(12px);
+}
+
+.page-home .home-public .pf-micro-inner .pf-h2{
+  color: #0b1220 !important;
+  margin: 0 0 12px 0 !important;
+  font-size: clamp(22px, 2.2vw, 30px) !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
+}
+
+.page-home .home-public .pf-micro-inner .pf-micro-sub{
+  color: rgba(11, 18, 32, 0.72) !important;
+  margin: 0 !important;
+  max-width: 58ch !important;
+  line-height: 1.6 !important;
+  font-size: 16px !important;
+  font-weight: 520 !important;
+}
+
+.page-home .home-public .pf-micro-inner .pf-micro-grid{
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  margin-top: 26px !important;
+  counter-reset: none !important;
+}
+
+.page-home .home-public .pf-micro-inner .pf-micro-item{
+  position: relative !important;
+  padding: 20px 20px 22px !important;
+  margin: 0 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(11, 18, 32, 0.08) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 8px 26px rgba(0, 0, 0, 0.08),
+    inset 0 3px 0 0 rgba(15, 118, 110, 0.72) !important;
+}
+
+.page-home .home-public .pf-micro-inner .pf-micro-item::before,
+.page-home .home-public .pf-micro-inner .pf-micro-item::after{
+  content: none !important;
+  display: none !important;
+}
+
+.page-home .home-public .pf-micro-inner .pf-micro-item-title{
+  color: #0b1220 !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  margin: 0 0 10px 0 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.25 !important;
+}
+
+.page-home .home-public .pf-micro-inner .pf-micro-item-text{
+  color: rgba(11, 18, 32, 0.68) !important;
+  font-size: 14.5px !important;
+  line-height: 1.65 !important;
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+@media (hover: hover){
+  .page-home .home-public .pf-micro-inner .pf-micro-item{
+    transition: box-shadow 0.18s ease, transform 0.18s ease;
+  }
+  .page-home .home-public .pf-micro-inner .pf-micro-item:hover{
+    transform: translateY(-1px);
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.1),
+      inset 0 3px 0 0 rgba(15, 118, 110, 0.72) !important;
+  }
+}
+
+@media (max-width: 900px){
+  .page-home .home-public .pf-micro-inner{
+    padding: 22px 18px 24px;
+    border-radius: 18px;
+  }
+  .page-home .home-public .pf-micro-inner .pf-micro-grid{
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    margin-top: 22px !important;
+  }
+}
+/* ===== end micro inner panel ===== */
+
+.page-home .home-public .pf-micro-grid{
+  align-items: stretch;
+}
+
+.page-home .home-public .pf-micro-item{
+  height: 100%;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+@media (max-width: 900px){
+  .page-home .home-public .pf-micro-item{
+    min-height: auto;
+  }
 }

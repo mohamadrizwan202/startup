@@ -28,10 +28,10 @@
             <div class="pf-hero-copy">
               <div class="pf-hero-badge">PureFyul</div>
 
-              <h1 class="pf-hero-title">A calmer way to build better blends.</h1>
+              <h1 class="pf-hero-title">Check smoothie ingredients, portions, and allergens with less guesswork.</h1>
 
               <p class="pf-hero-subtitle">
-                A focused workflow inside the app: clear ingredient notes, quick comparisons, and blend building—without the noise.
+                PureFyul helps you review ingredients, serving size, and nutrition in one clean workflow before you blend.
               </p>
 
               <div class="pf-hero-cta">
@@ -39,9 +39,9 @@
               </div>
 
               <div class="pf-hero-trust">
-                <div class="pf-trust-chip">Focus-first workflow</div>
-                <div class="pf-trust-chip">Quick comparisons</div>
-                <div class="pf-trust-chip">Made for routines</div>
+                <div class="pf-trust-chip">Ingredient checks</div>
+                <div class="pf-trust-chip">Serving size guidance</div>
+                <div class="pf-trust-chip">Allergen checks</div>
               </div>
 
               <div class="pf-hero-links">
@@ -87,25 +87,27 @@
       </section>
 
       <section class="pf-micro" aria-labelledby="pf-micro-title">
-        <h2 id="pf-micro-title" class="pf-h2">Built for everyday blends</h2>
-        <p class="pf-micro-sub">
-          Review notes, compare quickly, and build blends in a calm workflow.
-        </p>
+        <div class="pf-micro-inner">
+          <h2 id="pf-micro-title" class="pf-h2">What PureFyul helps you check</h2>
+          <p class="pf-micro-sub">
+            Review smoothie choices more clearly with nutrition, allergen, and health-goal analysis in one place.
+          </p>
 
-        <div class="pf-micro-grid" role="list">
-          <div class="pf-micro-item" role="listitem">
-            <h3 class="pf-micro-item-title">Ingredient notes</h3>
-            <p class="pf-micro-item-text">Consistent summaries you can scan in seconds.</p>
-          </div>
+          <div class="pf-micro-grid" role="list">
+            <div class="pf-micro-item" role="listitem">
+              <h3 class="pf-micro-item-title">Nutrition summary</h3>
+              <p class="pf-micro-item-text">See calories, protein, carbs, fat, fiber, sugar, and sodium for the selected ingredients.</p>
+            </div>
 
-          <div class="pf-micro-item" role="listitem">
-            <h3 class="pf-micro-item-title">Quick comparisons</h3>
-            <p class="pf-micro-item-text">Side-by-side thinking—decide what fits together.</p>
-          </div>
+            <div class="pf-micro-item" role="listitem">
+              <h3 class="pf-micro-item-title">Allergen check</h3>
+              <p class="pf-micro-item-text">Check common allergen flags for the ingredients in the same workflow.</p>
+            </div>
 
-          <div class="pf-micro-item" role="listitem">
-            <h3 class="pf-micro-item-title">Blend builder</h3>
-            <p class="pf-micro-item-text">Build a routine you can repeat without effort.</p>
+            <div class="pf-micro-item" role="listitem">
+              <h3 class="pf-micro-item-title">Health goal support</h3>
+              <p class="pf-micro-item-text">See which support areas the selected ingredients may align with based on your chosen goal.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -113,7 +115,7 @@
       <!-- QUICK LINKS (your new dynamic lists, no 404) -->
       {% if popular_ingredients or popular_goals %}
       <section class="pf-section">
-        <h2 class="pf-h2">Quick links</h2>
+        <h2 class="pf-h2">Explore popular ingredients and goals</h2>
 
         <div class="pf-links">
           {% if popular_ingredients %}
