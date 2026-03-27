@@ -8,7 +8,7 @@ cyclonedx-python-lib==11.6.0
 defusedxml==0.7.1
 Deprecated==1.3.1
 filelock==3.20.3
-Flask==3.1.2
+Flask==3.1.3
 Flask-Limiter==3.11.0
 Flask-Login==0.6.3
 Flask-WTF==1.2.2
