@@ -2854,11 +2854,45 @@
     #ingredient-tab-content .search-area-container{
       display: flex;
       justify-content: center;
+      margin-bottom: 14px;
     }
 
     #ingredient-tab-content #ingredient-search-card{
       width: min(980px, calc(100% - 32px));
-      margin: 0 auto 18px auto;
+      margin: 0 auto 14px auto;
+      padding: 10px 12px !important;
+    }
+
+    /* Ingredient search row: shorter field, tighter spacing (override .search-container .ingredients-textarea 60px) */
+    #ingredient-tab-content #ingredient-search-card .pf-search-row .ingredients-textarea{
+      min-height: 34px !important;
+      height: 34px !important;
+      padding: 6px 10px !important;
+      font-size: 0.88rem !important;
+      line-height: 1.25 !important;
+    }
+    #ingredient-tab-content #ingredient-search-card .pf-input-wrapper{
+      padding: 1px;
+      border-radius: 8px;
+    }
+    #ingredient-tab-content #ingredient-search-card .pf-search-row{
+      gap: 8px;
+    }
+    #ingredient-tab-content #ingredient-search-card .pf-search-row .ingredients-textarea-section{
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+    }
+    #ingredient-tab-content #ingredient-search-card #ingredient-error-message{
+      margin-top: 6px;
+    }
+    /* No gray placeholder when chips container is empty */
+    #ingredient-tab-content #ingredient-search-card #selected-ingredients:empty{
+      display: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      min-height: 0 !important;
+      background: transparent !important;
+      border: none !important;
     }
 
   </style>
@@ -2939,6 +2973,12 @@
       <!-- Search Area - Centered -->
       <div class="search-area-container">
         <div class="search-container" id="ingredient-search-card">
+          <div class="pf-ingredient-tab-intro" style="margin: 0 0 4px 0;">
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin: 0; line-height: 1.25;">Ingredient analysis</div>
+            <p style="margin: 2px 0 0 0; font-size: 0.72rem; line-height: 1.35; color: var(--text-secondary); max-width: 42rem;">
+              Search any ingredient, or choose a goal to focus the Health Benefits tab.
+            </p>
+          </div>
           <div class="pf-search-row">
             <div class="pf-input-wrapper">
               <div class="ingredients-textarea-section" style="padding-left: 8px;">
@@ -2956,10 +2996,9 @@
             </button>
           </div>
           <!-- Error Message Container moved outside row to avoid breaking it -->
-          <div id="ingredient-error-message" class="error-message" style="display: none; margin-top: 8px; padding-left: 16px;"></div>
+          <div id="ingredient-error-message" class="error-message" style="display: none; margin-top: 6px; padding-left: 16px;"></div>
 
-          <div id="selected-ingredients" class="selected-ingredients" style="display: none;">
-          </div>
+          <div id="selected-ingredients" class="selected-ingredients" style="display: none;"></div>
         </div>
       </div>
 
@@ -3148,10 +3187,26 @@
       <div class="main-content-grid">
         <!-- Left: Smoothie Builder -->
         <div class="card search-container">
-          <div class="card-header">
+          <div class="card-header" style="margin-bottom: 12px; padding-bottom: 10px;">
             <div>
-              <div class="card-title">🥤 Smoothie Builder</div>
-              <div class="card-subtitle">Create custom smoothies and view nutrition</div>
+              <div class="card-title">🥤 Build smoothies with more structure</div>
+              <div class="card-subtitle" style="margin-top: 6px; line-height: 1.4; max-width: 100%;">
+                Build based on audience, timing, and health goals, then review ingredients, serving size, yield, and nutrition in one place.
+              </div>
+              <div class="pf-smoothie-guide" role="list" aria-label="How the Smoothie builder works" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(9.25rem, 1fr)); gap: 8px; margin-top: 10px;">
+                <div role="listitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: linear-gradient(145deg, rgba(14, 165, 164, 0.09), var(--bg-secondary)); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);">
+                  <span aria-hidden="true" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; background: rgba(14, 165, 164, 0.22); color: var(--primary); border: 1px solid rgba(14, 165, 164, 0.28);">1</span>
+                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); line-height: 1.25;">Pick audience</span>
+                </div>
+                <div role="listitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: linear-gradient(145deg, rgba(14, 165, 164, 0.09), var(--bg-secondary)); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);">
+                  <span aria-hidden="true" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; background: rgba(14, 165, 164, 0.22); color: var(--primary); border: 1px solid rgba(14, 165, 164, 0.28);">2</span>
+                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); line-height: 1.25;">Choose goal</span>
+                </div>
+                <div role="listitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: linear-gradient(145deg, rgba(14, 165, 164, 0.09), var(--bg-secondary)); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);">
+                  <span aria-hidden="true" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; background: rgba(14, 165, 164, 0.22); color: var(--primary); border: 1px solid rgba(14, 165, 164, 0.28);">3</span>
+                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); line-height: 1.25;">Review serving + nutrition</span>
+                </div>
+              </div>
             </div>
           </div>
 
