@@ -396,6 +396,192 @@
       margin-bottom: 0;
     }
 
+    .pf-app-start-header {
+      text-align: center;
+      padding: 8px 0 18px;
+    }
+
+    .pf-app-start-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      color: #e6fffb;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .pf-app-start-header h1 {
+      margin-bottom: 8px;
+    }
+
+    .pf-app-start-header .subtitle {
+      max-width: 52rem;
+      margin: 0 auto;
+    }
+
+    .pf-start-panel {
+      margin: 0 0 12px;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08));
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.10);
+      backdrop-filter: blur(6px);
+    }
+
+    .pf-start-panel-head {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .pf-start-panel-head h2 {
+      margin: 0 0 6px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .pf-start-panel-head p {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .pf-start-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .pf-start-card {
+      appearance: none;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: #ffffff;
+      color: var(--text-primary);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .pf-start-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      border-color: rgba(14, 165, 164, 0.45);
+    }
+
+    .pf-start-card.is-active {
+      border-color: rgba(14, 165, 164, 0.65);
+      box-shadow: 0 12px 30px rgba(14, 165, 164, 0.18);
+    }
+
+    .pf-start-icon {
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(14, 165, 164, 0.12);
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+
+    .pf-start-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .pf-start-title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+
+    .pf-start-text {
+      font-size: 0.86rem;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    .pf-start-tip {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    .pf-start-focus-target {
+      position: relative;
+      z-index: 2;
+      border-color: rgba(14, 165, 164, 0.9) !important;
+      box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.18), 0 10px 24px rgba(14, 165, 164, 0.18) !important;
+      transition: box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .pf-start-coachmark {
+      position: absolute;
+      top: -10px;
+      left: 14px;
+      z-index: 4;
+      max-width: 280px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid rgba(14, 165, 164, 0.28);
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.14);
+    }
+
+    .pf-start-coachmark-title {
+      margin: 0 0 2px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+
+    .pf-start-coachmark-text {
+      margin: 0;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 768px) {
+      .pf-start-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pf-start-panel {
+        padding: 14px;
+      }
+
+      .pf-start-card {
+        padding: 14px;
+      }
+    }
+
     .header .badge {
       display: inline-block;
       padding: 6px 16px;
@@ -2949,24 +3135,44 @@
   {% include "_navbar.html" %}
 
   <div class="container " style="background: #0ea5a4;">
-    <!-- Header -->
-    <header class="header">
-      <h1>Nutrition & Allergen</h1>
-      <p class="subtitle">Explore health categories, discover ingredients, and analyze nutrition data</p>
+    <!-- App Onboarding Header -->
+    <header class="header pf-app-start-header">
+      <div class="pf-app-start-eyebrow">Start here</div>
+      <h1>Choose how you want to use PureFyul</h1>
+      <p class="subtitle">
+        Build a smoothie for a goal, or check one ingredient for serving size, allergens, nutrition, and goal fit.
+      </p>
     </header>
 
 
-    <!-- Main App Tabs: Ingredient vs Smoothie -->
-    <div class="main-tabs-container">
-      <div class="main-tabs">
-        <button class="main-tab active" data-main-tab="smoothie">
-          <span>🥤</span> Smoothie Builder
+    <section class="pf-start-panel" aria-label="How to start using PureFyul">
+      <div class="pf-start-panel-head">
+        <h2>What do you want to do today?</h2>
+        <p>Pick the fastest path instead of figuring out the app on your own.</p>
+      </div>
+
+      <div class="pf-start-grid">
+        <button type="button" class="pf-start-card is-active" data-start-target="smoothie">
+          <span class="pf-start-icon" aria-hidden="true">🥤</span>
+          <span class="pf-start-copy">
+            <span class="pf-start-title">Build a smoothie for a goal</span>
+            <span class="pf-start-text">Choose audience, timing, goal, and ingredients, then review serving size, yield, and nutrition.</span>
+          </span>
         </button>
-        <button class="main-tab" data-main-tab="ingredient">
-          <span>🥗</span> Ingredient Analysis
+
+        <button type="button" class="pf-start-card" data-start-target="ingredient">
+          <span class="pf-start-icon" aria-hidden="true">🥗</span>
+          <span class="pf-start-copy">
+            <span class="pf-start-title">Check one ingredient</span>
+            <span class="pf-start-text">Review serving size, allergens, nutrition, and goal-fit for a single ingredient.</span>
+          </span>
         </button>
       </div>
-    </div>
+
+      <div class="pf-start-tip">
+        New here? Start with <strong>Build a smoothie for a goal</strong> if you want a guided flow.
+      </div>
+    </section>
 
     <!-- Ingredient Analysis Tab Content -->
     <div id="ingredient-tab-content" class="main-tab-content">
@@ -3032,7 +3238,7 @@
       <!-- Goal-Driven Layout -->
       <div class="browse-ingredients-layout">
         <!-- Step 1: Health Goals (Horizontal Chips) -->
-        <div class="goals-section">
+        <div class="goals-section" id="pf-ingredient-start-step">
           <div class="section-header-compact">
             <h3 class="section-title-compact">Health Goals</h3>
             <input type="text" class="search-input-compact" id="goal-search" placeholder="Search goals..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
@@ -3235,7 +3441,7 @@
           </div>
 
           <!-- 1. Who is this smoothie for -->
-          <div class="search-section">
+          <div class="search-section" id="pf-smoothie-start-step">
             <label for="smoothie-for" class="textarea-label">Who is this smoothie for?</label>
             <select id="smoothie-for" class="search-input" style="cursor: pointer;">
               <option value="">Select Target Audience...</option>
@@ -5008,6 +5214,7 @@
   return 'unknown';
 }
 
+    let modal = null;
 
     function openFeedbackModal() {
       if (modal) {
@@ -5123,7 +5330,9 @@
       });
       
       const form = document.getElementById('feedback-form');
-      
+      modal = document.querySelector('[data-feedback-modal], #feedback-modal, .feedback-modal');
+      const cancelBtn = document.querySelector('[data-feedback-cancel], #feedback-cancel, .feedback-cancel');
+
       if (cancelBtn) {
         cancelBtn.addEventListener('click', closeFeedbackModal);
       }
@@ -17501,80 +17710,186 @@ const batchG = (smoothieBatchMlOverride != null)
     // Main tab switching
     const mainTabs = document.querySelectorAll('.main-tab');
     const mainTabContents = document.querySelectorAll('.main-tab-content');
-    
-    let pfActiveMainTab = document.querySelector('.main-tab.active')?.dataset.mainTab || 'ingredient';
+
+    const startCards = document.querySelectorAll('.pf-start-card');
+
+    function syncStartCards(activeTab) {
+      startCards.forEach(card => {
+        card.classList.toggle('is-active', card.dataset.startTarget === activeTab);
+      });
+    }
+
+    function pfPulseStartTarget(selector) {
+      const el = document.querySelector(selector);
+      if (!el) return;
+
+      el.classList.remove('pf-start-focus-target');
+      void el.offsetWidth;
+      el.classList.add('pf-start-focus-target');
+
+      try {
+        el.focus({ preventScroll: true });
+      } catch (e) {
+        try { el.focus(); } catch (_) {}
+      }
+
+      setTimeout(() => {
+        el.classList.remove('pf-start-focus-target');
+      }, 2200);
+    }
+
+    function pfShowStartCoachmark(selector, title, text) {
+      const target = document.querySelector(selector);
+      if (!target) return;
+
+      const existing = target.querySelector('.pf-start-coachmark');
+      if (existing) existing.remove();
+
+      try {
+        const computed = window.getComputedStyle(target);
+        if (computed.position === 'static') {
+          target.style.position = 'relative';
+        }
+      } catch (e) {}
+
+      const coach = document.createElement('div');
+      coach.className = 'pf-start-coachmark';
+
+      const titleEl = document.createElement('div');
+      titleEl.className = 'pf-start-coachmark-title';
+      titleEl.textContent = title;
+
+      const textEl = document.createElement('p');
+      textEl.className = 'pf-start-coachmark-text';
+      textEl.textContent = text;
+
+      coach.appendChild(titleEl);
+      coach.appendChild(textEl);
+      target.appendChild(coach);
+
+      setTimeout(() => {
+        if (coach && coach.parentNode) coach.remove();
+      }, 2200);
+    }
+
+    function pfGuideToStartTarget(targetTab) {
+      if (targetTab === 'smoothie') {
+        const el = document.getElementById('pf-smoothie-start-step');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            pfPulseStartTarget('#pf-smoothie-start-step');
+            pfShowStartCoachmark('#pf-smoothie-start-step', 'Step 1', 'Choose who this smoothie is for.');
+          }, 260);
+        }
+        return;
+      }
+
+      if (targetTab === 'ingredient') {
+        const el = document.getElementById('pf-ingredient-start-step');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            pfPulseStartTarget('#pf-ingredient-start-step');
+            pfShowStartCoachmark('#pf-ingredient-start-step', 'Step 1', 'Pick a health goal to narrow the ingredient check.');
+          }, 260);
+        }
+      }
+    }
+
+    const activeMainTabContent = document.querySelector('.main-tab-content.active');
+    let pfActiveMainTab = 'smoothie';
+    if (activeMainTabContent && activeMainTabContent.id === 'ingredient-tab-content') {
+      pfActiveMainTab = 'ingredient';
+    } else if (activeMainTabContent && activeMainTabContent.id === 'smoothie-tab-content') {
+      pfActiveMainTab = 'smoothie';
+    }
+
+    function pfSwitchMainTab(targetTab) {
+      syncStartCards(targetTab);
+
+      const fromTab = pfActiveMainTab;
+      if (fromTab === targetTab) {
+        console.log('[TAB_SWITCH] ignored (already active)', { fromTab, targetTab });
+        return;
+      }
+
+      console.log('[TAB_SWITCH]', { fromTab, targetTab });
+
+      // Reset Ingredient tab UI when LEAVING the ingredient tab
+      if (fromTab === 'ingredient' && targetTab !== 'ingredient') {
+        console.log('[ING_RESET] called (leaving ingredient tab)');
+        if (typeof resetIngredientTabUI === 'function') {
+          resetIngredientTabUI();
+        }
+
+        // Cancel any pending "scroll back to search" timer (from Add button UX)
+        if (scrollToSearchTimer) {
+          clearTimeout(scrollToSearchTimer);
+          scrollToSearchTimer = null;
+        }
+      }
+
+      // Reset Smoothie tab UI when switching away from it
+      if (targetTab === 'ingredient') {
+        if (typeof resetSmoothieTabUI === 'function') {
+          resetSmoothieTabUI();
+        }
+      }
+
+      // Reset Smoothie tab UI when switching to it (ensures fresh state)
+      if (targetTab === 'smoothie') {
+        if (typeof resetSmoothieTabUI === 'function') {
+          resetSmoothieTabUI();
+        }
+      }
+
+      // Update active states (optional .main-tab buttons if still in DOM)
+      mainTabs.forEach(t => t.classList.toggle('active', t.dataset.mainTab === targetTab));
+      mainTabContents.forEach(c => {
+        c.classList.remove('active');
+        c.style.display = 'none';
+      });
+
+      const targetContent = document.getElementById(`${targetTab}-tab-content`);
+      if (targetContent) {
+        targetContent.classList.add('active');
+        targetContent.style.display = 'block';
+      }
+
+      pfActiveMainTab = targetTab;
+
+      // Reset Ingredient tab UI when ENTERING the ingredient tab (force fresh state + rebuild goals UI)
+      if (targetTab === 'ingredient') {
+        console.log('[ING_RESET] entering ingredient tab');
+        if (typeof resetIngredientTabUI === 'function') {
+          resetIngredientTabUI();
+        }
+
+        // Force Health Goals to re-render (prevents stale active chip / stale filtered view)
+        if (typeof renderCategories === 'function' && typeof categories !== 'undefined' && Array.isArray(categories) && categories.length) {
+          renderCategories();
+        } else if (typeof loadCategories === 'function') {
+          loadCategories();
+        }
+      }
+    }
+
+    startCards.forEach(card => {
+      card.addEventListener('click', () => {
+        const targetTab = card.dataset.startTarget;
+        pfSwitchMainTab(targetTab);
+        setTimeout(() => {
+          pfGuideToStartTarget(targetTab);
+        }, 120);
+      });
+    });
+
+    syncStartCards(pfActiveMainTab);
 
     mainTabs.forEach(tab => {
       tab.addEventListener('click', () => {
-        const targetTab = tab.dataset.mainTab;
-        
-        const fromTab = pfActiveMainTab;
-
-        if (fromTab === targetTab) {
-          console.log('[TAB_SWITCH] ignored (already active)', { fromTab, targetTab });
-          return;
-        }
-
-        console.log('[TAB_SWITCH]', { fromTab, targetTab });
-        
-        // Reset Ingredient tab UI when LEAVING the ingredient tab
-        if (fromTab === 'ingredient' && targetTab !== 'ingredient') {
-          console.log('[ING_RESET] called (leaving ingredient tab)');
-          if (typeof resetIngredientTabUI === 'function') {
-            resetIngredientTabUI();
-          }
-          
-          // Cancel any pending "scroll back to search" timer (from Add button UX)
-          if (scrollToSearchTimer) {
-            clearTimeout(scrollToSearchTimer);
-            scrollToSearchTimer = null;
-          }
-        }
-        
-        // Reset Smoothie tab UI when switching away from it
-        if (targetTab === 'ingredient') {
-          if (typeof resetSmoothieTabUI === 'function') {
-            resetSmoothieTabUI();
-          }
-        }
-        
-        // Reset Smoothie tab UI when switching to it (ensures fresh state)
-        if (targetTab === 'smoothie') {
-          if (typeof resetSmoothieTabUI === 'function') {
-            resetSmoothieTabUI();
-          }
-        }
-        
-        // Update active states
-        mainTabs.forEach(t => t.classList.remove('active'));
-        mainTabContents.forEach(c => {
-          c.classList.remove('active');
-          c.style.display = 'none';
-        });
-        
-        tab.classList.add('active');
-        const targetContent = document.getElementById(`${targetTab}-tab-content`);
-        if (targetContent) {
-          targetContent.classList.add('active');
-          targetContent.style.display = 'block';
-        }
-
-        pfActiveMainTab = targetTab;
-
-        // Reset Ingredient tab UI when ENTERING the ingredient tab (force fresh state + rebuild goals UI)
-        if (targetTab === 'ingredient') {
-          console.log('[ING_RESET] entering ingredient tab');
-          if (typeof resetIngredientTabUI === 'function') {
-            resetIngredientTabUI();
-          }
-
-          // Force Health Goals to re-render (prevents stale active chip / stale filtered view)
-          if (typeof renderCategories === 'function' && typeof categories !== 'undefined' && Array.isArray(categories) && categories.length) {
-            renderCategories();
-          } else if (typeof loadCategories === 'function') {
-            loadCategories();
-          }
-        }
+        pfSwitchMainTab(tab.dataset.mainTab);
       });
     });
 
@@ -17762,8 +18077,12 @@ const batchG = (smoothieBatchMlOverride != null)
     renderSelectedIngredients();
     loadSmoothiePresets();
     
-    loadPreferences();
-    loadCart();        // Load saved cart from localStorage
+    if (typeof loadPreferences === 'function') {
+      loadPreferences();
+    }
+    if (typeof loadCart === 'function') {
+      loadCart();        // Load saved cart from localStorage
+    }
     initializeBrowseIngredientsFeatures(); // Search & toggle handlers
     
     // Check if we need to show the welcome modal
