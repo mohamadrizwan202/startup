@@ -6022,8 +6022,6 @@ button.feedback-open:not(.feedback-fab) {
 }
 
 #smoothie-tab-content .vmr-summary-row {
-  cursor: pointer;
-  list-style: none;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -6032,20 +6030,19 @@ button.feedback-open:not(.feedback-fab) {
   line-height: 1.4;
 }
 
-#smoothie-tab-content .vmr-summary-row::-webkit-details-marker {
-  display: none;
-}
-
-#smoothie-tab-content .vmr-summary-row::before {
-  content: "Ã¢â€“Â¶";
-  font-size: 0.7rem;
-  transition: transform 0.2s ease;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-#smoothie-tab-content .vmr-card[open] .vmr-summary-row::before {
-  transform: rotate(90deg);
+#smoothie-tab-content .vmr-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 #smoothie-tab-content .vmr-title {
