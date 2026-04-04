@@ -99,6 +99,7 @@
       font-size: 0.85rem;
       color: var(--text-secondary);
       line-height: 1.4;
+      white-space: pre-line;
     }
 
     .toast-close {
@@ -568,18 +569,46 @@
       color: var(--text-primary);
     }
 
-    @media (max-width: 768px) {
-      .pf-start-grid {
-        grid-template-columns: 1fr;
-      }
+    .pf-smoothie-guide {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
 
-      .pf-start-panel {
-        padding: 14px;
-      }
+    .pf-sg-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(14, 165, 164, 0.08), var(--bg-secondary));
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
 
-      .pf-start-card {
-        padding: 14px;
-      }
+    .pf-sg-badge {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+      background: rgba(14, 165, 164, 0.18);
+      color: var(--primary);
+      border: 1px solid rgba(14, 165, 164, 0.28);
+    }
+
+    .pf-sg-label {
+      min-width: 0;
+      font-size: 0.84rem;
+      line-height: 1.2;
+      font-weight: 800;
+      color: var(--text-primary);
     }
 
     .header .badge {
@@ -3081,6 +3110,156 @@
       border: none !important;
     }
 
+    /* Mobile onboarding: load last so cascade wins over other max-width:768px rules */
+    @media (max-width: 768px) {
+      .pf-app-start-header {
+        padding: 0 0 6px;
+      }
+
+      .pf-app-start-eyebrow {
+        margin-bottom: 6px;
+        padding: 4px 10px;
+        font-size: 0.7rem;
+      }
+
+      .pf-app-start-header h1 {
+        font-size: 1.62rem;
+        line-height: 1.04;
+        letter-spacing: -0.03em;
+        margin-bottom: 6px;
+      }
+
+      .pf-app-start-header .subtitle {
+        max-width: 20rem;
+        font-size: 0.9rem;
+        line-height: 1.3;
+      }
+
+      .pf-start-panel {
+        margin: 0 0 6px;
+        padding: 10px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+      }
+
+      .pf-start-panel-head {
+        margin-bottom: 8px;
+      }
+
+      .pf-start-panel-head h2 {
+        font-size: 0.92rem;
+        line-height: 1.15;
+        margin-bottom: 3px;
+      }
+
+      .pf-start-panel-head p {
+        font-size: 0.8rem;
+        line-height: 1.25;
+      }
+
+      .pf-start-grid {
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+
+      .pf-start-card {
+        padding: 10px 11px;
+        border-radius: 14px;
+        gap: 9px;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+      }
+
+      .pf-start-card:hover {
+        transform: none;
+      }
+
+      .pf-start-card.is-active {
+        box-shadow: 0 6px 16px rgba(14, 165, 164, 0.12);
+      }
+
+      .pf-start-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        font-size: 0.9rem;
+      }
+
+      .pf-start-copy {
+        gap: 1px;
+      }
+
+      .pf-start-title {
+        font-size: 0.9rem;
+        line-height: 1.12;
+      }
+
+      .pf-start-text {
+        font-size: 0.76rem;
+        line-height: 1.18;
+      }
+
+      .pf-start-tip {
+        display: none;
+      }
+
+      #smoothie-tab-content .card.search-container {
+        margin-top: 4px;
+      }
+
+      #smoothie-tab-content .card-header {
+        margin-bottom: 8px !important;
+        padding-bottom: 6px !important;
+      }
+
+      #smoothie-tab-content .card-title {
+        font-size: 1rem !important;
+        line-height: 1.15 !important;
+      }
+
+      #smoothie-tab-content .card-subtitle {
+        font-size: 0.86rem !important;
+        line-height: 1.28 !important;
+        margin-top: 4px !important;
+      }
+
+      #smoothie-tab-content .pf-smoothie-guide {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+        margin-top: 8px !important;
+      }
+
+      #smoothie-tab-content .pf-sg-step {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        gap: 8px !important;
+        padding: 8px 4px 9px !important;
+        border-radius: 12px !important;
+        min-height: 62px !important;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05) !important;
+      }
+
+      #smoothie-tab-content .pf-sg-badge {
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 7px !important;
+        font-size: 0.68rem !important;
+        transform: translateY(-2px) !important;
+      }
+
+      #smoothie-tab-content .pf-sg-label {
+        font-size: 0.68rem !important;
+        line-height: 1.05 !important;
+        font-weight: 800 !important;
+        text-align: center !important;
+        word-break: break-word !important;
+        margin-top: 1px !important;
+      }
+    }
+
   </style>
   <script src="{{ url_for('static', filename='js/security.js') }}"></script>
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
@@ -3399,18 +3578,18 @@
               <div class="card-subtitle" style="margin-top: 6px; line-height: 1.4; max-width: 100%;">
                 Build based on audience, timing, and health goals, then review ingredients, serving size, yield, and nutrition in one place.
               </div>
-              <div class="pf-smoothie-guide" role="list" aria-label="How the Smoothie builder works" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(9.25rem, 1fr)); gap: 8px; margin-top: 10px;">
-                <div role="listitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: linear-gradient(145deg, rgba(14, 165, 164, 0.09), var(--bg-secondary)); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);">
-                  <span aria-hidden="true" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; background: rgba(14, 165, 164, 0.22); color: var(--primary); border: 1px solid rgba(14, 165, 164, 0.28);">1</span>
-                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); line-height: 1.25;">Pick audience</span>
+              <div class="pf-smoothie-guide" role="list" aria-label="How the Smoothie builder works">
+                <div class="pf-sg-step" role="listitem">
+                  <span class="pf-sg-badge" aria-hidden="true">1</span>
+                  <span class="pf-sg-label">Pick audience</span>
                 </div>
-                <div role="listitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: linear-gradient(145deg, rgba(14, 165, 164, 0.09), var(--bg-secondary)); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);">
-                  <span aria-hidden="true" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; background: rgba(14, 165, 164, 0.22); color: var(--primary); border: 1px solid rgba(14, 165, 164, 0.28);">2</span>
-                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); line-height: 1.25;">Choose goal</span>
+                <div class="pf-sg-step" role="listitem">
+                  <span class="pf-sg-badge" aria-hidden="true">2</span>
+                  <span class="pf-sg-label">Choose goal</span>
                 </div>
-                <div role="listitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: linear-gradient(145deg, rgba(14, 165, 164, 0.09), var(--bg-secondary)); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);">
-                  <span aria-hidden="true" style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; background: rgba(14, 165, 164, 0.22); color: var(--primary); border: 1px solid rgba(14, 165, 164, 0.28);">3</span>
-                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); line-height: 1.25;">Review serving + nutrition</span>
+                <div class="pf-sg-step" role="listitem">
+                  <span class="pf-sg-badge" aria-hidden="true">3</span>
+                  <span class="pf-sg-label">Review serving + nutrition</span>
                 </div>
               </div>
             </div>
@@ -4169,7 +4348,9 @@
       hasShownDriedFruitTip = true;
       
       // Show the tip with the exact message text requested
-      const tipMessage = `Tip for dried fruits 🧊<br><br>For a softer texture and gentler taste, soak dried fruits in water (or milk) for a few hours or overnight before adding them to the smoothie. This can make them easier to blend and kinder to teeth and stomach, especially for kids.`;
+      const tipMessage = `Tip for dried fruits
+
+For a softer texture and gentler taste, soak dried fruits in water (or milk) for a few hours or overnight before adding them to the smoothie. This can make them easier to blend and kinder to teeth and stomach, especially for kids.`;
       
       showToast(tipMessage, 'info', 8000);
     }
@@ -15194,12 +15375,12 @@ const allergenPanel = allergenNames.length === 0
           }).join('');
         
         veganMilkRecommendationContainerEl.innerHTML = `
-          <details class="vmr-card">
-            <summary class="vmr-summary-row">
-              <span style="font-size: 1.1rem;">💡</span>
+          <div class="vmr-card">
+            <div class="vmr-summary-row">
+              <span class="vmr-icon" aria-hidden="true">Tip</span>
               <span class="vmr-title">Vegan Milk Recommendation</span>
               <span>Recommended for ${escapeHTML(ageGroupText)} (unsweetened, fortified when possible).</span>
-            </summary>
+            </div>
             <div class="vmr-table-wrapper">
               <table>
                 <thead>
@@ -15213,7 +15394,7 @@ const allergenPanel = allergenNames.length === 0
                 </tbody>
               </table>
             </div>
-          </details>
+          </div>
         `;
         veganMilkRecommendationContainerEl.style.display = 'block';
       } else {
