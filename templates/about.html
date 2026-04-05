@@ -34,7 +34,7 @@
           </div>
 
           <div class="about-hero-buttons">
-            <a href="{{ url_for('index') }}" class="about-button about-button-primary">Try it now</a>
+            <a href="/app?entry=smoothie" class="about-button about-button-primary">Try it now</a>
             <a href="{{ url_for('register') }}" class="about-button about-button-secondary">Create account</a>
           </div>
         </div>
@@ -207,7 +207,7 @@
 <!-- CTA Section -->
     <section class="about-cta">
       <h2 class="about-cta-title">Start building smarter smoothies</h2>
-      <a href="{{ url_for('index') }}" class="about-cta-button">Get Started</a>
+      <a href="/app?entry=smoothie" class="about-cta-button">Get Started</a>
     </section>
   </main>
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
