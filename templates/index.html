@@ -3525,7 +3525,7 @@
     </div>
 
     <!-- Ingredient Analysis Tab Content -->
-    <div id="ingredient-tab-content" class="main-tab-content">
+    <div id="ingredient-tab-content" class="main-tab-content{% if initial_app_tab == 'ingredient' %} active{% endif %}">
       <!-- Search Area - Centered -->
       <div class="search-area-container">
         <div class="search-container" id="ingredient-search-card">
@@ -3738,7 +3738,7 @@
     <!-- End Ingredient Analysis Tab Content -->
 
     <!-- Smoothie Builder Tab Content -->
-    <div id="smoothie-tab-content" class="main-tab-content active">
+    <div id="smoothie-tab-content" class="main-tab-content{% if initial_app_tab != 'ingredient' %} active{% endif %}">
      
       <div class="main-content-grid">
         <!-- Left: Smoothie Builder -->

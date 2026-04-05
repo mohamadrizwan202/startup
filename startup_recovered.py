@@ -1735,6 +1735,8 @@ def index():
 @app.route("/app")
 def app_home():
     canonical = "https://purefyul.com/app"
+    entry = (request.args.get("entry") or "").strip().lower()
+    initial_app_tab = "ingredient" if entry == "ingredient" else "smoothie"
     html = render_template(
         "index.html",
         time=time,
@@ -1742,6 +1744,7 @@ def app_home():
         meta_description="Use the PureFyul app to analyze ingredients and review blend summaries.",
         canonical_url=canonical,
         og_url=canonical,
+        initial_app_tab=initial_app_tab,
     )
     resp = make_response(html)
     resp.headers["X-Robots-Tag"] = "noindex, follow"
