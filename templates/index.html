@@ -397,6 +397,10 @@
       margin-bottom: 0;
     }
 
+    #pf-app-onboarding-shell {
+      display: block;
+    }
+
     .pf-app-start-header {
       text-align: center;
       padding: 8px 0 18px;
@@ -567,6 +571,106 @@
       line-height: 1.4;
       font-weight: 600;
       color: var(--text-primary);
+    }
+
+    .pf-note {
+      border-radius: 18px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .pf-note--info {
+      border-color: rgba(14, 165, 164, 0.18);
+      box-shadow: 0 10px 28px rgba(14, 165, 164, 0.08);
+    }
+
+    .pf-note-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .pf-note-icon {
+      flex-shrink: 0;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.84rem;
+      font-weight: 800;
+      line-height: 1;
+      background: rgba(14, 165, 164, 0.10);
+      color: #0f766e;
+      border: 1px solid rgba(14, 165, 164, 0.18);
+    }
+
+    .pf-note-title {
+      margin: 0;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #0f172a;
+    }
+
+    .pf-note-body {
+      margin: 2px 0 0;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      color: #334155;
+    }
+
+    .pf-inline-note {
+      position: relative;
+      border-radius: 14px;
+      border: 1px solid rgba(14, 165, 164, 0.14);
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.98));
+      box-shadow: 0 8px 18px rgba(14, 165, 164, 0.06);
+      padding: 12px 14px;
+    }
+
+    .pf-inline-note .pf-note-head {
+      gap: 10px;
+    }
+
+    .pf-inline-note .pf-note-icon {
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      font-size: 0.78rem;
+    }
+
+    .pf-inline-note .pf-note-title {
+      font-size: 0.76rem;
+      margin-bottom: 1px;
+    }
+
+    .pf-inline-note .pf-note-body {
+      font-size: 0.9rem;
+      line-height: 1.42;
+      color: #475569;
+      max-width: 60rem;
+    }
+
+    .pf-inline-note-close {
+      position: absolute;
+      top: 8px;
+      right: 9px;
+      border: 0;
+      background: transparent;
+      color: #64748b;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .pf-inline-note-close:hover {
+      color: #0f172a;
     }
 
     .pf-smoothie-guide {
@@ -3307,6 +3411,71 @@
   </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <style>
+    /* Premium inline notice + vegan milk card (loads after responsive_overrides; beats #smoothie-tab-content .vmr-card) */
+    #smoothie-tab-content .vmr-card.pf-note {
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(14, 165, 164, 0.16);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+      box-shadow: 0 10px 28px rgba(14, 165, 164, 0.08);
+    }
+
+    #smoothie-tab-content .vmr-summary-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      column-gap: 12px;
+      row-gap: 2px;
+      align-items: start;
+      margin-bottom: 14px;
+      font-size: inherit;
+      color: inherit;
+      line-height: inherit;
+    }
+
+    #smoothie-tab-content .vmr-icon {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      align-self: start;
+      flex-shrink: 0;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.84rem;
+      font-weight: 800;
+      line-height: 1;
+      background: rgba(14, 165, 164, 0.10);
+      color: #0f766e;
+      border: 1px solid rgba(14, 165, 164, 0.18);
+    }
+
+    #smoothie-tab-content .vmr-title {
+      grid-column: 2;
+      grid-row: 1;
+      display: block;
+      margin: 0 0 2px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #0f172a;
+    }
+
+    #smoothie-tab-content .vmr-summary-row > span:last-child {
+      grid-column: 2;
+      grid-row: 2;
+      display: block;
+      margin-top: 0;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      color: #334155;
+    }
+  </style>
     {% include "_seo_head.html" %}
 {% include "_adsense_head.html" %}
 </head>
@@ -3314,6 +3483,7 @@
   {% include "_navbar.html" %}
 
   <div class="container " style="background: #0ea5a4;">
+    <div id="pf-app-onboarding-shell">
     <!-- App Onboarding Header -->
     <header class="header pf-app-start-header">
       <div class="pf-app-start-eyebrow">Start here</div>
@@ -3352,6 +3522,7 @@
         New here? Start with <strong>Build a smoothie for a goal</strong> if you want a guided flow.
       </div>
     </section>
+    </div>
 
     <!-- Ingredient Analysis Tab Content -->
     <div id="ingredient-tab-content" class="main-tab-content">
@@ -3695,6 +3866,7 @@
 
           <!-- Selected Smoothie Ingredients -->
           <div id="smoothie-selected-ingredients" class="selected-ingredients" style="display: none; margin-bottom: 15px;"></div>
+          <div id="smoothie-inline-note-container" style="display: none; margin-bottom: 14px;"></div>
           
           <!-- Vegan Milk Recommendation Container (shown when non-recommended milk is selected for kids 4-8) -->
           <div id="vegan-milk-recommendation-container" style="display: none; margin-bottom: 15px;"></div>
@@ -4317,6 +4489,11 @@
      */
     function resetDriedFruitTip() {
       hasShownDriedFruitTip = false;
+      const host = document.getElementById('smoothie-inline-note-container');
+      if (host) {
+        host.innerHTML = '';
+        host.style.display = 'none';
+      }
     }
     
     /**
@@ -4346,13 +4523,11 @@
       
       // Mark as shown
       hasShownDriedFruitTip = true;
-      
-      // Show the tip with the exact message text requested
-      const tipMessage = `Tip for dried fruits
 
-For a softer texture and gentler taste, soak dried fruits in water (or milk) for a few hours or overnight before adding them to the smoothie. This can make them easier to blend and kinder to teeth and stomach, especially for kids.`;
-      
-      showToast(tipMessage, 'info', 8000);
+      renderSmoothieInlineNote(
+        'Tip for dried fruits',
+        'For a softer texture and gentler taste, soak dried fruits in water (or milk) for a few hours or overnight before adding them to the smoothie. This can make them easier to blend and kinder to teeth and stomach, especially for kids.'
+      );
     }
     
     function setStatus(text, isError = false) {
@@ -6183,6 +6358,33 @@ For a softer texture and gentler taste, soak dried fruits in water (or milk) for
       const safeName = pfEscapeHtml(name || '');
       const safeServing = pfEscapeHtml(serving || '—');
       return `<span class="pf-ing-pill"><span class="pf-ing-pill__name">${safeName}</span><span class="pf-ing-pill__sep">•</span><span class="pf-ing-pill__serving">${safeServing}</span></span>`;
+    }
+
+    function renderSmoothieInlineNote(title, body) {
+      const host = document.getElementById('smoothie-inline-note-container');
+      if (!host) return;
+
+      host.style.display = 'block';
+      host.innerHTML = `
+    <div class="pf-inline-note pf-note pf-note--info">
+      <button type="button" class="pf-inline-note-close" aria-label="Dismiss note">×</button>
+      <div class="pf-note-head">
+        <span class="pf-note-icon" aria-hidden="true">Tip</span>
+        <div>
+          <div class="pf-note-title">${pfEscapeHtml(title)}</div>
+          <div class="pf-note-body">${pfEscapeHtml(body)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+      const closeBtn = host.querySelector('.pf-inline-note-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          host.innerHTML = '';
+          host.style.display = 'none';
+        });
+      }
     }
 
     function displayNutritionResults(data) {
@@ -14059,6 +14261,11 @@ const allergenPanel = allergenNames.length === 0
       if (smoothieIngredients.length === 0) {
         container.style.display = 'none';
         container.innerHTML = '';
+        const inlineNoteHost = document.getElementById('smoothie-inline-note-container');
+        if (inlineNoteHost) {
+          inlineNoteHost.innerHTML = '';
+          inlineNoteHost.style.display = 'none';
+        }
         buildSmoothieBtn.disabled = true;
         return;
       }
@@ -15375,7 +15582,7 @@ const allergenPanel = allergenNames.length === 0
           }).join('');
         
         veganMilkRecommendationContainerEl.innerHTML = `
-          <div class="vmr-card">
+          <div class="vmr-card pf-note pf-note--info">
             <div class="vmr-summary-row">
               <span class="vmr-icon" aria-hidden="true">Tip</span>
               <span class="vmr-title">Vegan Milk Recommendation</span>
