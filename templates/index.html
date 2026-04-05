@@ -18176,7 +18176,8 @@ const batchG = (smoothieBatchMlOverride != null)
       if (targetTab === 'ingredient') {
         const el = document.getElementById('pf-ingredient-start-step');
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const targetY = Math.max(0, window.pageYOffset + el.getBoundingClientRect().top - 24);
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
           setTimeout(() => {
             pfPulseStartTarget('#pf-ingredient-start-step');
             pfShowStartCoachmark('#pf-ingredient-start-step', 'Step 1', 'Pick a health goal to narrow the ingredient check.');
@@ -18274,6 +18275,33 @@ const batchG = (smoothieBatchMlOverride != null)
     });
 
     syncStartCards(pfActiveMainTab);
+
+    (function pfBootEntryIntentFromUrl() {
+      let params;
+      try {
+        params = new URLSearchParams(window.location.search);
+      } catch (e) {
+        return;
+      }
+      const raw = params.get('entry');
+      if (!raw) return;
+      const entry = String(raw).trim().toLowerCase();
+      if (entry !== 'smoothie' && entry !== 'ingredient') return;
+
+      pfSwitchMainTab(entry);
+      setTimeout(function () {
+        pfGuideToStartTarget(entry);
+      }, 260);
+
+      params.delete('entry');
+      const qs = params.toString();
+      const next = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+      try {
+        history.replaceState(null, '', next);
+      } catch (err) {
+        /* ignore replaceState failures (e.g. some embedded contexts) */
+      }
+    })();
 
     mainTabs.forEach(tab => {
       tab.addEventListener('click', () => {
