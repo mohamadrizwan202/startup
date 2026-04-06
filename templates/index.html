@@ -4695,7 +4695,18 @@
         console.error(err);
         setStatus('Failed to load categories', true);
         categoryListEl.innerHTML = '<div class="empty-state">Error loading categories</div>';
+        pfFlushPendingIngredientStartGuide();
       }
+    }
+
+    function pfFlushPendingIngredientStartGuide() {
+      if (window.pfPendingStartGuideTarget !== 'ingredient') return;
+      window.pfPendingStartGuideTarget = null;
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          pfGuideToStartTarget('ingredient');
+        });
+      });
     }
 
     function renderCategories() {
@@ -4726,6 +4737,7 @@
         // Hide browse toggle when no results
         const browseToggle = document.getElementById('pf-goal-browse-toggle');
         if (browseToggle) browseToggle.style.display = 'none';
+        pfFlushPendingIngredientStartGuide();
         return;
       }
 
@@ -4802,6 +4814,7 @@
       
       // Re-bind toggle handler after DOM update
       bindBrowseGoalsToggle();
+      pfFlushPendingIngredientStartGuide();
     }
 
     // Load Hierarchy
@@ -5941,8 +5954,13 @@
         // Disable analyze button since inputs are cleared
         analyzeBtn.disabled = true;
         
-        // Focus back on textarea for next search
-        if (ingredientsInputEl) { try { ingredientsInputEl.focus({ preventScroll: true }); } catch (e) { ingredientsInputEl.focus(); } }
+        // Do not re-focus the ingredient textarea after success; close the mobile keyboard instead
+        if (ingredientsInputEl && typeof ingredientsInputEl.blur === 'function') {
+          try { ingredientsInputEl.blur(); } catch (e) {}
+        }
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          try { document.activeElement.blur(); } catch (e) {}
+        }
 
         // Force page scroll back to Browse Ingredients card (page is the scroller)
         try {
@@ -6237,9 +6255,19 @@
       analyzeBtn.addEventListener('click', (e) => {
         e.preventDefault();
         (async () => {
-  await analyzeIngredients();
-  if (pfIsMobileResultsMode()) pfOpenResultsModal();
-})();
+          await analyzeIngredients();
+          if (ingredientsInputEl && typeof ingredientsInputEl.blur === 'function') {
+            try { ingredientsInputEl.blur(); } catch (e) {}
+          }
+          if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            try { document.activeElement.blur(); } catch (e) {}
+          }
+          if (pfIsMobileResultsMode()) {
+            setTimeout(() => {
+              pfOpenResultsModal();
+            }, 80);
+          }
+        })();
 
       });
       console.log('Analyze button event listener attached');
@@ -18176,7 +18204,7 @@ const batchG = (smoothieBatchMlOverride != null)
       if (targetTab === 'ingredient') {
         const el = document.getElementById('pf-ingredient-start-step');
         if (el) {
-          const targetY = Math.max(0, window.pageYOffset + el.getBoundingClientRect().top - 24);
+          const targetY = Math.max(0, window.pageYOffset + el.getBoundingClientRect().top - 160);
           window.scrollTo({ top: targetY, behavior: 'smooth' });
           setTimeout(() => {
             pfPulseStartTarget('#pf-ingredient-start-step');
@@ -18288,10 +18316,16 @@ const batchG = (smoothieBatchMlOverride != null)
       const entry = String(raw).trim().toLowerCase();
       if (entry !== 'smoothie' && entry !== 'ingredient') return;
 
-      pfSwitchMainTab(entry);
-      setTimeout(function () {
-        pfGuideToStartTarget(entry);
-      }, 260);
+      if (entry === 'ingredient') {
+        window.pfPendingStartGuideTarget = 'ingredient';
+        pfSwitchMainTab('ingredient');
+      } else {
+        window.pfPendingStartGuideTarget = null;
+        pfSwitchMainTab('smoothie');
+        setTimeout(function () {
+          pfGuideToStartTarget('smoothie');
+        }, 260);
+      }
 
       params.delete('entry');
       const qs = params.toString();
