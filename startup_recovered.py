@@ -51088,7 +51088,18 @@ def nlp_query():
             allergen_info = {}
             try:
                 # First, get all allergens from database
-                cursor.execute("SELECT name, aliases, severity, description, common_in FROM allergens")
+                cursor.execute("""
+                    SELECT name, aliases, severity, description, common_in
+                    FROM allergens
+                    ORDER BY CASE
+                        WHEN lower(name) = 'peanuts' THEN 1
+                        WHEN lower(name) = 'tree nuts' THEN 2
+                        WHEN lower(name) = 'soy' THEN 3
+                        WHEN lower(name) = 'sesame' THEN 4
+                        WHEN lower(name) = 'milk' THEN 5
+                        ELSE 99
+                    END
+                """)
                 all_allergens = cursor.fetchall()
                 
                 # Check if ingredient matches any allergen (by name or aliases)
@@ -51213,7 +51224,18 @@ def nlp_query():
                 # Check for allergens even if nutrition data not found
                 allergen_info = {}
                 try:
-                    cursor.execute("SELECT name, aliases, severity, description, common_in FROM allergens")
+                    cursor.execute("""
+                    SELECT name, aliases, severity, description, common_in
+                    FROM allergens
+                    ORDER BY CASE
+                        WHEN lower(name) = 'peanuts' THEN 1
+                        WHEN lower(name) = 'tree nuts' THEN 2
+                        WHEN lower(name) = 'soy' THEN 3
+                        WHEN lower(name) = 'sesame' THEN 4
+                        WHEN lower(name) = 'milk' THEN 5
+                        ELSE 99
+                    END
+                """)
                     all_allergens = cursor.fetchall()
                     
                     for allergen_row in all_allergens:

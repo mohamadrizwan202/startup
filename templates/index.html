@@ -3766,6 +3766,7 @@
             </div>
           </div>
 
+
           <!-- Hidden input for smoothie name (used by updateSmoothieRecipe) -->
           <input type="hidden" id="smoothie-name" value="" />
 
@@ -6963,7 +6964,7 @@
         
         // Dairy indicators (trigger Milk allergen)
         const dairyIndicators = [
-          'whey', 'casein', 'lactose', 'butter', 'ghee', 'cream', 'cheese',
+          'whey', 'casein', 'lactose', 'ghee', 'cream', 'cheese',
           'yogurt', 'kefir', 'curd'
         ];
         
@@ -6998,8 +6999,8 @@
         }
         
         // Matching priority: 
-        // 1. Dairy indicators take precedence (even in plant milks)
-        // 2. Nut milks NEVER trigger any allergens (show green - no allergens)
+                // 1. Dairy indicators take precedence (even in plant milks)
+        // 2. Nut milks do NOT trigger Milk, but DO trigger Tree Nuts
         // 3. Other plant milks don't trigger Milk
         // 4. Standalone milk triggers Milk
         if (hasDairyIndicator) {
@@ -7007,26 +7008,26 @@
           const matched = dairyIndicators.find(ind => normalized.includes(ind));
           reason = `dairy indicator: ${matched}`;
         } else if (isNutMilk) {
-          // Nut milk found - explicitly do NOT set Milk or Tree Nuts (show green - no allergens)
-          milk = false; // Explicitly prevent Milk allergen
-          treeNuts = false; // Explicitly prevent Tree Nuts allergen
+          // Nut milk found - do NOT set Milk, but DO set Tree Nuts
+          milk = false;
+          treeNuts = true;
           const matched = nutMilkPhrases.find(phrase => normalized.includes(phrase));
-          reason = `nut milk: ${matched} (no allergens - green)`;
+          reason = `nut milk: ${matched} (tree nuts)`;
         } else if (hasPlantMilk) {
           // Non-nut plant milk found - do NOT set Milk
-          milk = false; // Explicitly prevent Milk allergen
+          milk = false;
           reason = 'plant milk (non-nut)';
         } else if (hasStandaloneMilk) {
           milk = true;
           reason = 'standalone milk';
         }
-        
+
         // Check for tree nuts separately (even if not in milk form)
         // IMPORTANT: Only skip if it's a nut MILK (not just the nut name)
         // Standalone nuts (like "almond") should trigger Tree Nuts allergen
         if (!treeNuts) {
           // Only check for tree nuts if it's NOT a nut milk
-          // If it's a nut milk, we already set treeNuts = false above
+          // If it's a nut milk, treeNuts was already set to true above
           if (!isNutMilk) {
             const hasTreeNut = treeNutIndicators.some(nut => {
               const regex = new RegExp(`\\b${nut}\\b`, 'i');
@@ -11092,6 +11093,78 @@ const allergenPanel = allergenNames.length === 0
       return 28; // adults default (≈ 1 oz)
     }
 
+    const SMOOTHIE_STAPLE_PORTIONS = {
+      'greek yogurt': {
+        child_4_8: 85,
+        girl_9_13: 120,
+        boy_9_13: 120,
+        girl_14_18: 170,
+        boy_14_18: 170,
+        woman_19_30: 170,
+        man_19_30: 170,
+        woman_31_59: 170,
+        man_31_59: 170,
+        woman_60_plus: 170,
+        man_60_plus: 170
+      },
+      'yogurt': {
+        child_4_8: 120,
+        girl_9_13: 170,
+        boy_9_13: 170,
+        girl_14_18: 245,
+        boy_14_18: 245,
+        woman_19_30: 245,
+        man_19_30: 245,
+        woman_31_59: 245,
+        man_31_59: 245,
+        woman_60_plus: 245,
+        man_60_plus: 245
+      },
+      'oats': {
+        child_4_8: 20,
+        girl_9_13: 30,
+        boy_9_13: 30,
+        girl_14_18: 40,
+        boy_14_18: 40,
+        woman_19_30: 40,
+        man_19_30: 40,
+        woman_31_59: 40,
+        man_31_59: 40,
+        woman_60_plus: 40,
+        man_60_plus: 40
+      },
+      'oatmeal': {
+        child_4_8: 20,
+        girl_9_13: 30,
+        boy_9_13: 30,
+        girl_14_18: 40,
+        boy_14_18: 40,
+        woman_19_30: 40,
+        man_19_30: 40,
+        woman_31_59: 40,
+        man_31_59: 40,
+        woman_60_plus: 40,
+        man_60_plus: 40
+      }
+    };
+
+    function normalizeSmoothieStapleName(name) {
+      const n = (name || '').toLowerCase().trim();
+      if (!n) return null;
+      if (n.includes('greek yogurt')) return 'greek yogurt';
+      if (/\byogurt\b/.test(n)) return 'yogurt';
+      if (/\boatmeal\b/.test(n)) return 'oatmeal';
+      if (/\brolled oats\b/.test(n) || /\boats\b/.test(n)) return 'oats';
+      return null;
+    }
+
+    function getSmoothieStaplePortionGrams(ageGroup, ingredientName) {
+      const key = normalizeSmoothieStapleName(ingredientName);
+      const ageKey = normalizeAgeGroupKey(ageGroup);
+      if (!key || !ageKey) return 0;
+      return Number(SMOOTHIE_STAPLE_PORTIONS[key]?.[ageKey] || 0);
+    }
+
     function getIngredientPortion(ingredientKey, ageGroup) {
       const __final = (res) => {
         const amt = Number(res?.amount);
@@ -11128,6 +11201,12 @@ const allergenPanel = allergenNames.length === 0
       }
 
       const ageGroupKey = normalizeAgeGroupKey(ageGroup);
+
+      // 0. Smoothie staples: greek yogurt, yogurt, oats
+      const stapleGrams = getSmoothieStaplePortionGrams(ageGroup, ingredientKey);
+      if (stapleGrams > 0) {
+        return __final({ amount: stapleGrams, unit: 'g', source: 'smoothieStapleMap' });
+      }
       
       // 1. Check if it's a vegan milk
       if (isPlantBasedMilk(ingredientKey)) {
