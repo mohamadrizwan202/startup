@@ -6243,6 +6243,9 @@
           if (body) body.innerHTML = '';
           modal.style.display = 'none';
           modal.setAttribute('aria-hidden', 'true');
+          if (typeof pfIsMobileResultsMode === 'function' && pfIsMobileResultsMode()) {
+            document.body.classList.remove('pf-has-analysis');
+          }
           pfUnlockScroll();
         }
 
