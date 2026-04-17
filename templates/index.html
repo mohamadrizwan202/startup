@@ -3091,6 +3091,51 @@
 
     /* ---------- Health Benefits tab: compact redesign (pf-hb2-*) ---------- */
     .pf-hb2-wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+    /* === NUTRITION TAB REDESIGN (2-tier layout, zero-scroll target) === */
+    .pfn-card{background:#fff;border-radius:16px;padding:20px 22px;border:1px solid rgba(15,23,42,0.06)}
+    .pfn-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+    .pfn-title-group{display:flex;flex-direction:column;gap:2px}
+    .pfn-title{font-size:16px;font-weight:700;color:#0f172a;letter-spacing:-0.01em;margin:0}
+    .pfn-sub{font-size:12px;color:#64748b}
+    .pfn-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+    .pfn-kpi{background:#f8fafc;border-radius:12px;padding:12px 14px;border:1px solid rgba(15,23,42,0.04)}
+    .pfn-kpi-label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+    .pfn-kpi-value{font-size:22px;font-weight:700;color:#0f172a;line-height:1;margin-bottom:2px;letter-spacing:-0.02em}
+    .pfn-kpi-unit{font-size:11px;color:#94a3b8;font-weight:500}
+    .pfn-kpi.primary{background:#fef7ea;border-color:rgba(239,159,39,0.18)}
+    .pfn-kpi.primary .pfn-kpi-label{color:#854F0B}
+    .pfn-kpi.primary .pfn-kpi-value{color:#633806}
+    .pfn-kpi.primary .pfn-kpi-unit{color:#ba7517}
+    .pfn-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+    .pfn-mini{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:10px;padding:10px 14px;border:1px solid rgba(15,23,42,0.04)}
+    .pfn-mini-label{font-size:12px;color:#64748b;font-weight:500}
+    .pfn-mini-value{font-size:14px;font-weight:700;color:#0f172a}
+    .pfn-vm{padding:12px 14px;background:#f8fafc;border-radius:10px;border:1px solid rgba(15,23,42,0.04);margin-top:4px}
+    .pfn-vm-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+    .pfn-vm-pills{display:flex;gap:6px;flex-wrap:wrap}
+    .pfn-vm-pill{background:#fff;border:1px solid rgba(15,23,42,0.08);border-radius:999px;padding:4px 10px;font-size:12px;color:#334155;font-weight:500}
+    @media (max-width:640px){
+      .pfn-card{padding:16px 18px}
+      .pfn-title{font-size:15px}
+      .pfn-kpi-row{grid-template-columns:repeat(2,1fr);gap:8px}
+      .pfn-kpi{padding:10px 12px}
+      .pfn-kpi-value{font-size:20px}
+      .pfn-mini{flex-direction:column;align-items:center;gap:2px;padding:6px 8px}
+      .pfn-mini-label{font-size:10px}
+      .pfn-mini-value{font-size:13px}
+      .pfn-mini-row{gap:6px}
+    }
+    /* === DID YOU KNOW card (Step 3 of did-you-know feature) === */
+    .pf-dyk-card{display:block !important;margin-top:20px;padding:18px 20px 18px 24px;background:#FFF8E6;background:linear-gradient(135deg,#FFF8E6 0%,#FFF3D4 100%);border:1px solid rgba(239,159,39,0.25);border-left:4px solid #EF9F27;border-radius:12px;position:relative;overflow:visible;min-height:auto;height:auto}
+    .pf-dyk-label{display:flex !important;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#854F0B;margin:0 0 8px 0;line-height:1.4}
+    .pf-dyk-label-icon{display:inline-flex !important;align-items:center;justify-content:center;width:16px;height:16px;min-width:16px;background:#EF9F27;color:#fff !important;border-radius:50%;font-size:11px;font-weight:700;line-height:1;flex-shrink:0}
+    .pf-dyk-fact{display:block !important;visibility:visible !important;font-size:15px !important;line-height:1.55 !important;color:#633806 !important;font-weight:500 !important;margin:0 !important;padding:0 !important;max-width:100%;word-wrap:break-word;opacity:1 !important;height:auto !important}
+    .pf-dyk-card:empty{display:none !important}
+    @media (max-width:640px){
+      .pf-dyk-card{margin-top:16px;padding:14px 16px 14px 20px}
+      .pf-dyk-fact{font-size:14px !important;line-height:1.5 !important}
+      .pf-dyk-label{font-size:10px}
+    }
     .pf-hb2-header{display:flex;flex-direction:column;gap:8px}
     .pf-hb2-title{font-size:18px;font-weight:900;color:#0f172a;line-height:1.2;margin:0}
     .pf-hb2-subtitle{color:#64748b;font-size:13.5px;line-height:1.35}
@@ -6517,59 +6562,87 @@
       // Ingredient tab: always single ingredient, so always show chip with name • serving
       const headerRight = `<div class="nutrition-selected-chip">${pfIngredientPillHTML(firstDisplayName, firstServingRaw || '—')}</div>`;
 
+      // === REDESIGNED NUTRITION TAB HTML ===
+      const firstIngVM = ingredients[0] || {};
+      const vitaminsRaw = String(firstIngVM.vitamins || '').trim();
+      const mineralsRaw = String(firstIngVM.minerals || '').trim();
+      const vmCombined = [vitaminsRaw, mineralsRaw].filter(Boolean).join(', ');
+      const vmList = vmCombined
+        ? vmCombined.split(',').map(s => s.trim()).filter(Boolean).slice(0, 8)
+        : [];
+      const vmPillsHtml = vmList.length > 0
+        ? vmList.map(v => `<span class="pfn-vm-pill">${escapeHTML(v)}</span>`).join('')
+        : '';
+
       let html = `
         <div class="pf-tab-content-wrapper">
-          <div class="pf-tab-card">
-            <div class="pf-tab-header">
-              <div>
-                <div class="pf-tab-title">Nutrition Summary</div>
-                <div class="pf-tab-subtitle">Totals across selected ingredients</div>
+          <div class="pfn-card">
+            <div class="pfn-top">
+              <div class="pfn-title-group">
+                <div class="pfn-title">Nutrition summary</div>
+                <div class="pfn-sub">Per ${firstServingRaw || '—'} serving${ingredients.length > 1 ? ` · ${ingredients.length} ingredients` : ''}</div>
               </div>
               <div class="nutrition-selected-chip">${pfIngredientPillHTML(firstDisplayName, firstServingRaw || '—')}</div>
             </div>
 
-            <div class="pf-nut-grid">
-              <div class="pf-nut-tile">
-                <span class="pf-nut-icon">🔥</span>
-                <span class="pf-nut-label">Calories</span>
-                <div class="pf-nut-value">${total.calories.toFixed(1)}<span class="pf-nut-unit">kcal</span></div>
+            <div class="pfn-kpi-row">
+              <div class="pfn-kpi primary">
+                <div class="pfn-kpi-label">Calories</div>
+                <div class="pfn-kpi-value">${Math.round(total.calories)}</div>
+                <div class="pfn-kpi-unit">kcal</div>
               </div>
-              <div class="pf-nut-tile">
-                <span class="pf-nut-icon">💪</span>
-                <span class="pf-nut-label">Protein</span>
-                <div class="pf-nut-value">${total.protein.toFixed(1)}<span class="pf-nut-unit">g</span></div>
+              <div class="pfn-kpi">
+                <div class="pfn-kpi-label">Protein</div>
+                <div class="pfn-kpi-value">${total.protein.toFixed(1)}</div>
+                <div class="pfn-kpi-unit">grams</div>
               </div>
-              <div class="pf-nut-tile">
-                <span class="pf-nut-icon">🌾</span>
-                <span class="pf-nut-label">Carbs</span>
-                <div class="pf-nut-value">${total.carbs.toFixed(1)}<span class="pf-nut-unit">g</span></div>
+              <div class="pfn-kpi">
+                <div class="pfn-kpi-label">Fiber</div>
+                <div class="pfn-kpi-value">${total.fiber.toFixed(1)}</div>
+                <div class="pfn-kpi-unit">grams</div>
               </div>
-              <div class="pf-nut-tile">
-                <span class="pf-nut-icon">🥑</span>
-                <span class="pf-nut-label">Fat</span>
-                <div class="pf-nut-value">${total.fat.toFixed(1)}<span class="pf-nut-unit">g</span></div>
+              <div class="pfn-kpi">
+                <div class="pfn-kpi-label">Sugar</div>
+                <div class="pfn-kpi-value">${total.sugar.toFixed(1)}</div>
+                <div class="pfn-kpi-unit">grams</div>
               </div>
-              <div class="pf-nut-tile">
-                <span class="pf-nut-icon">🌿</span>
-                <span class="pf-nut-label">Fiber</span>
-                <div class="pf-nut-value">${total.fiber.toFixed(1)}<span class="pf-nut-unit">g</span></div>
-              </div>
-              <div class="pf-nut-tile">
-                <span class="pf-nut-icon">🍬</span>
-                <span class="pf-nut-label">Sugar</span>
-                <div class="pf-nut-value">${total.sugar.toFixed(1)}<span class="pf-nut-unit">g</span></div>
-              </div>
-              <div class="pf-nut-tile">
-                <span class="pf-nut-icon">🧂</span>
-                <span class="pf-nut-label">Sodium</span>
-                <div class="pf-nut-value">${total.sodium.toFixed(1)}<span class="pf-nut-unit">mg</span></div>
-              </div>
+            </div>
+
+            <div class="pfn-mini-row">
+              <div class="pfn-mini"><span class="pfn-mini-label">Carbs</span><span class="pfn-mini-value">${total.carbs.toFixed(1)}g</span></div>
+              <div class="pfn-mini"><span class="pfn-mini-label">Fat</span><span class="pfn-mini-value">${total.fat.toFixed(1)}g</span></div>
+              <div class="pfn-mini"><span class="pfn-mini-label">Sodium</span><span class="pfn-mini-value">${Math.round(total.sodium)}mg</span></div>
             </div>
           </div>
         </div>
         `;
 
       // Note: Per-ingredient breakdown intentionally removed to reduce scrolling and avoid duplicate presentation.
+
+      // DID YOU KNOW card — shows the fact for the first ingredient
+      const firstIng = ingredients[0] || {};
+      if (firstIng.did_you_know && firstIng.did_you_know.fact) {
+        const factText = String(firstIng.did_you_know.fact).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+        html += `
+          <div class="pf-dyk-card" role="note" aria-label="Did you know fact">
+            <div class="pf-dyk-label">
+              <span class="pf-dyk-label-icon">?</span>
+              <span>Did you know</span>
+            </div>
+            <p class="pf-dyk-fact">${factText}</p>
+          </div>
+        `;
+      }
+
+      // Vitamins & minerals pills (shown after Did You Know card)
+      if (vmPillsHtml) {
+        html += `
+          <div class="pfn-vm">
+            <div class="pfn-vm-title">Key vitamins &amp; minerals</div>
+            <div class="pfn-vm-pills">${vmPillsHtml}</div>
+          </div>
+        `;
+      }
 
       if (message) {
         html += `<div style="margin-top: 20px; padding: 15px; background: var(--bg-secondary); border-radius: var(--radius); color: var(--text-secondary); font-size: 0.9rem;">${escapeHTML(message)}</div>`;
