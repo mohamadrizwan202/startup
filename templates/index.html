@@ -3091,6 +3091,34 @@
 
     /* ---------- Health Benefits tab: compact redesign (pf-hb2-*) ---------- */
     .pf-hb2-wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+    /* === HEALTH BENEFITS TAB REDESIGN (goal hero + benefit grid) === */
+    .pfb-goal-hero{padding:18px 20px;border-radius:14px;margin-bottom:14px;background:#F3E8FF;background:linear-gradient(135deg,#F3E8FF 0%,#E9D5FF 100%);border:1px solid rgba(147,51,234,0.18)}
+    .pfb-goal-label{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6B21A8;margin-bottom:8px;line-height:1}
+    .pfb-goal-label-dot{width:10px;height:10px;border-radius:50%;background:#A855F7;flex-shrink:0}
+    .pfb-goal-title{font-size:17px;font-weight:700;color:#581C87;margin:0 0 6px 0;letter-spacing:-0.01em;line-height:1.3}
+    .pfb-goal-desc{font-size:13px;line-height:1.55;color:#6B21A8;margin:0}
+    .pfb-section-header{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 8px 0}
+    .pfb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:12px}
+    .pfb-card{background:#f8fafc;border:1px solid rgba(15,23,42,0.04);border-radius:12px;padding:12px 14px}
+    .pfb-card-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#6B21A8;background:#F3E8FF;padding:2px 8px;border-radius:6px;margin-bottom:6px}
+    .pfb-card-title{font-size:13px;font-weight:700;color:#0f172a;margin:0 0 4px 0;line-height:1.3}
+    .pfb-card-desc{font-size:12px;color:#64748b;line-height:1.5;margin:0}
+    .pfb-nutrients{padding:12px 14px;background:#f8fafc;border-radius:10px;border:1px solid rgba(15,23,42,0.04);margin-top:4px}
+    .pfb-nutrients-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+    .pfb-nutrients-pills{display:flex;gap:6px;flex-wrap:wrap}
+    .pfb-nutrient-pill{background:#fff;border:1px solid rgba(15,23,42,0.08);border-radius:999px;padding:4px 10px;font-size:12px;color:#334155;font-weight:500}
+    .pfb-empty{padding:32px 20px;text-align:center;background:#f8fafc;border-radius:12px;color:#64748b;font-size:13px;line-height:1.5}
+    @media (max-width:640px){
+      .pfb-goal-hero{padding:14px 16px}
+      .pfb-goal-title{font-size:15px}
+      .pfb-goal-desc{font-size:12px}
+      .pfb-grid{grid-template-columns:1fr;gap:8px}
+      .pfb-card{padding:10px 12px}
+      .pfb-card-title{font-size:12px}
+      .pfb-card-desc{font-size:11px}
+      .pfb-section-header{font-size:10px}
+      .pfb-nutrients{padding:10px 12px}
+    }
     /* === ALLERGEN TAB REDESIGN (verdict banner + all-groups grid) === */
     .pfa-verdict{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px;margin-bottom:14px}
     .pfa-verdict.safe{background:#ECFDF5;border:1px solid rgba(16,185,129,0.22)}
@@ -6807,26 +6835,45 @@
           const desc = escapeHtml(primaryBenefit.description || primaryBenefit.summary || primaryBenefit.health_benefits || '');
           const categoryLabel = ctx.goalLabel ? escapeHtml(ctx.goalLabel) : '';
 
+          // Parse key nutrients for browse flow (same logic as search flow)
+          const browseNutrients = [];
+          if (primaryBenefit.key_nutrients) {
+            const parsed = typeof primaryBenefit.key_nutrients === 'string'
+              ? primaryBenefit.key_nutrients.split(/[,;]/).map(n => n.trim()).filter(Boolean)
+              : Array.isArray(primaryBenefit.key_nutrients) ? primaryBenefit.key_nutrients : [];
+            parsed.forEach(n => { if (!browseNutrients.includes(n)) browseNutrients.push(n); });
+          }
+
           let html = `
             <div class="pf-tab-content-wrapper">
-              <div class="pf-tab-card">
-                <div class="pf-tab-header">
-                  <div>
-                    <div class="pf-tab-title">Health Benefits</div>
-                    <div class="pf-tab-subtitle">Wellness benefits of analyzed ingredient</div>
+              <div class="pfn-card">
+                <div class="pfn-top">
+                  <div class="pfn-title-group">
+                    <div class="pfn-title">Health benefits</div>
+                    <div class="pfn-sub">How this ingredient supports your goal</div>
                   </div>
                   <div class="nutrition-selected-chip">${pfIngredientPillHTML(displayName, servingText)}</div>
                 </div>
 
-                <div class="pf-hb-grid">
-                  <div class="pf-hb-card">
-                    <div class="pf-hb-head">
-                      <div class="pf-hb-name">${name}</div>
-                      ${categoryLabel ? `<span class="pf-hb-tag">${categoryLabel}</span>` : ''}
+                <div class="pfb-goal-hero">
+                  ${categoryLabel ? `
+                    <div class="pfb-goal-label">
+                      <span class="pfb-goal-label-dot"></span>
+                      <span>${categoryLabel}</span>
                     </div>
-                    ${desc ? `<div class="pf-hb-desc">${desc}</div>` : ''}
-                  </div>
+                  ` : ''}
+                  <h3 class="pfb-goal-title">${name}</h3>
+                  ${desc ? `<p class="pfb-goal-desc">${desc}</p>` : ''}
                 </div>
+
+                ${browseNutrients.length > 0 ? `
+                  <div class="pfb-nutrients">
+                    <div class="pfb-nutrients-title">Key nutrients</div>
+                    <div class="pfb-nutrients-pills">
+                      ${browseNutrients.map(n => `<span class="pfb-nutrient-pill">${escapeHtml(n)}</span>`).join('')}
+                    </div>
+                  </div>
+                ` : ''}
               </div>
             </div>
           `;
@@ -6843,17 +6890,17 @@
           // No match found in browser flow
           let html = `
             <div class="pf-tab-content-wrapper">
-              <div class="pf-tab-card">
-                <div class="pf-tab-header">
-                  <div>
-                    <div class="pf-tab-title">Health Benefits</div>
-                    <div class="pf-tab-subtitle">Wellness benefits of analyzed ingredient</div>
+              <div class="pfn-card">
+                <div class="pfn-top">
+                  <div class="pfn-title-group">
+                    <div class="pfn-title">Health benefits</div>
+                    <div class="pfn-sub">How this ingredient supports your goal</div>
                   </div>
                   <div class="nutrition-selected-chip">${pfIngredientPillHTML(displayName, servingText)}</div>
                 </div>
 
-                <div class="pf-empty-state">
-                  <div class="pf-empty-text">No specific benefit found for this goal for this ingredient.</div>
+                <div class="pfb-empty">
+                  No specific benefit found for this goal with this ingredient. Try a different goal or ingredient to see matching benefits.
                 </div>
               </div>
             </div>
@@ -6954,43 +7001,68 @@
         return `<span class="pf-hb2-nutr">${safeNutr}</span>`;
       }).join('');
 
+      // Build hero (first benefit) + grid cards (remaining benefits)
+      const heroBenefit = benefits[0] || null;
+      const secondaryBenefits = benefits.slice(1);
+
+      const heroHtml = heroBenefit ? (() => {
+        const hName = escapeHtml(heroBenefit.benefit || heroBenefit.name || heroBenefit.title || 'Health Benefit');
+        const hDesc = escapeHtml(heroBenefit.description || heroBenefit.summary || heroBenefit.health_benefits || '');
+        const hCategory = heroBenefit.category ? (getCategoryLabel(heroBenefit.category) || heroBenefit.category) : '';
+        const hSafeCategory = hCategory ? escapeHtml(hCategory) : '';
+        return `
+          <div class="pfb-goal-hero">
+            ${hSafeCategory ? `
+              <div class="pfb-goal-label">
+                <span class="pfb-goal-label-dot"></span>
+                <span>${hSafeCategory}</span>
+              </div>
+            ` : ''}
+            <h3 class="pfb-goal-title">${hName}</h3>
+            ${hDesc ? `<p class="pfb-goal-desc">${hDesc}</p>` : ''}
+          </div>
+        `;
+      })() : '';
+
+      const secondaryCards = secondaryBenefits.map(b => {
+        const bName = escapeHtml(b.benefit || b.name || b.title || 'Health Benefit');
+        const bDesc = escapeHtml(b.description || b.summary || b.health_benefits || '');
+        const bCategory = b.category ? (getCategoryLabel(b.category) || b.category) : '';
+        const bSafeCategory = bCategory ? escapeHtml(bCategory) : '';
+        return `
+          <div class="pfb-card">
+            ${bSafeCategory ? `<div class="pfb-card-tag">${bSafeCategory}</div>` : ''}
+            <h4 class="pfb-card-title">${bName}</h4>
+            ${bDesc ? `<p class="pfb-card-desc">${bDesc}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+
       let html = `
         <div class="pf-tab-content-wrapper">
-          <div class="pf-tab-card">
-            <div class="pf-tab-header">
-              <div>
-                <div class="pf-tab-title">Health Benefits</div>
-                <div class="pf-tab-subtitle">Wellness benefits of analyzed ingredient</div>
+          <div class="pfn-card">
+            <div class="pfn-top">
+              <div class="pfn-title-group">
+                <div class="pfn-title">Health benefits</div>
+                <div class="pfn-sub">How this ingredient supports your goals</div>
               </div>
               <div class="nutrition-selected-chip">${pfIngredientPillHTML(displayName, servingText)}</div>
             </div>
 
-            <div class="pf-hb-grid">
-              ${top2Cards}
-            </div>
-            
-            ${remaining.length > 0 ? `
-              <div class="pf-hb2-acc" style="margin-top: 16px;">
-                <button class="pf-hb2-acc-btn" type="button" aria-expanded="false" aria-controls="pf-hb2-all">
-                  <span>See all benefits (${remaining.length})</span><span aria-hidden="true">▾</span>
-                </button>
-                <div id="pf-hb2-all" class="pf-hb2-acc-panel" hidden>
-                  <div class="pf-hb-grid" style="padding-top: 12px;">
-                    ${remainingCards}
-                  </div>
+            ${heroHtml}
+
+            ${uniqueNutrients.length > 0 ? `
+              <div class="pfb-nutrients">
+                <div class="pfb-nutrients-title">Key nutrients</div>
+                <div class="pfb-nutrients-pills">
+                  ${uniqueNutrients.map(n => `<span class="pfb-nutrient-pill">${escapeHtml(n)}</span>`).join('')}
                 </div>
               </div>
             ` : ''}
-            
-            ${uniqueNutrients.length > 0 ? `
-              <div class="pf-hb2-acc" style="margin-top: 16px;">
-                <button class="pf-hb2-acc-btn" type="button" aria-expanded="false" aria-controls="pf-hb2-nutrients">
-                  <span>Key nutrients</span><span aria-hidden="true">▾</span>
-                </button>
-                <div id="pf-hb2-nutrients" class="pf-hb2-acc-panel" hidden>
-                  <div class="pf-hb2-nutrients">${nutrientsPills}</div>
-                </div>
-              </div>
+
+            ${secondaryBenefits.length > 0 ? `
+              <div class="pfb-section-header">Also supports</div>
+              <div class="pfb-grid">${secondaryCards}</div>
             ` : ''}
           </div>
         </div>
