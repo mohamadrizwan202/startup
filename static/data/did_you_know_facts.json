@@ -1,0 +1,107 @@
+{
+  "banana": {
+    "fact": "Bananas contain more tryptophan than most foods — this is why they help your body ease into sleep.",
+    "source_hint": "Tryptophan → serotonin → melatonin",
+    "goals": ["sleep-support", "energy-stamina", "mood-support"]
+  },
+  "spinach": {
+    "fact": "Your body absorbs the iron in spinach up to 6x better when you pair it with vitamin C — add a strawberry or a squeeze of lemon.",
+    "source_hint": "Non-heme iron absorption + vitamin C",
+    "goals": ["iron-rich-foods", "energy-stamina", "immune-support"]
+  },
+  "blueberries": {
+    "fact": "Blueberries hold one of the highest antioxidant concentrations of any fruit — a single cup has more than a whole apple.",
+    "source_hint": "ORAC antioxidant values",
+    "goals": ["antioxidant-rich", "brain-focus", "skin-glow"]
+  },
+  "oats": {
+    "fact": "The beta-glucan fiber in oats forms a gel in your gut that slows sugar absorption — this is why oat smoothies keep you full for hours.",
+    "source_hint": "Beta-glucan mechanism",
+    "goals": ["blood-sugar-support", "heart-health", "weight-balance"]
+  },
+  "chia-seed": {
+    "fact": "Chia seeds absorb up to 12x their weight in liquid — this is what turns your smoothie thick and keeps you hydrated longer.",
+    "source_hint": "Chia hydrocolloid properties",
+    "goals": ["digestive-health", "fiber-rich-foods", "weight-balance"]
+  },
+  "chia-seeds": {
+    "fact": "Chia seeds absorb up to 12x their weight in liquid — this is what turns your smoothie thick and keeps you hydrated longer.",
+    "source_hint": "Chia hydrocolloid properties",
+    "goals": ["digestive-health", "fiber-rich-foods", "weight-balance"]
+  },
+  "flaxseed": {
+    "fact": "Flaxseeds only release their omega-3s and fiber benefits when ground — whole flaxseeds pass through you almost unchanged.",
+    "source_hint": "Lignin seed coat",
+    "goals": ["heart-health", "digestive-health", "omega-3-rich"]
+  },
+  "kale": {
+    "fact": "Kale has more vitamin C per gram than an orange — 100g of kale delivers about 120% of your daily target.",
+    "source_hint": "USDA nutrient database",
+    "goals": ["immune-support", "skin-glow", "antioxidant-rich"]
+  },
+  "ginger": {
+    "fact": "Ginger contains gingerol, a compound that works on the same nausea pathway as motion-sickness medication — without the drowsiness.",
+    "source_hint": "Gingerol + 5-HT3 receptor",
+    "goals": ["digestive-health", "anti-inflammatory", "immune-support"]
+  },
+  "avocado": {
+    "fact": "Avocado has more potassium per serving than a banana — one half provides about 15% of your daily need.",
+    "source_hint": "USDA comparison",
+    "goals": ["heart-health", "blood-pressure-support", "potassium-rich"]
+  },
+  "apple": {
+    "fact": "Most of the fiber and antioxidants in an apple live in the skin — peeling it strips about 30% of its nutritional value.",
+    "source_hint": "Quercetin + pectin in peel",
+    "goals": ["digestive-health", "heart-health", "fiber-rich-foods"]
+  },
+  "strawberry": {
+    "fact": "Strawberries contain more vitamin C than oranges — one cup delivers about 150% of your daily target.",
+    "source_hint": "USDA nutrient database",
+    "goals": ["immune-support", "skin-glow", "antioxidant-rich"]
+  },
+  "greek-yogurt": {
+    "fact": "Greek yogurt has nearly double the protein of regular yogurt because the whey is strained out during production.",
+    "source_hint": "Straining process",
+    "goals": ["muscle-support", "gut-health", "protein-rich"]
+  },
+  "peanut-butter": {
+    "fact": "Peanut butter has about 4g of plant-based protein per tablespoon — but only if you pick a jar where peanuts are the only ingredient.",
+    "source_hint": "Label check — avoid added sugars & oils",
+    "goals": ["muscle-support", "energy-stamina", "protein-rich"]
+  },
+  "almond-milk": {
+    "fact": "Unsweetened almond milk has about 30 calories per cup — about 1/4 the calories of dairy milk, but also about 1/8 the protein.",
+    "source_hint": "USDA nutrient comparison",
+    "goals": ["weight-balance", "dairy-free", "low-calorie"]
+  },
+  "oat-milk": {
+    "fact": "Oat milk is often the creamiest plant milk in a smoothie — its natural beta-glucan fiber gives it a thicker mouthfeel than almond or rice milk.",
+    "source_hint": "Beta-glucan texture",
+    "goals": ["heart-health", "dairy-free", "digestive-health"]
+  },
+  "turmeric": {
+    "fact": "Turmeric's active compound curcumin absorbs up to 20x better when paired with black pepper — a tiny pinch changes everything.",
+    "source_hint": "Piperine + curcumin bioavailability",
+    "goals": ["anti-inflammatory", "immune-support", "joint-support"]
+  },
+  "mango": {
+    "fact": "A single mango delivers more than 100% of your daily vitamin C — and about 35% of your daily vitamin A.",
+    "source_hint": "USDA nutrient database",
+    "goals": ["immune-support", "skin-glow", "antioxidant-rich"]
+  },
+  "pineapple": {
+    "fact": "Pineapple is the only common fruit that contains bromelain — an enzyme that actually helps digest protein in your stomach.",
+    "source_hint": "Bromelain enzyme",
+    "goals": ["digestive-health", "anti-inflammatory", "immune-support"]
+  },
+  "cinnamon": {
+    "fact": "Cinnamon can help your body respond better to insulin — even a half teaspoon a day has measurable effects in studies.",
+    "source_hint": "MHCP compound",
+    "goals": ["blood-sugar-support", "heart-health", "anti-inflammatory"]
+  },
+  "_default": {
+    "fact": "Every ingredient you blend affects your smoothie differently based on your goal — check the full analysis to see how this one fits yours.",
+    "source_hint": "General fallback",
+    "goals": []
+  }
+}
