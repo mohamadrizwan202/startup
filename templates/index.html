@@ -3091,6 +3091,53 @@
 
     /* ---------- Health Benefits tab: compact redesign (pf-hb2-*) ---------- */
     .pf-hb2-wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+    /* === SMOOTHIE TAB FULL REDESIGN === */
+    .pfs-step-header{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+    .pfs-step-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#0EA5A4;color:#fff;font-size:11px;font-weight:700;flex-shrink:0}
+    .pfs-step-badge.dim{background:#cbd5e1}
+    .pfs-step-label{font-size:13px;font-weight:600;color:#0f172a}
+    .pfs-step-label.dim{color:#94a3b8}
+    .pfs-lock-note{display:flex;align-items:center;gap:6px;font-size:11px;color:#64748b;background:#f8fafc;padding:7px 10px;border-radius:8px;margin-bottom:8px;border:0.5px solid rgba(15,23,42,0.06)}
+    .pfs-unlock-note{display:flex;align-items:center;gap:6px;font-size:11px;color:#15803d;background:#F0FDF4;padding:7px 10px;border-radius:8px;margin-bottom:8px;border:0.5px solid rgba(34,197,94,0.2)}
+    .pfs-preset-rows{display:flex;flex-direction:column;gap:7px;margin-bottom:4px}
+    .pfs-preset-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8fafc;border-radius:10px;border:0.5px solid rgba(15,23,42,0.07);cursor:pointer;transition:border-color .15s,background .15s}
+    .pfs-preset-row:hover{background:#fff;border-color:rgba(14,165,164,0.35)}
+    .pfs-preset-row.pfs-locked{opacity:.4;cursor:not-allowed;pointer-events:none}
+    .pfs-preset-row.pfs-active{background:#fff;border-color:#0EA5A4}
+    .pfs-preset-bar{width:3px;border-radius:999px;flex-shrink:0;align-self:stretch;min-height:32px}
+    .pfs-preset-info{flex:1;min-width:0}
+    .pfs-preset-name{font-size:12px;font-weight:700;color:#0f172a;margin-bottom:2px;line-height:1.3}
+    .pfs-preset-goal{font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+    .pfs-preset-ings{display:flex;flex-wrap:wrap;gap:3px}
+    .pfs-preset-ing{font-size:9px;background:#fff;border:0.5px solid rgba(15,23,42,0.08);border-radius:999px;padding:1px 7px;color:#475569}
+    .pfs-preset-action{font-size:10px;font-weight:600;color:#0EA5A4;white-space:nowrap;flex-shrink:0}
+    .pfs-preset-action.loaded{color:#94a3b8;font-size:9px}
+    .pfs-divider{display:flex;align-items:center;gap:10px;margin:14px 0}
+    .pfs-divider-line{flex:1;height:1px;background:rgba(15,23,42,0.08)}
+    .pfs-divider-text{font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+    .pfs-loaded-banner{background:#F0FDF4;border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:11px 13px;margin-bottom:10px}
+    .pfs-loaded-title{font-size:12px;font-weight:700;color:#166534;margin-bottom:5px}
+    .pfs-loaded-ings{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px}
+    .pfs-loaded-ing{font-size:10px;background:#fff;border:0.5px solid rgba(34,197,94,0.3);border-radius:999px;padding:2px 8px;color:#166534}
+    .pfs-loaded-note{font-size:10px;color:#15803d;font-weight:500}
+    .pfs-warn-banner{background:#FFFBEB;border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:11px 13px;margin-bottom:10px;display:flex;gap:9px;align-items:flex-start}
+    .pfs-warn-icon{width:18px;height:18px;border-radius:50%;background:#F59E0B;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .pfs-warn-text{font-size:11px;line-height:1.5;color:#92400E}
+    .pfs-warn-text strong{font-weight:700;display:block;margin-bottom:2px;font-size:12px}
+    .pfs-build-btn{width:100%;padding:14px;background:#0EA5A4;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:-0.01em;margin-bottom:7px;transition:background .15s}
+    .pfs-build-btn:hover{background:#0B8F8E}
+    .pfs-build-btn:disabled{opacity:.4;cursor:not-allowed}
+    .pfs-clear-btn{width:100%;padding:9px;background:transparent;color:#64748b;border:0.5px solid rgba(15,23,42,0.12);border-radius:8px;font-size:12px;cursor:pointer;margin-bottom:4px;transition:background .15s}
+    .pfs-clear-btn:hover{background:#f8fafc}
+    .pfs-scratch-box{background:#f8fafc;border:0.5px solid rgba(15,23,42,0.07);border-radius:10px;padding:12px 14px;margin-top:4px}
+    .pfs-scratch-label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+    .pfs-scratch-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+    @media (max-width:640px){
+      .pfs-preset-row{padding:9px 10px}
+      .pfs-preset-name{font-size:11px}
+      .pfs-build-btn{font-size:14px;padding:13px}
+      .pfs-scratch-row{grid-template-columns:1fr}
+    }
     /* === HEALTH BENEFITS TAB REDESIGN (goal hero + benefit grid) === */
     .pfb-goal-hero{padding:18px 20px;border-radius:14px;margin-bottom:14px;background:#F3E8FF;background:linear-gradient(135deg,#F3E8FF 0%,#E9D5FF 100%);border:1px solid rgba(147,51,234,0.18)}
     .pfb-goal-label{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6B21A8;margin-bottom:8px;line-height:1}
@@ -3848,147 +3895,134 @@
     <div id="smoothie-tab-content" class="main-tab-content{% if initial_app_tab != 'ingredient' %} active{% endif %}">
      
       <div class="main-content-grid">
-        <!-- Left: Smoothie Builder -->
+        <!-- Left: Smoothie Builder (redesigned) -->
         <div class="card search-container">
-          <div class="card-header" style="margin-bottom: 12px; padding-bottom: 10px;">
-            <div>
-              <div class="card-title">🥤 Build smoothies with more structure</div>
-              <div class="card-subtitle" style="margin-top: 6px; line-height: 1.4; max-width: 100%;">
-                Build based on audience, timing, and health goals, then review ingredients, serving size, yield, and nutrition in one place.
-              </div>
-              <div class="pf-smoothie-guide" role="list" aria-label="How the Smoothie builder works">
-                <div class="pf-sg-step" role="listitem">
-                  <span class="pf-sg-badge" aria-hidden="true">1</span>
-                  <span class="pf-sg-label">Pick audience</span>
-                </div>
-                <div class="pf-sg-step" role="listitem">
-                  <span class="pf-sg-badge" aria-hidden="true">2</span>
-                  <span class="pf-sg-label">Choose goal</span>
-                </div>
-                <div class="pf-sg-step" role="listitem">
-                  <span class="pf-sg-badge" aria-hidden="true">3</span>
-                  <span class="pf-sg-label">Review serving + nutrition</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
-
-          <!-- Hidden input for smoothie name (used by updateSmoothieRecipe) -->
+          <!-- Hidden fields kept for JS compatibility -->
           <input type="hidden" id="smoothie-name" value="" />
 
-          <!-- Smoothie Name Display Bar -->
-          <div id="smoothie-name-bar" style="display: none; margin-bottom: 20px; padding: 18px 24px; background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 100%); border-radius: var(--radius); box-shadow: 0 4px 12px rgba(14, 165, 164, 0.2);">
-            <div style="display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
-              <span style="font-size: 1.8rem; flex-shrink: 0; margin-top: 2px;">🥤</span>
-              <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 0.7rem; color: rgba(255, 255, 255, 0.85); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 600;">Your Smoothie</div>
-                <div id="smoothie-name-display" style="font-size: 1.3rem; font-weight: 700; color: white; line-height: 1.3; margin-bottom: 12px;">My Smoothie</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
-                  <div id="smoothie-audience-display" style="display: none; align-items: center; gap: 6px;">
-                    <span style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); font-weight: 500;">Who is this for:</span>
-                    <span id="smoothie-audience-value" style="font-size: 0.85rem; color: white; font-weight: 600; background: rgba(255, 255, 255, 0.15); padding: 4px 10px; border-radius: 6px; backdrop-filter: blur(4px);">—</span>
-                  </div>
-                  <div id="smoothie-timing-display" style="display: none; align-items: center; gap: 6px;">
-                    <span style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); font-weight: 500;">Timing:</span>
-                    <span id="smoothie-timing-value" style="font-size: 0.85rem; color: white; font-weight: 600; background: rgba(255, 255, 255, 0.15); padding: 4px 10px; border-radius: 6px; backdrop-filter: blur(4px);">—</span>
-                  </div>
-                </div>
+          <!-- Smoothie context bar — shown after build, hidden on reset -->
+          <div id="smoothie-name-bar" style="display:none;margin-bottom:14px;padding:12px 14px;background:#f0fdfa;border:1px solid rgba(14,165,164,0.2);border-radius:10px;">
+            <div style="font-size:10px;font-weight:700;color:#0f766e;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Current smoothie</div>
+            <div id="smoothie-name-display" style="font-size:14px;font-weight:700;color:#134e4a;margin-bottom:8px;line-height:1.3">My Smoothie</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+              <div id="smoothie-audience-display" style="display:none;align-items:center;gap:4px">
+                <span style="font-size:10px;color:#0f766e;font-weight:500">For:</span>
+                <span id="smoothie-audience-value" style="font-size:11px;font-weight:600;background:#ccfbf1;color:#0f766e;padding:2px 8px;border-radius:999px">—</span>
+              </div>
+              <div id="smoothie-timing-display" style="display:none;align-items:center;gap:4px">
+                <span style="font-size:10px;color:#0f766e;font-weight:500">Timing:</span>
+                <span id="smoothie-timing-value" style="font-size:11px;font-weight:600;background:#ccfbf1;color:#0f766e;padding:2px 8px;border-radius:999px">—</span>
               </div>
             </div>
           </div>
 
-          <!-- 1. Who is this smoothie for -->
-          <div class="search-section" id="pf-smoothie-start-step">
-            <label for="smoothie-for" class="textarea-label">Who is this smoothie for?</label>
-            <select id="smoothie-for" class="search-input" style="cursor: pointer;">
-              <option value="">Select Target Audience...</option>
+          <!-- Header -->
+          <div style="margin-bottom:16px;padding-bottom:12px;border-bottom:0.5px solid rgba(15,23,42,0.08)">
+            <div style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:3px;letter-spacing:-0.01em">Build a smoothie</div>
+            <div style="font-size:12px;color:#64748b">Choose a preset to get started, or build your own</div>
+          </div>
+
+          <!-- Step 1: Audience -->
+          <div class="pfs-step-header">
+            <span class="pfs-step-badge" id="pfs-badge-1">1</span>
+            <span class="pfs-step-label">Who is this smoothie for?</span>
+          </div>
+          <div class="search-section" id="pf-smoothie-start-step" style="margin-bottom:16px">
+            <select id="smoothie-for" class="search-input" style="cursor:pointer;">
+              <option value="">Select audience...</option>
               <option value="child-4-6">Child 4–6</option>
               <option value="child-7-8">Child 7–8</option>
-              <option value="girl-9-13">Girl 9-13</option>
-              <option value="boy-9-13">Boy 9-13</option>
-              <option value="girl-14-18">Girl 14-18</option>
-              <option value="boy-14-18">Boy 14-18</option>
-              <option value="woman-19-30">Woman 19-30</option>
-              <option value="man-19-30">Man 19-30</option>
-              <option value="woman-31-59">Woman 31-59</option>
-              <option value="man-31-59">Man 31-59</option>
+              <option value="girl-9-13">Girl 9–13</option>
+              <option value="boy-9-13">Boy 9–13</option>
+              <option value="girl-14-18">Girl 14–18</option>
+              <option value="boy-14-18">Boy 14–18</option>
+              <option value="woman-19-30">Woman 19–30</option>
+              <option value="man-19-30">Man 19–30</option>
+              <option value="woman-31-59">Woman 31–59</option>
+              <option value="man-31-59">Man 31–59</option>
               <option value="woman-60+">Woman 60+</option>
               <option value="man-60+">Man 60+</option>
             </select>
           </div>
 
-          <!-- 2. Timing -->
-          <div class="search-section">
-            <label for="smoothie-timing" class="textarea-label">Timing</label>
-            <select id="smoothie-timing" class="search-input" style="cursor: pointer;">
-              <option value="">Select timing...</option>
-              <option value="breakfast">Breakfast</option>
-              <option value="morning-snack">Morning Snack</option>
-              <option value="lunch">Lunch</option>
-              <option value="afternoon-snack">Afternoon Snack</option>
-              <option value="dinner">Dinner</option>
-              <option value="pre-workout">Pre-Workout</option>
-              <option value="post-workout">Post-Workout</option>
-              <option value="bedtime">Bedtime</option>
-              <option value="anytime">Anytime</option>
-            </select>
+          <!-- Step 2: Presets -->
+          <div class="pfs-step-header">
+            <span class="pfs-step-badge dim" id="pfs-badge-2">2</span>
+            <span class="pfs-step-label dim" id="pfs-step2-label">Pick a preset</span>
           </div>
 
-          <!-- 3. Health Goals -->
-          <div class="search-section">
-            <label for="smoothie-health-goals" class="textarea-label">Health Goals</label>
-            <select id="smoothie-health-goals" class="search-input" style="cursor: pointer;">
-              <option value="">Select health goal...</option>
-              <!-- Options will be populated dynamically from categories -->
-            </select>
+          <div class="pfs-lock-note" id="pfs-lock-note">
+            <span>🔒</span><span>Select audience above to unlock presets</span>
           </div>
 
-          <!-- Blood Sugar Goal Warning Container (shown when adult selects Diabetes–Blood Sugar goal) -->
-          <div id="blood-sugar-goal-warning-container" style="display: none; margin-bottom: 15px;"></div>
-          
-          <!-- Weight Management Goal Warning Container (shown when adult selects Weight Management goal) -->
-          <div id="weight-management-goal-warning-container" style="display: none; margin-bottom: 15px;"></div>
-          
-          <!-- Blood Pressure Goal Warning Container (shown when user selects Blood Pressure goal) -->
-          <div id="blood-pressure-goal-warning-container" style="display: none; margin-bottom: 15px;"></div>
+          <div class="pfs-unlock-note" id="pfs-unlock-note" style="display:none">
+            <span>✓</span><span>Presets unlocked — click any to load ingredients</span>
+          </div>
 
-          <!-- 4. Ingredients -->
-          <div class="search-section">
-            <label for="smoothie-ingredient-search" class="textarea-label">Add Ingredients</label>
-            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">
-              <span>Limit: </span>
-              <span style="color: var(--primary); font-weight: 600;">3 fresh fruits</span>
-              <span> • </span>
-              <span style="color: var(--primary); font-weight: 600;">1 dried fruit</span>
+          <div class="pfs-warn-banner" id="pfs-age-warn" style="display:none">
+            <div class="pfs-warn-icon">!</div>
+            <div class="pfs-warn-text">
+              <strong id="pfs-age-warn-title">Adjusted for audience</strong>
+              <span id="pfs-age-warn-body">Some ingredients were removed — no age-appropriate portions available.</span>
             </div>
-            <input
-              type="text"
-              id="smoothie-ingredient-search"
-              class="search-input"
-              placeholder="🔍 Search for ingredients..."
-              autocomplete="off"
-            />
+          </div>
+
+          <div class="pfs-loaded-banner" id="pfs-loaded-banner" style="display:none">
+            <div class="pfs-loaded-title" id="pfs-loaded-title">Preset loaded</div>
+            <div class="pfs-loaded-ings" id="pfs-loaded-ings"></div>
+            <div class="pfs-loaded-note" id="pfs-loaded-note"></div>
+          </div>
+
+          <button class="pfs-build-btn" id="pfs-build-shortcut" style="display:none">🥤 Build Smoothie</button>
+          <button class="pfs-clear-btn" id="pfs-clear-shortcut" style="display:none">Clear &amp; start over</button>
+
+          <div class="pfs-preset-rows" id="smoothie-presets">
+          </div>
+
+          <div class="pfs-divider">
+            <div class="pfs-divider-line"></div>
+            <div class="pfs-divider-text">or build from scratch</div>
+            <div class="pfs-divider-line"></div>
+          </div>
+
+          <div class="pfs-scratch-box">
+            <div class="pfs-scratch-label">Timing, goal &amp; ingredients</div>
+            <div class="pfs-scratch-row">
+              <select id="smoothie-timing" class="search-input" style="cursor:pointer;font-size:13px;">
+                <option value="">Timing...</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="morning-snack">Morning Snack</option>
+                <option value="lunch">Lunch</option>
+                <option value="afternoon-snack">Afternoon Snack</option>
+                <option value="dinner">Dinner</option>
+                <option value="pre-workout">Pre-Workout</option>
+                <option value="post-workout">Post-Workout</option>
+                <option value="bedtime">Bedtime</option>
+                <option value="anytime">Anytime</option>
+              </select>
+              <select id="smoothie-health-goals" class="search-input" style="cursor:pointer;font-size:13px;">
+                <option value="">Health goal...</option>
+              </select>
+            </div>
+            <div id="blood-sugar-goal-warning-container" style="display:none;margin-bottom:10px"></div>
+            <div id="weight-management-goal-warning-container" style="display:none;margin-bottom:10px"></div>
+            <div id="blood-pressure-goal-warning-container" style="display:none;margin-bottom:10px"></div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:6px">
+              Limit: <strong style="color:#0EA5A4">3 fresh fruits</strong> · <strong style="color:#0EA5A4">1 dried fruit</strong>
+            </div>
+            <input type="text" id="smoothie-ingredient-search" class="search-input" placeholder="🔍 Search ingredients..." autocomplete="off" style="margin-bottom:8px"/>
             <div id="smoothie-ingredient-suggestions" class="ingredient-suggestions"></div>
+            <div id="smoothie-selected-ingredients" class="selected-ingredients" style="display:none;margin-bottom:10px"></div>
+            <div id="smoothie-inline-note-container" style="display:none;margin-bottom:10px"></div>
+            <div id="vegan-milk-recommendation-container" style="display:none;margin-bottom:10px"></div>
           </div>
 
-          <!-- Selected Smoothie Ingredients -->
-          <div id="smoothie-selected-ingredients" class="selected-ingredients" style="display: none; margin-bottom: 15px;"></div>
-          <div id="smoothie-inline-note-container" style="display: none; margin-bottom: 14px;"></div>
-          
-          <!-- Vegan Milk Recommendation Container (shown when non-recommended milk is selected for kids 4-8) -->
-          <div id="vegan-milk-recommendation-container" style="display: none; margin-bottom: 15px;"></div>
-
-          <!-- Smoothie Actions -->
-          <div class="sn-actions" style="margin-top: auto;">
-            <button id="build-smoothie-btn" class="btn-primary" disabled>
-              🥤 Build Smoothie
-            </button>
-            <button id="smoothie-clear-btn">
-              <span style="font-size: 1.1rem;">🗑️</span>
-              <span>Clear</span>
-            </button>
+          <div class="sn-actions" style="margin-top:12px">
+            <button id="build-smoothie-btn" class="btn-primary" disabled>🥤 Build Smoothie</button>
+            <button id="smoothie-clear-btn"><span>🗑️</span><span>Clear</span></button>
           </div>
+
         </div>
 
         <!-- Right: Smoothie Nutrition Results -->
@@ -4009,46 +4043,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- preset smoothie -->
-       <!-- <div id="smoothie-presets-card" class="card" style="margin-bottom: 12px; margin-top: 20px !important; border-radius: 12px; overflow: visible;"> -->
-        <!-- <div class="card-header" style="padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
-            <div class="card-title" style="margin: 0; font-size: 1.1rem;">📚 Smoothie Presets</div>
-            <div class="card-subtitle" style="margin: 0; font-size: 0.85rem; opacity: 0.8;">Quick-start recipes for different health goals</div>
-          </div>
-          <button id="smoothie-presets-toggle" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 0.8rem; border-radius: 6px;" onclick="toggleSmoothiePresets()">Hide</button>
-        </div> -->
-        <!-- Presets will be loaded here -->
-        <!-- <div id="smoothie-presets" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; padding: 10px 0;">
-        </div> -->
-              <!-- Smoothie Presets / Saved Recipes -->
-      <div class="card" style="margin-top: 20px; margin-bottom: 12px; border-radius: 12px; overflow: visible;">
-        <div class="card-header" style="padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
-          <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
-            <div class="card-title" style="margin: 0; font-size: 1.1rem;">📚 Smoothie Presets</div>
-            <div class="card-subtitle" style="margin: 0; font-size: 0.85rem; opacity: 0.8;">Quick-start recipes for different health goals</div>
-          </div>
-        </div>
-        <div id="smoothie-presets" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; padding: 10px 0;">
-          <!-- Presets will be loaded here -->
-        </div>
-     
-
-        <script>
-          function toggleSmoothiePresets() {
-            const presetsEl = document.getElementById('smoothie-presets');
-            const toggleBtn = document.getElementById('smoothie-presets-toggle');
-            if (presetsEl.style.display === 'none') {
-              presetsEl.style.display = 'grid';
-              toggleBtn.textContent = 'Hide';
-            } else {
-              presetsEl.style.display = 'none';
-              toggleBtn.textContent = 'Show';
-            }
-          }
-        </script>
       </div>
 
     </div>
@@ -12659,7 +12653,7 @@ const allergenPanel = allergenNames.length === 0
         // (not on the first selection when previousHealthGoal is null)
         if (previousHealthGoal !== null && previousHealthGoal !== '' && currentHealthGoal !== previousHealthGoal) {
           // User is changing from one health goal to another, clear related fields
-          if (smoothieForEl) smoothieForEl.value = '';
+          // Audience preserved when changing health goals
           if (smoothieTimingEl) smoothieTimingEl.value = '';
           // Hide badge when changing health goals
           if (smoothieNameBarEl) {
@@ -14451,43 +14445,42 @@ const allergenPanel = allergenNames.length === 0
       return { totalFruitGrams, totalPortions };
     }
 
-    // Smoothie presets
+    // Smoothie presets (V2 — approved recipes)
     const smoothiePresets = [
       {
-        name: "Green Energy Boost",
-        description: "High in vitamins and natural energy",
-        ingredients: ["spinach", "banana", "apple", "ginger", "lemon"],
-        healthGoal: "Energy Boost"
+        name: "Gentle Digestion Starter",
+        description: "Soothing blend with papaya enzymes and ginger to calm sensitive stomachs",
+        ingredients: ["papaya", "ginger", "peppermint", "banana", "oat milk"],
+        healthGoal: "Digestive Health",
+        accentColor: "#8B5CF6"
       },
       {
-        name: "Berry Antioxidant",
-        description: "Rich in antioxidants for immune support",
-        ingredients: ["blueberry", "strawberry", "raspberry", "acai berry"],
-        healthGoal: "Immune System"
+        name: "Plant Protein Starter",
+        description: "Plant-based protein from whole foods. No powders, no whey",
+        ingredients: ["chia seed", "spirulina", "banana", "peanut butter", "soy milk"],
+        healthGoal: "Muscle Support",
+        accentColor: "#10B981"
       },
       {
-        name: "Protein Power",
-        description: "High protein for muscle recovery",
-        ingredients: ["greek yogurt", "banana", "almond butter", "protein powder"],
-        healthGoal: "Muscle Health"
+        name: "Kid-Friendly Strawberry Oat",
+        description: "Sweet, creamy, kid-approved with age-appropriate portions",
+        ingredients: ["strawberry", "oats", "banana", "yogurt", "oat milk"],
+        healthGoal: "Bone Strength",
+        accentColor: "#F472B6"
       },
       {
-        name: "Tropical Immunity",
-        description: "Vitamin C rich tropical blend",
-        ingredients: ["mango", "pineapple", "orange", "coconut milk"],
-        healthGoal: "Immune System"
+        name: "Creamy No-Banana Starter",
+        description: "Rich and thick without banana. Perfect for allergies or variety",
+        ingredients: ["avocado", "mango", "greek yogurt", "dates", "coconut milk"],
+        healthGoal: "Heart Health",
+        accentColor: "#3B82F6"
       },
       {
-        name: "Digestive Health",
-        description: "Fiber-rich for gut health",
-        ingredients: ["banana", "blueberry", "apple", "chia seed", "yogurt"],
-        healthGoal: "Digestive Health"
-      },
-      {
-        name: "Heart Healthy",
-        description: "Omega-3 and antioxidants",
-        ingredients: ["blueberry", "walnut", "spinach", "flaxseed"],
-        healthGoal: "Heart Health"
+        name: "Mango Carrot Starter",
+        description: "Triple beta-carotene for glowing skin. Tropical and bright",
+        ingredients: ["mango", "carrot", "turmeric", "ginger", "orange"],
+        healthGoal: "Skin Glow",
+        accentColor: "#F97316"
       }
     ];
 
@@ -16818,7 +16811,7 @@ const allergenPanel = allergenNames.length === 0
           }
           
           // Clear all dropdowns including health goal
-          if (smoothieForEl) smoothieForEl.value = '';
+          // Audience preserved after build so user can try another preset
           if (smoothieTimingEl) smoothieTimingEl.value = '';
           if (smoothieHealthGoalsEl) smoothieHealthGoalsEl.value = '';
           
@@ -18262,7 +18255,7 @@ const batchG = (smoothieBatchMlOverride != null)
         if (smoothieNameEl) smoothieNameEl.value = '';
         if (smoothieNameBarEl) smoothieNameBarEl.style.display = 'none';
         if (smoothieNameDisplayEl) smoothieNameDisplayEl.textContent = 'My Smoothie';
-        if (smoothieForEl) smoothieForEl.value = '';
+        // Audience preserved when loading preset
         if (smoothieTimingEl) smoothieTimingEl.value = '';
         if (smoothieHealthGoalsEl) smoothieHealthGoalsEl.value = '';
         
@@ -18295,31 +18288,209 @@ const batchG = (smoothieBatchMlOverride != null)
       });
     }
 
-    // Load smoothie presets
+    // ============================================================
+    // SMOOTHIE PRESET UI — redesigned (audience-first + lock/unlock)
+    // ============================================================
     function loadSmoothiePresets() {
       if (!smoothiePresetsEl) return;
-      smoothiePresetsEl.innerHTML = smoothiePresets.map(preset => `
-        <div class="preset-mini-card" onclick="loadSmoothiePreset('${preset.name}')">
-          <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; margin-right: 8px; display: block;">
-            ${preset.name}
-          </div>
 
-          <div class="preset-info-trigger">
-            ⓘ
-            <div class="preset-tooltip">
-              <div style="font-weight: 700; color: var(--primary); margin-bottom: 4px; font-size: 0.95rem;">${preset.name}</div>
-              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">${preset.description}</div>
-              <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px;">
-                ${preset.ingredients.map(ing => `
-                  <span style="padding: 2px 6px; background: #f1f5f9; border-radius: 4px; font-size: 0.7rem; color: #475569;">${ing}</span>
-                `).join('')}
-              </div>
-              <div style="font-size: 0.75rem; color: var(--success); font-weight: 700;">🎯 ${preset.healthGoal}</div>
+      // Render preset rows
+      smoothiePresetsEl.innerHTML = smoothiePresets.map((preset, idx) => {
+        const accent = preset.accentColor || '#94a3b8';
+        const esc = s => String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+        const ingsHtml = preset.ingredients.map(ing=>`<span class="pfs-preset-ing">${esc(ing)}</span>`).join('');
+        return `
+          <div class="pfs-preset-row pfs-locked" role="listitem" tabindex="0" data-preset-idx="${idx}">
+            <div class="pfs-preset-bar" style="background:${accent}"></div>
+            <div class="pfs-preset-info">
+              <div class="pfs-preset-name">${esc(preset.name)}</div>
+              <div class="pfs-preset-goal">${esc(preset.healthGoal||'')}</div>
+              <div class="pfs-preset-ings">${ingsHtml}</div>
             </div>
-          </div>
-        </div>
-      `).join('');
+            <div class="pfs-preset-action">Load →</div>
+          </div>`;
+      }).join('');
+
+      // Wire up CSP-compliant event delegation
+      if (!smoothiePresetsEl.dataset.pfsBound) {
+        smoothiePresetsEl.addEventListener('click', _pfsHandlePresetClick);
+        smoothiePresetsEl.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _pfsHandlePresetClick(e); }
+        });
+        smoothiePresetsEl.dataset.pfsBound = '1';
+      }
+
+      // Wire shortcut build/clear buttons
+      const buildShortcut = document.getElementById('pfs-build-shortcut');
+      const clearShortcut = document.getElementById('pfs-clear-shortcut');
+      if (buildShortcut && !buildShortcut.dataset.pfsBound) {
+        buildShortcut.addEventListener('click', () => {
+          const realBtn = document.getElementById('build-smoothie-btn');
+          if (realBtn && !realBtn.disabled) realBtn.click();
+        });
+        buildShortcut.dataset.pfsBound = '1';
+      }
+      if (clearShortcut && !clearShortcut.dataset.pfsBound) {
+        clearShortcut.addEventListener('click', () => {
+          const realBtn = document.getElementById('smoothie-clear-btn');
+          if (realBtn) realBtn.click();
+          _pfsResetLoadedState();
+        });
+        clearShortcut.dataset.pfsBound = '1';
+      }
+
+      // Wire audience dropdown → lock/unlock
+      const audienceSel = document.getElementById('smoothie-for');
+      if (audienceSel && !audienceSel.dataset.pfsBound) {
+        audienceSel.addEventListener('change', _pfsUpdateLockState);
+        audienceSel.dataset.pfsBound = '1';
+      }
+      _pfsUpdateLockState();
     }
+
+    function _pfsHandlePresetClick(e) {
+      const row = e.target.closest('.pfs-preset-row');
+      if (!row || row.classList.contains('pfs-locked')) return;
+      const idx = parseInt(row.getAttribute('data-preset-idx'), 10);
+      if (isNaN(idx) || !smoothiePresets[idx]) return;
+      const preset = smoothiePresets[idx];
+
+      // Load via existing function
+      if (typeof window.loadSmoothiePreset === 'function') {
+        window.loadSmoothiePreset(preset.name);
+      }
+
+      // Detect how many ingredients actually loaded (after age filtering)
+      setTimeout(() => {
+        const totalExpected = preset.ingredients.length;
+        const loadedEls = document.querySelectorAll('#smoothie-selected-ingredients .ingredient-tag, #smoothie-selected-ingredients [data-ingredient]');
+        const loadedCount = loadedEls.length || totalExpected;
+        const removedCount = totalExpected - loadedCount;
+
+        // Update all preset rows — mark active
+        document.querySelectorAll('.pfs-preset-row').forEach((r,i) => {
+          const actionEl = r.querySelector('.pfs-preset-action');
+          if (i === idx) {
+            r.classList.add('pfs-active');
+            if (actionEl) { actionEl.textContent = 'loaded'; actionEl.classList.add('loaded'); }
+          } else {
+            r.classList.remove('pfs-active');
+            if (actionEl) { actionEl.textContent = 'Load →'; actionEl.classList.remove('loaded'); }
+          }
+        });
+
+        // Show age warning if ingredients were removed
+        const audienceSel = document.getElementById('smoothie-for');
+        const audienceVal = audienceSel ? audienceSel.value : '';
+        const kidsAudiences = ['child-4-6','child-7-8','girl-9-13','boy-9-13','girl-14-18','boy-14-18'];
+        const ageWarn = document.getElementById('pfs-age-warn');
+        const ageWarnTitle = document.getElementById('pfs-age-warn-title');
+        const ageWarnBody = document.getElementById('pfs-age-warn-body');
+        if (ageWarn) {
+          if (removedCount > 0) {
+            const audienceLabel = audienceSel ? audienceSel.options[audienceSel.selectedIndex].text : audienceVal;
+            if (ageWarnTitle) ageWarnTitle.textContent = `Adjusted for ${audienceLabel}`;
+            if (ageWarnBody) ageWarnBody.textContent = `${removedCount} ingredient${removedCount>1?'s were':' was'} removed — no age-appropriate portions available.`;
+            ageWarn.style.display = 'flex';
+          } else {
+            ageWarn.style.display = 'none';
+          }
+        }
+
+        // Show loaded banner
+        const banner = document.getElementById('pfs-loaded-banner');
+        const bannerTitle = document.getElementById('pfs-loaded-title');
+        const bannerIngs = document.getElementById('pfs-loaded-ings');
+        const bannerNote = document.getElementById('pfs-loaded-note');
+        if (banner) {
+          if (bannerTitle) bannerTitle.textContent = `${preset.name} · ${preset.healthGoal||''}`;
+          if (bannerIngs) {
+            bannerIngs.innerHTML = preset.ingredients
+              .map(ing=>`<span class="pfs-loaded-ing">${String(ing).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}</span>`)
+              .join('');
+          }
+          if (bannerNote) {
+            bannerNote.textContent = removedCount > 0
+              ? `✓ ${loadedCount} of ${totalExpected} ingredients loaded`
+              : `✓ ${totalExpected} ingredients loaded`;
+          }
+          banner.style.display = 'block';
+        }
+
+        // Show shortcut build/clear buttons
+        const buildShortcut = document.getElementById('pfs-build-shortcut');
+        const clearShortcut = document.getElementById('pfs-clear-shortcut');
+        if (buildShortcut) buildShortcut.style.display = 'block';
+        if (clearShortcut) clearShortcut.style.display = 'block';
+
+        // Hide unlock note
+        const unlockNote = document.getElementById('pfs-unlock-note');
+        if (unlockNote) unlockNote.style.display = 'none';
+
+        // Sync shortcut build button disabled state with real button
+        _pfsSyncBuildBtn();
+
+      }, 300);
+    }
+
+    function _pfsSyncBuildBtn() {
+      const realBtn = document.getElementById('build-smoothie-btn');
+      const shortcut = document.getElementById('pfs-build-shortcut');
+      if (realBtn && shortcut) {
+        shortcut.disabled = realBtn.disabled;
+        // Keep syncing
+        const obs = new MutationObserver(() => { shortcut.disabled = realBtn.disabled; });
+        obs.observe(realBtn, { attributes: true, attributeFilter: ['disabled'] });
+      }
+    }
+
+    function _pfsUpdateLockState() {
+      const audienceSel = document.getElementById('smoothie-for');
+      const hasAudience = audienceSel && audienceSel.value;
+      const lockNote = document.getElementById('pfs-lock-note');
+      const unlockNote = document.getElementById('pfs-unlock-note');
+      const badge2 = document.getElementById('pfs-badge-2');
+      const step2Label = document.getElementById('pfs-step2-label');
+      const rows = document.querySelectorAll('.pfs-preset-row');
+
+      if (hasAudience) {
+        if (lockNote) lockNote.style.display = 'none';
+        // Only show unlock note if no preset is loaded yet
+        const anyLoaded = document.querySelector('.pfs-preset-row.pfs-active');
+        if (unlockNote && !anyLoaded) unlockNote.style.display = 'flex';
+        if (badge2) badge2.classList.remove('dim');
+        if (step2Label) { step2Label.classList.remove('dim'); step2Label.textContent = 'Pick a preset'; }
+        rows.forEach(r => r.classList.remove('pfs-locked'));
+      } else {
+        if (lockNote) lockNote.style.display = 'flex';
+        if (unlockNote) unlockNote.style.display = 'none';
+        if (badge2) badge2.classList.add('dim');
+        if (step2Label) { step2Label.classList.add('dim'); step2Label.textContent = 'Pick a preset'; }
+        rows.forEach(r => r.classList.add('pfs-locked'));
+      }
+    }
+
+    function _pfsResetLoadedState() {
+      const banner = document.getElementById('pfs-loaded-banner');
+      const ageWarn = document.getElementById('pfs-age-warn');
+      const buildShortcut = document.getElementById('pfs-build-shortcut');
+      const clearShortcut = document.getElementById('pfs-clear-shortcut');
+      const unlockNote = document.getElementById('pfs-unlock-note');
+      const audienceSel = document.getElementById('smoothie-for');
+      if (banner) banner.style.display = 'none';
+      if (ageWarn) ageWarn.style.display = 'none';
+      if (buildShortcut) buildShortcut.style.display = 'none';
+      if (clearShortcut) clearShortcut.style.display = 'none';
+      document.querySelectorAll('.pfs-preset-row').forEach(r => {
+        r.classList.remove('pfs-active');
+        const a = r.querySelector('.pfs-preset-action');
+        if (a) { a.textContent = 'Load →'; a.classList.remove('loaded'); }
+      });
+      if (unlockNote && audienceSel && audienceSel.value) unlockNote.style.display = 'flex';
+    }
+    // ============================================================
+    // END SMOOTHIE PRESET UI
+    // ============================================================
 
     window.loadSmoothiePreset = function(presetName) {
       const preset = smoothiePresets.find(p => p.name === presetName);
