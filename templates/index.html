@@ -3091,6 +3091,12 @@
 
     /* ---------- Health Benefits tab: compact redesign (pf-hb2-*) ---------- */
     .pf-hb2-wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+    /* === PRESET REPLACE CONFIRMATION === */
+    .pfs-confirm-banner{display:none;background:#FFF8E6;border:1px solid rgba(239,159,39,0.3);border-radius:10px;padding:11px 13px;margin-bottom:10px}
+    .pfs-confirm-text{font-size:12px;color:#854F0B;font-weight:500;margin-bottom:8px;line-height:1.4}
+    .pfs-confirm-btns{display:flex;gap:8px}
+    .pfs-confirm-yes{flex:1;padding:7px 10px;background:#0EA5A4;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer}
+    .pfs-confirm-no{flex:1;padding:7px 10px;background:transparent;color:#64748b;border:0.5px solid rgba(15,23,42,0.15);border-radius:7px;font-size:12px;font-weight:500;cursor:pointer}
     /* === SMOOTHIE TAB FULL REDESIGN === */
     .pfs-step-header{display:flex;align-items:center;gap:6px;margin-bottom:8px}
     .pfs-step-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#0EA5A4;color:#fff;font-size:11px;font-weight:700;flex-shrink:0}
@@ -4010,6 +4016,13 @@
             <div id="blood-pressure-goal-warning-container" style="display:none;margin-bottom:10px"></div>
             <div style="font-size:11px;color:#64748b;margin-bottom:6px">
               Limit: <strong style="color:#0EA5A4">3 fresh fruits</strong> · <strong style="color:#0EA5A4">1 dried fruit</strong>
+            </div>
+            <div class="pfs-confirm-banner" id="pfs-confirm-banner">
+              <div class="pfs-confirm-text">This will replace your loaded preset — continue?</div>
+              <div class="pfs-confirm-btns">
+                <button class="pfs-confirm-yes" id="pfs-confirm-yes">Yes, start fresh</button>
+                <button class="pfs-confirm-no" id="pfs-confirm-no">Keep preset</button>
+              </div>
             </div>
             <input type="text" id="smoothie-ingredient-search" class="search-input" placeholder="🔍 Search ingredients..." autocomplete="off" style="margin-bottom:8px"/>
             <div id="smoothie-ingredient-suggestions" class="ingredient-suggestions"></div>
@@ -18346,6 +18359,7 @@ const batchG = (smoothieBatchMlOverride != null)
         audienceSel.dataset.pfsBound = '1';
       }
       _pfsUpdateLockState();
+      _pfsInitScratchConflictGuard();
     }
 
     function _pfsHandlePresetClick(e) {
@@ -18468,6 +18482,46 @@ const batchG = (smoothieBatchMlOverride != null)
         if (step2Label) { step2Label.classList.add('dim'); step2Label.textContent = 'Pick a preset'; }
         rows.forEach(r => r.classList.add('pfs-locked'));
       }
+    }
+
+    // Intercept ingredient search when preset is loaded — show confirmation
+    function _pfsInitScratchConflictGuard() {
+      const searchEl = document.getElementById('smoothie-ingredient-search');
+      const confirmBanner = document.getElementById('pfs-confirm-banner');
+      const confirmYes = document.getElementById('pfs-confirm-yes');
+      const confirmNo = document.getElementById('pfs-confirm-no');
+      if (!searchEl || !confirmBanner) return;
+      if (searchEl.dataset.conflictBound) return;
+
+      searchEl.addEventListener('focus', function() {
+        const presetLoaded = document.getElementById('pfs-loaded-banner');
+        if (presetLoaded && presetLoaded.style.display !== 'none') {
+          // Preset is active — show confirmation, blur the search
+          searchEl.blur();
+          confirmBanner.style.display = 'block';
+        }
+      });
+
+      if (confirmYes) {
+        confirmYes.addEventListener('click', function() {
+          confirmBanner.style.display = 'none';
+          // Clear preset state
+          _pfsResetLoadedState();
+          // Clear loaded ingredients
+          const clearBtn = document.getElementById('smoothie-clear-btn');
+          if (clearBtn) clearBtn.click();
+          // Focus search so user can type immediately
+          setTimeout(() => searchEl.focus(), 50);
+        });
+      }
+
+      if (confirmNo) {
+        confirmNo.addEventListener('click', function() {
+          confirmBanner.style.display = 'none';
+        });
+      }
+
+      searchEl.dataset.conflictBound = '1';
     }
 
     function _pfsResetLoadedState() {
