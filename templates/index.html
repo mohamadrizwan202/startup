@@ -3144,6 +3144,62 @@
       .pfs-build-btn{font-size:14px;padding:13px}
       .pfs-scratch-row{grid-template-columns:1fr}
     }
+    /* === SMOOTHIE RESULTS REDESIGN === */
+    .sn2-card{background:#fff;border-radius:16px;padding:20px 22px;border:1px solid rgba(15,23,42,0.06)}
+    .sn2-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:0.5px solid rgba(15,23,42,0.08)}
+    .sn2-title-group{display:flex;flex-direction:column;gap:3px}
+    .sn2-title{font-size:16px;font-weight:700;color:#0f172a;letter-spacing:-0.01em;margin:0}
+    .sn2-subtitle{font-size:12px;color:#64748b}
+    .sn2-audience-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;color:#0f766e;background:#CCFBF1;padding:4px 10px;border-radius:999px;white-space:nowrap}
+    .sn2-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+    .sn2-kpi{background:#f8fafc;border-radius:12px;padding:12px 14px;border:1px solid rgba(15,23,42,0.04)}
+    .sn2-kpi-label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+    .sn2-kpi-value{font-size:22px;font-weight:700;color:#0f172a;line-height:1;margin-bottom:2px;letter-spacing:-0.02em}
+    .sn2-kpi-unit{font-size:11px;color:#94a3b8;font-weight:500}
+    .sn2-kpi.sn2-primary{background:#fef7ea;border-color:rgba(239,159,39,0.18)}
+    .sn2-kpi.sn2-primary .sn2-kpi-label{color:#854F0B}
+    .sn2-kpi.sn2-primary .sn2-kpi-value{color:#633806}
+    .sn2-kpi.sn2-primary .sn2-kpi-unit{color:#ba7517}
+    .sn2-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+    .sn2-mini{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:10px;padding:10px 14px;border:1px solid rgba(15,23,42,0.04)}
+    .sn2-mini-label{font-size:12px;color:#64748b;font-weight:500}
+    .sn2-mini-value{font-size:14px;font-weight:700;color:#0f172a}
+    .sn2-serving-card{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#F0FDF4;border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:11px 14px;margin-bottom:14px;flex-wrap:wrap}
+    .sn2-serving-left{display:flex;flex-direction:column;gap:3px}
+    .sn2-serving-title{font-size:10px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.06em}
+    .sn2-serving-value{font-size:15px;font-weight:700;color:#14532d;line-height:1.2}
+    .sn2-serving-note{font-size:11px;color:#15803d}
+    .sn2-tabs{display:flex;gap:4px;background:#f8fafc;padding:3px;border-radius:8px;margin-bottom:14px}
+    .sn2-tab{flex:1;padding:7px;font-size:12px;font-weight:600;color:#64748b;background:transparent;border:none;border-radius:6px;cursor:pointer;text-align:center;transition:all .15s}
+    .sn2-tab.active{background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(15,23,42,0.08)}
+    .sn2-ings-label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+    .sn2-ings-grid{display:flex;flex-wrap:wrap;gap:6px}
+    .sn2-ing-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border:1px solid rgba(239,159,39,0.3);border-radius:8px}
+    .sn2-ing-name{font-size:12px;font-weight:600;color:#78350f}
+    .sn2-ing-sep{font-size:10px;color:#d97706;opacity:.5}
+    .sn2-ing-amt{font-size:11px;color:#92400e;font-weight:500}
+    .sn2-ing-vegan{font-size:9px;color:#059669;background:#d1fae5;padding:1px 5px;border-radius:3px;font-weight:600}
+    .sn2-ing-unsweetened{font-size:9px;color:#0EA5A4;background:rgba(14,165,164,0.1);padding:1px 5px;border-radius:3px;font-weight:600}
+    .sn2-warn{background:#FFFBEB;border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start}
+    .sn2-warn-icon{width:18px;height:18px;border-radius:50%;background:#F59E0B;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .sn2-warn-body{font-size:11px;line-height:1.5;color:#92400E}
+    .sn2-warn-title{font-weight:700;font-size:12px;display:block;margin-bottom:2px}
+    .sn2-metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
+    @media (max-width:640px){
+      .sn2-card{padding:16px 18px}
+      .sn2-title{font-size:15px}
+      .sn2-kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+      .sn2-kpi{padding:10px 12px}
+      .sn2-kpi-value{font-size:20px}
+      .sn2-mini{flex-direction:column;align-items:center;gap:2px;padding:6px 8px}
+      .sn2-mini-label{font-size:10px}
+      .sn2-mini-value{font-size:13px}
+      .sn2-mini-row{gap:6px}
+      .sn2-serving-card{flex-direction:column;gap:8px}
+      .sn2-ing-pill{padding:5px 8px}
+      .sn2-ing-name{font-size:11px}
+      .sn2-ing-amt{font-size:10px}
+    }
     /* === HEALTH BENEFITS TAB REDESIGN (goal hero + benefit grid) === */
     .pfb-goal-hero{padding:18px 20px;border-radius:14px;margin-bottom:14px;background:#F3E8FF;background:linear-gradient(135deg,#F3E8FF 0%,#E9D5FF 100%);border:1px solid rgba(147,51,234,0.18)}
     .pfb-goal-label{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6B21A8;margin-bottom:8px;line-height:1}
@@ -16896,117 +16952,55 @@ const allergenPanel = allergenNames.length === 0
     
     // Function to render smoothie nutrition metrics
     // Returns a DOM node (no HTML string) to avoid HTML injection sinks
+    // Render smoothie nutrition metrics using new sn2 KPI design
     function renderSmoothieNutritionMetrics(nutritionData, isPerServing = false) {
-      const grid = document.createElement('div');
-      grid.className = 'smoothie-metrics-grid';
-      
-      // Note: Layout is now handled by CSS classes .smoothie-metrics-grid and .smoothie-metrics-tile
+      const wrap = document.createElement('div');
 
-      function addTile({ className, icon, label, value, unit, color }) {
+      // 4 KPI cards
+      const kpiGrid = document.createElement('div');
+      kpiGrid.className = 'sn2-kpi-grid';
+      kpiGrid.style.marginBottom = '12px';
+
+      const kpis = [
+        { label: 'Calories', value: Math.round(nutritionData.calories||0), unit: 'kcal', primary: true },
+        { label: 'Protein',  value: (nutritionData.protein||0).toFixed(1),  unit: 'grams' },
+        { label: 'Fiber',    value: (nutritionData.fiber||0).toFixed(1),    unit: 'grams' },
+        { label: 'Sugar',    value: (nutritionData.sugar||0).toFixed(1),    unit: 'grams' },
+      ];
+
+      kpis.forEach(k => {
         const tile = document.createElement('div');
-        tile.className = `smoothie-metrics-tile ${className}`;
-        
-        // Left side: Icon + Label
-        const left = document.createElement('div');
-        left.className = 'left';
-        
-        const iconWrap = document.createElement('div');
-        iconWrap.className = 'icon-wrap';
-        iconWrap.textContent = icon;
-        
-        const labelDiv = document.createElement('div');
-        labelDiv.className = 'label';
-        labelDiv.textContent = label;
-        
-        left.appendChild(iconWrap);
-        left.appendChild(labelDiv);
-        
-        // Right side: Value + Unit
-        const right = document.createElement('div');
-        right.className = 'right';
-        
-        const valueDiv = document.createElement('div');
-        valueDiv.className = 'value';
-        if (color) valueDiv.style.color = color;
-        valueDiv.textContent = typeof value === 'number' ? value.toFixed(1) : String(value);
-        
-        const unitSpan = document.createElement('span');
-        unitSpan.className = 'unit';
-        unitSpan.textContent = unit;
-        
-        valueDiv.appendChild(unitSpan);
-        right.appendChild(valueDiv);
-        
-        tile.appendChild(left);
-        tile.appendChild(right);
-        
-        grid.appendChild(tile);
-      }
-
-      addTile({
-        className: 'calories',
-        icon: '🔥',
-        label: 'CALORIES',
-        value: Number(nutritionData.calories || 0),
-        unit: 'kcal',
-        color: '#3b82f6'
+        tile.className = 'sn2-kpi' + (k.primary ? ' sn2-primary' : '');
+        tile.innerHTML = `
+          <div class="sn2-kpi-label">${k.label}</div>
+          <div class="sn2-kpi-value">${k.value}</div>
+          <div class="sn2-kpi-unit">${k.unit}</div>`;
+        kpiGrid.appendChild(tile);
       });
 
-      addTile({
-        className: 'protein',
-        icon: '💪',
-        label: 'PROTEIN',
-        value: Number(nutritionData.protein || 0),
-        unit: 'g',
-        color: '#10b981'
+      wrap.appendChild(kpiGrid);
+
+      // Mini row: Carbs, Fat, Sodium
+      const miniRow = document.createElement('div');
+      miniRow.className = 'sn2-mini-row';
+
+      const minis = [
+        { label: 'Carbs',  value: (nutritionData.carbs||0).toFixed(1)  + 'g'  },
+        { label: 'Fat',    value: (nutritionData.fat||0).toFixed(1)    + 'g'  },
+        { label: 'Sodium', value: Math.round(nutritionData.sodium||0)  + 'mg' },
+      ];
+
+      minis.forEach(m => {
+        const mini = document.createElement('div');
+        mini.className = 'sn2-mini';
+        mini.innerHTML = `
+          <span class="sn2-mini-label">${m.label}</span>
+          <span class="sn2-mini-value">${m.value}</span>`;
+        miniRow.appendChild(mini);
       });
 
-      addTile({
-        className: 'carbs',
-        icon: '🌾',
-        label: 'CARBS',
-        value: Number(nutritionData.carbs || 0),
-        unit: 'g',
-        color: '#f59e0b'
-      });
-
-      addTile({
-        className: 'fat',
-        icon: '🥑',
-        label: 'FAT',
-        value: Number(nutritionData.fat || 0),
-        unit: 'g',
-        color: '#ef4444'
-      });
-
-      addTile({
-        className: 'fiber',
-        icon: '🌿',
-        label: 'FIBER',
-        value: Number(nutritionData.fiber || 0),
-        unit: 'g',
-        color: '#0EA5A4'
-      });
-
-      addTile({
-        className: 'sugar',
-        icon: '🍬',
-        label: 'SUGAR',
-        value: Number(nutritionData.sugar || 0),
-        unit: 'g',
-        color: '#ec4899'
-      });
-
-      addTile({
-        className: 'sodium',
-        icon: '🧂',
-        label: 'SODIUM',
-        value: Number(nutritionData.sodium || 0),
-        unit: 'mg',
-        color: '#06b6d4'
-      });
-
-      return grid;
+      wrap.appendChild(miniRow);
+      return wrap;
     }
 
     function displaySmoothieResults(data) {
@@ -17668,193 +17662,167 @@ const allergenPanel = allergenNames.length === 0
       `;
 
       // Build calories meta for nutrition accordion
-      const caloriesMeta = totalNutrients.calories ? `${Math.round(totalNutrients.calories)} cal` : '—';
+      const caloriesMeta = totalNutrients.calories ? `${Math.round(totalNutrients.calories)} cal` : '\u2014';
+
+      // Build audience label
+      const audienceSel = document.getElementById('smoothie-for');
+      const audienceLabel = audienceSel && audienceSel.value
+        ? audienceSel.options[audienceSel.selectedIndex].text
+        : '';
+
+      // Build smoothie display name
+      const smoothieDisplayName = (typeof smoothieNameEl !== 'undefined' && smoothieNameEl && smoothieNameEl.value)
+        ? smoothieNameEl.value
+        : 'Your Smoothie';
+
+      // Build warnings HTML (child fruit + sweetener)
+      const warningsHtml = [childFruitWarningHtml, sweetenerWarningHtml]
+        .filter(Boolean)
+        .map(w => {
+          // Rewrap existing warning HTML into our new sn2-warn style
+          const div = document.createElement('div');
+          div.innerHTML = w;
+          const title = div.querySelector('.child-fruit-warning-title, [class*="warning-title"]');
+          const msg = div.querySelector('.child-fruit-warning-message, [class*="warning-message"]');
+          const titleText = title ? title.textContent.trim() : '';
+          const msgText = msg ? msg.textContent.trim() : div.textContent.trim();
+          return `
+            <div class="sn2-warn">
+              <div class="sn2-warn-icon">!</div>
+              <div class="sn2-warn-body">
+                ${titleText ? `<span class="sn2-warn-title">${titleText}</span>` : ''}
+                ${msgText}
+              </div>
+            </div>`;
+        }).join('');
+
+      // Build sweetener warning if exists
+      const sweetenerHtml = sweetenerWarning ? `
+        <div class="sn2-warn">
+          <div class="sn2-warn-icon">!</div>
+          <div class="sn2-warn-body">
+            <span class="sn2-warn-title">Added sweetener notice</span>
+            ${sweetenerWarning}
+          </div>
+        </div>` : '';
+
+      // Build ingredients pills
+      const ingsPillsHtml = ingredientsList.map(ing => {
+        const escName = String(ing.name||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+        const escAmt = String(ing.serving||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+        const isVegan = typeof isPlantBasedMilk === 'function' && isPlantBasedMilk(ing.originalName || ing.name);
+        const isUnsweetened = isVegan && typeof isUnsweetenedMilk === 'function' && isUnsweetenedMilk(ing.originalName || ing.name);
+        return `
+          <div class="sn2-ing-pill">
+            <span class="sn2-ing-name">${escName}</span>
+            <span class="sn2-ing-sep">·</span>
+            <span class="sn2-ing-amt">${escAmt}</span>
+            ${isVegan ? '<span class="sn2-ing-vegan">Vegan</span>' : ''}
+            ${isUnsweetened ? '<span class="sn2-ing-unsweetened">Unsweetened</span>' : ''}
+          </div>`;
+      }).join('');
+
+      // Build per-serving display
+      const perServingCalDisplay = perServingNutrients
+        ? `${Math.round(perServingNutrients.calories)} kcal`
+        : '—';
+      const perServingWeightDisplay = perServingWeightFormatted
+        ? perServingWeightFormatted.gramsDisplay
+        : '—';
 
       let html = `
-        <div class="sn-wrap">
-          ${childFruitWarningHtml}
-          ${sweetenerWarningHtml}
-          ${goalGuidanceLinksHtml}
-          
-          <div class="sn-grid">
-            <!-- Ingredients -->
-            <section class="sn-card sn-card--warm">
-              <div class="sn-head">
-                <div class="sn-title">🥗 Smoothie Ingredients</div>
-                <div class="sn-meta" id="sn-ingredient-count">${ingredients.length} ingredient${ingredients.length > 1 ? 's' : ''}</div>
-                </div>
-              <div class="sn-body">
-                <div id="smoothie-ingredients-panel">${ingredientsHtml}</div>
-              </div>
-            </section>
+        <div class="sn2-card">
 
-            <!-- Yield -->
-            <section class="sn-card sn-card--cool">
-              <div class="sn-head">
-                <div class="sn-title">🥤 Total Smoothie Yield</div>
-                <div class="sn-meta" id="sn-yield-meta">${ingredients.length} ingredient${ingredients.length > 1 ? 's' : ''}</div>
-              </div>
-              <div class="sn-body">
-                <div id="smoothie-yield-panel">${yieldHtml}</div>
+          ${warningsHtml}
+          ${sweetenerHtml}
+
+          <div class="sn2-header">
+            <div class="sn2-title-group">
+              <div class="sn2-title">${smoothieDisplayName.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}</div>
+              <div class="sn2-subtitle">Smoothie nutrition results</div>
             </div>
-            </section>
+            ${audienceLabel ? `<span class="sn2-audience-badge">${audienceLabel.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}</span>` : ''}
           </div>
-          
-          <!-- Nutrition (collapsible) -->
-          <details class="sn-card sn-card--neutral sn-details" open>
-            <summary class="sn-summary">
-              <span class="sn-title">📊 Nutrition Breakdown</span>
-              <span class="sn-meta" id="sn-calories-meta">${caloriesMeta}</span>
-            </summary>
 
-            <div class="sn-body">
-          <!-- Per Serving Card -->
-          <div style="padding: 8px 12px; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12); position: relative; overflow: hidden;">
-            <!-- Decorative accent -->
-            <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #10b981 0%, #059669 100%);"></div>
-            <div class="sn-serving-row" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-left: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); flex-shrink: 0;">
-                  <span style="font-size: 1rem; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">🍽️</span>
-                </div>
-                <div style="flex: 1; min-width: 0;">
-                  <div style="font-size: 0.7rem; color: #047857; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; font-weight: 700;">Per Serving</div>
-                  <div style="display: flex; align-items: baseline; gap: 6px; flex-wrap: nowrap;">
-                    <div style="font-size: 1rem; font-weight: 800; color: #065f46; line-height: 1;">${perServingWeightFormatted.gramsDisplay}</div>
-                    <div style="font-size: 0.7rem; font-weight: 600; color: #047857; line-height: 1; opacity: 0.8;">
-                      (${perServingWeightFormatted.ouncesDisplay})
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Servings Selector - Compact inline -->
-              <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
-                <label style="font-size: 0.65rem; color: #047857; font-weight: 600; white-space: nowrap;">Servings:</label>
-                <div class="quantity-control" style="border: 1.5px solid #10b981; border-radius: 6px; overflow: hidden; background: white; box-shadow: 0 1px 3px rgba(16, 185, 129, 0.15);">
-                  <button class="quantity-btn decrement" id="smoothie-weight-servings-decrement" type="button" style="border-right: 1.5px solid #10b981; width: 24px; height: 24px; font-size: 0.85rem; background: #f0fdf4; color: #047857; font-weight: 700; transition: all 0.2s;">−</button>
-                  <input 
-                    type="number" 
-                    id="smoothie-weight-servings-input" 
-                    value="${smoothieWeightServings}" 
-                    min="1" 
-                    max="10" 
-                    step="1"
-                    style="width: 38px; padding: 2px 4px; border: none; outline: none; text-align: center; font-size: 0.75rem; font-weight: 700; color: #065f46; background: white;"
-                  />
-                  <button class="quantity-btn increment" id="smoothie-weight-servings-increment" type="button" style="border-left: 1.5px solid #10b981; width: 24px; height: 24px; font-size: 0.85rem; background: #f0fdf4; color: #047857; font-weight: 700; transition: all 0.2s;">+</button>
-                </div>
+          <div class="sn2-kpi-grid">
+            <div class="sn2-kpi sn2-primary">
+              <div class="sn2-kpi-label">Calories</div>
+              <div class="sn2-kpi-value">${Math.round(totalNutrients.calories||0)}</div>
+              <div class="sn2-kpi-unit">kcal total</div>
+            </div>
+            <div class="sn2-kpi">
+              <div class="sn2-kpi-label">Protein</div>
+              <div class="sn2-kpi-value">${(totalNutrients.protein||0).toFixed(1)}</div>
+              <div class="sn2-kpi-unit">grams</div>
+            </div>
+            <div class="sn2-kpi">
+              <div class="sn2-kpi-label">Fiber</div>
+              <div class="sn2-kpi-value">${(totalNutrients.fiber||0).toFixed(1)}</div>
+              <div class="sn2-kpi-unit">grams</div>
+            </div>
+            <div class="sn2-kpi">
+              <div class="sn2-kpi-label">Sugar</div>
+              <div class="sn2-kpi-value">${(totalNutrients.sugar||0).toFixed(1)}</div>
+              <div class="sn2-kpi-unit">grams</div>
+            </div>
+          </div>
+
+          <div class="sn2-mini-row">
+            <div class="sn2-mini">
+              <span class="sn2-mini-label">Carbs</span>
+              <span class="sn2-mini-value">${(totalNutrients.carbs||0).toFixed(1)}g</span>
+            </div>
+            <div class="sn2-mini">
+              <span class="sn2-mini-label">Fat</span>
+              <span class="sn2-mini-value">${(totalNutrients.fat||0).toFixed(1)}g</span>
+            </div>
+            <div class="sn2-mini">
+              <span class="sn2-mini-label">Sodium</span>
+              <span class="sn2-mini-value">${Math.round(totalNutrients.sodium||0)}mg</span>
+            </div>
+          </div>
+
+          <div class="sn2-serving-card">
+            <div class="sn2-serving-left">
+              <div class="sn2-serving-title">Per serving</div>
+              <div class="sn2-serving-value">${perServingCalDisplay} · ${perServingWeightDisplay}</div>
+              <div class="sn2-serving-note">${audienceLabel ? `Recommended for ${audienceLabel.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}` : 'Based on smoothie weight'}</div>
+              <div class="sn2-serving-note" style="margin-top:3px;color:#94a3b8">Total recipe: ${totalWeightFormatted ? totalWeightFormatted.gramsDisplay : (Math.round(totalSmoothieWeightGrams) + 'g')}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:#166534;font-weight:700;margin-bottom:4px;text-align:center;text-transform:uppercase;letter-spacing:.04em">Servings</div>
+              <div style="display:flex;align-items:center;border:1.5px solid #10B981;border-radius:8px;overflow:hidden;background:#fff">
+                <button type="button" id="smoothie-weight-servings-decrement" style="width:28px;height:28px;background:#f0fdf4;color:#065f46;font-size:14px;font-weight:700;border:none;cursor:pointer;border-right:1px solid #10B981">−</button>
+                <input type="number" id="smoothie-weight-servings-input" value="${smoothieWeightServings}" min="1" max="10" step="1"
+                  style="width:36px;height:28px;text-align:center;font-size:13px;font-weight:700;color:#065f46;border:none;outline:none;background:#fff"/>
+                <button type="button" id="smoothie-weight-servings-increment" style="width:28px;height:28px;background:#f0fdf4;color:#065f46;font-size:14px;font-weight:700;border:none;cursor:pointer;border-left:1px solid #10B981">+</button>
               </div>
             </div>
           </div>
-          
-          <!-- Servings Control and Tabs -->
-          <div style="margin-bottom: 16px; padding: 16px; background: var(--bg-secondary); border-radius: var(--radius); border: 1px solid var(--border);">
-                <!-- Servings Input (ONLY for Per Serving tab) -->
-                <div id="smoothie-servings-control" style="display:none; margin-bottom: 16px;">
-                
-                  <!-- Batch size selector (ml) -->
-                  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom: 12px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                      <span style="font-size:1.1rem;">🧪</span>
-                      <label style="font-size:0.9rem; font-weight:600; color: var(--text-primary);">
-                        Batch size (ml):
-                      </label>
-                    </div>
 
-                    <select id="smoothie-batch-ml" style="padding:8px 10px; border:1px solid var(--border); border-radius:10px; background:#fff; font-weight:700;">
-                      <option value="auto" selected>Auto (from ingredients)</option>
-                      <option value="500">500 ml</option>
-                      <option value="750">750 ml</option>
-                      <option value="1000">1000 ml</option>
-                      <option value="1250">1250 ml</option>
-                    </select>
-                  </div>
-
-                  <div id="smoothie-serving-message" style="margin-bottom: 10px; font-size: 0.85rem; color: var(--text-secondary);"></div>
-
-                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1.1rem;">🍽️</span>
-                      <label style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
-                        Servings (for per-serving values):
-                      </label>
-              </div>
-
-              <div style="display: flex; align-items: center; gap: 8px;">
-                      <div class="quantity-control sn-qty">
-                        <button class="quantity-btn sn-qty-btn decrement" id="smoothie-servings-decrement" type="button">−</button>
-
-                  <input 
-                    type="number" 
-                    id="smoothie-servings-input" 
-                          class="sn-qty-input"
-                    value="${smoothieServings}" 
-                    min="1" 
-                    max="10" 
-                    step="1"
-                  />
-
-                        <button class="quantity-btn sn-qty-btn increment" id="smoothie-servings-increment" type="button">+</button>
-                      </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Tabs -->
-                <div class="sn-tabs">
-                  <button id="smoothie-tab-whole" class="sn-tab active" data-tab="whole" type="button">
-                Whole Smoothie
-              </button>
-                  <button id="smoothie-tab-serving" class="sn-tab" data-tab="serving" type="button">
-                Per Serving
-              </button>
-            </div>
+          <div class="sn2-tabs">
+            <button id="smoothie-tab-whole" class="sn2-tab active" data-tab="whole" type="button">Full recipe</button>
+            <button id="smoothie-tab-serving" class="sn2-tab" data-tab="serving" type="button">My portion</button>
           </div>
-          
-          <!-- Tab Content -->
-          <div id="smoothie-nutrition-whole" class="smoothie-nutrition-tab-content" style="display: block;">
-            <!-- Header with USDA badge -->
-                <div class="sn-nutrition-head">
-                  <div class="sn-nutrition-title">
-                    <span class="sn-emoji">🥤</span>
-                <div>
-                      <div class="sn-title">Smoothie Nutrition</div>
-                      <div class="sn-subtitle">Whole smoothie • complete recipe</div>
-                </div>
-              </div>
 
-              ${hasUSDA ? `
-                    <div class="sn-usda-pill">
-                      <span>✓</span>
-                  <span>USDA verified ingredients</span>
-                </div>
-              ` : ''}
-            </div>
+          <div class="sn2-ings-section" style="margin-bottom:14px">
+            <div class="sn2-ings-label">Ingredients · ${ingredients.length} item${ingredients.length !== 1 ? 's' : ''}</div>
+            <div class="sn2-ings-grid" id="smoothie-ingredients-panel">${ingsPillsHtml}</div>
+          </div>
+
+          <div id="smoothie-nutrition-whole" class="smoothie-nutrition-tab-content" style="display:none">
             <div id="smoothie-metrics-whole"></div>
           </div>
-          
-          <div id="smoothie-nutrition-serving" class="smoothie-nutrition-tab-content" style="display: none;">
-            <!-- Header with USDA badge -->
-                <div class="sn-nutrition-head">
-                  <div class="sn-nutrition-title">
-                    <span class="sn-emoji">🥤</span>
-                <div>
-                      <div class="sn-title">Smoothie Nutrition</div>
-                      <div class="sn-subtitle">Per serving • ${smoothieServings} serving${smoothieServings > 1 ? 's' : ''}</div>
-                </div>
-              </div>
-
-              ${hasUSDA ? `
-                    <div class="sn-usda-pill">
-                      <span>✓</span>
-                  <span>USDA verified ingredients</span>
-                </div>
-              ` : ''}
-            </div>
+          <div id="smoothie-nutrition-serving" class="smoothie-nutrition-tab-content" style="display:none">
             <div id="smoothie-metrics-serving"></div>
           </div>
-            </div>
-          </details>
+          <div id="smoothie-servings-control" style="display:none">
+            <div id="smoothie-serving-message" style="display:none"></div>
+          </div>
+          <input type="number" id="smoothie-servings-input" style="display:none" value="${smoothieServings}" min="1" max="10" step="1"/>
+          <button id="smoothie-servings-decrement" style="display:none" type="button"></button>
+          <button id="smoothie-servings-increment" style="display:none" type="button"></button>
+
         </div>
       `;
       smoothieBatchMlOverride = null;
@@ -17902,29 +17870,78 @@ if (batchSel) batchSel.value = 'auto';
     function setupSmoothieNutritionTabs() {
       const wholeTab = document.getElementById('smoothie-tab-whole');
       const servingTab = document.getElementById('smoothie-tab-serving');
-      const wholeContent = document.getElementById('smoothie-nutrition-whole');
-      const servingContent = document.getElementById('smoothie-nutrition-serving');
-      const servingsBox = document.getElementById('smoothie-servings-control');
-      
-      if (!wholeTab || !servingTab || !wholeContent || !servingContent) return;
-      
+      if (!wholeTab || !servingTab) return;
+
+      // Helper: update top KPI cards with given nutrition data
+      function _applyKPIs(data, unitLabel) {
+        if (!data) return;
+        const card = document.querySelector('.sn2-card');
+        if (!card) return;
+        const kpis = card.querySelectorAll('.sn2-kpi');
+        if (kpis.length < 4) return;
+        // Calories
+        const calVal = kpis[0].querySelector('.sn2-kpi-value');
+        const calUnit = kpis[0].querySelector('.sn2-kpi-unit');
+        if (calVal) calVal.textContent = Math.round(data.calories || 0);
+        if (calUnit) calUnit.textContent = unitLabel;
+        // Protein
+        const pv = kpis[1].querySelector('.sn2-kpi-value');
+        if (pv) pv.textContent = (data.protein || 0).toFixed(1);
+        // Fiber
+        const fv = kpis[2].querySelector('.sn2-kpi-value');
+        if (fv) fv.textContent = (data.fiber || 0).toFixed(1);
+        // Sugar
+        const sv = kpis[3].querySelector('.sn2-kpi-value');
+        if (sv) sv.textContent = (data.sugar || 0).toFixed(1);
+        // Mini row
+        const minis = card.querySelectorAll('.sn2-mini .sn2-mini-value');
+        if (minis[0]) minis[0].textContent = (data.carbs || 0).toFixed(1) + 'g';
+        if (minis[1]) minis[1].textContent = (data.fat || 0).toFixed(1) + 'g';
+        if (minis[2]) minis[2].textContent = Math.round(data.sodium || 0) + 'mg';
+      }
+
       wholeTab.addEventListener('click', () => {
+        if (wholeTab.classList.contains('active')) return;
         wholeTab.classList.add('active');
         servingTab.classList.remove('active');
-        wholeContent.style.display = 'block';
-        servingContent.style.display = 'none';
-        if (servingsBox) servingsBox.style.display = 'none';
+        // Restore total nutrition
+        const totals = lastSmoothieTotals && lastSmoothieTotals.totalNutrients
+          ? lastSmoothieTotals.totalNutrients : null;
+        _applyKPIs(totals, 'kcal total');
       });
-      
+
       servingTab.addEventListener('click', () => {
+        if (servingTab.classList.contains('active')) return;
         servingTab.classList.add('active');
         wholeTab.classList.remove('active');
-        wholeContent.style.display = 'none';
-        servingContent.style.display = 'block';
-        if (servingsBox) servingsBox.style.display = 'block';
+        // Trigger per-serving recalculation then apply
         updatePerServingDisplay();
+        setTimeout(() => {
+          const batchG = (smoothieBatchMlOverride != null)
+            ? smoothieBatchMlOverride : totalSmoothieWeightGrams;
+          const totals = lastSmoothieTotals && lastSmoothieTotals.totalNutrients
+            ? lastSmoothieTotals.totalNutrients : null;
+          if (!totals || !batchG) return;
+          let ratio = 1;
+          if (smoothieServingMode === 'recommended' && recommendedPerServingG > 0 && batchG > 0) {
+            ratio = Math.min(1, recommendedPerServingG / batchG);
+          } else {
+            ratio = smoothieServings > 0 ? 1 / smoothieServings : 1;
+          }
+          const perServing = {
+            calories: (totals.calories || 0) * ratio,
+            protein:  (totals.protein  || 0) * ratio,
+            fiber:    (totals.fiber    || 0) * ratio,
+            sugar:    (totals.sugar    || 0) * ratio,
+            carbs:    (totals.carbs    || 0) * ratio,
+            fat:      (totals.fat      || 0) * ratio,
+            sodium:   (totals.sodium   || 0) * ratio,
+          };
+          _applyKPIs(perServing, 'kcal / portion');
+        }, 80);
       });
     }
+
     
     // Function to setup servings control
     function setupSmoothieServingsControl() {
