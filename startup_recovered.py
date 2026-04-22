@@ -43,49 +43,6 @@ from utils.seo_registry import get_goal_by_slug, get_goals_registry, get_ingredi
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "allergen_nutrition.db")
 
-# =============================================================
-# DID-YOU-KNOW FACTS LOADER (Step 2 of did-you-know feature)
-# Loads static/data/did_you_know_facts.json once and caches it.
-# Returns one fact per ingredient, matched by normalized slug.
-# =============================================================
-import json as _dyk_json
-
-_DYK_FACTS_CACHE = None
-
-def _load_dyk_facts():
-    global _DYK_FACTS_CACHE
-    if _DYK_FACTS_CACHE is not None:
-        return _DYK_FACTS_CACHE
-    try:
-        dyk_path = os.path.join(BASE_DIR, "static", "data", "did_you_know_facts.json")
-        with open(dyk_path, "r", encoding="utf-8") as f:
-            _DYK_FACTS_CACHE = _dyk_json.load(f)
-    except Exception as e:
-        print(f"[did-you-know] Could not load facts file: {e}")
-        _DYK_FACTS_CACHE = {}
-    return _DYK_FACTS_CACHE
-
-def get_did_you_know_fact(ingredient_name: str) -> dict:
-    """Return a did-you-know fact for an ingredient, or the default fallback."""
-    if not ingredient_name:
-        return {}
-    facts = _load_dyk_facts()
-    if not facts:
-        return {}
-    # Normalize: lowercase, strip, replace spaces with hyphens
-    key = ingredient_name.strip().lower().replace(" ", "-")
-    # Try direct match, then singular/plural variants
-    for candidate in (key, key.rstrip("s"), key + "s"):
-        if candidate in facts:
-            return facts[candidate]
-    # Fallback to default
-    return facts.get("_default", {})
-# =============================================================
-# END DID-YOU-KNOW FACTS LOADER
-# =============================================================
-
-
-
 # Configure Python logging to stdout for reliable output on Render/Gunicorn
 logging.basicConfig(
     level=logging.INFO,
@@ -1778,8 +1735,6 @@ def index():
 @app.route("/app")
 def app_home():
     canonical = "https://purefyul.com/app"
-    entry = (request.args.get("entry") or "").strip().lower()
-    initial_app_tab = "ingredient" if entry == "ingredient" else "smoothie"
     html = render_template(
         "index.html",
         time=time,
@@ -1787,7 +1742,6 @@ def app_home():
         meta_description="Use the PureFyul app to analyze ingredients and review blend summaries.",
         canonical_url=canonical,
         og_url=canonical,
-        initial_app_tab=initial_app_tab,
     )
     resp = make_response(html)
     resp.headers["X-Robots-Tag"] = "noindex, follow"
@@ -46192,7 +46146,7 @@ def populate_ingredient_categories():
             "Immune System",
             "Zinc-Rich Foods",
             "Provides zinc, selenium, and probiotics that fortify immunity",
-            "Zinc, Selenium, Vitamin A, Probiotics",
+            "Zinc (0.75mg), Selenium (4.1mcg), Vitamin A (56mcg RAE), Probiotics",
             "Blue cheese offers immune-modulating cultures alongside essential minerals.",
         ),
         (
@@ -46764,7 +46718,7 @@ def populate_ingredient_categories():
             "Anemia Prevention",
             "Healthy Fats and Oils",
             "Delivers vitamin A, B12, and zinc that aid red blood cell production",
-            "Vitamin A, B12, Zinc, Iron",
+            "Vitamin A (56mcg RAE), B12 (0.34mcg), Zinc (0.75mg), Iron (0.09mg)",
             "Rich, cultured cheese supports hemoglobin formation with bioavailable nutrients",
         ),
     ]
@@ -51131,18 +51085,7 @@ def nlp_query():
             allergen_info = {}
             try:
                 # First, get all allergens from database
-                cursor.execute("""
-                    SELECT name, aliases, severity, description, common_in
-                    FROM allergens
-                    ORDER BY CASE
-                        WHEN lower(name) = 'peanuts' THEN 1
-                        WHEN lower(name) = 'tree nuts' THEN 2
-                        WHEN lower(name) = 'soy' THEN 3
-                        WHEN lower(name) = 'sesame' THEN 4
-                        WHEN lower(name) = 'milk' THEN 5
-                        ELSE 99
-                    END
-                """)
+                cursor.execute("SELECT name, aliases, severity, description, common_in FROM allergens")
                 all_allergens = cursor.fetchall()
                 
                 # Check if ingredient matches any allergen (by name or aliases)
@@ -51262,24 +51205,12 @@ def nlp_query():
                     'minerals': minerals,
                     'allergens': allergen_info if allergen_info and allergen_info.get('name') else [],
                     'health_benefits': health_benefits_list,
-                    'did_you_know': get_did_you_know_fact(ingredient_name),
                 })
             else:
                 # Check for allergens even if nutrition data not found
                 allergen_info = {}
                 try:
-                    cursor.execute("""
-                    SELECT name, aliases, severity, description, common_in
-                    FROM allergens
-                    ORDER BY CASE
-                        WHEN lower(name) = 'peanuts' THEN 1
-                        WHEN lower(name) = 'tree nuts' THEN 2
-                        WHEN lower(name) = 'soy' THEN 3
-                        WHEN lower(name) = 'sesame' THEN 4
-                        WHEN lower(name) = 'milk' THEN 5
-                        ELSE 99
-                    END
-                """)
+                    cursor.execute("SELECT name, aliases, severity, description, common_in FROM allergens")
                     all_allergens = cursor.fetchall()
                     
                     for allergen_row in all_allergens:
