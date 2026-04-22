@@ -6884,6 +6884,11 @@
           });
         }
         
+        // If still no match, trust the browse API already filtered by goal
+        if (matched.length === 0) {
+          matched = benefits.map(b => ({ ...b, category: ctx.goal, type: ctx.goal }));
+        }
+
         // Pick the first match as primaryBenefit
         if (matched.length > 0) {
           primaryBenefit = matched[0];
