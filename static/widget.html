@@ -5,239 +5,219 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PureFyul Smoothie Builder</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --pf-teal: #0EA5A4;
-  --pf-teal-light: #E1F5EE;
-  --pf-teal-dark: #085041;
-  --pf-navy: #0F172A;
-  --pf-border: #E2E8F0;
-  --pf-bg: #FFFFFF;
-  --pf-bg2: #F8FAFC;
-  --pf-text: #0F172A;
-  --pf-muted: #94A3B8;
-  --pf-radius: 12px;
-}
-body { font-family: 'DM Sans', system-ui, sans-serif; background: #F1F5F9; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
-.pfw-wrap { width: 100%; max-width: 480px; background: var(--pf-bg); border-radius: 20px; border: 1px solid var(--pf-border); overflow: hidden; box-shadow: 0 4px 24px rgba(15,23,42,0.08); }
-.pfw-header { background: var(--pf-navy); padding: 20px 24px 18px; display: flex; align-items: center; justify-content: space-between; }
-.pfw-logo { font-size: 18px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px; }
-.pfw-logo span { color: var(--pf-teal); }
-.pfw-tagline { font-size: 11px; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.8px; }
-.pfw-body { padding: 20px 24px; }
-.pfw-step { margin-bottom: 16px; }
-.pfw-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: var(--pf-muted); margin-bottom: 6px; display: block; }
-.pfw-select { width: 100%; padding: 10px 14px; border: 1px solid var(--pf-border); border-radius: var(--pf-radius); font-family: inherit; font-size: 14px; color: var(--pf-text); background: var(--pf-bg); appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 7L11 1' stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; cursor: pointer; transition: border-color 0.15s; }
-.pfw-select:focus { outline: none; border-color: var(--pf-teal); }
-.pfw-ing-wrap { display: flex; gap: 8px; }
-.pfw-ing-input { flex: 1; padding: 10px 14px; border: 1px solid var(--pf-border); border-radius: var(--pf-radius); font-family: inherit; font-size: 14px; color: var(--pf-text); transition: border-color 0.15s; }
-.pfw-ing-input:focus { outline: none; border-color: var(--pf-teal); }
-.pfw-ing-add { padding: 10px 16px; background: var(--pf-teal-light); color: var(--pf-teal-dark); border: none; border-radius: var(--pf-radius); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
-.pfw-ing-add:hover { background: #9FE1CB; }
-.pfw-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.pfw-tag { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; background: var(--pf-navy); color: #E2E8F0; border-radius: 20px; font-size: 12px; font-weight: 500; }
-.pfw-tag-remove { width: 14px; height: 14px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; color: #E2E8F0; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
-.pfw-tag-remove:hover { background: rgba(255,255,255,0.35); }
-.pfw-btn { width: 100%; padding: 13px; background: var(--pf-teal); color: #FFFFFF; border: none; border-radius: var(--pf-radius); font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s; margin-top: 4px; }
-.pfw-btn:hover { background: #0D9090; }
-.pfw-btn:disabled { background: var(--pf-border); color: var(--pf-muted); cursor: not-allowed; }
-.pfw-results { border-top: 1px solid var(--pf-border); padding: 20px 24px; display: none; }
-.pfw-results.visible { display: block; }
-.pfw-results-title { font-size: 13px; font-weight: 600; color: var(--pf-muted); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 14px; }
-.pfw-kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
-.pfw-kpi { background: var(--pf-bg2); border-radius: 10px; padding: 12px 14px; }
-.pfw-kpi.primary { background: var(--pf-navy); grid-column: span 2; display: flex; align-items: center; justify-content: space-between; }
-.pfw-kpi-label { font-size: 11px; color: var(--pf-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
-.pfw-kpi.primary .pfw-kpi-label { color: #64748B; }
-.pfw-kpi-val { font-size: 22px; font-weight: 700; color: var(--pf-text); line-height: 1; }
-.pfw-kpi.primary .pfw-kpi-val { font-size: 28px; color: #FFFFFF; }
-.pfw-kpi-unit { font-size: 12px; font-weight: 400; color: var(--pf-muted); margin-left: 2px; }
-.pfw-kpi.primary .pfw-kpi-unit { color: #64748B; }
-.pfw-serving-badge { background: var(--pf-teal); color: #FFFFFF; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 20px; }
-.pfw-divider { height: 1px; background: var(--pf-border); margin: 14px 0; }
-.pfw-mini-row { display: flex; justify-content: space-between; gap: 8px; }
-.pfw-mini { flex: 1; text-align: center; padding: 8px; background: var(--pf-bg2); border-radius: 8px; }
-.pfw-mini-val { font-size: 14px; font-weight: 600; color: var(--pf-text); }
-.pfw-mini-label { font-size: 10px; color: var(--pf-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
-.pfw-error { background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--pf-radius); padding: 12px 14px; font-size: 13px; color: #DC2626; display: none; margin-bottom: 12px; }
-.pfw-error.visible { display: block; }
-.pfw-loading { text-align: center; padding: 20px; color: var(--pf-muted); font-size: 14px; display: none; }
-.pfw-loading.visible { display: block; }
-.pfw-loader { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--pf-border); border-top-color: var(--pf-teal); border-radius: 50%; animation: pfw-spin 0.7s linear infinite; margin-bottom: 8px; }
-@keyframes pfw-spin { to { transform: rotate(360deg); } }
-.pfw-footer { padding: 12px 24px 16px; text-align: center; border-top: 1px solid var(--pf-border); }
-.pfw-footer a { font-size: 12px; color: var(--pf-teal); text-decoration: none; font-weight: 500; }
-.pfw-footer a:hover { text-decoration: underline; }
-.pfw-footer span { font-size: 12px; color: var(--pf-muted); }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--t:#0EA5A4;--tl:#E1F5EE;--td:#085041;--n:#0F172A;--b:#E2E8F0;--bg:#fff;--bg2:#F8FAFC;--tx:#0F172A;--mu:#94A3B8;--r:12px}
+body{font-family:system-ui,-apple-system,sans-serif;background:#F1F5F9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.w{width:100%;max-width:480px;background:var(--bg);border-radius:20px;border:1px solid var(--b);overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,.08)}
+.hd{background:var(--n);padding:20px 24px 18px}
+.lg{font-size:18px;font-weight:700;color:#fff}
+.lg span{color:var(--t)}
+.tg{font-size:11px;color:#94A3B8;text-transform:uppercase;letter-spacing:.8px;margin-top:2px}
+.bd{padding:20px 24px}
+.st{margin-bottom:16px}
+.lb{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);margin-bottom:6px;display:block}
+.sl{width:100%;padding:10px 14px;border:1px solid var(--b);border-radius:var(--r);font-family:inherit;font-size:14px;color:var(--tx);background:var(--bg)}
+.sl:focus{outline:none;border-color:var(--t)}
+.iw{display:flex;gap:8px}
+.ii{flex:1;padding:10px 14px;border:1px solid var(--b);border-radius:var(--r);font-family:inherit;font-size:14px;color:var(--tx)}
+.ii:focus{outline:none;border-color:var(--t)}
+.ab{padding:10px 16px;background:var(--tl);color:var(--td);border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.ts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tg2{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--n);color:#E2E8F0;border-radius:20px;font-size:12px;font-weight:500}
+.tr{width:14px;height:14px;background:rgba(255,255,255,.2);border:none;border-radius:50%;color:#E2E8F0;font-size:10px;cursor:pointer;padding:0}
+.bb{width:100%;padding:13px;background:var(--t);color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px}
+.bb:disabled{background:var(--b);color:var(--mu);cursor:not-allowed}
+.rs{border-top:1px solid var(--b);padding:20px 24px;display:none}
+.rs.v{display:block}
+.rt{font-size:13px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px}
+.kg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.kp{background:var(--bg2);border-radius:10px;padding:12px 14px}
+.kp.p{background:var(--n);grid-column:span 2;display:flex;align-items:center;justify-content:space-between}
+.kl{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.kp.p .kl{color:#64748B}
+.kv{font-size:22px;font-weight:700;color:var(--tx);line-height:1}
+.kp.p .kv{font-size:28px;color:#fff}
+.ku{font-size:12px;font-weight:400;color:var(--mu);margin-left:2px}
+.kp.p .ku{color:#64748B}
+.sb{background:var(--t);color:#fff;font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px}
+.dv{height:1px;background:var(--b);margin:14px 0}
+.mr{display:flex;justify-content:space-between;gap:8px}
+.mi{flex:1;text-align:center;padding:8px;background:var(--bg2);border-radius:8px}
+.mv{font-size:14px;font-weight:600;color:var(--tx)}
+.ml{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.er{background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:12px 14px;font-size:13px;color:#DC2626;display:none;margin-bottom:12px}
+.er.v{display:block}
+.ld{text-align:center;padding:20px;color:var(--mu);font-size:14px;display:none}
+.ld.v{display:block}
+.sp{display:inline-block;width:20px;height:20px;border:2px solid var(--b);border-top-color:var(--t);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ft{padding:12px 24px 16px;text-align:center;border-top:1px solid var(--b)}
+.ft a{font-size:12px;color:var(--t);text-decoration:none;font-weight:500}
+.ft span{font-size:12px;color:var(--mu)}
 </style>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<div class="pfw-wrap">
-  <div class="pfw-header">
-    <div>
-      <div class="pfw-logo">Pure<span>Fyul</span></div>
-      <div class="pfw-tagline">Smoothie Nutrition Builder</div>
-    </div>
+<div class="w">
+  <div class="hd">
+    <div class="lg">Pure<span>Fyul</span></div>
+    <div class="tg">Smoothie Nutrition Builder</div>
   </div>
-  <div class="pfw-body">
-    <div class="pfw-step">
-      <label class="pfw-label" for="pfw-audience">Who is this for?</label>
-      <select class="pfw-select" id="pfw-audience">
+  <div class="bd">
+    <div class="st">
+      <label class="lb" for="aud">Who is this for?</label>
+      <select class="sl" id="aud">
         <option value="">Select age group...</option>
-        <option value="Child 4-6">Child 4–6</option>
-        <option value="Child 7-8">Child 7–8</option>
-        <option value="Boy 9-13">Boy 9–13</option>
-        <option value="Girl 9-13">Girl 9–13</option>
-        <option value="Boy 14-18">Boy 14–18</option>
-        <option value="Girl 14-18">Girl 14–18</option>
-        <option value="Man 19-30">Man 19–30</option>
-        <option value="Woman 19-30">Woman 19–30</option>
-        <option value="Man 31-59">Man 31–59</option>
-        <option value="Woman 31-59">Woman 31–59</option>
+        <option value="Child 4-6">Child 4-6</option>
+        <option value="Child 7-8">Child 7-8</option>
+        <option value="Boy 9-13">Boy 9-13</option>
+        <option value="Girl 9-13">Girl 9-13</option>
+        <option value="Boy 14-18">Boy 14-18</option>
+        <option value="Girl 14-18">Girl 14-18</option>
+        <option value="Man 19-30">Man 19-30</option>
+        <option value="Woman 19-30">Woman 19-30</option>
+        <option value="Man 31-59">Man 31-59</option>
+        <option value="Woman 31-59">Woman 31-59</option>
         <option value="Man 60+">Man 60+</option>
         <option value="Woman 60+">Woman 60+</option>
       </select>
     </div>
-    <div class="pfw-step">
-      <label class="pfw-label">Ingredients</label>
-      <div class="pfw-ing-wrap">
-        <input class="pfw-ing-input" id="pfw-ing-input" type="text" placeholder="e.g. blueberry, oats..." />
-        <button class="pfw-ing-add" id="pfw-add-btn">+ Add</button>
+    <div class="st">
+      <label class="lb">Ingredients</label>
+      <div class="iw">
+        <input class="ii" id="ing" type="text" placeholder="e.g. blueberry, oats...">
+        <button class="ab" id="addb">+ Add</button>
       </div>
-      <div class="pfw-tags" id="pfw-tags"></div>
+      <div class="ts" id="tags"></div>
     </div>
-    <div class="pfw-error" id="pfw-error"></div>
-    <button class="pfw-btn" id="pfw-build-btn"  disabled>Add 2+ ingredients to start</button>
+    <div class="er" id="err"></div>
+    <button class="bb" id="buildb" disabled>Add 2+ ingredients to start</button>
   </div>
-  <div class="pfw-loading" id="pfw-loading">
-    <div class="pfw-loader"></div><br>Analyzing your smoothie...
-  </div>
-  <div class="pfw-results" id="pfw-results">
-    <div class="pfw-results-title">Your Smoothie Nutrition</div>
-    <div class="pfw-kpi-grid">
-      <div class="pfw-kpi primary">
-        <div>
-          <div class="pfw-kpi-label">Calories</div>
-          <div class="pfw-kpi-val" id="pfw-cal">–<span class="pfw-kpi-unit">kcal</span></div>
-        </div>
-        <div class="pfw-serving-badge" id="pfw-serving">–</div>
+  <div class="ld" id="load"><div class="sp"></div><br>Analyzing...</div>
+  <div class="rs" id="res">
+    <div class="rt">Your Smoothie Nutrition</div>
+    <div class="kg">
+      <div class="kp p">
+        <div><div class="kl">Calories</div><div class="kv" id="cal">-</div></div>
+        <div class="sb" id="srv">-</div>
       </div>
-      <div class="pfw-kpi">
-        <div class="pfw-kpi-label">Protein</div>
-        <div class="pfw-kpi-val" id="pfw-protein">–<span class="pfw-kpi-unit">g</span></div>
-      </div>
-      <div class="pfw-kpi">
-        <div class="pfw-kpi-label">Fiber</div>
-        <div class="pfw-kpi-val" id="pfw-fiber">–<span class="pfw-kpi-unit">g</span></div>
-      </div>
-      <div class="pfw-kpi">
-        <div class="pfw-kpi-label">Sugar</div>
-        <div class="pfw-kpi-val" id="pfw-sugar">–<span class="pfw-kpi-unit">g</span></div>
-      </div>
-      <div class="pfw-kpi">
-        <div class="pfw-kpi-label">Fat</div>
-        <div class="pfw-kpi-val" id="pfw-fat">–<span class="pfw-kpi-unit">g</span></div>
-      </div>
+      <div class="kp"><div class="kl">Protein</div><div class="kv" id="pro">-</div></div>
+      <div class="kp"><div class="kl">Fiber</div><div class="kv" id="fib">-</div></div>
+      <div class="kp"><div class="kl">Sugar</div><div class="kv" id="sug">-</div></div>
+      <div class="kp"><div class="kl">Fat</div><div class="kv" id="fat">-</div></div>
     </div>
-    <div class="pfw-divider"></div>
-    <div class="pfw-mini-row">
-      <div class="pfw-mini">
-        <div class="pfw-mini-val" id="pfw-carbs">–g</div>
-        <div class="pfw-mini-label">Carbs</div>
-      </div>
-      <div class="pfw-mini">
-        <div class="pfw-mini-val" id="pfw-sodium">–mg</div>
-        <div class="pfw-mini-label">Sodium</div>
-      </div>
+    <div class="dv"></div>
+    <div class="mr">
+      <div class="mi"><div class="mv" id="crb">-</div><div class="ml">Carbs</div></div>
+      <div class="mi"><div class="mv" id="sod">-</div><div class="ml">Sodium</div></div>
     </div>
   </div>
-  <div class="pfw-footer">
-    <span>Powered by </span><a href="https://purefyul.com/app" target="_blank">PureFyul</a><span> · Age-specific smoothie nutrition · Free</span>
-  </div>
+  <div class="ft"><span>Powered by </span><a href="https://purefyul.com/app" target="_blank">PureFyul</a><span> - Free</span></div>
 </div>
 <script>
-const PUREFYUL_API = 'https://purefyul.com';
-let pfwIngredients = [];
-const pfwIngInput = document.getElementById('pfw-ing-input');
-const pfwTags = document.getElementById('pfw-tags');
-const pfwBuildBtn = document.getElementById('pfw-build-btn');
-const pfwAudience = document.getElementById('pfw-audience');
-const pfwError = document.getElementById('pfw-error');
-const pfwLoading = document.getElementById('pfw-loading');
-const pfwResults = document.getElementById('pfw-results');
-pfwIngInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); pfwAddIngredient(); } });
-pfwAudience.addEventListener('change', pfwUpdateBtn);
-function pfwAddIngredient() {
-  const val = pfwIngInput.value.trim();
-  if (!val) return;
-  val.split(',').map(s => s.trim()).filter(Boolean).forEach(item => {
-    if (!pfwIngredients.includes(item.toLowerCase())) pfwIngredients.push(item.toLowerCase());
+var ings=[];
+var ingEl=document.getElementById('ing');
+var tagsEl=document.getElementById('tags');
+var buildEl=document.getElementById('buildb');
+var addEl=document.getElementById('addb');
+var audEl=document.getElementById('aud');
+var errEl=document.getElementById('err');
+var loadEl=document.getElementById('load');
+var resEl=document.getElementById('res');
+
+function addIng(){
+  var v=ingEl.value.trim();
+  if(!v)return;
+  v.split(',').forEach(function(x){
+    x=x.trim().toLowerCase();
+    if(x&&ings.indexOf(x)===-1)ings.push(x);
   });
-  pfwIngInput.value = '';
-  pfwRenderTags(); pfwUpdateBtn();
+  ingEl.value='';
+  renderTags();
+  updateBtn();
 }
-function pfwRemoveIngredient(ing) {
-  pfwIngredients = pfwIngredients.filter(i => i !== ing);
-  pfwRenderTags(); pfwUpdateBtn();
+
+function removeIng(x){
+  ings=ings.filter(function(i){return i!==x;});
+  renderTags();
+  updateBtn();
 }
-function pfwRenderTags() {
-  pfwTags.innerHTML = pfwIngredients.map(ing =>
-    (function(i) {
-      var s = document.createElement('span');
-      s.className = 'pfw-tag';
-      s.textContent = i;
-      var b = document.createElement('button');
-      b.className = 'pfw-tag-remove';
-      b.textContent = '✕';
-      b.addEventListener('click', function() { pfwRemoveIngredient(i); });
-      s.appendChild(b);
-      return s.outerHTML;
-    })(ing)
-  ).join('');
+
+function renderTags(){
+  tagsEl.innerHTML='';
+  ings.forEach(function(ing){
+    var s=document.createElement('span');
+    s.className='tg2';
+    s.textContent=ing+' ';
+    var b=document.createElement('button');
+    b.className='tr';
+    b.textContent='x';
+    b.dataset.ing=ing;
+    tagsEl.appendChild(s);
+    s.appendChild(b);
+  });
+  tagsEl.querySelectorAll('.tr').forEach(function(b){
+    b.addEventListener('click',function(){removeIng(this.dataset.ing);});
+  });
 }
-function pfwUpdateBtn() {
-  const ready = pfwAudience.value && pfwIngredients.length >= 2;
-  pfwBuildBtn.disabled = !ready;
-  pfwBuildBtn.textContent = pfwIngredients.length < 2
-    ? `Add ${Math.max(0, 2 - pfwIngredients.length)} more ingredient${2 - pfwIngredients.length !== 1 ? 's' : ''} to start`
-    : 'Build My Smoothie';
+
+function updateBtn(){
+  var ok=audEl.value&&ings.length>=2;
+  buildEl.disabled=!ok;
+  var n=2-ings.length;
+  buildEl.textContent=ings.length<2?'Add '+Math.max(0,n)+' more ingredient'+(n!==1?'s':'')+' to start':'Build My Smoothie';
 }
-async function pfwBuild() {
-  if (!pfwAudience.value || pfwIngredients.length < 2) return;
-  pfwError.classList.remove('visible');
-  pfwResults.classList.remove('visible');
-  pfwLoading.classList.add('visible');
-  pfwBuildBtn.disabled = true;
-  try {
-    const res = await fetch(`${PUREFYUL_API}/api/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ingredients: pfwIngredients, audience: pfwAudience.value, timing: 'Breakfast' })
-    });
-    if (!res.ok) throw new Error('API error');
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    const n = data.total_nutrition || data.nutrition || {};
-    const serving = data.recommended_serving || data.serving_size || null;
-    document.getElementById('pfw-cal').innerHTML = `${Math.round(n.calories||0)}<span class="pfw-kpi-unit">kcal</span>`;
-    document.getElementById('pfw-protein').innerHTML = `${(n.protein||0).toFixed(1)}<span class="pfw-kpi-unit">g</span>`;
-    document.getElementById('pfw-fiber').innerHTML = `${(n.fiber||0).toFixed(1)}<span class="pfw-kpi-unit">g</span>`;
-    document.getElementById('pfw-sugar').innerHTML = `${(n.sugar||0).toFixed(1)}<span class="pfw-kpi-unit">g</span>`;
-    document.getElementById('pfw-fat').innerHTML = `${(n.fat||0).toFixed(1)}<span class="pfw-kpi-unit">g</span>`;
-    document.getElementById('pfw-carbs').textContent = `${(n.carbs||0).toFixed(1)}g`;
-    document.getElementById('pfw-sodium').textContent = `${Math.round(n.sodium||0)}mg`;
-    document.getElementById('pfw-serving').textContent = serving ? `${Math.round(serving)}g portion` : pfwAudience.value;
-    pfwLoading.classList.remove('visible');
-    pfwResults.classList.add('visible');
-  } catch(err) {
-    pfwError.textContent = 'Could not analyze this smoothie. Please check your ingredients and try again.';
-    pfwError.classList.add('visible');
-    pfwLoading.classList.remove('visible');
-  } finally {
-    pfwBuildBtn.disabled = false; pfwUpdateBtn();
-  }
+
+function build(){
+  if(!audEl.value||ings.length<2)return;
+  errEl.classList.remove('v');
+  resEl.classList.remove('v');
+  loadEl.classList.add('v');
+  buildEl.disabled=true;
+  var xhr=new XMLHttpRequest();
+  xhr.open('POST','https://purefyul.com/api/analyze');
+  xhr.setRequestHeader('Content-Type','application/json');
+  xhr.onload=function(){
+    loadEl.classList.remove('v');
+    if(xhr.status===200){
+      try{
+        var d=JSON.parse(xhr.responseText);
+        if(d.error)throw new Error(d.error);
+        var n=d.total_nutrition||d.nutrition||{};
+        var sv=d.recommended_serving||d.serving_size||null;
+        document.getElementById('cal').textContent=Math.round(n.calories||0)+' kcal';
+        document.getElementById('pro').textContent=(n.protein||0).toFixed(1)+'g';
+        document.getElementById('fib').textContent=(n.fiber||0).toFixed(1)+'g';
+        document.getElementById('sug').textContent=(n.sugar||0).toFixed(1)+'g';
+        document.getElementById('fat').textContent=(n.fat||0).toFixed(1)+'g';
+        document.getElementById('crb').textContent=(n.carbs||0).toFixed(1)+'g';
+        document.getElementById('sod').textContent=Math.round(n.sodium||0)+'mg';
+        document.getElementById('srv').textContent=sv?Math.round(sv)+'g portion':audEl.value;
+        resEl.classList.add('v');
+      }catch(e){
+        errEl.textContent='Could not parse results. Try again.';
+        errEl.classList.add('v');
+      }
+    }else{
+      errEl.textContent='Could not analyze. Check ingredients and try again.';
+      errEl.classList.add('v');
+    }
+    buildEl.disabled=false;
+    updateBtn();
+  };
+  xhr.onerror=function(){
+    loadEl.classList.remove('v');
+    errEl.textContent='Network error. Please try again.';
+    errEl.classList.add('v');
+    buildEl.disabled=false;
+    updateBtn();
+  };
+  xhr.send(JSON.stringify({ingredients:ings,audience:audEl.value,timing:'Breakfast'}));
 }
+
+addEl.addEventListener('click',addIng);
+ingEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addIng();}});
+audEl.addEventListener('change',updateBtn);
+buildEl.addEventListener('click',build);
 </script>
 </body>
 </html>
