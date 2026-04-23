@@ -103,12 +103,12 @@ body { font-family: 'DM Sans', system-ui, sans-serif; background: #F1F5F9; min-h
       <label class="pfw-label">Ingredients</label>
       <div class="pfw-ing-wrap">
         <input class="pfw-ing-input" id="pfw-ing-input" type="text" placeholder="e.g. blueberry, oats..." />
-        <button class="pfw-ing-add" onclick="pfwAddIngredient()">+ Add</button>
+        <button class="pfw-ing-add" id="pfw-add-btn">+ Add</button>
       </div>
       <div class="pfw-tags" id="pfw-tags"></div>
     </div>
     <div class="pfw-error" id="pfw-error"></div>
-    <button class="pfw-btn" id="pfw-build-btn" onclick="pfwBuild()" disabled>Add 2+ ingredients to start</button>
+    <button class="pfw-btn" id="pfw-build-btn"  disabled>Add 2+ ingredients to start</button>
   </div>
   <div class="pfw-loading" id="pfw-loading">
     <div class="pfw-loader"></div><br>Analyzing your smoothie...
@@ -183,7 +183,17 @@ function pfwRemoveIngredient(ing) {
 }
 function pfwRenderTags() {
   pfwTags.innerHTML = pfwIngredients.map(ing =>
-    `<span class="pfw-tag">${ing}<button class="pfw-tag-remove" onclick="pfwRemoveIngredient('${ing}')">✕</button></span>`
+    (function(i) {
+      var s = document.createElement('span');
+      s.className = 'pfw-tag';
+      s.textContent = i;
+      var b = document.createElement('button');
+      b.className = 'pfw-tag-remove';
+      b.textContent = '✕';
+      b.addEventListener('click', function() { pfwRemoveIngredient(i); });
+      s.appendChild(b);
+      return s.outerHTML;
+    })(ing)
   ).join('');
 }
 function pfwUpdateBtn() {
