@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--t:#0EA5A4;--tl:#E1F5EE;--td:#085041;--n:#0F172A;--b:#E2E8F0;--bg:#fff;--bg2:#F8FAFC;--tx:#0F172A;--mu:#94A3B8;--r:12px}
 body{font-family:system-ui,-apple-system,sans-serif;background:#F1F5F9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
-.w{width:100%;max-width:480px;background:var(--bg);border-radius:20px;border:1px solid var(--b);overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,.08)}
+.w{width:100%;max-width:520px;background:var(--bg);border-radius:20px;border:1px solid var(--b);overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,.08)}
 .hd{background:var(--n);padding:20px 24px 18px}
 .lg{font-size:18px;font-weight:700;color:#fff}
 .lg span{color:var(--t)}
@@ -22,10 +22,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F1F5F9;min-heigh
 .ii{flex:1;padding:10px 14px;border:1px solid var(--b);border-radius:var(--r);font-family:inherit;font-size:14px;color:var(--tx)}
 .ii:focus{outline:none;border-color:var(--t)}
 .ab{padding:10px 16px;background:var(--tl);color:var(--td);border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.ab:hover{background:#9FE1CB}
 .ts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .tg2{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--n);color:#E2E8F0;border-radius:20px;font-size:12px;font-weight:500}
 .tr{width:14px;height:14px;background:rgba(255,255,255,.2);border:none;border-radius:50%;color:#E2E8F0;font-size:10px;cursor:pointer;padding:0}
 .bb{width:100%;padding:13px;background:var(--t);color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px}
+.bb:hover{background:#0D9090}
 .bb:disabled{background:var(--b);color:var(--mu);cursor:not-allowed}
 .rs{border-top:1px solid var(--b);padding:20px 24px;display:none}
 .rs.v{display:block}
@@ -41,10 +43,18 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F1F5F9;min-heigh
 .kp.p .ku{color:#64748B}
 .sb{background:var(--t);color:#fff;font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px}
 .dv{height:1px;background:var(--b);margin:14px 0}
-.mr{display:flex;justify-content:space-between;gap:8px}
+.mr{display:flex;justify-content:space-between;gap:8px;margin-bottom:14px}
 .mi{flex:1;text-align:center;padding:8px;background:var(--bg2);border-radius:8px}
 .mv{font-size:14px;font-weight:600;color:var(--tx)}
 .ml{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.ib-title{font-size:12px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+.ib-grid{display:flex;flex-direction:column;gap:6px}
+.ib-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg2);border-radius:10px;border-left:3px solid var(--t)}
+.ib-name{font-size:13px;font-weight:600;color:var(--tx);text-transform:capitalize}
+.ib-right{text-align:right}
+.ib-grams{font-size:14px;font-weight:700;color:var(--t)}
+.ib-desc{font-size:11px;color:var(--mu);margin-top:1px}
+.ib-note{font-size:11px;color:var(--mu);margin-top:10px;text-align:center;font-style:italic}
 .er{background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--r);padding:12px 14px;font-size:13px;color:#DC2626;display:none;margin-bottom:12px}
 .er.v{display:block}
 .ld{text-align:center;padding:20px;color:var(--mu);font-size:14px;display:none}
@@ -60,7 +70,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F1F5F9;min-heigh
 <div class="w">
   <div class="hd">
     <div class="lg">Pure<span>Fyul</span></div>
-    <div class="tg">Smoothie Nutrition Builder</div>
+    <div class="tg">Age-Specific Smoothie Builder</div>
   </div>
   <div class="bd">
     <div class="st">
@@ -92,7 +102,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F1F5F9;min-heigh
     <div class="er" id="err"></div>
     <button class="bb" id="buildb" disabled>Add 2+ ingredients to start</button>
   </div>
-  <div class="ld" id="load"><div class="sp"></div><br>Analyzing...</div>
+  <div class="ld" id="load"><div class="sp"></div><br>Building your smoothie...</div>
   <div class="rs" id="res">
     <div class="rt">Your Smoothie Nutrition</div>
     <div class="kg">
@@ -110,8 +120,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F1F5F9;min-heigh
       <div class="mi"><div class="mv" id="crb">-</div><div class="ml">Carbs</div></div>
       <div class="mi"><div class="mv" id="sod">-</div><div class="ml">Sodium</div></div>
     </div>
+    <div class="dv"></div>
+    <div class="ib-title">Ingredient amounts for this age</div>
+    <div class="ib-grid" id="ib-grid"></div>
+    <div class="ib-note" id="ib-note"></div>
   </div>
-  <div class="ft"><span>Powered by </span><a href="https://purefyul.com/app" target="_blank">PureFyul</a><span> - Free</span></div>
+  <div class="ft"><span>Powered by </span><a href="https://purefyul.com/app" target="_blank">PureFyul</a><span> - Free - Age-specific nutrition</span></div>
 </div>
 <script>
 var ings=[];
@@ -123,56 +137,48 @@ var audEl=document.getElementById('aud');
 var errEl=document.getElementById('err');
 var loadEl=document.getElementById('load');
 var resEl=document.getElementById('res');
-
+var ibGrid=document.getElementById('ib-grid');
+var ibNote=document.getElementById('ib-note');
 function addIng(){
   var v=ingEl.value.trim();
   if(!v)return;
-  v.split(',').forEach(function(x){
-    x=x.trim().toLowerCase();
-    if(x&&ings.indexOf(x)===-1)ings.push(x);
-  });
-  ingEl.value='';
-  renderTags();
-  updateBtn();
+  v.split(',').forEach(function(x){x=x.trim().toLowerCase();if(x&&ings.indexOf(x)===-1)ings.push(x);});
+  ingEl.value='';renderTags();updateBtn();
 }
-
-function removeIng(x){
-  ings=ings.filter(function(i){return i!==x;});
-  renderTags();
-  updateBtn();
-}
-
+function removeIng(x){ings=ings.filter(function(i){return i!==x;});renderTags();updateBtn();}
 function renderTags(){
   tagsEl.innerHTML='';
   ings.forEach(function(ing){
-    var s=document.createElement('span');
-    s.className='tg2';
-    s.textContent=ing+' ';
-    var b=document.createElement('button');
-    b.className='tr';
-    b.textContent='x';
-    b.dataset.ing=ing;
-    tagsEl.appendChild(s);
-    s.appendChild(b);
+    var s=document.createElement('span');s.className='tg2';s.textContent=ing+' ';
+    var b=document.createElement('button');b.className='tr';b.textContent='x';b.dataset.ing=ing;
+    s.appendChild(b);tagsEl.appendChild(s);
   });
-  tagsEl.querySelectorAll('.tr').forEach(function(b){
-    b.addEventListener('click',function(){removeIng(this.dataset.ing);});
-  });
+  tagsEl.querySelectorAll('.tr').forEach(function(b){b.addEventListener('click',function(){removeIng(this.dataset.ing);});});
 }
-
 function updateBtn(){
-  var ok=audEl.value&&ings.length>=2;
-  buildEl.disabled=!ok;
+  var ok=audEl.value&&ings.length>=2;buildEl.disabled=!ok;
   var n=2-ings.length;
   buildEl.textContent=ings.length<2?'Add '+Math.max(0,n)+' more ingredient'+(n!==1?'s':'')+' to start':'Build My Smoothie';
 }
-
+function renderIngredients(ingredients,audience){
+  ibGrid.innerHTML='';
+  if(!ingredients||!ingredients.length)return;
+  ingredients.forEach(function(ing){
+    var g=ing.serving_size_g||0;
+    var desc=ing.serving_size||'';
+    var name=ing.display_name||ing.ingredient||'';
+    var row=document.createElement('div');row.className='ib-row';
+    var left=document.createElement('div');left.className='ib-name';left.textContent=name;
+    var right=document.createElement('div');right.className='ib-right';
+    var grams=document.createElement('div');grams.className='ib-grams';grams.textContent=Math.round(g)+'g';
+    var d=document.createElement('div');d.className='ib-desc';d.textContent=desc;
+    right.appendChild(grams);right.appendChild(d);row.appendChild(left);row.appendChild(right);ibGrid.appendChild(row);
+  });
+  ibNote.textContent='USDA recommended amounts for '+audience;
+}
 function build(){
   if(!audEl.value||ings.length<2)return;
-  errEl.classList.remove('v');
-  resEl.classList.remove('v');
-  loadEl.classList.add('v');
-  buildEl.disabled=true;
+  errEl.classList.remove('v');resEl.classList.remove('v');loadEl.classList.add('v');buildEl.disabled=true;
   var xhr=new XMLHttpRequest();
   xhr.open('POST','https://purefyul.com/api/analyze');
   xhr.setRequestHeader('Content-Type','application/json');
@@ -182,8 +188,10 @@ function build(){
       try{
         var d=JSON.parse(xhr.responseText);
         if(d.error)throw new Error(d.error);
-        var n=d.total_nutrition||d.nutrition||{};
-        var sv=d.recommended_serving||d.serving_size||null;
+        var n=d.total_nutrition||{};
+        var ingredients=d.ingredients||[];
+        var totalG=0;
+        ingredients.forEach(function(i){totalG+=(i.serving_size_g||0);});
         document.getElementById('cal').textContent=Math.round(n.calories||0)+' kcal';
         document.getElementById('pro').textContent=(n.protein||0).toFixed(1)+'g';
         document.getElementById('fib').textContent=(n.fiber||0).toFixed(1)+'g';
@@ -191,29 +199,20 @@ function build(){
         document.getElementById('fat').textContent=(n.fat||0).toFixed(1)+'g';
         document.getElementById('crb').textContent=(n.carbs||0).toFixed(1)+'g';
         document.getElementById('sod').textContent=Math.round(n.sodium||0)+'mg';
-        document.getElementById('srv').textContent=sv?Math.round(sv)+'g portion':audEl.value;
+        document.getElementById('srv').textContent=Math.round(totalG)+'g total';
+        renderIngredients(ingredients,audEl.value);
         resEl.classList.add('v');
-      }catch(e){
-        errEl.textContent='Could not parse results. Try again.';
-        errEl.classList.add('v');
-      }
-    }else{
-      errEl.textContent='Could not analyze. Check ingredients and try again.';
-      errEl.classList.add('v');
-    }
-    buildEl.disabled=false;
-    updateBtn();
+      }catch(e){errEl.textContent='Could not parse results. Try again.';errEl.classList.add('v');}
+    }else{errEl.textContent='Could not analyze. Check ingredients and try again.';errEl.classList.add('v');}
+    buildEl.disabled=false;updateBtn();
   };
   xhr.onerror=function(){
     loadEl.classList.remove('v');
     errEl.textContent='Network error. Please try again.';
-    errEl.classList.add('v');
-    buildEl.disabled=false;
-    updateBtn();
+    errEl.classList.add('v');buildEl.disabled=false;updateBtn();
   };
   xhr.send(JSON.stringify({ingredients:ings,audience:audEl.value,timing:'Breakfast'}));
 }
-
 addEl.addEventListener('click',addIng);
 ingEl.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addIng();}});
 audEl.addEventListener('change',updateBtn);
