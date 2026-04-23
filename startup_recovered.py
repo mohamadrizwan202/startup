@@ -1393,7 +1393,7 @@ cors_installed = False
 try:
     from flask_cors import CORS  # pyright: ignore[reportMissingModuleSource]
     # flask_cors will handle CORS independently - whitelist logic only affects manual fallback
-    CORS(app)
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
     cors_installed = True
 except ImportError:
     # flask_cors not installed - we'll add CORS headers manually in the security headers function
