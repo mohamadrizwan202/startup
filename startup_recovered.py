@@ -1477,6 +1477,14 @@ def add_security_headers(response):
         response.headers["Expires"] = "0"
 
     # Content-Security-Policy: XSS baseline with nonce-based scripts
+    # Widget page gets relaxed CSP to allow inline scripts
+    if request.path == '/static/widget.html':
+        response.headers.setdefault('Content-Security-Policy',
+            "default-src 'self'; script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "connect-src 'self' https://purefyul.com; img-src 'self' data:")
+        response.headers.pop('X-Frame-Options', None)
+        return response
     nonce = getattr(g, "csp_nonce", None)
       
       
@@ -1517,8 +1525,8 @@ def add_security_headers(response):
 
     csp_directives.extend(
         [
-            # AdSense/XHR beacons
-            "connect-src 'self' https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://www.google-analytics.com https://region1.google-analytics.com",
+            # AdSense/XHR beacons + allow self API calls from widget
+            "connect-src 'self' https://purefyul.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://www.google-analytics.com https://region1.google-analytics.com",
 
             # Ads + CMP load in iframes
             "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.googlesyndication.com https://fundingchoicesmessages.google.com https://consent.google.com",
