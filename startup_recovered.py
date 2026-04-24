@@ -1231,6 +1231,120 @@ def __smtpcheck():
     return jsonify({"host": host, "results": results})
 
 
+def send_hostinger_email(to_email, subject, text_body, *, reply_to=None):
+    """Send email through Hostinger SMTP with DMARC-safe From alignment."""
+    smtp_host = os.environ.get("SMTP_HOST", "smtp.hostinger.com").strip()
+    smtp_port = int(os.environ.get("SMTP_PORT", "465"))
+    smtp_user = os.environ.get("SMTP_USER", "support@purefyul.com").strip()
+    smtp_pass = os.environ.get("SMTP_PASS", "").strip()
+
+    if not smtp_pass:
+        raise RuntimeError("SMTP_PASS is not set")
+
+    msg = EmailMessage()
+    msg["From"] = smtp_user
+    msg["To"] = to_email
+    msg["Subject"] = subject
+
+    if reply_to:
+        msg["Reply-To"] = reply_to
+
+    msg.set_content(text_body)
+
+    context = ssl.create_default_context()
+
+    if smtp_port == 465:
+        with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=20, context=context) as server:
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+    else:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
+            server.starttls(context=context)
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+
+    return True
+
+
+def send_admin_alert(name, email, message, msg_id=None):
+    """Send contact-form admin notification to support inbox."""
+    to_email = os.environ.get("CONTACT_TO", os.environ.get("SMTP_USER", "support@purefyul.com")).strip()
+    subject = f"PureFyul Contact Form - Message #{msg_id or 'New'}"
+
+    body = f"""New PureFyul contact form message.
+
+Message ID: {msg_id or 'N/A'}
+Name: {name}
+Email: {email}
+
+Message:
+{message}
+"""
+
+    send_hostinger_email(
+        to_email=to_email,
+        subject=subject,
+        text_body=body,
+        reply_to=email,
+    )
+
+    return "hostinger-smtp"
+
+
+def _send_contact_auto_ack(name, email, subject, message, msg_id=None):
+    """Send user auto-acknowledgement through Hostinger SMTP."""
+    clean_name = name or "there"
+    body = f"""Hi {clean_name},
+
+Thanks for contacting PureFyul. We received your message.
+
+Reference: {msg_id or 'N/A'}
+
+We will review it and reply if needed.
+
+PureFyul Support
+support@purefyul.com
+"""
+
+    send_hostinger_email(
+        to_email=email,
+        subject="We received your PureFyul message",
+        text_body=body,
+        reply_to=os.environ.get("SMTP_USER", "support@purefyul.com"),
+    )
+
+    return True
+
+
+def _send_contact_admin_alert(msg_id, name, email, subject, message, admin_url):
+    """Send optional admin alert through Hostinger SMTP."""
+    to_email = os.environ.get("CONTACT_TO", os.environ.get("SMTP_USER", "support@purefyul.com")).strip()
+
+    body = f"""New PureFyul contact message.
+
+Message ID: {msg_id}
+Name: {name}
+Email: {email}
+Subject: {subject}
+
+Admin URL:
+{admin_url}
+
+Message:
+{message}
+"""
+
+    send_hostinger_email(
+        to_email=to_email,
+        subject=f"PureFyul Admin Alert - Message #{msg_id}",
+        text_body=body,
+        reply_to=email,
+    )
+
+    return True
+
+
+
 # --- Diagnostics Endpoint (token-protected) ---
 @app.get("/__diag")
 @limiter.limit("5 per minute", key_func=real_client_ip)
@@ -2234,7 +2348,7 @@ def contact():
                     message=message,
                     msg_id=msg_id,
                 )
-                app.logger.info("admin_alert_sent=True msg_id=%s resend_id=%s", msg_id, email_id)
+                app.logger.info("admin_alert_sent=True msg_id=%s provider=%s", msg_id, email_id)
             except Exception as e:
                 app.logger.exception("admin_alert_sent=False msg_id=%s err=%s", msg_id, str(e))
             
@@ -51583,7 +51697,7 @@ def admin_contact_detail(msg_id):
 
 @app.route('/admin/contacts/<int:msg_id>/reply', methods=['POST'])
 def admin_contact_reply(msg_id):
-    """Admin: reply to the user via Resend (no Hostinger manual compose)."""
+    """Admin: reply to the user via Hostinger SMTP."""
     if not session.get('is_admin'):
         abort(403)
 
@@ -51649,15 +51763,15 @@ def admin_contact_reply(msg_id):
         support_email=support_email,
     )
 
-    # From is support@purefyul.com; do NOT set reply_to so user replies go to Hostinger inbox.
+    # Send through Hostinger SMTP so SPF/DKIM/DMARC stay aligned with purefyul.com.
     try:
-        resend_id = resend_send_email(
+        send_hostinger_email(
             to_email=user_email,
             subject=reply_subject,
-            html=html_body,
-            text=text_body,
+            text_body=text_body,
+            reply_to=support_email,
         )
-        app.logger.info("Admin reply sent: msg_id=%s to=%s resend_id=%s", msg_id, user_email, resend_id)
+        app.logger.info("Admin reply sent via Hostinger SMTP: msg_id=%s to=%s", msg_id, user_email)
         flash('Reply sent to the user.', 'success')
     except Exception as e:
         app.logger.exception("Admin reply FAILED: msg_id=%s to=%s err=%s", msg_id, user_email, str(e))

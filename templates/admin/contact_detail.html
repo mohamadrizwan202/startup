@@ -131,7 +131,7 @@
 
   <!-- Reply Form -->
   <div class="detail-card">
-    <h2 style="margin: 0 0 20px; font-size: 1.25rem;">Reply to User (via Resend)</h2>
+    <h2 style="margin: 0 0 20px; font-size: 1.25rem;">Reply to User</h2>
 
     <form method="POST" action="{{ url_for('admin_contact_reply', msg_id=msg.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -162,7 +162,7 @@
       </button>
 
       <p style="margin: 12px 0 0; font-size: 13px; color: #6b7280;">
-        Sends from <b>support@purefyul.com</b> via Resend. If the user replies, it will go to your Hostinger inbox.
+        Sends from <b>support@purefyul.com</b> via Hostinger SMTP. If the user replies, it will go to your support inbox.
       </p>
     </form>
   </div>
