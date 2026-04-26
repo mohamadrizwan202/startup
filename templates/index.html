@@ -5602,21 +5602,21 @@
       'kefir': 'kefir',
       
       // Nuts & Nut Butters
-      // IMPORTANT: Explicit mappings prevent fuzzy matching to nut milks
-      // Standalone nuts must map to exact nut names, NOT nut milks
-      'almond': 'almond',  // Must NOT match 'almond milk'
-      'almonds': 'almond',
-      'cashew': 'cashew',  // Must NOT match 'cashew milk'
-      'cashews': 'cashew',
-      'walnut': 'walnut',  // Must NOT match 'walnut milk'
-      'walnuts': 'walnut',
-      'pecan': 'pecan',  // Must NOT match 'pecan milk'
-      'pecans': 'pecan',
-      'hazelnut': 'hazelnut',  // Must match exactly - do not confuse with 'hazelnut milk'
-      'hazelnuts': 'hazelnut',
-      'pistachio': 'pistachios',  // Must NOT match 'pistachio milk'
+      // IMPORTANT: map standalone nuts to canonical nutrition keys, never to nut milks/butters
+      'barley': 'barley',
+      'almond': 'almonds',
+      'almonds': 'almonds',
+      'cashew': 'cashews',
+      'cashews': 'cashews',
+      'walnut': 'walnuts',
+      'walnuts': 'walnuts',
+      'pecan': 'pecans',
+      'pecans': 'pecans',
+      'hazelnut': 'hazelnuts',
+      'hazelnuts': 'hazelnuts',
+      'pistachio': 'pistachios',
       'pistachios': 'pistachios',
-      'macadamia': 'macadamia nuts',  // Must NOT match 'macadamia milk'
+      'macadamia': 'macadamia nuts',
       'macadamia nut': 'macadamia nuts',
       'macadamia nuts': 'macadamia nuts',
       'brazil nut': 'brazil nuts',
@@ -5980,12 +5980,33 @@
         const originalKey = uiName.toLowerCase().trim();
         const canonName = getIngredientTabNutritionKey(uiName);
         
-        // CRITICAL: For standalone nuts, ensure we're NOT sending a name that could match nut milks
-        const standaloneNuts = ['almond', 'almonds', 'cashew', 'cashews', 'walnut', 'walnuts', 
-                               'pecan', 'pecans', 'hazelnut', 'hazelnuts', 'pistachio', 'pistachios',
-                               'macadamia'];
-        if (standaloneNuts.includes(originalKey) && canonName !== originalKey) {
-          console.warn(`[ingredient-nutrition] Standalone nut "${uiName}" mapped to "${canonName}" - this may cause backend to match nut milk!`);
+        // Canonical standalone nut/grain mappings for Ingredient tab only.
+        // These should resolve to nutrition keys, never to nut milks or butters.
+        const standaloneCanonicalMap = {
+          'barley': 'barley',
+          'almond': 'almonds',
+          'almonds': 'almonds',
+          'cashew': 'cashews',
+          'cashews': 'cashews',
+          'walnut': 'walnuts',
+          'walnuts': 'walnuts',
+          'pecan': 'pecans',
+          'pecans': 'pecans',
+          'hazelnut': 'hazelnuts',
+          'hazelnuts': 'hazelnuts',
+          'pistachio': 'pistachios',
+          'pistachios': 'pistachios',
+          'macadamia': 'macadamia nuts',
+          'macadamia nut': 'macadamia nuts',
+          'macadamia nuts': 'macadamia nuts',
+          'brazil nut': 'brazil nuts',
+          'brazil nuts': 'brazil nuts',
+          'pine nut': 'pine nuts',
+          'pine nuts': 'pine nuts'
+        };
+        if (Object.prototype.hasOwnProperty.call(standaloneCanonicalMap, originalKey) &&
+            canonName !== standaloneCanonicalMap[originalKey]) {
+          console.warn(`[ingredient-nutrition] "${uiName}" mapped to unexpected key "${canonName}"`);
         }
         
         if (canonName !== originalKey) {

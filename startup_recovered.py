@@ -2617,13 +2617,38 @@ def ingredient_search():
         q = (request.args.get('q', '') or '').strip()
         if not q:
             return jsonify([])
-        
+
+        q_key = q.lower().strip()
+        canonical_search_map = {
+            'barley': 'barley',
+            'almond': 'almonds',
+            'almonds': 'almonds',
+            'cashew': 'cashews',
+            'cashews': 'cashews',
+            'walnut': 'walnuts',
+            'walnuts': 'walnuts',
+            'pecan': 'pecans',
+            'pecans': 'pecans',
+            'hazelnut': 'hazelnuts',
+            'hazelnuts': 'hazelnuts',
+            'pistachio': 'pistachios',
+            'pistachios': 'pistachios',
+            'macadamia': 'macadamia nuts',
+            'macadamia nut': 'macadamia nuts',
+            'macadamia nuts': 'macadamia nuts',
+            'brazil nut': 'brazil nuts',
+            'brazil nuts': 'brazil nuts',
+            'pine nut': 'pine nuts',
+            'pine nuts': 'pine nuts',
+        }
+        canonical_q = canonical_search_map.get(q_key, q_key)
+
         using_postgres = db.USE_POSTGRES
-        logger.info("API /api/ingredient-search db=%s q=%s", "postgres" if using_postgres else "sqlite", q)
+        logger.info("API /api/ingredient-search db=%s q=%s canonical=%s", "postgres" if using_postgres else "sqlite", q, canonical_q)
 
         conn = get_conn()
         cursor = conn.cursor()
-        
+
         sql = db.prepare_query("""
             SELECT
                 ic.ingredient AS name,
@@ -2631,33 +2656,51 @@ def ingredient_search():
                 MIN(ic.subcategory) AS subcategory
             FROM ingredient_categories ic
             WHERE LOWER(ic.ingredient) LIKE LOWER(?)
-              AND EXISTS (
-                SELECT 1
-                FROM nutrition_facts nf
-                WHERE LOWER(TRIM(nf.ingredient)) = LOWER(TRIM(ic.ingredient))
+              AND (
+                EXISTS (
+                  SELECT 1
+                  FROM nutrition_facts nf
+                  WHERE LOWER(TRIM(nf.ingredient)) = LOWER(TRIM(ic.ingredient))
+                )
+                OR LOWER(TRIM(ic.ingredient)) = LOWER(TRIM(?))
+                OR LOWER(TRIM(ic.ingredient)) = LOWER(TRIM(?))
               )
             GROUP BY LOWER(ic.ingredient), ic.ingredient
             ORDER BY
                 CASE
-                    WHEN LOWER(ic.ingredient) LIKE LOWER(?) THEN 1
+                    WHEN LOWER(TRIM(ic.ingredient)) = LOWER(TRIM(?)) THEN 0
+                    WHEN LOWER(TRIM(ic.ingredient)) = LOWER(TRIM(?)) THEN 1
                     WHEN LOWER(ic.ingredient) LIKE LOWER(?) THEN 2
-                    ELSE 3
+                    WHEN LOWER(ic.ingredient) LIKE LOWER(?) THEN 3
+                    WHEN LOWER(ic.ingredient) LIKE LOWER(?) THEN 4
+                    WHEN LOWER(ic.ingredient) LIKE LOWER(?) THEN 5
+                    ELSE 6
                 END,
+                LENGTH(ic.ingredient),
                 ic.ingredient
             LIMIT 20
         """)
-        
-        cursor.execute(sql, (f'%{q}%', f'{q}%', f'%{q}%'))
+
+        cursor.execute(sql, (
+            f'%{q_key}%',
+            q_key,
+            canonical_q,
+            q_key,
+            canonical_q,
+            f'{q_key}%',
+            f'{canonical_q}%',
+            f'%{q_key}%',
+            f'%{canonical_q}%'
+        ))
         rows = cursor.fetchall()
         conn.close()
-        
-        # Works for both Postgres dict rows and sqlite3.Row
+
         suggestions = [{
             "name": (r["name"] or "").strip(),
             "category": (r["category"] or "").strip(),
             "subcategory": (r["subcategory"] or "").strip()
         } for r in rows]
-        
+
         return jsonify(suggestions)
 
     except Exception as e:
@@ -51053,12 +51096,38 @@ def nlp_query():
         total_nutrition = {'calories': 0, 'protein': 0, 'carbs': 0, 'fat': 0, 'fiber': 0, 'sugar': 0, 'sodium': 0}
         
         # INGREDIENT TAB NUTRITION LOOKUP
+        # Canonical nutrition lookup names for Ingredient tab only.
+        # This prevents base foods like almond/cashew/barley from drifting into milk variants.
+        ingredient_tab_nutrition_aliases = {
+            'barley': 'barley',
+            'almond': 'almonds',
+            'almonds': 'almonds',
+            'cashew': 'cashews',
+            'cashews': 'cashews',
+            'walnut': 'walnuts',
+            'walnuts': 'walnuts',
+            'pecan': 'pecans',
+            'pecans': 'pecans',
+            'hazelnut': 'hazelnuts',
+            'hazelnuts': 'hazelnuts',
+            'pistachio': 'pistachios',
+            'pistachios': 'pistachios',
+            'macadamia': 'macadamia nuts',
+            'macadamia nut': 'macadamia nuts',
+            'macadamia nuts': 'macadamia nuts',
+            'brazil nut': 'brazil nuts',
+            'brazil nuts': 'brazil nuts',
+            'pine nut': 'pine nuts',
+            'pine nuts': 'pine nuts',
+        }
+
         # This loop processes ingredients for the Ingredient tab nutrition analysis.
         # It does NOT affect smoothie serving-size logic.
         # The frontend sends normalized ingredient names via getIngredientTabNutritionKey(),
         # which maps UI names to canonical database keys using INGREDIENT_NUTRITION_ALIASES.
         for ingredient_name in valid_ingredients:
             clean_name = ingredient_name.strip().lower()
+            lookup_name = ingredient_tab_nutrition_aliases.get(clean_name, clean_name)
             
             # Get display name (original UI name) if available, otherwise use ingredient_name
             display_name_for_this_ingredient = original_names_map.get(clean_name, ingredient_name)
@@ -51076,7 +51145,7 @@ def nlp_query():
             # The frontend sends normalized names via getIngredientTabNutritionKey() which uses INGREDIENT_NUTRITION_ALIASES.
             
             # Log lookup attempt for Ingredient tab debugging
-            print(f"[ingredient-nutrition-backend] Looking up: originalName='{ingredient_name}', normalizedName='{clean_name}'")
+            print(f"[ingredient-nutrition-backend] Looking up: originalName='{ingredient_name}', normalizedName='{clean_name}', lookupName='{lookup_name}'")
             
             # Query 1: Try exact match first (most reliable)
             # Use conditional SQL based on database type to handle column name differences
@@ -51107,13 +51176,27 @@ def nlp_query():
                     LIMIT 1
                 """
             sql_query_1 = db.prepare_query(sql_query_1)
-            print(f"[ingredient-nutrition-backend] Executing SQL Query 1 (exact match): {sql_query_1[:100]}... with params: ('{clean_name}', '{clean_name}')")
+            print(f"[ingredient-nutrition-backend] Executing SQL Query 1 (exact match): {sql_query_1[:100]}... with params: ('{lookup_name}', '{lookup_name}')")
             
-            cursor.execute(sql_query_1, (clean_name, clean_name))
+            cursor.execute(sql_query_1, (lookup_name, lookup_name))
             nutrition = cursor.fetchone()
+
+            # If the exact ingredient exists in ingredient_categories, do NOT fuzzy-match to a related milk/butter/oil.
+            exact_category_exists = False
+            try:
+                exact_category_query = db.prepare_query("""
+                    SELECT 1
+                    FROM ingredient_categories
+                    WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?))
+                    LIMIT 1
+                """)
+                cursor.execute(exact_category_query, (clean_name,))
+                exact_category_exists = cursor.fetchone() is not None
+            except Exception:
+                exact_category_exists = False
             
-            # If exact match not found, try LIKE patterns as fallback
-            if not nutrition:
+            # If exact match not found, try LIKE patterns as fallback only for genuinely fuzzy inputs.
+            if not nutrition and not exact_category_exists:
                 # Query 2: Try LIKE patterns
                 if using_postgres:
                     sql_query_2 = """
@@ -51142,12 +51225,14 @@ def nlp_query():
                         LIMIT 1
                     """
                 sql_query_2 = db.prepare_query(sql_query_2)
-                like_param_1 = f'%{clean_name}%'
-                like_param_2 = f'{clean_name}%'
-                print(f"[ingredient-nutrition-backend] Executing SQL Query 2 (LIKE patterns): {sql_query_2[:100]}... with params: ('{like_param_1}', '{like_param_2}', '{clean_name}', '{like_param_2}')")
+                like_param_1 = f'%{lookup_name}%'
+                like_param_2 = f'{lookup_name}%'
+                print(f"[ingredient-nutrition-backend] Executing SQL Query 2 (LIKE patterns): {sql_query_2[:100]}... with params: ('{like_param_1}', '{like_param_2}', '{lookup_name}', '{like_param_2}')")
                 
-                cursor.execute(sql_query_2, (like_param_1, like_param_2, clean_name, like_param_2))
+                cursor.execute(sql_query_2, (like_param_1, like_param_2, lookup_name, like_param_2))
                 nutrition = cursor.fetchone()
+            elif not nutrition and exact_category_exists:
+                print(f"[ingredient-nutrition-backend] Skipping LIKE fallback for exact ingredient '{clean_name}' to avoid mismatching related foods")
             
             # Convert sqlite3.Row to dict for safe .get() access (Ingredient tab only)
             nutrition_dict = None
@@ -51183,14 +51268,19 @@ def nlp_query():
             usda_serving_desc = None
             try:
                 cursor.execute("""
-                    SELECT serving_size, serving_description 
-                    FROM health_specific_serving_sizes 
-                    WHERE LOWER(ingredient) = ? OR LOWER(ingredient) LIKE ? OR LOWER(ingredient) = ?
-                    ORDER BY 
-                        CASE WHEN LOWER(ingredient) = ? THEN 1 ELSE 2 END,
+                    SELECT serving_size, serving_description
+                    FROM health_specific_serving_sizes
+                    WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?))
+                       OR LOWER(TRIM(ingredient)) = LOWER(TRIM(?))
+                    ORDER BY
+                        CASE
+                            WHEN LOWER(TRIM(ingredient)) = LOWER(TRIM(?)) THEN 1
+                            WHEN LOWER(TRIM(ingredient)) = LOWER(TRIM(?)) THEN 2
+                            ELSE 3
+                        END,
                         serving_size DESC
                     LIMIT 1
-                """, (clean_name, f'%{clean_name}%', clean_name, clean_name))
+                """, (clean_name, lookup_name, clean_name, lookup_name))
                 usda_serving = cursor.fetchone()
                 if usda_serving and usda_serving[0]:
                     usda_serving_size = float(usda_serving[0])
@@ -51198,9 +51288,9 @@ def nlp_query():
                     # Mark as USDA if description contains USDA or if it's a standard serving size
                     if usda_serving_desc and 'USDA' in usda_serving_desc:
                         pass  # Already marked
-                    elif usda_serving_size in [28, 85, 100, 117, 173]:  # Common USDA standard sizes
+                    elif usda_serving_size in [28, 79, 85, 100, 117, 173]:
                         usda_serving_desc = f"{usda_serving_size}g (USDA standard)"
-            except Exception as e:
+            except Exception:
                 pass
             
             # Get allergen data - check if ingredient contains or matches known allergens
@@ -51235,6 +51325,27 @@ def nlp_query():
                 print(f"Allergen check error: {e}")
                 pass
             
+            # Special-case barley in Ingredient tab allergen tagging.
+            # Barley is a gluten-containing grain and should never inherit a milk tag just because barley milk exists.
+            if not allergen_info and re.search(r'\bbarley\b', clean_name):
+                allergen_info = {
+                    'name': 'Gluten',
+                    'severity': 'Medium',
+                    'description': 'Barley contains gluten and may not be suitable for people with celiac disease or gluten sensitivity.',
+                    'aliases': 'barley, gluten, malt',
+                    'common_in': 'barley, malt, cereals'
+                }
+
+            # Special-case pine nuts as Tree Nuts for ingredient allergen tagging.
+            if not allergen_info and re.search(r'\bpine\s+nut(s)?\b', clean_name):
+                allergen_info = {
+                    'name': 'Tree Nuts',
+                    'severity': 'High',
+                    'description': 'Pine nuts should be treated as a tree nut allergen for labeling and allergy-safety purposes.',
+                    'aliases': 'pine nut, pine nuts, tree nuts',
+                    'common_in': 'pine nuts, pesto, nut mixes'
+                }
+
             # Use USDA serving size if available, otherwise use nutrition_facts serving_size, default to 100g
             # INGREDIENT TAB NUTRITION PROCESSING
             # Use nutrition_dict (converted from sqlite3.Row) for safe .get() access
@@ -51354,6 +51465,26 @@ def nlp_query():
                             break
                 except sqlite3.OperationalError:
                     pass
+
+                # Special-case barley in Ingredient tab allergen tagging even when nutrition_facts is missing.
+                if not allergen_info and re.search(r'\bbarley\b', clean_name):
+                    allergen_info = {
+                        'name': 'Gluten',
+                        'severity': 'Medium',
+                        'description': 'Barley contains gluten and may not be suitable for people with celiac disease or gluten sensitivity.',
+                        'aliases': 'barley, gluten, malt',
+                        'common_in': 'barley, malt, cereals'
+                    }
+
+                # Special-case pine nuts as Tree Nuts even when nutrition_facts is missing.
+                if not allergen_info and re.search(r'\bpine\s+nut(s)?\b', clean_name):
+                    allergen_info = {
+                        'name': 'Tree Nuts',
+                        'severity': 'High',
+                        'description': 'Pine nuts should be treated as a tree nut allergen for labeling and allergy-safety purposes.',
+                        'aliases': 'pine nut, pine nuts, tree nuts',
+                        'common_in': 'pine nuts, pesto, nut mixes'
+                    }
                 
                 # Use USDA serving size if available, even if ingredient not in nutrition_facts
                 serving_size = 100.0
