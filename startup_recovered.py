@@ -2652,8 +2652,20 @@ def ingredient_search():
         sql = db.prepare_query("""
             SELECT
                 ic.ingredient AS name,
-                MIN(ic.category) AS category,
-                MIN(ic.subcategory) AS subcategory
+                (
+                  SELECT ic2.category
+                  FROM ingredient_categories ic2
+                  WHERE LOWER(TRIM(ic2.ingredient)) = LOWER(TRIM(ic.ingredient))
+                  ORDER BY ic2.category, ic2.subcategory
+                  LIMIT 1
+                ) AS category,
+                (
+                  SELECT ic2.subcategory
+                  FROM ingredient_categories ic2
+                  WHERE LOWER(TRIM(ic2.ingredient)) = LOWER(TRIM(ic.ingredient))
+                  ORDER BY ic2.category, ic2.subcategory
+                  LIMIT 1
+                ) AS subcategory
             FROM ingredient_categories ic
             WHERE LOWER(ic.ingredient) LIKE LOWER(?)
               AND (
