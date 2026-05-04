@@ -11343,15 +11343,107 @@ const allergenPanel = allergenNames.length === 0
       return keys.some(k => s.includes(k));
     }
 
-    function getNutSeedPortionGrams(ageGroup, ingredientKey) {
-      const k = typeof normalizeAgeGroupKey === 'function' ? normalizeAgeGroupKey(ageGroup) : null;
+    function normalizeSmoothieSeedName(name) {
+      const s = String(name || '').toLowerCase().trim();
+      if (!s) return null;
 
-      // Conservative smoothie portions (can refine later)
+      if (/\bchia\b/.test(s)) return 'chia seeds';
+      if (/\bflaxseed\b/.test(s) || /\bflax\s+seed(s)?\b/.test(s) || /\bflax\b/.test(s)) return 'flax seeds';
+      if (/\bhemp\s+seed(s)?\b/.test(s) || /\bhemp\b/.test(s)) return 'hemp seeds';
+      if (/\bpumpkin\s+seed(s)?\b/.test(s)) return 'pumpkin seeds';
+      if (/\bsunflower\s+seed(s)?\b/.test(s)) return 'sunflower seeds';
+      if (/\bsesame\s+seed(s)?\b/.test(s) || /\bsesame\b/.test(s) || /\btahini\b/.test(s)) return 'sesame seeds';
+
+      return null;
+    }
+
+    const SMOOTHIE_SEED_PORTIONS = {
+      'chia seeds': {
+        child_4_8: 8,
+        child_9_13: 10,
+        teen_14_18: 12,
+        adult_19_30: 12,
+        woman_31_59: 12,
+        man_31_59: 12,
+        woman_60_plus: 10,
+        man_60_plus: 10
+      },
+      'flax seeds': {
+        child_4_8: 4,
+        child_9_13: 5,
+        teen_14_18: 7,
+        adult_19_30: 7,
+        woman_31_59: 7,
+        man_31_59: 7,
+        woman_60_plus: 7,
+        man_60_plus: 7
+      },
+      'hemp seeds': {
+        child_4_8: 8,
+        child_9_13: 10,
+        teen_14_18: 15,
+        adult_19_30: 15,
+        woman_31_59: 15,
+        man_31_59: 15,
+        woman_60_plus: 12,
+        man_60_plus: 12
+      },
+      'pumpkin seeds': {
+        child_4_8: 8,
+        child_9_13: 10,
+        teen_14_18: 15,
+        adult_19_30: 15,
+        woman_31_59: 15,
+        man_31_59: 15,
+        woman_60_plus: 12,
+        man_60_plus: 12
+      },
+      'sunflower seeds': {
+        child_4_8: 8,
+        child_9_13: 10,
+        teen_14_18: 15,
+        adult_19_30: 15,
+        woman_31_59: 15,
+        man_31_59: 15,
+        woman_60_plus: 12,
+        man_60_plus: 12
+      },
+      'sesame seeds': {
+        child_4_8: 4,
+        child_9_13: 6,
+        teen_14_18: 9,
+        adult_19_30: 9,
+        woman_31_59: 9,
+        man_31_59: 9,
+        woman_60_plus: 9,
+        man_60_plus: 9
+      }
+    };
+
+    function getNutSeedPortionGrams(ageGroup, ingredientKey) {
+      const ageKey = typeof normalizeAgeGroupKey === 'function'
+        ? normalizeAgeGroupKey(ageGroup)
+        : null;
+
+      const seedKey = normalizeSmoothieSeedName(ingredientKey);
+
+      if (seedKey && SMOOTHIE_SEED_PORTIONS[seedKey]) {
+        const group = ageKey || 'adult_19_30';
+        return Number(
+          SMOOTHIE_SEED_PORTIONS[seedKey][group] ||
+          SMOOTHIE_SEED_PORTIONS[seedKey].adult_19_30 ||
+          0
+        );
+      }
+
+      const k = ageKey;
+
+      // Conservative fallback for nuts / unknown seeds.
       if (k === 'child_4_8') return 10;
       if (k === 'child_9_13') return 15;
       if (k === 'teen_14_18') return 20;
 
-      return 28; // adults default (≈ 1 oz)
+      return 28;
     }
 
     const SMOOTHIE_STAPLE_PORTIONS = {
@@ -11445,6 +11537,11 @@ const allergenPanel = allergenNames.length === 0
         // For fresh fruits, use default 100g
         if (isFreshFruit(ingredientKey)) {
           return __final({ amount: 100, unit: 'g', source: 'fruitMap' });
+        }
+        // For nuts/seeds, use default adult smoothie portions
+        if (isNutOrSeed(ingredientKey)) {
+          const grams = getNutSeedPortionGrams('adult-19-30', ingredientKey);
+          return __final({ amount: grams, unit: 'g', source: 'nutSeedMap' });
         }
         return __final({ amount: 0, unit: 'g', source: 'fallback' });
       }
@@ -16219,7 +16316,100 @@ const allergenPanel = allergenNames.length === 0
               };
             }
 
-            const filteredSuggestions = rawSuggestions.filter(item => isSmoothieAllowed(smoothieName(item)));
+            let filteredSuggestions = rawSuggestions.filter(item => isSmoothieAllowed(smoothieName(item)));
+
+            // Force canonical seed suggestions in Smoothie tab.
+            // This prevents searches like "hemp" from only showing "hemp milk".
+            const smoothieSeedSuggestionAliases = {
+              'chia': 'chia seeds',
+              'chia seed': 'chia seeds',
+              'chia seeds': 'chia seeds',
+              'flax': 'flax seeds',
+              'flaxseed': 'flax seeds',
+              'flax seed': 'flax seeds',
+              'flax seeds': 'flax seeds',
+              'hemp': 'hemp seeds',
+              'hemp seed': 'hemp seeds',
+              'hemp seeds': 'hemp seeds',
+              'pumpkin': 'pumpkin seeds',
+              'pumpkin seed': 'pumpkin seeds',
+              'pumpkin seeds': 'pumpkin seeds',
+              'sunflower': 'sunflower seeds',
+              'sunflower seed': 'sunflower seeds',
+              'sunflower seeds': 'sunflower seeds',
+              'sesame': 'sesame seeds',
+              'sesame seed': 'sesame seeds',
+              'sesame seeds': 'sesame seeds',
+              'tahini': 'sesame seeds'
+            };
+
+            const smoothieSeedQuery = String(query || '').toLowerCase().trim().replace(/\s+/g, ' ');
+
+            function getSmoothieCanonicalSeedFromQuery(q) {
+              if (!q || q.length < 3) return null;
+
+              const seedRoots = [
+                { root: 'chia', canonical: 'chia seeds' },
+                { root: 'flax', canonical: 'flax seeds' },
+                { root: 'flaxseed', canonical: 'flax seeds' },
+                { root: 'hemp', canonical: 'hemp seeds' },
+                { root: 'pumpkin', canonical: 'pumpkin seeds' },
+                { root: 'sunflower', canonical: 'sunflower seeds' },
+                { root: 'sesame', canonical: 'sesame seeds' },
+                { root: 'tahini', canonical: 'sesame seeds' }
+              ];
+
+              // Exact alias still wins.
+              if (smoothieSeedSuggestionAliases[q]) {
+                return smoothieSeedSuggestionAliases[q];
+              }
+
+              // Partial typing support:
+              // pump / pumpk / pumpkin -> pumpkin seeds
+              // sun / sunf / sunflow -> sunflower seeds
+              // ses / sesa -> sesame seeds
+              for (const item of seedRoots) {
+                if (item.root.startsWith(q) || q.startsWith(item.root)) {
+                  return item.canonical;
+                }
+              }
+
+              return null;
+            }
+
+            const smoothieCanonicalSeed = getSmoothieCanonicalSeedFromQuery(smoothieSeedQuery);
+
+            if (smoothieCanonicalSeed) {
+              const canonicalLower = smoothieCanonicalSeed.toLowerCase();
+
+              const hasCanonicalSeed = filteredSuggestions.some(item =>
+                smoothieName(item).toLowerCase().trim() === canonicalLower
+              );
+
+              if (!hasCanonicalSeed) {
+                filteredSuggestions.unshift({
+                  name: smoothieCanonicalSeed,
+                  category: 'Smoothie Add-ins',
+                  subcategory: 'Seeds'
+                });
+              }
+
+              filteredSuggestions = filteredSuggestions.sort((a, b) => {
+                const an = smoothieName(a).toLowerCase().trim();
+                const bn = smoothieName(b).toLowerCase().trim();
+
+                if (an === canonicalLower && bn !== canonicalLower) return -1;
+                if (bn === canonicalLower && an !== canonicalLower) return 1;
+
+                if (an.endsWith(' seeds') && !bn.endsWith(' seeds')) return -1;
+                if (bn.endsWith(' seeds') && !an.endsWith(' seeds')) return 1;
+
+                if (an.includes(' milk') && !bn.includes(' milk')) return 1;
+                if (bn.includes(' milk') && !an.includes(' milk')) return -1;
+
+                return an.length - bn.length;
+              });
+            }
             if (location.hostname === "localhost" || location.search.includes("debug=1")) {
               window.__lastSmoothieSuggestionsFiltered = filteredSuggestions;
             }

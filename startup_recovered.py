@@ -463,6 +463,310 @@ def init_ingredient_aliases_table():
         logger.warning(f"Failed to initialize ingredient_aliases table: {e}", exc_info=True)
 
 
+
+def ensure_smoothie_seed_ingredients():
+    """
+    Ensure core smoothie seed ingredients exist for Smoothie tab search/build flow.
+
+    Idempotent:
+    - updates existing nutrition rows
+    - inserts missing nutrition rows
+    - inserts minimal category rows for searchability
+    - inserts common aliases when ingredient_aliases exists
+    """
+    seed_profiles = [
+        {
+            "ingredient": "chia seeds",
+            "calories": 486,
+            "protein": 17,
+            "carbs": 42,
+            "fat": 31,
+            "fiber": 34,
+            "sugar": 0,
+            "sodium": 16,
+            "serving_size": 28,
+            "vitamins": "A, C",
+            "minerals": "Calcium, Phosphorus",
+        },
+        {
+            "ingredient": "flax seeds",
+            "calories": 534,
+            "protein": 18,
+            "carbs": 29,
+            "fat": 42,
+            "fiber": 27,
+            "sugar": 1.6,
+            "sodium": 30,
+            "serving_size": 7,
+            "vitamins": "E, K",
+            "minerals": "Magnesium, Phosphorus",
+        },
+        {
+            "ingredient": "hemp seeds",
+            "calories": 553,
+            "protein": 31.6,
+            "carbs": 8.7,
+            "fat": 48.8,
+            "fiber": 4,
+            "sugar": 1.5,
+            "sodium": 5,
+            "serving_size": 28,
+            "vitamins": "E, B1",
+            "minerals": "Magnesium, Phosphorus, Zinc, Iron",
+        },
+        {
+            "ingredient": "pumpkin seeds",
+            "calories": 559,
+            "protein": 30,
+            "carbs": 10.7,
+            "fat": 49,
+            "fiber": 6,
+            "sugar": 1.4,
+            "sodium": 7,
+            "serving_size": 28,
+            "vitamins": "E, K",
+            "minerals": "Magnesium, Zinc, Iron, Phosphorus",
+        },
+        {
+            "ingredient": "sunflower seeds",
+            "calories": 584,
+            "protein": 21,
+            "carbs": 20,
+            "fat": 51,
+            "fiber": 8.6,
+            "sugar": 2.6,
+            "sodium": 9,
+            "serving_size": 28,
+            "vitamins": "E, B1",
+            "minerals": "Magnesium, Phosphorus",
+        },
+        {
+            "ingredient": "sesame seeds",
+            "calories": 573,
+            "protein": 18,
+            "carbs": 23,
+            "fat": 50,
+            "fiber": 12,
+            "sugar": 0.3,
+            "sodium": 11,
+            "serving_size": 9,
+            "vitamins": "B1, B6, Folate",
+            "minerals": "Calcium, Iron, Magnesium, Phosphorus",
+        },
+    ]
+
+    category_rows = [
+        ("chia seeds", "Heart Health", "Nuts & Seeds", "Omega-3 rich smoothie seed add-in", "Omega-3, Fiber, Calcium", "Chia seeds are a common smoothie add-in for texture and omega-3 fats."),
+        ("flax seeds", "Heart Health", "Nuts & Seeds", "Ground flax smoothie add-in", "Omega-3, Fiber, Lignans", "Flax seeds are commonly added ground for better blending."),
+        ("hemp seeds", "Muscle Health", "Plant-Based Protein Sources", "Plant protein smoothie add-in", "Protein, Omega-3, Magnesium", "Hemp seeds add plant protein and healthy fats to smoothies."),
+        ("pumpkin seeds", "Muscle Health", "Plant-Based Protein Sources", "Mineral-rich smoothie add-in", "Protein, Magnesium, Zinc", "Pumpkin seeds add protein, zinc, and magnesium."),
+        ("sunflower seeds", "Immune System", "Selenium-Rich Foods", "Vitamin E rich smoothie add-in", "Vitamin E, Selenium, Magnesium", "Sunflower seeds add vitamin E and minerals."),
+        ("sesame seeds", "Anemia Prevention", "Copper-Rich Foods", "Copper-rich smoothie seed add-in", "Copper, Iron, Calcium", "Sesame seeds provide copper, iron, and calcium."),
+    ]
+
+    alias_rows = [
+        ("chia", "chia seeds"),
+        ("chia seed", "chia seeds"),
+        ("flax", "flax seeds"),
+        ("flaxseed", "flax seeds"),
+        ("flax seed", "flax seeds"),
+        ("hemp", "hemp seeds"),
+        ("hemp seed", "hemp seeds"),
+        ("pumpkin seed", "pumpkin seeds"),
+        ("sunflower seed", "sunflower seeds"),
+        ("sesame", "sesame seeds"),
+        ("sesame seed", "sesame seeds"),
+        ("tahini", "sesame seeds"),
+    ]
+
+    conn = None
+    try:
+        import os as _os
+
+        database_url = (
+            _os.environ.get("DATABASE_URL")
+            or _os.environ.get("DATABASE_URL_RUNTIME")
+            or _os.environ.get("DB_URL")
+            or ""
+        )
+        _using_postgres = database_url.startswith(("postgres://", "postgresql://"))
+
+        if _using_postgres:
+            import psycopg as _psycopg
+            conn = _psycopg.connect(database_url)
+        else:
+            import sqlite3 as _sqlite3
+            conn = _sqlite3.connect(DB_PATH)
+            conn.row_factory = _sqlite3.Row
+        cursor = conn.cursor()
+
+        if _using_postgres:
+            nutrition_cols = {
+                "calories": "calories",
+                "protein": "protein_g",
+                "carbs": "carbs_g",
+                "fat": "fat_g",
+                "fiber": "fiber_g",
+                "sugar": "sugar_g",
+                "sodium": "sodium_g",
+                "serving_size": "serving_size_g",
+            }
+        else:
+            nutrition_cols = {
+                "calories": "calories_per_100g",
+                "protein": "protein",
+                "carbs": "carbs",
+                "fat": "fat",
+                "fiber": "fiber",
+                "sugar": "sugar",
+                "sodium": "sodium",
+                "serving_size": "serving_size",
+            }
+
+        for row in seed_profiles:
+            cursor.execute(
+                db.prepare_query(
+                    "SELECT 1 FROM nutrition_facts WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?)) LIMIT 1"
+                ),
+                (row["ingredient"],),
+            )
+            exists = cursor.fetchone() is not None
+
+            if exists:
+                update_sql = f"""
+                    UPDATE nutrition_facts
+                    SET
+                        {nutrition_cols["calories"]} = ?,
+                        {nutrition_cols["protein"]} = ?,
+                        {nutrition_cols["carbs"]} = ?,
+                        {nutrition_cols["fat"]} = ?,
+                        {nutrition_cols["fiber"]} = ?,
+                        {nutrition_cols["sugar"]} = ?,
+                        {nutrition_cols["sodium"]} = ?,
+                        {nutrition_cols["serving_size"]} = ?,
+                        vitamins = ?,
+                        minerals = ?
+                    WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?))
+                """
+                cursor.execute(
+                    db.prepare_query(update_sql),
+                    (
+                        row["calories"],
+                        row["protein"],
+                        row["carbs"],
+                        row["fat"],
+                        row["fiber"],
+                        row["sugar"],
+                        row["sodium"],
+                        row["serving_size"],
+                        row["vitamins"],
+                        row["minerals"],
+                        row["ingredient"],
+                    ),
+                )
+            else:
+                insert_sql = f"""
+                    INSERT INTO nutrition_facts
+                    (
+                        ingredient,
+                        {nutrition_cols["calories"]},
+                        {nutrition_cols["protein"]},
+                        {nutrition_cols["carbs"]},
+                        {nutrition_cols["fat"]},
+                        {nutrition_cols["fiber"]},
+                        {nutrition_cols["sugar"]},
+                        {nutrition_cols["sodium"]},
+                        {nutrition_cols["serving_size"]},
+                        vitamins,
+                        minerals
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """
+                cursor.execute(
+                    db.prepare_query(insert_sql),
+                    (
+                        row["ingredient"],
+                        row["calories"],
+                        row["protein"],
+                        row["carbs"],
+                        row["fat"],
+                        row["fiber"],
+                        row["sugar"],
+                        row["sodium"],
+                        row["serving_size"],
+                        row["vitamins"],
+                        row["minerals"],
+                    ),
+                )
+
+        for ingredient, category, subcategory, benefits, nutrients, description in category_rows:
+            cursor.execute(
+                db.prepare_query(
+                    """
+                    SELECT 1
+                    FROM ingredient_categories
+                    WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?))
+                      AND category = ?
+                      AND subcategory = ?
+                    LIMIT 1
+                    """
+                ),
+                (ingredient, category, subcategory),
+            )
+            exists = cursor.fetchone() is not None
+
+            if not exists:
+                cursor.execute(
+                    db.prepare_query(
+                        """
+                        INSERT INTO ingredient_categories
+                        (ingredient, category, subcategory, health_benefits, key_nutrients, description)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        """
+                    ),
+                    (ingredient, category, subcategory, benefits, nutrients, description),
+                )
+
+        try:
+            cursor.execute(db.prepare_query("SELECT 1 FROM ingredient_aliases LIMIT 1"))
+            for alias, canonical_key in alias_rows:
+                cursor.execute(
+                    db.prepare_query(
+                        """
+                        SELECT 1
+                        FROM ingredient_aliases
+                        WHERE LOWER(TRIM(alias)) = LOWER(TRIM(?))
+                        LIMIT 1
+                        """
+                    ),
+                    (alias,),
+                )
+                alias_exists = cursor.fetchone() is not None
+
+                if not alias_exists:
+                    cursor.execute(
+                        db.prepare_query(
+                            """
+                            INSERT INTO ingredient_aliases (alias, canonical_key)
+                            VALUES (?, ?)
+                            """
+                        ),
+                        (alias, canonical_key),
+                    )
+        except Exception as alias_error:
+            logger.info("Skipping seed aliases; ingredient_aliases table unavailable or incompatible: %s", alias_error)
+
+        conn.commit()
+        logger.info("Ensured smoothie seed ingredients in nutrition_facts, ingredient_categories, and aliases")
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        logger.warning("Failed to ensure smoothie seed ingredients: %s", e, exc_info=True)
+    finally:
+        if conn:
+            conn.close()
+
 def seed_ingredient_categories_if_empty():
     """Seed ingredient_categories table if empty."""
     try:
@@ -530,6 +834,7 @@ if RUN_SCHEMA:
     init_ingredient_aliases_table()
     # Seed ingredient_categories table (idempotent)
     seed_ingredient_categories_if_empty()
+    ensure_smoothie_seed_ingredients()
 else:
     logger.info("RUN_SCHEMA=0 skipping schema creation (use RUN_SCHEMA=1 to enable)")
 
