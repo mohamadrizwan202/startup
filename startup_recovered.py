@@ -834,9 +834,12 @@ if RUN_SCHEMA:
     init_ingredient_aliases_table()
     # Seed ingredient_categories table (idempotent)
     seed_ingredient_categories_if_empty()
-    ensure_smoothie_seed_ingredients()
 else:
     logger.info("RUN_SCHEMA=0 skipping schema creation (use RUN_SCHEMA=1 to enable)")
+
+# Runtime data hydration that must run even when RUN_SCHEMA=0.
+# This is DML/idempotent, not schema creation.
+ensure_smoothie_seed_ingredients()
 
 
 @app.route("/home")
