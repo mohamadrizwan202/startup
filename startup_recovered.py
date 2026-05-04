@@ -581,23 +581,10 @@ def ensure_smoothie_seed_ingredients():
 
     conn = None
     try:
-        import os as _os
-
-        database_url = (
-            _os.environ.get("DATABASE_URL")
-            or _os.environ.get("DATABASE_URL_RUNTIME")
-            or _os.environ.get("DB_URL")
-            or ""
-        )
-        _using_postgres = database_url.startswith(("postgres://", "postgresql://"))
-
-        if _using_postgres:
-            import psycopg as _psycopg
-            conn = _psycopg.connect(database_url)
-        else:
-            import sqlite3 as _sqlite3
-            conn = _sqlite3.connect(DB_PATH)
-            conn.row_factory = _sqlite3.Row
+        # Use the same DB connection path as the app routes.
+        # Important for production: do not manually fall back to local SQLite.
+        conn = get_conn()
+        _using_postgres = getattr(db, "USE_POSTGRES", False)
         cursor = conn.cursor()
 
         if _using_postgres:
