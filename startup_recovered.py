@@ -2880,41 +2880,92 @@ def category_hierarchy():
         app.logger.exception("Error in /api/category-hierarchy")
         return jsonify({"error": str(e)}), 500
 
-@csrf.exempt
+def normalize_category_param(category):
+    """Normalize category URL params while preserving readable DB category names."""
+    value = str(category or "").strip()
+    value = value.replace("-", " ").replace("_", " ")
+    value = " ".join(value.split())
+    return value
+
+
 @app.route('/api/ingredients/<category>')
-def get_ingredients(category):
-    """Get ingredients for a specific category"""
-    using_postgres = db.USE_POSTGRES
-    logger.info("API /api/ingredients/%s db=%s", category, "postgres" if using_postgres else "sqlite")
-    try:
-        conn = get_conn()
-        cursor = conn.cursor()
-        sql = db.prepare_query("""
-            SELECT DISTINCT ingredient 
-            FROM ingredient_categories 
-            WHERE category = ? 
-            ORDER BY ingredient
-        """)
-        cursor.execute(sql, (category,))
-
-        results = cursor.fetchall()
-        conn.close()
-        # Both Postgres (dict) and SQLite (sqlite3.Row) support dictionary-style access
-        return jsonify([{"name": row['ingredient'], "calories": 0, "serving": "100g"} for row in results])
-    except Exception as e:
-        app.logger.exception("Error in /api/ingredients/%s", category)
-        return jsonify({"error": str(e)}), 500
-
-
-
-# ============================================================================
-# RECOVERED DATA STRUCTURES AND FUNCTIONS
-# ============================================================================
-
-
-
-
 @csrf.exempt
+def get_ingredients(category):
+    """Get ingredients for a specific category with real nutrition metadata."""
+    category = normalize_category_param(category)
+    logger.info("API /api/ingredients/%s db=%s", category, "postgres" if getattr(db, "USE_POSTGRES", False) else "sqlite")
+
+    conn = get_conn()
+    cursor = conn.cursor()
+
+    try:
+        if getattr(db, "USE_POSTGRES", False):
+            sql = """
+                SELECT
+                    ic.ingredient AS ingredient,
+                    COALESCE(nf.calories, 0) AS calories,
+                    COALESCE(nf.serving_size_g, 0) AS serving_size
+                FROM (
+                    SELECT DISTINCT ingredient
+                    FROM ingredient_categories
+                    WHERE category = %s
+                ) ic
+                LEFT JOIN nutrition_facts nf
+                  ON LOWER(TRIM(nf.ingredient)) = LOWER(TRIM(ic.ingredient))
+                ORDER BY ic.ingredient
+            """
+        else:
+            sql = db.prepare_query("""
+                SELECT
+                    ic.ingredient AS ingredient,
+                    COALESCE(nf.calories_per_100g, 0) AS calories,
+                    COALESCE(nf.serving_size, 0) AS serving_size
+                FROM (
+                    SELECT DISTINCT ingredient
+                    FROM ingredient_categories
+                    WHERE category = ?
+                ) ic
+                LEFT JOIN nutrition_facts nf
+                  ON LOWER(TRIM(nf.ingredient)) = LOWER(TRIM(ic.ingredient))
+                ORDER BY ic.ingredient
+            """)
+
+        cursor.execute(sql, (category,))
+        results = cursor.fetchall()
+
+        payload = []
+        for row in results:
+            ingredient = row["ingredient"] if hasattr(row, "keys") else row[0]
+            calories = row["calories"] if hasattr(row, "keys") else row[1]
+            serving_size = row["serving_size"] if hasattr(row, "keys") else row[2]
+
+            try:
+                calories = float(calories or 0)
+            except Exception:
+                calories = 0
+
+            try:
+                serving_size = float(serving_size or 0)
+            except Exception:
+                serving_size = 0
+
+            payload.append({
+                "name": ingredient,
+                "calories": int(calories) if calories.is_integer() else round(calories, 2),
+                "serving": f"{serving_size:g}g" if serving_size else "—",
+                "serving_size": serving_size,
+            })
+
+        return jsonify(payload)
+
+    except Exception:
+        app.logger.exception("Error in /api/ingredients/%s", category)
+        return jsonify({"error": "Failed to load ingredients"}), 500
+
+    finally:
+        conn.close()
+
+
 @app.route('/api/ingredient-search')
 def ingredient_search():
     """Search for ingredients by name, returning up to 20 unique matches"""
@@ -51105,6 +51156,249 @@ def update_current_user():
 
 
 @csrf.exempt
+
+
+def _canonical_smoothie_seed_name_for_response(name):
+    """Normalize seed aliases to canonical DB nutrition_facts keys."""
+    n = str(name or "").lower().strip()
+    n = re.sub(r"\s+", " ", n)
+    if not n:
+        return None
+
+    aliases = {
+        "chia": "chia seeds",
+        "chia seed": "chia seeds",
+        "chia seeds": "chia seeds",
+        "flax": "flax seeds",
+        "flaxseed": "flax seeds",
+        "flax seed": "flax seeds",
+        "flax seeds": "flax seeds",
+        "hemp": "hemp seeds",
+        "hemp seed": "hemp seeds",
+        "hemp seeds": "hemp seeds",
+        "pumpkin": "pumpkin seeds",
+        "pumpkin seed": "pumpkin seeds",
+        "pumpkin seeds": "pumpkin seeds",
+        "sunflower": "sunflower seeds",
+        "sunflower seed": "sunflower seeds",
+        "sunflower seeds": "sunflower seeds",
+        "sesame": "sesame seeds",
+        "sesame seed": "sesame seeds",
+        "sesame seeds": "sesame seeds",
+        "tahini": "sesame seeds",
+    }
+    return aliases.get(n)
+
+
+def _safe_row_value(row, key, idx=None, default=None):
+    try:
+        if hasattr(row, "keys") and key in row.keys():
+            return row[key]
+    except Exception:
+        pass
+
+    try:
+        if isinstance(row, dict):
+            return row.get(key, default)
+    except Exception:
+        pass
+
+    if idx is not None:
+        try:
+            return row[idx]
+        except Exception:
+            return default
+
+    return default
+
+
+def _round_seed_value(value):
+    try:
+        num = float(value or 0)
+    except Exception:
+        return 0
+    if abs(num - round(num)) < 0.005:
+        return int(round(num))
+    return round(num, 2)
+
+
+def _fetch_seed_nutrition_row(seed_name):
+    conn = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+
+        if getattr(db, "USE_POSTGRES", False):
+            sql = """
+                SELECT
+                    ingredient,
+                    calories AS calories_per_100g,
+                    protein_g AS protein,
+                    carbs_g AS carbs,
+                    fat_g AS fat,
+                    fiber_g AS fiber,
+                    sugar_g AS sugar,
+                    sodium_g AS sodium,
+                    serving_size_g AS serving_size
+                FROM nutrition_facts
+                WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(%s))
+                LIMIT 1
+            """
+            cursor.execute(sql, (seed_name,))
+        else:
+            cursor.execute(
+                db.prepare_query("""
+                    SELECT
+                        ingredient,
+                        calories_per_100g,
+                        protein,
+                        carbs,
+                        fat,
+                        fiber,
+                        sugar,
+                        sodium,
+                        serving_size
+                    FROM nutrition_facts
+                    WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?))
+                    LIMIT 1
+                """),
+                (seed_name,),
+            )
+
+        return cursor.fetchone()
+
+    except Exception as e:
+        logger.warning("Seed nutrition fetch failed for %s: %s", seed_name, e, exc_info=True)
+        return None
+
+    finally:
+        if conn:
+            conn.close()
+
+
+def _patch_seed_nutrition_response(resp):
+    """
+    Narrow safety patch for /api/analyze:
+    if known smoothie seeds fall through to 0-calorie estimated fallback,
+    replace them with real nutrition_facts values.
+    """
+    response_obj = resp
+    status_code = None
+    headers = None
+
+    if isinstance(resp, tuple):
+        response_obj = resp[0]
+        if len(resp) > 1:
+            status_code = resp[1]
+        if len(resp) > 2:
+            headers = resp[2]
+
+    try:
+        if status_code and int(status_code) >= 400:
+            return resp
+    except Exception:
+        pass
+
+    try:
+        payload = response_obj.get_json()
+    except Exception:
+        return resp
+
+    if not isinstance(payload, dict):
+        return resp
+
+    ingredients = payload.get("ingredients")
+    if not isinstance(ingredients, list):
+        return resp
+
+    changed = False
+
+    for item in ingredients:
+        if not isinstance(item, dict):
+            continue
+
+        raw_name = item.get("display_name") or item.get("ingredient")
+        canonical = _canonical_smoothie_seed_name_for_response(raw_name)
+
+        if not canonical:
+            continue
+
+        row = _fetch_seed_nutrition_row(canonical)
+        if not row:
+            continue
+
+        calories_100 = float(_safe_row_value(row, "calories_per_100g", 1, 0) or 0)
+        protein_100 = float(_safe_row_value(row, "protein", 2, 0) or 0)
+        carbs_100 = float(_safe_row_value(row, "carbs", 3, 0) or 0)
+        fat_100 = float(_safe_row_value(row, "fat", 4, 0) or 0)
+        fiber_100 = float(_safe_row_value(row, "fiber", 5, 0) or 0)
+        sugar_100 = float(_safe_row_value(row, "sugar", 6, 0) or 0)
+        sodium_100 = float(_safe_row_value(row, "sodium", 7, 0) or 0)
+        serving_g = float(_safe_row_value(row, "serving_size", 8, 100) or 100)
+
+        factor = serving_g / 100.0
+
+        item.update({
+            "ingredient": canonical,
+            "display_name": raw_name or canonical,
+            "calories_per_100g": _round_seed_value(calories_100),
+            "calories": _round_seed_value(calories_100 * factor),
+            "protein": _round_seed_value(protein_100 * factor),
+            "carbs": _round_seed_value(carbs_100 * factor),
+            "fat": _round_seed_value(fat_100 * factor),
+            "fiber": _round_seed_value(fiber_100 * factor),
+            "sugar": _round_seed_value(sugar_100 * factor),
+            "sodium": _round_seed_value(sodium_100 * factor),
+            "serving_size": f"{serving_g:g}g",
+            "serving_size_g": serving_g,
+            "is_usda": True,
+        })
+
+        if canonical == "sesame seeds":
+            item["allergens"] = {
+                "name": "Sesame",
+                "severity": "High",
+                "description": "Sesame allergen detected from sesame seed ingredient.",
+                "aliases": "sesame, tahini, benne, simsim",
+                "common_in": "sesame seeds, tahini, sesame oil"
+            }
+
+        changed = True
+
+    if changed:
+        totals = {
+            "calories": 0,
+            "protein": 0,
+            "carbs": 0,
+            "fat": 0,
+            "fiber": 0,
+            "sugar": 0,
+            "sodium": 0,
+        }
+
+        for item in ingredients:
+            if not isinstance(item, dict):
+                continue
+            for key in totals:
+                try:
+                    totals[key] += float(item.get(key) or 0)
+                except Exception:
+                    pass
+
+        payload["total_nutrition"] = {
+            key: _round_seed_value(value)
+            for key, value in totals.items()
+        }
+
+        patched = jsonify(payload)
+        if status_code and headers:
+            return patched, status_code, headers
+        if status_code:
+            return patched, status_code
+        return patched
+
+    return resp
+
 @app.route('/api/analyze', methods=['POST'])
 def api_analyze():
     """Analyze ingredients endpoint - accepts both 'ingredients' array and 'query' string"""
@@ -51155,7 +51449,7 @@ def api_analyze():
             return jsonify({"error": "No ingredients or query provided"}), 400
         
         # Call nlp_query - it will handle the data
-        return nlp_query()
+        return _patch_seed_nutrition_response(nlp_query())
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
