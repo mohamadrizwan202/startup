@@ -3071,6 +3071,50 @@ def ingredient_search():
             "subcategory": (r["subcategory"] or "").strip()
         } for r in rows]
 
+        # Force canonical smoothie seed suggestions.
+        # Production DB may contain old aliases like hemp -> hemp milk,
+        # so seed-root searches must not depend only on ingredient_categories.
+        seed_roots = [
+            ("chia", "chia seeds"),
+            ("flax", "flax seeds"),
+            ("flaxseed", "flax seeds"),
+            ("hemp", "hemp seeds"),
+            ("pumpkin", "pumpkin seeds"),
+            ("sunflower", "sunflower seeds"),
+            ("sesame", "sesame seeds"),
+            ("tahini", "sesame seeds"),
+        ]
+
+        forced_seed = None
+        seed_query = " ".join(q_key.split())
+
+        if len(seed_query) >= 3:
+            for root, canonical_seed in seed_roots:
+                if root.startswith(seed_query) or seed_query.startswith(root):
+                    forced_seed = canonical_seed
+                    break
+
+        if forced_seed:
+            forced_lower = forced_seed.lower()
+            if not any((item.get("name") or "").lower().strip() == forced_lower for item in suggestions):
+                suggestions.insert(0, {
+                    "name": forced_seed,
+                    "category": "Smoothie Add-ins",
+                    "subcategory": "Seeds"
+                })
+
+            def seed_search_rank(item):
+                name = (item.get("name") or "").lower().strip()
+                if name == forced_lower:
+                    return (0, name)
+                if name.endswith(" seeds") or name.endswith(" seed"):
+                    return (1, name)
+                if " milk" in name:
+                    return (3, name)
+                return (2, name)
+
+            suggestions = sorted(suggestions, key=seed_search_rank)
+
         return jsonify(suggestions)
 
     except Exception as e:
