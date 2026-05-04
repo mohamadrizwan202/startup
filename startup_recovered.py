@@ -743,7 +743,19 @@ def ensure_smoothie_seed_ingredients():
                 )
                 alias_exists = cursor.fetchone() is not None
 
-                if not alias_exists:
+                if alias_exists:
+                    # Force seed-root aliases away from old milk mappings.
+                    cursor.execute(
+                        db.prepare_query(
+                            """
+                            UPDATE ingredient_aliases
+                            SET canonical_key = ?
+                            WHERE LOWER(TRIM(alias)) = LOWER(TRIM(?))
+                            """
+                        ),
+                        (canonical_key, alias),
+                    )
+                else:
                     cursor.execute(
                         db.prepare_query(
                             """
