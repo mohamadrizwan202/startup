@@ -51269,7 +51269,82 @@ def _round_seed_value(value):
 
 
 def _fetch_seed_nutrition_row(seed_name):
+    """
+    Fetch seed nutrition from DB. If production DB hydration/search tables are stale,
+    fall back to known seed nutrition so Smoothie results never show fake 0 kcal.
+    """
+    fallback_seed_rows = {
+        "chia seeds": {
+            "ingredient": "chia seeds",
+            "calories_per_100g": 486,
+            "protein": 17,
+            "carbs": 42,
+            "fat": 31,
+            "fiber": 34,
+            "sugar": 0,
+            "sodium": 16,
+            "serving_size": 28,
+        },
+        "flax seeds": {
+            "ingredient": "flax seeds",
+            "calories_per_100g": 534,
+            "protein": 18,
+            "carbs": 29,
+            "fat": 42,
+            "fiber": 27,
+            "sugar": 1.6,
+            "sodium": 30,
+            "serving_size": 7,
+        },
+        "hemp seeds": {
+            "ingredient": "hemp seeds",
+            "calories_per_100g": 553,
+            "protein": 31.6,
+            "carbs": 8.7,
+            "fat": 48.8,
+            "fiber": 4,
+            "sugar": 1.5,
+            "sodium": 5,
+            "serving_size": 28,
+        },
+        "pumpkin seeds": {
+            "ingredient": "pumpkin seeds",
+            "calories_per_100g": 559,
+            "protein": 30,
+            "carbs": 10.7,
+            "fat": 49,
+            "fiber": 6,
+            "sugar": 1.4,
+            "sodium": 7,
+            "serving_size": 28,
+        },
+        "sunflower seeds": {
+            "ingredient": "sunflower seeds",
+            "calories_per_100g": 584,
+            "protein": 21,
+            "carbs": 20,
+            "fat": 51,
+            "fiber": 8.6,
+            "sugar": 2.6,
+            "sodium": 9,
+            "serving_size": 28,
+        },
+        "sesame seeds": {
+            "ingredient": "sesame seeds",
+            "calories_per_100g": 573,
+            "protein": 18,
+            "carbs": 23,
+            "fat": 50,
+            "fiber": 12,
+            "sugar": 0.3,
+            "sodium": 11,
+            "serving_size": 9,
+        },
+    }
+
+    canonical = str(seed_name or "").lower().strip()
     conn = None
+
     try:
         conn = get_conn()
         cursor = conn.cursor()
@@ -51311,15 +51386,18 @@ def _fetch_seed_nutrition_row(seed_name):
                 (seed_name,),
             )
 
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        if row:
+            return row
 
     except Exception as e:
-        logger.warning("Seed nutrition fetch failed for %s: %s", seed_name, e, exc_info=True)
-        return None
+        logger.warning("Seed nutrition DB fetch failed for %s; using fallback if available: %s", seed_name, e, exc_info=True)
 
     finally:
         if conn:
             conn.close()
+
+    return fallback_seed_rows.get(canonical)
 
 
 def _patch_seed_nutrition_response(resp):
