@@ -27323,6 +27323,8 @@ def populate_db():
         # Nuts & Seeds
         ("almonds", 579, 21, 22, 50, 12, 4.4, 1, 28, "E, B2", "Magnesium, Phosphorus"),
         ("walnuts", 654, 15, 14, 65, 6.7, 2.6, 2, 28, "E, B6", "Magnesium, Phosphorus"),
+        # Dark Chocolate - FDA RACC 28g (1 oz), USDA FoodData Central
+        ("dark chocolate", 600, 7.79, 45.9, 42.6, 10.9, 24.0, 20, 28, "E, K, B1, B2, B3, B5, B6", "Iron, Magnesium, Zinc, Copper, Manganese, Phosphorus, Potassium, Selenium"),
         (
             "cashews",
             553,
