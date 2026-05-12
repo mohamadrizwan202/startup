@@ -11448,24 +11448,24 @@ const allergenPanel = allergenNames.length === 0
 
     const SMOOTHIE_STAPLE_PORTIONS = {
       'greek yogurt': {
-        child_4_8: 85,
-        child_9_13: 120,
-        teen_14_18: 170,
-        adult_19_30: 170,
-        woman_31_59: 170,
-        man_31_59: 170,
-        woman_60_plus: 170,
-        man_60_plus: 170
+        child_4_8: 85,        // 85g — half portion children 4-8 USDA
+        child_9_13: 120,      // 120g — children 9-13 USDA
+        teen_14_18: 170,      // 170g (3/4 cup) — standard teen portion USDA
+        adult_19_30: 170,     // 170g (3/4 cup) — standard adult USDA
+        woman_31_59: 170,     // 170g — appropriate women protein density USDA
+        man_31_59: 200,       // 200g — men 31-59 higher protein RDA 56g vs 46g women
+        woman_60_plus: 150,   // 150g — smaller volume older women protein-dense
+        man_60_plus: 170      // 170g — maintained older men protein needs
       },
       'yogurt': {
-        child_4_8: 120,
-        child_9_13: 170,
-        teen_14_18: 245,
-        adult_19_30: 245,
-        woman_31_59: 245,
-        man_31_59: 245,
-        woman_60_plus: 245,
-        man_60_plus: 245
+        child_4_8: 120,       // 120g — USDA child 4-8 dairy portion
+        child_9_13: 170,      // 170g — USDA child 9-13 dairy portion
+        teen_14_18: 245,      // 245g (1 cup) — adolescent full dairy serving USDA
+        adult_19_30: 245,     // 245g (1 cup) — peak adult dairy need USDA DRI
+        woman_31_59: 200,     // 200g — women 31-59 lower caloric needs USDA 2020-25
+        man_31_59: 245,       // 245g — men 31-59 maintain full serving USDA DRI
+        woman_60_plus: 175,   // 175g — reduced appetite older women AND 2019 position paper
+        man_60_plus: 200      // 200g — slightly reduced older men vs peak
       },
       'oats': {
         child_4_8: 20,
@@ -13217,7 +13217,9 @@ const allergenPanel = allergenNames.length === 0
         papaya: 80,         // ½ cup
         strawberries: 75,   // 4-5 berries
         blueberries: 65,    // ½ cup
-        raspberries: 60    // ½ cup
+        raspberries: 60,   // ½ cup
+        dragon_fruit: 80,  // 80g — USDA ½ fruit serving children 4-8 FDC#2344719
+        dragonfruit: 80    // alias
       },
       child_9_13: {
         mango: 120,
@@ -13241,7 +13243,9 @@ const allergenPanel = allergenNames.length === 0
         honeydew: 120,
         papaya: 110,
         plum: 80,
-        cherry: 80
+        cherry: 80,
+        dragon_fruit: 100,  // 100g — ½ cup children 9-13 USDA fruit serving
+        dragonfruit: 100    // alias
       },
       adult_19_30: {
         apple: 150,
@@ -13258,6 +13262,8 @@ const allergenPanel = allergenNames.length === 0
         pear: 150,
         orange: 150,
         mandarin: 80,
+        dragon_fruit: 180,  // 180g — 1 cup USDA fruit equivalent adult 19-30 FDC#2344719
+        dragonfruit: 180,   // alias
         clementine: 80,
         kiwi: 100,
         pineapple: 140,
@@ -14078,6 +14084,7 @@ const allergenPanel = allergenNames.length === 0
      * @returns {string|null} - Normalized key or null if not found
      */
     function normalizeIngredientNameForServing(ingredientName) {
+      // Dragon fruit aliases — added fix/dragon-fruit-yogurt-age-data
       if (!ingredientName || typeof ingredientName !== 'string') {
         return null;
       }
