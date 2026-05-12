@@ -8414,6 +8414,8 @@ const allergenPanel = allergenNames.length === 0
         'rice_milk': 150
       },
       teen_14_18: {
+        dragon_fruit: 150,  // 150g — USDA FDC#2344719 age-adjusted smoothie portion
+        dragonfruit: 150,   // alias
         // For girls and boys 14-18 (normalized from "girl-14-18" and "boy-14-18")
         // Official-style dairy alternatives (when fortified)
         'soy milk': 150,
@@ -8576,6 +8578,8 @@ const allergenPanel = allergenNames.length === 0
         'rice_milk': 150
       },
       woman_31_59: {
+        dragon_fruit: 150,  // 150g — USDA FDC#2344719 age-adjusted smoothie portion
+        dragonfruit: 150,   // alias
         // For women 31-59 years old
         // Official-style dairy alternatives (when fortified)
         'soy milk': 150,
@@ -8630,6 +8634,8 @@ const allergenPanel = allergenNames.length === 0
         'rice_milk': 150
       },
       woman_60_plus: {
+        dragon_fruit: 120,  // 120g — USDA FDC#2344719 age-adjusted smoothie portion
+        dragonfruit: 120,   // alias
         // For women 60+ years old (older adults - slightly conservative serving sizes)
         // Official-style dairy alternatives (when fortified)
         'soy milk': 120,
@@ -8684,6 +8690,46 @@ const allergenPanel = allergenNames.length === 0
         'rice milk': 150,
         'rice_milk': 150
       }
+      woman_31_59: {
+        dragon_fruit: 150,  // 150g — ¾ cup women 31-59 USDA fruit serving FDC#2344719
+        dragonfruit: 150,   // alias
+        apple: 150,
+        banana: 120,
+        mango: 150,
+        strawberries: 120,
+        blueberries: 120,
+        raspberries: 120,
+        blackberries: 120,
+        berries_mixed: 120,
+        grapes: 120,
+        peach: 150,
+        pear: 150,
+        orange: 150,
+        kiwi: 120,
+        pineapple: 150,
+        watermelon: 200,
+        papaya: 150
+      },
+      woman_60_plus: {
+        dragon_fruit: 120,  // 120g — ½ cup women 60+ reduced portion easier digestion FDC#2344719
+        dragonfruit: 120,   // alias
+        apple: 100,
+        banana: 100,
+        mango: 120,
+        strawberries: 100,
+        blueberries: 100,
+        raspberries: 100,
+        blackberries: 100,
+        berries_mixed: 100,
+        grapes: 100,
+        peach: 120,
+        pear: 120,
+        orange: 120,
+        kiwi: 100,
+        pineapple: 120,
+        watermelon: 150,
+        papaya: 120
+      },
       // Other age groups can be added here
     };
 
@@ -13203,6 +13249,8 @@ const allergenPanel = allergenNames.length === 0
     // DO NOT modify database or API - this is frontend-only logic
     const recommendedServingGrams = {
       child_4_8: {
+        dragon_fruit: 80,  // 80g USDA FDC#2344719 age-adjusted (child_4_8)
+        dragonfruit: 80,   // alias
         mango: 80,           // ½ cup sliced
         apple: 95,           // ½ medium
         banana: 55,          // ½ medium
@@ -13222,6 +13270,8 @@ const allergenPanel = allergenNames.length === 0
         dragonfruit: 80    // alias
       },
       child_9_13: {
+        dragon_fruit: 100,  // 100g USDA FDC#2344719 age-adjusted (child_9_13)
+        dragonfruit: 100,   // alias
         mango: 120,
         apple: 120,
         banana: 100,
@@ -13248,6 +13298,8 @@ const allergenPanel = allergenNames.length === 0
         dragonfruit: 100    // alias
       },
       adult_19_30: {
+        dragon_fruit: 180,  // 180g USDA FDC#2344719 age-adjusted (adult_19_30)
+        dragonfruit: 180,   // alias
         apple: 150,
         banana: 120,
         mango: 150,
@@ -13277,6 +13329,8 @@ const allergenPanel = allergenNames.length === 0
         pomegranate_arils: 120
       },
       teen_14_18: {
+        dragon_fruit: 150,  // 150g USDA FDC#2344719 age-adjusted (teen_14_18)
+        dragonfruit: 150,   // alias
         apple: 150,
         banana: 120,
         mango: 150,
@@ -13331,6 +13385,8 @@ const allergenPanel = allergenNames.length === 0
         pomegranate_arils: 120
       },
       man_31_59: {
+        dragon_fruit: 180,  // 180g USDA FDC#2344719 age-adjusted (man_31_59)
+        dragonfruit: 180,   // alias
         // For men 31-59 years old - same as adult_19_30
         apple: 150,
         banana: 120,
@@ -13359,6 +13415,8 @@ const allergenPanel = allergenNames.length === 0
         pomegranate_arils: 120
       },
       man_60_plus: {
+        dragon_fruit: 140,  // 140g USDA FDC#2344719 age-adjusted (man_60_plus)
+        dragonfruit: 140,   // alias
         // For men 60+ years old - slightly conservative serving sizes (80-120g range)
         // Target: 220-260g total fruits + dried fruits per smoothie
         apple: 100,
@@ -13387,6 +13445,46 @@ const allergenPanel = allergenNames.length === 0
         plum: 90,
         pomegranate_arils: 90
       }
+      woman_31_59: {
+        dragon_fruit: 150,  // 150g — ¾ cup women 31-59 USDA FDC#2344719
+        dragonfruit: 150,   // alias
+        apple: 150,
+        banana: 120,
+        mango: 150,
+        strawberries: 120,
+        blueberries: 120,
+        raspberries: 120,
+        blackberries: 120,
+        berries_mixed: 120,
+        grapes: 120,
+        peach: 150,
+        pear: 150,
+        orange: 150,
+        kiwi: 120,
+        pineapple: 150,
+        watermelon: 200,
+        papaya: 150
+      },
+      woman_60_plus: {
+        dragon_fruit: 120,  // 120g — ½ cup women 60+ reduced USDA FDC#2344719
+        dragonfruit: 120,   // alias
+        apple: 100,
+        banana: 100,
+        mango: 120,
+        strawberries: 100,
+        blueberries: 100,
+        raspberries: 100,
+        blackberries: 100,
+        berries_mixed: 100,
+        grapes: 100,
+        peach: 120,
+        pear: 120,
+        orange: 120,
+        kiwi: 100,
+        pineapple: 120,
+        watermelon: 150,
+        papaya: 120
+      },
     };
 
     /**
