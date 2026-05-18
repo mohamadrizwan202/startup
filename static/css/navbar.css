@@ -1,141 +1,183 @@
-html, body { font-family: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
-
-/* Ensure no default browser margins interfere with navbar */
 html, body {
+  font-family: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   margin: 0;
   padding: 0;
 }
 
-/* Navbar */
-.navbar {
+.pf-header {
   position: sticky;
   top: 0;
   z-index: 1000;
+  background: #fff;
+  border-bottom: 1px solid #E2E8F0;
+}
 
-  width: 100%;
-  margin: 0;
-  border-radius: 0;
-
-  padding: 14px 28px;
+.pf-nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
-
-  background: rgba(255, 255, 255, 0.10);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-  box-sizing: border-box;
+  gap: 12px;
 }
 
-.navbar-brand {
-  display: flex;
-  align-items: center;
+.pf-brand {
   text-decoration: none;
-  height: 32px;
-  flex-shrink: 0;
-  gap: 10px;
+  color: #0F172A;
 }
 
-.brand-name {
-  color: white;
+.pf-brand__text {
   font-size: 1.25rem;
   font-weight: 700;
-  letter-spacing: -0.01em;
-  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
-/* Tiny, non-invasive Beta tag (won't push the logo) */
-.beta-badge {
-  display: inline-block;
-  margin-left: 6px;
-
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  line-height: 1;
-
-  padding: 1px 5px;
-  border-radius: 999px;
-
-  /* subtle on teal */
-  color: rgba(255,255,255,0.9);
-  background: rgba(255,255,255,0.10);
-  border: 1px solid rgba(255,255,255,0.18);
-
-  /* make it feel like a small "sup" tag */
-  vertical-align: super;
-  position: relative;
-  top: -2px;
-}
-
-.navbar-brand:hover {
-  opacity: 0.9;
-}
-
-.navbar-nav {
+/* Hamburger */
+.pf-nav__toggle {
   display: flex;
-  align-items: center;
-  gap: 25px;
-  font-size: 0.95rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
 }
 
-.navbar-nav a {
-  color: white;
+.pf-nav__bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #0F172A;
+  border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+/* Menu (hidden on mobile by default) */
+.pf-nav__menu {
+  display: none;
+  width: 100%;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.pf-nav__menu.open {
+  display: flex;
+}
+
+.pf-nav__links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pf-nav__link {
   text-decoration: none;
-  opacity: 0.9;
-  transition: opacity 0.2s ease;
+  color: #475569;
+  font-size: 0.92rem;
   font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
 }
 
-.navbar-nav a:hover {
-  opacity: 1;
-  text-decoration: underline;
+.pf-nav__link:hover {
+  background: #F1F5F9;
+  color: #0EA5A4;
 }
 
-.navbar-auth {
+.pf-nav__auth {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.pf-nav__who {
+  font-size: 0.82rem;
+  color: #475569;
+  padding: 4px 12px;
+}
+
+.pf-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 15px;
-  font-size: 0.9rem;
-  color: white;
-  flex-wrap: wrap;
-}
-
-.navbar-auth a {
-  color: white;
+  justify-content: center;
+  padding: 9px 20px;
+  border-radius: 100px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
   text-decoration: none;
-  opacity: 0.9;
-  transition: opacity 0.2s ease;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
 }
 
-.navbar-auth a:hover {
-  opacity: 1;
-  text-decoration: underline;
+.pf-btn--ghost {
+  background: transparent;
+  color: #475569;
+  border: 1px solid #E2E8F0;
 }
 
-.navbar-auth span {
-  opacity: 0.7;
+.pf-btn--ghost:hover {
+  border-color: #0EA5A4;
+  color: #0EA5A4;
 }
 
-/* Mobile: 2-line layout via flex-wrap */
-@media (max-width: 768px) {
-  .navbar {
+.pf-btn--primary {
+  background: #0EA5A4;
+  color: #fff;
+}
+
+.pf-btn--primary:hover {
+  background: #0B7F7E;
+}
+
+/* Desktop (>=768px) */
+@media (min-width: 768px) {
+  .pf-nav {
+    flex-wrap: nowrap;
+  }
+
+  .pf-nav__toggle {
+    display: none;
+  }
+
+  .pf-nav__menu {
+    display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    width: auto;
+    flex: 1;
+    padding-top: 0;
+    margin-left: 32px;
+    gap: 0;
   }
-  
-  .navbar-brand {
-    width: 100%;
-    margin-bottom: 10px;
+
+  .pf-nav__links {
+    flex-direction: row;
+    gap: 0;
   }
-  
-  .navbar-nav,
-  .navbar-auth {
-    width: 100%;
-    justify-content: center;
+
+  .pf-nav__link {
+    padding: 6px 14px;
+  }
+
+  .pf-nav__auth {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding-top: 0;
+    border-top: none;
+    margin-left: auto;
+  }
+
+  .pf-nav__who {
+    padding: 0 8px 0 0;
   }
 }

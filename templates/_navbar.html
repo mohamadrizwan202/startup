@@ -36,3 +36,15 @@
     </div>
   </nav>
 </header>
+<script>
+(function(){
+  var btn = document.querySelector('.pf-nav__toggle');
+  var menu = document.getElementById('pf-nav-menu');
+  if(btn && menu){
+    btn.addEventListener('click', function(){
+      var open = menu.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    });
+  }
+})();
+</script>
