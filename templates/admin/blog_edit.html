@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{{ 'Edit: ' + post.title if post else 'New Post' }} — Admin | PureFyul</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #0EA5A4; --primary-dark: #0B7F7E; --text-primary: #0F172A;
+      --text-secondary: #475569; --text-tertiary: #94A3B8; --bg-primary: #FFFFFF;
+      --bg-secondary: #F8FAFC; --bg-page: #f1f5f9; --border: #E2E8F0;
+      --radius: 12px; --radius-lg: 16px; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+    }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-page); color: var(--text-primary); line-height: 1.6; min-height: 100vh;
+    }
+    .editor-container { max-width: 820px; margin: 0 auto; padding: 24px 16px 60px; }
+    .editor-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+    }
+    .editor-back { font-size: 0.85rem; color: var(--text-tertiary); text-decoration: none; font-weight: 500; }
+    .editor-back:hover { color: var(--primary); }
+    .flash-msg { padding: 12px 16px; border-radius: var(--radius); margin-bottom: 16px; font-size: 0.88rem; font-weight: 500; }
+    .flash-success { background: rgba(16,185,129,0.1); color: #065f46; border: 1px solid rgba(16,185,129,0.2); }
+    .flash-error { background: rgba(239,68,68,0.1); color: #991b1b; border: 1px solid rgba(239,68,68,0.2); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px;
+      border-radius: 100px; font-size: 0.85rem; font-weight: 600; font-family: inherit;
+      border: none; cursor: pointer; transition: all 0.15s; text-decoration: none;
+    }
+    .btn-draft { background: var(--bg-primary); color: var(--text-secondary); border: 1px solid var(--border); }
+    .btn-draft:hover { border-color: var(--text-tertiary); }
+    .btn-publish { background: var(--primary); color: #fff; }
+    .btn-publish:hover { background: var(--primary-dark); }
+    .btn-unpublish { background: var(--warning); color: #fff; }
+    .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
+    .btn-danger:hover { background: rgba(239,68,68,0.06); }
+    .btn-preview { background: transparent; color: var(--primary); border: 1px solid rgba(14,165,164,0.3); }
+    .status-indicator {
+      display: inline-block; padding: 3px 10px; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-left: 8px;
+    }
+    .si-draft { background: rgba(245,158,11,0.12); color: #92400e; }
+    .si-published { background: rgba(16,185,129,0.12); color: #065f46; }
+    .editor-card {
+      background: var(--bg-primary); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px;
+    }
+    .editor-card-title {
+      font-size: 0.74rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 16px;
+    }
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .field-hint { font-size: 0.74rem; color: var(--text-tertiary); margin-top: 4px; }
+    input[type="text"], textarea, select {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;
+      font-size: 0.9rem; font-family: inherit; color: var(--text-primary); background: var(--bg-primary); transition: border-color 0.15s;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14,165,164,0.1);
+    }
+    textarea { resize: vertical; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .md-editor {
+      min-height: 400px; font-family: 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+      font-size: 0.88rem; line-height: 1.7; tab-size: 2;
+    }
+    .danger-zone { border-color: rgba(239,68,68,0.2); margin-top: 8px; }
+    @media (max-width: 600px) {
+      .field-row { grid-template-columns: 1fr; }
+      .editor-actions { width: 100%; }
+      .editor-actions .btn { flex: 1; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="editor-container">
+    <div class="editor-topbar">
+      <div>
+        <a href="{{ url_for('admin_blog_list') }}" class="editor-back">← All Posts</a>
+        {% if post %}
+        <span class="status-indicator si-{{ post.status or 'draft' }}">{{ post.status or 'draft' }}</span>
+        {% endif %}
+      </div>
+      {% if post and post.status == 'published' %}
+      <a href="{{ url_for('blog_post', slug=post.slug) }}" target="_blank" class="btn btn-preview">View Live ↗</a>
+      {% endif %}
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    <div id="blog-form-wrapper">
+      <div class="editor-card">
+        <div class="field">
+          <label for="f-title">Title</label>
+          <input type="text" id="f-title" name="title" value="{{ post.title if post else '' }}" placeholder="e.g. 7 Smoothies That Help With Inflammation" required>
+        </div>
+        <div class="field">
+          <label for="f-slug">Slug (URL)</label>
+          <input type="text" id="f-slug" name="slug" value="{{ post.slug if post else '' }}" placeholder="auto-generated-from-title">
+          <div class="field-hint">Leave blank to auto-generate from title. Shows as /blog/your-slug</div>
+        </div>
+        <div class="field">
+          <label for="f-excerpt">Excerpt</label>
+          <textarea id="f-excerpt" name="excerpt" rows="2" placeholder="Brief summary shown on blog cards and meta description">{{ post.excerpt if post else '' }}</textarea>
+        </div>
+      </div>
+      <div class="editor-card">
+        <div class="editor-card-title">Organization</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-category">Category</label>
+            <select id="f-category" name="category">
+              {% set cats = ['recipes', 'nutrition', 'spotlights', 'lifestyle', 'general'] %}
+              {% for cat in cats %}
+              <option value="{{ cat }}" {{ 'selected' if post and post.category == cat else '' }}>{{ cat | capitalize }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-cover">Cover Image URL</label>
+            <input type="text" id="f-cover" name="cover_image_url" value="{{ post.cover_image_url if post and post.cover_image_url else '' }}" placeholder="https://...">
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-tags">Tags</label>
+          <input type="text" id="f-tags" name="tags" value="{{ ', '.join(post.tags) if post and post.tags else '' }}" placeholder="inflammation, turmeric (comma-separated)">
+        </div>
+      </div>
+      <div class="editor-card">
+        <div class="editor-card-title">Content (Markdown)</div>
+        <div class="field">
+          <textarea id="f-body" name="body_markdown" class="md-editor" rows="20" placeholder="## Your first heading
+
+Write your blog post here using Markdown...
+
+**Bold text**, *italic*, [links](https://purefyul.com/ingredient/banana)">{{ post.body_markdown if post else '' }}</textarea>
+          <div class="field-hint">Use Markdown: ## for headings, **bold**, *italic*, [text](url) for links. Link to ingredients like [Banana](/ingredient/banana).</div>
+        </div>
+      </div>
+      <div class="editor-card">
+        <div class="editor-card-title">SEO (optional overrides)</div>
+        <div class="field">
+          <label for="f-meta-title">Meta Title</label>
+          <input type="text" id="f-meta-title" name="meta_title" value="{{ post.meta_title if post and post.meta_title else '' }}" placeholder="Defaults to: Post Title | PureFyul Blog">
+        </div>
+        <div class="field">
+          <label for="f-meta-desc">Meta Description</label>
+          <textarea id="f-meta-desc" name="meta_description" rows="2" placeholder="Defaults to excerpt. Keep under 155 characters.">{{ post.meta_description if post and post.meta_description else '' }}</textarea>
+        </div>
+      </div>
+      <div class="editor-card">
+        <div class="editor-card-title">Internal Linking</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-ri">Related Ingredients</label>
+            <input type="text" id="f-ri" name="related_ingredients" value="{{ ', '.join(post.related_ingredients) if post and post.related_ingredients else '' }}" placeholder="banana, kale, ginger (slugs)">
+          </div>
+          <div class="field">
+            <label for="f-rg">Related Goals</label>
+            <input type="text" id="f-rg" name="related_goals" value="{{ ', '.join(post.related_goals) if post and post.related_goals else '' }}" placeholder="immune-support, heart-health (slugs)">
+          </div>
+        </div>
+      </div>
+      <div class="editor-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <button type="button" class="btn btn-draft" onclick="submitForm('draft')">Save Draft</button>
+        {% if post and post.status == 'published' %}
+        <button type="button" class="btn btn-unpublish" onclick="submitForm('unpublish')">Unpublish</button>
+        <button type="button" class="btn btn-publish" onclick="submitForm('publish')">Update & Keep Published</button>
+        {% else %}
+        <button type="button" class="btn btn-publish" onclick="submitForm('publish')">Publish</button>
+        {% endif %}
+      </div>
+      {% if post %}
+      <div class="editor-card danger-zone" style="margin-top:32px;">
+        <div class="editor-card-title" style="color:var(--danger);">Danger Zone</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px;">Archiving removes the post from the public blog.</p>
+        <button type="button" class="btn btn-danger" onclick="archivePost()">Archive This Post</button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <script>
+    var titleEl = document.getElementById('f-title');
+    var slugEl = document.getElementById('f-slug');
+    var slugManuallyEdited = {{ 'true' if post else 'false' }};
+    if (slugEl) { slugEl.addEventListener('input', function() { slugManuallyEdited = true; }); }
+    if (titleEl && slugEl) {
+      titleEl.addEventListener('input', function() {
+        if (!slugManuallyEdited) {
+          slugEl.value = titleEl.value.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/[\s_]+/g, '-').replace(/-{2,}/g, '-').replace(/^-|-$/g, '');
+        }
+      });
+    }
+    function getCsrfToken() {
+      var meta = document.querySelector('meta[name="csrf-token"]');
+      return meta ? meta.getAttribute('content') : '';
+    }
+    function submitForm(action) {
+      var fields = {
+        title: document.getElementById('f-title').value,
+        slug: document.getElementById('f-slug').value,
+        excerpt: document.getElementById('f-excerpt').value,
+        category: document.getElementById('f-category').value,
+        cover_image_url: document.getElementById('f-cover').value,
+        tags: document.getElementById('f-tags').value,
+        body_markdown: document.getElementById('f-body').value,
+        meta_title: document.getElementById('f-meta-title').value,
+        meta_description: document.getElementById('f-meta-desc').value,
+        related_ingredients: document.getElementById('f-ri').value,
+        related_goals: document.getElementById('f-rg').value,
+        action: action
+      };
+      var formData = new URLSearchParams();
+      for (var k in fields) { formData.append(k, fields[k]); }
+      fetch(window.location.pathname, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCsrfToken() },
+        body: formData.toString(),
+        redirect: 'follow'
+      }).then(function(resp) {
+        if (resp.redirected) { window.location.href = resp.url; } else { window.location.reload(); }
+      }).catch(function(err) { alert('Save failed: ' + err.message); });
+    }
+    function archivePost() {
+      if (!confirm('Archive this post?')) return;
+      {% if post %}
+      fetch('{{ url_for("admin_blog_delete", post_id=post.id) }}', {
+        method: 'POST', headers: { 'X-CSRFToken': getCsrfToken() }, redirect: 'follow'
+      }).then(function(resp) {
+        if (resp.redirected) { window.location.href = resp.url; }
+        else { window.location.href = '{{ url_for("admin_blog_list") }}'; }
+      }).catch(function(err) { alert('Archive failed: ' + err.message); });
+      {% endif %}
+    }
+  </script>
+</body>
+</html>

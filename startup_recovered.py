@@ -36,6 +36,7 @@ import contextlib
 
 # Import database helpers
 import db
+import mistune
 from utils.seo_links import compute_related_goals, compute_related_goals_for_ingredient, compute_related_ingredients
 from utils.seo_registry import get_goal_by_slug, get_goals_registry, get_ingredients_registry
 
@@ -2569,6 +2570,324 @@ def goals():
     )
 
 
+
+
+# ===========================================================================
+#  BLOG ROUTES
+# ===========================================================================
+
+_md_renderer = mistune.html
+
+
+def _estimate_reading_time(text: str) -> int:
+    """Estimate reading time in minutes (200 wpm average)."""
+    words = len((text or "").split())
+    return max(1, round(words / 200))
+
+
+# ---------- Public blog routes ----------
+
+@app.route("/blog")
+def blog_index():
+    """Public blog listing page."""
+    page = request.args.get("page", 1, type=int)
+    per_page = 12
+    offset = (page - 1) * per_page
+    category = (request.args.get("category") or "").strip()
+    tag = (request.args.get("tag") or "").strip()
+
+    if not db.USE_POSTGRES:
+        abort(503)
+
+    conn = get_conn()
+    cur = conn.cursor()
+
+    where = "WHERE status = 'published'"
+    params: list = []
+    if category:
+        where += " AND category = %s"
+        params.append(category)
+    if tag:
+        where += " AND %s = ANY(tags)"
+        params.append(tag)
+
+    cur.execute(f"SELECT COUNT(*) FROM public.blog_posts {where}", params)
+    row = cur.fetchone()
+    total = row[0] if not isinstance(row, dict) else row.get("count", 0)
+
+    cur.execute(f"""
+        SELECT id, slug, title, excerpt, cover_image_url, category,
+               tags, author, published_at, reading_time_min
+        FROM public.blog_posts
+        {where}
+        ORDER BY published_at DESC
+        LIMIT %s OFFSET %s
+    """, params + [per_page, offset])
+    rows = cur.fetchall()
+    desc = cur.description
+    cur.close()
+    conn.close()
+
+    posts = [_row_to_dict(r, desc) for r in rows]
+    total_pages = max(1, -(-total // per_page))
+
+    categories = ["recipes", "nutrition", "spotlights", "lifestyle"]
+
+    canonical = "https://purefyul.com/blog"
+    meta_desc = "Smoothie recipes, ingredient guides, and nutrition tips from PureFyul."
+
+    html_out = render_template(
+        "blog/index.html",
+        posts=posts,
+        page=page,
+        total_pages=total_pages,
+        category_filter=category,
+        tag_filter=tag,
+        categories=categories,
+        page_title="Blog | PureFyul",
+        meta_description=meta_desc,
+        canonical_url=canonical,
+        og_url=canonical,
+    )
+
+    resp = make_response(html_out)
+    if category or tag or page > 1:
+        resp.headers["X-Robots-Tag"] = "noindex, follow"
+    return resp
+
+
+@app.route("/blog/<slug>")
+def blog_post(slug):
+    """Public single blog post page."""
+    if not db.USE_POSTGRES:
+        abort(503)
+
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM public.blog_posts
+        WHERE slug = %s AND status = 'published'
+    """, (slug,))
+    row = cur.fetchone()
+    desc = cur.description
+
+    if not row:
+        cur.close()
+        conn.close()
+        abort(404)
+
+    post = _row_to_dict(row, desc)
+
+    cur.execute("""
+        SELECT id, slug, title, excerpt, cover_image_url, category,
+               published_at, reading_time_min
+        FROM public.blog_posts
+        WHERE status = 'published' AND id != %s AND category = %s
+        ORDER BY published_at DESC
+        LIMIT 3
+    """, (post["id"], post.get("category", "general")))
+    related_rows = cur.fetchall()
+    related_desc = cur.description
+    cur.close()
+    conn.close()
+
+    related_posts = [_row_to_dict(r, related_desc) for r in related_rows]
+
+    canonical = f"https://purefyul.com/blog/{slug}"
+
+    related_ing_data = []
+    for ing_slug in (post.get("related_ingredients") or []):
+        if ing_slug in INGREDIENTS and ing_slug in PUBLISHED_INGREDIENTS:
+            related_ing_data.append({
+                "slug": ing_slug,
+                "name": INGREDIENTS[ing_slug].get("name", ing_slug.replace("-", " ").title()),
+            })
+
+    related_goal_data = []
+    for goal_slug in (post.get("related_goals") or []):
+        if goal_slug in PUBLISHED_GOALS:
+            gdata = get_goal_by_slug(goal_slug)
+            if gdata:
+                related_goal_data.append({
+                    "slug": goal_slug,
+                    "name": gdata.get("name", goal_slug.replace("-", " ").title()),
+                })
+
+    return render_template(
+        "blog/post.html",
+        post=post,
+        related_posts=related_posts,
+        related_ingredients=related_ing_data,
+        related_goals=related_goal_data,
+        page_title=post.get("meta_title") or f"{post['title']} | PureFyul Blog",
+        meta_description=post.get("meta_description") or post.get("excerpt", ""),
+        canonical_url=canonical,
+        og_url=canonical,
+        og_image=post.get("cover_image_url", ""),
+    )
+
+
+# ---------- Admin blog routes ----------
+
+@app.route("/admin/blog")
+def admin_blog_list():
+    """Admin: list all blog posts."""
+    admin_required()
+    if not db.USE_POSTGRES:
+        return "Postgres disabled", 503
+
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, slug, title, status, category, published_at, created_at, updated_at
+        FROM public.blog_posts
+        ORDER BY updated_at DESC
+        LIMIT 200
+    """)
+    rows = cur.fetchall()
+    desc = cur.description
+    cur.close()
+    conn.close()
+
+    posts = [_row_to_dict(r, desc) for r in rows]
+    return render_template("admin/blog_list.html", posts=posts), 200, {"Cache-Control": "no-store"}
+
+
+@app.route("/admin/blog/new", methods=["GET", "POST"])
+def admin_blog_new():
+    """Admin: create a new blog post."""
+    admin_required()
+    if not db.USE_POSTGRES:
+        return "Postgres disabled", 503
+
+    if request.method == "POST":
+        return _save_blog_post(post_id=None)
+
+    return render_template("admin/blog_edit.html", post=None)
+
+
+@app.route("/admin/blog/<int:post_id>/edit", methods=["GET", "POST"])
+def admin_blog_edit(post_id):
+    """Admin: edit an existing blog post."""
+    admin_required()
+    if not db.USE_POSTGRES:
+        return "Postgres disabled", 503
+
+    if request.method == "POST":
+        return _save_blog_post(post_id=post_id)
+
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM public.blog_posts WHERE id = %s", (post_id,))
+    row = cur.fetchone()
+    desc = cur.description
+    cur.close()
+    conn.close()
+
+    if not row:
+        abort(404)
+
+    post = _row_to_dict(row, desc)
+    return render_template("admin/blog_edit.html", post=post), 200, {"Cache-Control": "no-store"}
+
+
+@app.route("/admin/blog/<int:post_id>/delete", methods=["POST"])
+def admin_blog_delete(post_id):
+    """Admin: archive (soft-delete) a blog post."""
+    admin_required()
+    if not db.USE_POSTGRES:
+        return "Postgres disabled", 503
+
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE public.blog_posts
+        SET status = 'archived', updated_at = NOW()
+        WHERE id = %s
+    """, (post_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash("Post archived.", "success")
+    return redirect(url_for("admin_blog_list"))
+
+
+def _save_blog_post(post_id=None):
+    """Shared create/update logic for blog posts."""
+    title = (request.form.get("title") or "").strip()
+    slug = _slugify(request.form.get("slug") or title)
+    body_markdown = (request.form.get("body_markdown") or "").strip()
+    body_html = _md_renderer(body_markdown) if body_markdown else ""
+    excerpt = (request.form.get("excerpt") or "").strip()
+    category = (request.form.get("category") or "general").strip()
+    cover_image_url = (request.form.get("cover_image_url") or "").strip() or None
+    meta_title = (request.form.get("meta_title") or "").strip() or None
+    meta_description = (request.form.get("meta_description") or "").strip() or None
+    tags_raw = (request.form.get("tags") or "").strip()
+    tags = [t.strip() for t in tags_raw.split(",") if t.strip()] if tags_raw else []
+    ri_raw = (request.form.get("related_ingredients") or "").strip()
+    related_ingredients = [s.strip() for s in ri_raw.split(",") if s.strip()]
+    rg_raw = (request.form.get("related_goals") or "").strip()
+    related_goals = [s.strip() for s in rg_raw.split(",") if s.strip()]
+    reading_time = _estimate_reading_time(body_markdown)
+    action = request.form.get("action", "draft")
+
+    if not title or not slug:
+        flash("Title is required.", "error")
+        return redirect(request.url)
+
+    status = "published" if action == "publish" else "draft"
+    published_at_val = datetime.now(timezone.utc) if (action == "publish") else None
+
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        if post_id is None:
+            cur.execute("""
+                INSERT INTO public.blog_posts
+                (slug, title, excerpt, body_html, body_markdown, cover_image_url,
+                 category, tags, status, published_at, meta_title, meta_description,
+                 related_ingredients, related_goals, reading_time_min)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                RETURNING id
+            """, (slug, title, excerpt, body_html, body_markdown, cover_image_url,
+                  category, tags, status, published_at_val, meta_title, meta_description,
+                  related_ingredients, related_goals, reading_time))
+            row = cur.fetchone()
+            new_id = row[0] if not isinstance(row, dict) else row.get("id")
+            conn.commit()
+            flash(f"Post {'published' if status == 'published' else 'saved as draft'}.", "success")
+            return redirect(url_for("admin_blog_edit", post_id=new_id))
+        else:
+            pub_clause = ""
+            if action == "publish":
+                pub_clause = ", published_at = COALESCE(published_at, NOW())"
+            elif action == "unpublish":
+                status = "draft"
+
+            cur.execute(f"""
+                UPDATE public.blog_posts SET
+                    slug=%s, title=%s, excerpt=%s, body_html=%s,
+                    body_markdown=%s, cover_image_url=%s, category=%s,
+                    tags=%s, status=%s, meta_title=%s, meta_description=%s,
+                    related_ingredients=%s, related_goals=%s,
+                    reading_time_min=%s, updated_at=NOW()
+                    {pub_clause}
+                WHERE id=%s
+            """, (slug, title, excerpt, body_html, body_markdown, cover_image_url,
+                  category, tags, status, meta_title, meta_description,
+                  related_ingredients, related_goals, reading_time, post_id))
+            conn.commit()
+            flash("Post updated.", "success")
+            return redirect(url_for("admin_blog_edit", post_id=post_id))
+    except Exception as e:
+        conn.rollback()
+        app.logger.exception("Blog save failed: %s", e)
+        flash(f"Error: {e}", "error")
+        return redirect(request.url)
+    finally:
+        cur.close()
+        conn.close()
 @app.route('/contact', methods=['GET', 'POST'])
 @limiter.limit("5 per hour", methods=["POST"])
 def contact():

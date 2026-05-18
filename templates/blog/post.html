@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ meta_description }}">
+  <link rel="canonical" href="{{ canonical_url }}">
+  <meta property="og:title" content="{{ page_title }}">
+  <meta property="og:description" content="{{ meta_description }}">
+  <meta property="og:url" content="{{ og_url }}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="PureFyul">
+  {% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
+  <meta property="article:published_time" content="{{ post.published_at.isoformat() if post.published_at else '' }}">
+  <meta property="article:modified_time" content="{{ post.updated_at.isoformat() if post.updated_at else '' }}">
+  {% include "_seo_head.html" %}
+  {% include "_adsense_head.html" %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": {{ post.title | tojson }},
+    "description": {{ (post.meta_description or post.excerpt or '') | tojson }},
+    {% if post.cover_image_url %}"image": {{ post.cover_image_url | tojson }},{% endif %}
+    "datePublished": "{{ post.published_at.isoformat() if post.published_at else '' }}",
+    "dateModified": "{{ post.updated_at.isoformat() if post.updated_at else '' }}",
+    "author": {
+      "@type": "Organization",
+      "name": "PureFyul",
+      "url": "https://purefyul.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "PureFyul",
+      "url": "https://purefyul.com"
+    },
+    "mainEntityOfPage": {{ canonical_url | tojson }}
+  }
+  </script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #0EA5A4;
+      --primary-dark: #0B7F7E;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-tertiary: #94A3B8;
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F8FAFC;
+      --bg-page: #f1f5f9;
+      --border: #E2E8F0;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .post-wrapper { max-width: 780px; margin: 0 auto; padding: 24px 16px 60px; }
+    .post-breadcrumb { font-size: 0.78rem; color: var(--text-tertiary); margin-bottom: 20px; }
+    .post-breadcrumb a { color: var(--primary); text-decoration: none; }
+    .post-breadcrumb a:hover { text-decoration: underline; }
+    .post-header { margin-bottom: 32px; }
+    .post-category-badge {
+      display: inline-block; padding: 4px 12px; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+      background: rgba(14,165,164,0.1); color: var(--primary); margin-bottom: 12px;
+    }
+    .post-title {
+      font-size: clamp(1.6rem, 4.5vw, 2.25rem); font-weight: 700;
+      line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+    .post-meta {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      font-size: 0.82rem; color: var(--text-secondary);
+    }
+    .post-meta-sep { color: var(--border); }
+    .post-cover {
+      width: 100%; border-radius: var(--radius-lg); margin-bottom: 32px;
+      aspect-ratio: 16 / 9; object-fit: cover;
+    }
+    .post-body { font-size: 1.02rem; line-height: 1.75; }
+    .post-body h2 { font-size: 1.45rem; font-weight: 700; margin: 40px 0 16px; letter-spacing: -0.01em; }
+    .post-body h3 { font-size: 1.15rem; font-weight: 600; margin: 32px 0 12px; }
+    .post-body p { margin-bottom: 18px; }
+    .post-body ul, .post-body ol { margin: 0 0 18px 24px; }
+    .post-body li { margin-bottom: 6px; }
+    .post-body a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+    .post-body a:hover { color: var(--primary-dark); }
+    .post-body blockquote {
+      border-left: 3px solid var(--primary); padding: 12px 20px; margin: 24px 0;
+      background: rgba(14,165,164,0.04); border-radius: 0 var(--radius) var(--radius) 0;
+      color: var(--text-secondary); font-style: italic;
+    }
+    .post-body img { max-width: 100%; border-radius: var(--radius); margin: 24px 0; }
+    .post-body code { background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+    .post-body pre {
+      background: #1e293b; color: #e2e8f0; padding: 16px 20px;
+      border-radius: var(--radius); overflow-x: auto; margin: 24px 0;
+    }
+    .post-body pre code { background: none; padding: 0; color: inherit; }
+    .post-cta {
+      background: linear-gradient(135deg, rgba(14,165,164,0.08), rgba(14,165,164,0.03));
+      border: 1px solid rgba(14,165,164,0.2); border-radius: var(--radius-lg);
+      padding: 24px; margin: 36px 0; text-align: center;
+    }
+    .post-cta p { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 12px; }
+    .post-cta a {
+      display: inline-block; padding: 10px 24px; background: var(--primary); color: #fff;
+      border-radius: 100px; font-size: 0.88rem; font-weight: 600; text-decoration: none; transition: background 0.2s;
+    }
+    .post-cta a:hover { background: var(--primary-dark); }
+    .post-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 32px 0; padding-top: 24px; border-top: 1px solid var(--border); }
+    .post-tag {
+      display: inline-block; padding: 4px 12px; border-radius: 100px;
+      font-size: 0.76rem; font-weight: 500; background: var(--bg-secondary);
+      color: var(--text-secondary); border: 1px solid var(--border); text-decoration: none; transition: border-color 0.15s;
+    }
+    .post-tag:hover { border-color: var(--primary); color: var(--primary); }
+    .post-share { display: flex; align-items: center; gap: 10px; margin: 20px 0 36px; }
+    .post-share-label {
+      font-size: 0.8rem; font-weight: 600; color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .post-share-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg-primary); color: var(--text-secondary); font-size: 0.85rem;
+      cursor: pointer; text-decoration: none; transition: all 0.15s;
+    }
+    .post-share-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .post-related-links {
+      background: var(--bg-primary); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 20px; margin: 32px 0;
+    }
+    .post-related-links h3 {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 12px;
+    }
+    .post-related-links ul { list-style: none; padding: 0; margin: 0; }
+    .post-related-links li { margin-bottom: 6px; }
+    .post-related-links a { font-size: 0.88rem; color: var(--primary); text-decoration: none; font-weight: 500; }
+    .post-related-links a:hover { text-decoration: underline; }
+    .related-posts { margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+    .related-posts h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; }
+    .related-posts-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .rp-card {
+      display: flex; gap: 16px; padding: 16px; background: var(--bg-primary);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      text-decoration: none; color: inherit; transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .rp-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+    .rp-card-img {
+      width: 80px; height: 80px; border-radius: 8px; object-fit: cover;
+      flex-shrink: 0; background: rgba(14,165,164,0.06);
+    }
+    .rp-card-body { flex: 1; }
+    .rp-card-title { font-size: 0.92rem; font-weight: 600; line-height: 1.35; margin-bottom: 4px; }
+    .rp-card-meta { font-size: 0.74rem; color: var(--text-tertiary); }
+    @media (min-width: 640px) {
+      .post-wrapper { padding: 32px 24px 80px; }
+      .related-posts-grid { grid-template-columns: repeat(3, 1fr); }
+      .rp-card { flex-direction: column; gap: 10px; }
+      .rp-card-img { width: 100%; height: 120px; }
+    }
+    @media (min-width: 960px) { .post-wrapper { padding: 40px 24px 100px; } }
+  </style>
+</head>
+<body>
+  {% include "_navbar.html" %}
+  <article class="post-wrapper">
+    <nav class="post-breadcrumb" aria-label="Breadcrumb">
+      <a href="{{ url_for('blog_index') }}">Blog</a>
+      <span> / </span>
+      <span>{{ post.category | capitalize if post.category else 'General' }}</span>
+    </nav>
+    <header class="post-header">
+      {% if post.category %}
+      <span class="post-category-badge">{{ post.category }}</span>
+      {% endif %}
+      <h1 class="post-title">{{ post.title }}</h1>
+      <div class="post-meta">
+        <span>{{ post.author or 'PureFyul Team' }}</span>
+        {% if post.published_at %}
+        <span class="post-meta-sep">·</span>
+        <span>{{ post.published_at.strftime('%B %d, %Y') }}</span>
+        {% endif %}
+        <span class="post-meta-sep">·</span>
+        <span>{{ post.reading_time_min or 5 }} min read</span>
+      </div>
+    </header>
+    {% if post.cover_image_url %}
+    <img src="{{ post.cover_image_url }}" alt="{{ post.title }}" class="post-cover" loading="eager">
+    {% endif %}
+    <div class="post-body">
+      {{ post.body_html | safe }}
+    </div>
+    <div class="post-cta">
+      <p>Want to try these ingredients in a smoothie?</p>
+      <a href="{{ url_for('app_home') }}">Open the PureFyul App →</a>
+    </div>
+    <div class="post-share">
+      <span class="post-share-label">Share</span>
+      <a href="https://twitter.com/intent/tweet?url={{ canonical_url | urlencode }}&text={{ post.title | urlencode }}" target="_blank" rel="noopener" class="post-share-btn" aria-label="Share on X" title="Share on X">𝕏</a>
+      <a href="https://wa.me/?text={{ post.title | urlencode }}%20{{ canonical_url | urlencode }}" target="_blank" rel="noopener" class="post-share-btn" aria-label="Share on WhatsApp" title="WhatsApp">💬</a>
+      <button type="button" class="post-share-btn" aria-label="Copy link" title="Copy link" onclick="navigator.clipboard.writeText('{{ canonical_url }}').then(function(){this.textContent='✓'}.bind(this))">🔗</button>
+    </div>
+    {% if post.tags %}
+    <div class="post-tags">
+      {% for tag in post.tags %}
+      <a href="{{ url_for('blog_index', tag=tag) }}" class="post-tag">{{ tag }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if related_ingredients or related_goals %}
+    <div class="post-related-links">
+      {% if related_ingredients %}
+      <h3>Ingredients in this post</h3>
+      <ul>
+        {% for ing in related_ingredients %}
+        <li><a href="{{ url_for('ingredient', slug=ing.slug) }}">{{ ing.name }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if related_goals %}
+      <h3 {% if related_ingredients %}style="margin-top:16px"{% endif %}>Related health goals</h3>
+      <ul>
+        {% for g in related_goals %}
+        <li><a href="{{ url_for('goal', slug=g.slug) }}">{{ g.name }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if related_posts %}
+    <section class="related-posts">
+      <h2>More from the blog</h2>
+      <div class="related-posts-grid">
+        {% for rp in related_posts %}
+        <a href="{{ url_for('blog_post', slug=rp.slug) }}" class="rp-card">
+          {% if rp.cover_image_url %}
+          <img src="{{ rp.cover_image_url }}" alt="{{ rp.title }}" class="rp-card-img" loading="lazy">
+          {% else %}
+          <div class="rp-card-img" style="display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🥤</div>
+          {% endif %}
+          <div class="rp-card-body">
+            <div class="rp-card-title">{{ rp.title }}</div>
+            <div class="rp-card-meta">{{ rp.reading_time_min or 5 }} min read</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  </article>
+  {% include "_footer.html" ignore missing %}
+</body>
+</html>

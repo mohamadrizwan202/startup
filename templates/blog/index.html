@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ meta_description }}">
+  <link rel="canonical" href="{{ canonical_url }}">
+  <meta property="og:title" content="{{ page_title }}">
+  <meta property="og:description" content="{{ meta_description }}">
+  <meta property="og:url" content="{{ og_url }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PureFyul">
+  {% include "_seo_head.html" %}
+  {% include "_adsense_head.html" %}
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #0EA5A4;
+      --primary-dark: #0B7F7E;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-tertiary: #94A3B8;
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F8FAFC;
+      --bg-page: #f1f5f9;
+      --border: #E2E8F0;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .blog-hero {
+      background: linear-gradient(135deg, #0EA5A4 0%, #0B7F7E 50%, #087170 100%);
+      padding: 56px 20px 48px;
+      text-align: center;
+      color: #fff;
+    }
+    .blog-hero h1 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .blog-hero p {
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      opacity: 0.88;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .blog-filters {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 20px 16px 4px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .blog-filter-pill {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+    .blog-filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+    .blog-filter-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .blog-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .blog-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+    .blog-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .blog-card-image {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+    .blog-card-image-placeholder {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, rgba(14,165,164,0.1), rgba(14,165,164,0.03));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 2rem;
+    }
+    .blog-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .blog-card-category {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .blog-card-title { font-size: 1.15rem; font-weight: 600; line-height: 1.35; margin-bottom: 8px; }
+    .blog-card-excerpt {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      flex: 1;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .blog-card-meta { font-size: 0.76rem; color: var(--text-tertiary); display: flex; align-items: center; gap: 12px; }
+    .blog-pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 40px; }
+    .blog-pagination a, .blog-pagination span {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 10px; font-size: 0.88rem; font-weight: 500;
+      text-decoration: none; border: 1px solid var(--border); background: var(--bg-primary); color: var(--text-secondary);
+      transition: all 0.15s ease;
+    }
+    .blog-pagination a:hover { border-color: var(--primary); color: var(--primary); }
+    .blog-pagination .current { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .blog-empty { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+    .blog-empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5; }
+    .blog-empty h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+    @media (min-width: 640px) { .blog-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 960px) {
+      .blog-grid { grid-template-columns: repeat(3, 1fr); }
+      .blog-container { padding: 32px 24px 80px; }
+    }
+  </style>
+</head>
+<body>
+  {% include "_navbar.html" %}
+  <section class="blog-hero">
+    <h1>PureFyul Blog</h1>
+    <p>Smoothie recipes, ingredient deep-dives, and nutrition tips to help you blend smarter.</p>
+  </section>
+  <nav class="blog-filters" aria-label="Blog categories">
+    <a href="{{ url_for('blog_index') }}" class="blog-filter-pill {{ 'active' if not category_filter else '' }}">All</a>
+    {% for cat in categories %}
+    <a href="{{ url_for('blog_index', category=cat) }}" class="blog-filter-pill {{ 'active' if category_filter == cat else '' }}">{{ cat | capitalize }}</a>
+    {% endfor %}
+  </nav>
+  <main class="blog-container">
+    {% if posts %}
+    <div class="blog-grid">
+      {% for post in posts %}
+      <a href="{{ url_for('blog_post', slug=post.slug) }}" class="blog-card">
+        {% if post.cover_image_url %}
+        <img src="{{ post.cover_image_url }}" alt="{{ post.title }}" class="blog-card-image" loading="lazy">
+        {% else %}
+        <div class="blog-card-image-placeholder">🥤</div>
+        {% endif %}
+        <div class="blog-card-body">
+          <span class="blog-card-category">{{ post.category or 'General' }}</span>
+          <h2 class="blog-card-title">{{ post.title }}</h2>
+          <p class="blog-card-excerpt">{{ post.excerpt or '' }}</p>
+          <div class="blog-card-meta">
+            <span>{{ post.author or 'PureFyul Team' }}</span>
+            <span>·</span>
+            <span>{{ post.reading_time_min or 5 }} min read</span>
+            {% if post.published_at %}
+            <span>·</span>
+            <span>{{ post.published_at.strftime('%b %d, %Y') }}</span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% if total_pages > 1 %}
+    <nav class="blog-pagination" aria-label="Blog pagination">
+      {% if page > 1 %}
+      <a href="{{ url_for('blog_index', page=page-1, category=category_filter, tag=tag_filter) }}">←</a>
+      {% endif %}
+      {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+        <span class="current">{{ p }}</span>
+        {% elif p <= 3 or p >= total_pages - 1 or (p >= page - 1 and p <= page + 1) %}
+        <a href="{{ url_for('blog_index', page=p, category=category_filter, tag=tag_filter) }}">{{ p }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page < total_pages %}
+      <a href="{{ url_for('blog_index', page=page+1, category=category_filter, tag=tag_filter) }}">→</a>
+      {% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="blog-empty">
+      <div class="blog-empty-icon">📝</div>
+      <h2>No posts yet</h2>
+      <p>Blog posts are on the way. Check back soon!</p>
+    </div>
+    {% endif %}
+  </main>
+  {% include "_footer.html" ignore missing %}
+</body>
+</html>
