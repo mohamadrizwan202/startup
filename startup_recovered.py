@@ -1985,24 +1985,27 @@ error_logger = logging.getLogger(__name__)
 
 @app.errorhandler(Exception)
 def handle_unhandled_exception(error):
+    """Global error handler for truly unexpected exceptions.
+
+    Preserves HTTPException (403/404/etc) so they do not get turned into 500.
     """
-    Global error handler for unhandled exceptions.
-    Logs with request_id and traceback, then delegates to existing handlers.
-    """
+    from werkzeug.exceptions import HTTPException
+
+    if isinstance(error, HTTPException):
+        return error
+
     request_id = getattr(g, "request_id", None)
     path = getattr(request, "path", "-")
     method = getattr(request, "method", "-")
-    
+
     logger.exception(
         "event=unhandled_exception request_id=%s path=%s method=%s",
         request_id or "-",
         path,
         method,
     )
-    
-    # Let Flask's default error handling or specific error handlers take over
-    # This ensures existing error handler behavior (status codes, responses) is preserved
-    raise error
+
+    return handle_internal_server_error(error)
 
 
 @app.errorhandler(500)
