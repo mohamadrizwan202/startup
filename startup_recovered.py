@@ -2152,8 +2152,8 @@ def index():
 
     html = render_template(
         "home_public.html",
-        page_title="PureFyul | Ingredient insights for smarter blends",
-        meta_description="Explore ingredient guides and build better smoothies with clear, simple nutrition insights.",
+        page_title="Smoothie Nutrition Calculator + Goal Warnings | PureFyul",
+        meta_description="Pick a preset smoothie or build your own to see calories, macros, sugar, fiber & goal warnings. Use Ingredient Analysis for allergen flags.",
         canonical_url=canonical,
         og_url=canonical,
         popular_ingredients=popular_ingredients,
