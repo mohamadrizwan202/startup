@@ -85,9 +85,6 @@
   </style>
 </head>
 <body>
-  <form method="POST" autocomplete="off">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
   <div class="editor-container">
     <div class="editor-topbar">
       <div>
@@ -179,19 +176,19 @@ Write your blog post here using Markdown...
         </div>
       </div>
       <div class="editor-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-        <button name="action" value="draft" type="submit" class="btn btn-draft" >Save Draft</button>
+        <button type="button" class="btn btn-draft" onclick="submitForm('draft')">Save Draft</button>
         {% if post and post.status == 'published' %}
-        <button name="action" value="unpublish" type="submit" class="btn btn-unpublish" >Unpublish</button>
-        <button name="action" value="publish" type="submit" class="btn btn-publish" >Update & Keep Published</button>
+        <button type="button" class="btn btn-unpublish" onclick="submitForm('unpublish')">Unpublish</button>
+        <button type="button" class="btn btn-publish" onclick="submitForm('publish')">Update & Keep Published</button>
         {% else %}
-        <button name="action" value="publish" type="submit" class="btn btn-publish" >Publish</button>
+        <button type="button" class="btn btn-publish" onclick="submitForm('publish')">Publish</button>
         {% endif %}
       </div>
       {% if post %}
       <div class="editor-card danger-zone" style="margin-top:32px;">
         <div class="editor-card-title" style="color:var(--danger);">Danger Zone</div>
         <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px;">Archiving removes the post from the public blog.</p>
-        <button type="button" class="btn btn-danger">Archive This Post</button>
+        <button type="button" class="btn btn-danger" onclick="archivePost()">Archive This Post</button>
       </div>
       {% endif %}
     </div>
@@ -228,7 +225,6 @@ Write your blog post here using Markdown...
         action: action
       };
       var formData = new URLSearchParams();
-      formData.append("csrf_token", getCsrfToken());
       for (var k in fields) { formData.append(k, fields[k]); }
       fetch(window.location.pathname, {
         method: 'POST',
@@ -251,6 +247,5 @@ Write your blog post here using Markdown...
       {% endif %}
     }
   </script>
-  </form>
 </body>
 </html>
