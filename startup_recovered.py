@@ -2376,6 +2376,13 @@ def recipes():
     return render_template("recipes.html")
 
 
+
+@app.route("/mealplanner")
+@login_required
+def mealplanner():
+    """Weekly Meal Planner page"""
+    return render_template("mealplanner.html")
+
 @app.route('/terms')
 def terms():
     """Terms of Service page route"""

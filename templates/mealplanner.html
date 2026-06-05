@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mealplanner.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meal Planner | PureFyul</title>
+  {% include "_seo_head.html" %}
+</head>
+<body>
+  {% include "_navbar.html" %}
+
+  <main class="planner-page">
+
+    <!-- Hero -->
+    <section class="planner-hero">
+      <div class="planner-hero__inner">
+        <div class="planner-hero__left">
+          <h1 class="planner-hero__title">Weekly Meal Planner</h1>
+          <p class="planner-hero__sub">Assign your saved smoothies to any meal slot. Plan your whole week in minutes.</p>
+        </div>
+        <div class="planner-hero__actions">
+          <button class="pf-btn pf-btn--ghost" id="clearBtn">Clear Week</button>
+          <button class="pf-btn pf-btn--primary" id="saveBtn">Save Plan</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upgrade Banner -->
+    <div class="upgrade-banner" id="upgradeBanner" style="display:none;">
+      <div class="upgrade-banner__inner">
+        <span class="upgrade-banner__icon">🔒</span>
+        <div class="upgrade-banner__text">
+          <strong>Pro feature</strong> — Meal planning requires a Pro plan ($4.99/month).
+        </div>
+        <a href="{{ url_for('pricing') }}" class="upgrade-banner__btn">Upgrade →</a>
+      </div>
+    </div>
+
+    <!-- Save feedback -->
+    <div class="save-toast" id="saveToast" style="display:none;">
+      ✅ Meal plan saved!
+    </div>
+
+    <!-- Loading -->
+    <div class="planner-loading" id="plannerLoading">
+      <div class="planner-loading__spinner"></div>
+      <p>Loading your recipes…</p>
+    </div>
+
+    <!-- No recipes state -->
+    <div class="planner-empty" id="plannerEmpty" style="display:none;">
+      <div class="planner-empty__icon">🥤</div>
+      <h2 class="planner-empty__title">No saved recipes yet</h2>
+      <p class="planner-empty__text">Save some smoothies first, then come back to plan your week.</p>
+      <a href="{{ url_for('index') }}" class="pf-btn pf-btn--primary">Build a Smoothie</a>
+    </div>
+
+    <!-- Planner Grid -->
+    <section class="planner-section" id="plannerSection" style="display:none;">
+
+      <!-- Week navigation -->
+      <div class="week-nav">
+        <button class="week-nav__btn" id="prevWeek" aria-label="Previous week">‹</button>
+        <span class="week-nav__label" id="weekLabel"></span>
+        <button class="week-nav__btn" id="nextWeek" aria-label="Next week">›</button>
+      </div>
+
+      <!-- Grid -->
+      <div class="planner-grid-wrapper">
+        <div class="planner-grid" id="plannerGrid">
+          <!-- Built by JS -->
+        </div>
+      </div>
+
+      <!-- Recipe Drawer (pick a recipe for a slot) -->
+      <div class="recipe-drawer" id="recipeDrawer" style="display:none;">
+        <div class="recipe-drawer__header">
+          <h3 class="recipe-drawer__title">Choose a Smoothie</h3>
+          <button class="recipe-drawer__close" id="closeDrawer" aria-label="Close">✕</button>
+        </div>
+        <div class="recipe-drawer__list" id="drawerList"></div>
+        <div class="recipe-drawer__footer">
+          <button class="pf-btn pf-btn--ghost" id="clearSlotBtn">Remove from slot</button>
+        </div>
+      </div>
+      <div class="drawer-overlay" id="drawerOverlay" style="display:none;"></div>
+
+    </section>
+
+  </main>
+
+  <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
+  {% include "_legal_footer.html" %}
+  {% include "_feedback.html" %}
+
+  <script>
+    const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+    const MEAL_ICONS = { Breakfast: '🌅', Lunch: '☀️', Dinner: '🌙', Snack: '🍃' };
+
+    let allRecipes = [];
+    let slots = {};         // { "Mon-Breakfast": { id, name, calories } }
+    let activeSlot = null;
+    let weekOffset = 0;     // 0 = current week
+
+    // ── Boot ────────────────────────────────────────────────────────
+    async function boot() {
+      try {
+        // Check plan first
+        const planRes = await fetch('/api/plan');
+        if (planRes.status === 401 || planRes.redirected) {
+          window.location.href = '/login?next=/mealplanner';
+          return;
+        }
+        const planData = await planRes.json();
+        if (planData.plan === 'free') {
+          showUpgradeBanner();
+          document.getElementById('plannerLoading').style.display = 'none';
+          return;
+        }
+
+        // Load recipes
+        const recRes = await fetch('/api/recipes');
+        const recData = await recRes.json();
+        allRecipes = recData.recipes || [];
+
+        document.getElementById('plannerLoading').style.display = 'none';
+
+        if (allRecipes.length === 0) {
+          document.getElementById('plannerEmpty').style.display = 'flex';
+          return;
+        }
+
+        // Load existing plan if any
+        const planRes2 = await fetch('/api/mealplans');
+        const planData2 = await planRes2.json();
+        if (planData2.plans && planData2.plans.length > 0) {
+          slots = planData2.plans[0].slots || {};
+        }
+
+        buildGrid();
+        document.getElementById('plannerSection').style.display = 'block';
+
+      } catch (err) {
+        document.getElementById('plannerLoading').style.display = 'none';
+        console.error('Boot failed:', err);
+      }
+    }
+
+    // ── Week label ───────────────────────────────────────────────────
+    function getWeekDates() {
+      const now = new Date();
+      const day = now.getDay(); // 0=Sun
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + (weekOffset * 7));
+      const dates = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        dates.push(d);
+      }
+      return dates;
+    }
+
+    function updateWeekLabel() {
+      const dates = getWeekDates();
+      const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      document.getElementById('weekLabel').textContent =
+        `${fmt(dates[0])} – ${fmt(dates[6])}`;
+    }
+
+    // ── Build Grid ───────────────────────────────────────────────────
+    function buildGrid() {
+      const grid = document.getElementById('plannerGrid');
+      const dates = getWeekDates();
+      updateWeekLabel();
+
+      let html = '';
+
+      // Corner cell
+      html += '<div class="pg-corner"></div>';
+
+      // Day headers
+      dates.forEach((d, i) => {
+        const isToday = d.toDateString() === new Date().toDateString();
+        html += `<div class="pg-day-header ${isToday ? 'pg-day-header--today' : ''}">
+          <span class="pg-day-name">${DAYS[i]}</span>
+          <span class="pg-day-date">${d.getDate()}</span>
+        </div>`;
+      });
+
+      // Meal rows
+      MEALS.forEach(meal => {
+        // Row header
+        html += `<div class="pg-meal-header">
+          <span class="pg-meal-icon">${MEAL_ICONS[meal]}</span>
+          <span class="pg-meal-name">${meal}</span>
+        </div>`;
+
+        // Slots
+        DAYS.forEach(day => {
+          const key = `${day}-${meal}`;
+          const assigned = slots[key];
+          html += `<div class="pg-slot ${assigned ? 'pg-slot--filled' : 'pg-slot--empty'}"
+                        data-slot="${key}"
+                        role="button"
+                        tabindex="0"
+                        aria-label="${assigned ? assigned.name : 'Add smoothie to ' + day + ' ' + meal}">
+            ${assigned
+              ? `<span class="pg-slot__name">${escapeHtml(assigned.name)}</span>
+                 ${assigned.calories ? `<span class="pg-slot__cal">${Math.round(assigned.calories)} kcal</span>` : ''}`
+              : `<span class="pg-slot__add">+</span>`
+            }
+          </div>`;
+        });
+      });
+
+      grid.innerHTML = html;
+
+      // Attach click listeners
+      grid.querySelectorAll('.pg-slot').forEach(slot => {
+        slot.addEventListener('click', () => openDrawer(slot.dataset.slot));
+        slot.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openDrawer(slot.dataset.slot); });
+      });
+    }
+
+    // ── Drawer ───────────────────────────────────────────────────────
+    function openDrawer(slotKey) {
+      activeSlot = slotKey;
+      const list = document.getElementById('drawerList');
+      list.innerHTML = '';
+
+      allRecipes.forEach(r => {
+        const nutrition = r.nutrition_summary || {};
+        const item = document.createElement('div');
+        item.className = 'drawer-item';
+        const isActive = slots[slotKey] && slots[slotKey].id === r.id;
+        if (isActive) item.classList.add('drawer-item--active');
+        item.innerHTML = `
+          <div class="drawer-item__name">${escapeHtml(r.name)}</div>
+          <div class="drawer-item__meta">
+            ${nutrition.calories ? `<span>${Math.round(nutrition.calories)} kcal</span>` : ''}
+            ${r.health_goal ? `<span class="drawer-item__goal">${escapeHtml(r.health_goal)}</span>` : ''}
+          </div>
+        `;
+        item.addEventListener('click', () => assignSlot(slotKey, r));
+        list.appendChild(item);
+      });
+
+      document.getElementById('recipeDrawer').style.display = 'flex';
+      document.getElementById('drawerOverlay').style.display = 'block';
+    }
+
+    function closeDrawer() {
+      document.getElementById('recipeDrawer').style.display = 'none';
+      document.getElementById('drawerOverlay').style.display = 'none';
+      activeSlot = null;
+    }
+
+    function assignSlot(slotKey, recipe) {
+      const nutrition = recipe.nutrition_summary || {};
+      slots[slotKey] = {
+        id: recipe.id,
+        name: recipe.name,
+        calories: nutrition.calories || null
+      };
+      closeDrawer();
+      buildGrid();
+    }
+
+    document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
+    document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+    document.getElementById('clearSlotBtn').addEventListener('click', () => {
+      if (activeSlot) delete slots[activeSlot];
+      closeDrawer();
+      buildGrid();
+    });
+
+    // ── Week nav ─────────────────────────────────────────────────────
+    document.getElementById('prevWeek').addEventListener('click', () => { weekOffset--; buildGrid(); });
+    document.getElementById('nextWeek').addEventListener('click', () => { weekOffset++; buildGrid(); });
+
+    // ── Clear week ───────────────────────────────────────────────────
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (confirm('Clear all slots for this week?')) {
+        slots = {};
+        buildGrid();
+      }
+    });
+
+    // ── Save plan ────────────────────────────────────────────────────
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const dates = getWeekDates();
+      const weekStart = dates[0].toISOString().split('T')[0];
+      const res = await fetch('/api/mealplans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: `Week of ${weekStart}`, week_start: weekStart, slots })
+      });
+      if (res.ok) {
+        const toast = document.getElementById('saveToast');
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+      }
+    });
+
+    // ── Helpers ──────────────────────────────────────────────────────
+    function showUpgradeBanner() { document.getElementById('upgradeBanner').style.display = 'block'; }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    boot();
+  </script>
+</body>
+</html>
