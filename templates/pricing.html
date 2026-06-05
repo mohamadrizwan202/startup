@@ -197,7 +197,7 @@
   </main>
 
   <!-- Notify button logic -->
-  <script>
+  <script nonce="{{ csp_nonce }}">
     document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('notifyBtn').addEventListener('click', function() {
       document.getElementById('notifySection').style.display = 'block';
