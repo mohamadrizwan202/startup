@@ -68,3 +68,4 @@ email_shell_preview.html
 # Local backup files (do not commit)
 *.before_*
 *.bak
+myenv/
