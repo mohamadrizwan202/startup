@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/recipes.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Saved Recipes | PureFyul</title>
+  {% include "_seo_head.html" %}
+</head>
+<body>
+  {% include "_navbar.html" %}
+
+  <main class="recipes-page">
+
+    <!-- Page Header -->
+    <section class="recipes-hero">
+      <div class="recipes-hero__inner">
+        <h1 class="recipes-hero__title">My Saved Recipes</h1>
+        <p class="recipes-hero__sub">Your personal smoothie collection. Build one in the app, save it here.</p>
+        <div class="recipes-hero__actions">
+          <a href="{{ url_for('index') }}" class="pf-btn pf-btn--primary">+ Build a Smoothie</a>
+          <button class="pf-btn pf-btn--ghost" id="exportBtn">Export CSV</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upgrade Banner (shown only for free users) -->
+    <div class="upgrade-banner" id="upgradeBanner" style="display:none;">
+      <div class="upgrade-banner__inner">
+        <span class="upgrade-banner__icon">🔒</span>
+        <div class="upgrade-banner__text">
+          <strong>Pro feature</strong> — Saving recipes requires a Pro plan ($4.99/month).
+        </div>
+        <a href="{{ url_for('pricing') }}" class="upgrade-banner__btn">Upgrade →</a>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="recipes-loading" id="recipesLoading">
+      <div class="recipes-loading__spinner"></div>
+      <p>Loading your recipes…</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="recipes-empty" id="recipesEmpty" style="display:none;">
+      <div class="recipes-empty__icon">🥤</div>
+      <h2 class="recipes-empty__title">No saved recipes yet</h2>
+      <p class="recipes-empty__text">Build a smoothie in the app and save it to see it here.</p>
+      <a href="{{ url_for('index') }}" class="pf-btn pf-btn--primary">Build Your First Smoothie</a>
+    </div>
+
+    <!-- Recipes Grid -->
+    <section class="recipes-grid-section" id="recipesSection" style="display:none;">
+      <div class="recipes-grid" id="recipesGrid"></div>
+    </section>
+
+  </main>
+
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" id="deleteModal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal">
+      <h3 class="modal__title" id="deleteModalTitle">Delete Recipe?</h3>
+      <p class="modal__text">This can't be undone.</p>
+      <div class="modal__actions">
+        <button class="pf-btn pf-btn--ghost" id="cancelDelete">Cancel</button>
+        <button class="pf-btn pf-btn--danger" id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
+  {% include "_legal_footer.html" %}
+  {% include "_feedback.html" %}
+
+  <script>
+    let recipeToDelete = null;
+
+    // ── Fetch recipes on load ────────────────────────────────────────
+    async function loadRecipes() {
+      try {
+        const res = await fetch('/api/recipes');
+
+        if (res.status === 401 || res.redirected) {
+          window.location.href = '/login?next=/recipes';
+          return;
+        }
+
+        if (res.status === 403) {
+          const data = await res.json();
+          if (data.error === 'upgrade_required') {
+            showUpgradeBanner();
+            hideLoading();
+            showEmpty();
+            return;
+          }
+        }
+
+        const data = await res.json();
+        hideLoading();
+
+        if (!data.recipes || data.recipes.length === 0) {
+          showEmpty();
+          return;
+        }
+
+        renderRecipes(data.recipes);
+
+      } catch (err) {
+        hideLoading();
+        showEmpty();
+        console.error('Failed to load recipes:', err);
+      }
+    }
+
+    // ── Render recipe cards ──────────────────────────────────────────
+    function renderRecipes(recipes) {
+      const grid = document.getElementById('recipesGrid');
+      grid.innerHTML = '';
+
+      recipes.forEach(recipe => {
+        const nutrition = recipe.nutrition_summary || {};
+        const ingredients = recipe.ingredients || [];
+        const ingredientNames = ingredients
+          .map(i => typeof i === 'object' ? (i.name || '') : i)
+          .filter(Boolean)
+          .join(', ');
+
+        const card = document.createElement('div');
+        card.className = 'recipe-card';
+        card.innerHTML = `
+          <div class="recipe-card__header">
+            <h3 class="recipe-card__name">${escapeHtml(recipe.name)}</h3>
+            ${recipe.health_goal ? `<span class="recipe-card__goal">${escapeHtml(recipe.health_goal)}</span>` : ''}
+          </div>
+          <div class="recipe-card__nutrition">
+            ${nutritionPill('Calories', nutrition.calories, 'kcal')}
+            ${nutritionPill('Protein', nutrition.protein, 'g')}
+            ${nutritionPill('Carbs', nutrition.carbs, 'g')}
+            ${nutritionPill('Fat', nutrition.fat, 'g')}
+          </div>
+          ${ingredientNames ? `<p class="recipe-card__ingredients"><span class="recipe-card__ingredients-label">Ingredients:</span> ${escapeHtml(ingredientNames)}</p>` : ''}
+          ${recipe.notes ? `<p class="recipe-card__notes">${escapeHtml(recipe.notes)}</p>` : ''}
+          <div class="recipe-card__footer">
+            <span class="recipe-card__date">${formatDate(recipe.created_at)}</span>
+            <button class="recipe-card__delete" data-id="${recipe.id}" aria-label="Delete recipe">🗑 Delete</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      // Attach delete listeners
+      grid.querySelectorAll('.recipe-card__delete').forEach(btn => {
+        btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
+      });
+
+      document.getElementById('recipesSection').style.display = 'block';
+    }
+
+    function nutritionPill(label, value, unit) {
+      if (value === undefined || value === null || value === '') return '';
+      return `<div class="nutrition-pill"><span class="nutrition-pill__value">${Math.round(value)}<span class="nutrition-pill__unit">${unit}</span></span><span class="nutrition-pill__label">${label}</span></div>`;
+    }
+
+    // ── Export CSV ───────────────────────────────────────────────────
+    document.getElementById('exportBtn').addEventListener('click', async () => {
+      const res = await fetch('/api/recipes/export');
+      if (res.status === 403) {
+        showUpgradeBanner();
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'purefyul_recipes.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // ── Delete modal ─────────────────────────────────────────────────
+    function openDeleteModal(id) {
+      recipeToDelete = id;
+      document.getElementById('deleteModal').style.display = 'flex';
+    }
+
+    document.getElementById('cancelDelete').addEventListener('click', () => {
+      document.getElementById('deleteModal').style.display = 'none';
+      recipeToDelete = null;
+    });
+
+    document.getElementById('confirmDelete').addEventListener('click', async () => {
+      if (!recipeToDelete) return;
+      await fetch(`/api/recipes/${recipeToDelete}`, { method: 'DELETE' });
+      document.getElementById('deleteModal').style.display = 'none';
+      recipeToDelete = null;
+      loadRecipes();
+    });
+
+    // ── Helpers ──────────────────────────────────────────────────────
+    function showUpgradeBanner() { document.getElementById('upgradeBanner').style.display = 'block'; }
+    function hideLoading() { document.getElementById('recipesLoading').style.display = 'none'; }
+    function showEmpty() { document.getElementById('recipesEmpty').style.display = 'flex'; }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function formatDate(str) {
+      if (!str) return '';
+      const d = new Date(str);
+      return isNaN(d) ? str : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    loadRecipes();
+  </script>
+</body>
+</html>

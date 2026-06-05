@@ -2369,6 +2369,13 @@ def privacy():
     """Privacy Policy page route"""
     return render_template('privacy.html')
 
+@app.route("/recipes")
+@login_required
+def recipes():
+    """My Saved Recipes page"""
+    return render_template("recipes.html")
+
+
 @app.route('/terms')
 def terms():
     """Terms of Service page route"""

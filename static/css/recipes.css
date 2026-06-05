@@ -1,0 +1,354 @@
+/* ── recipes.css ─────────────────────────────────────────────────────────── */
+
+/* Page Layout */
+.recipes-page {
+  min-height: 100vh;
+  background: #f8faf8;
+  padding-bottom: 4rem;
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+.recipes-hero {
+  background: #fff;
+  border-bottom: 1px solid #e8f0e8;
+  padding: 2.5rem 1.5rem 2rem;
+}
+
+.recipes-hero__inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.recipes-hero__title {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #1a2e1a;
+  margin: 0 0 0.4rem;
+}
+
+.recipes-hero__sub {
+  color: #5a7a5a;
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+}
+
+.recipes-hero__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ── Buttons (matching existing pf-btn pattern) ───────────────────────────── */
+.pf-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.pf-btn--primary {
+  background: #2d7a2d;
+  color: #fff;
+}
+
+.pf-btn--primary:hover { background: #246424; }
+
+.pf-btn--ghost {
+  background: transparent;
+  color: #2d7a2d;
+  border: 1.5px solid #2d7a2d;
+}
+
+.pf-btn--ghost:hover { background: #f0f7f0; }
+
+.pf-btn--danger {
+  background: #c0392b;
+  color: #fff;
+}
+
+.pf-btn--danger:hover { background: #a93226; }
+
+/* ── Upgrade Banner ───────────────────────────────────────────────────────── */
+.upgrade-banner {
+  background: #fffbe6;
+  border-bottom: 1px solid #f0d060;
+  padding: 0.85rem 1.5rem;
+}
+
+.upgrade-banner__inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.upgrade-banner__icon { font-size: 1.2rem; }
+
+.upgrade-banner__text {
+  flex: 1;
+  color: #7a5c00;
+  font-size: 0.92rem;
+}
+
+.upgrade-banner__btn {
+  background: #e6a800;
+  color: #fff;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.upgrade-banner__btn:hover { background: #cc9500; }
+
+/* ── Loading ──────────────────────────────────────────────────────────────── */
+.recipes-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1rem;
+  color: #5a7a5a;
+  gap: 1rem;
+}
+
+.recipes-loading__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #d0e8d0;
+  border-top-color: #2d7a2d;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty State ──────────────────────────────────────────────────────────── */
+.recipes-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1.5rem;
+  text-align: center;
+  gap: 1rem;
+}
+
+.recipes-empty__icon { font-size: 3rem; }
+
+.recipes-empty__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a2e1a;
+  margin: 0;
+}
+
+.recipes-empty__text {
+  color: #5a7a5a;
+  margin: 0 0 0.5rem;
+  max-width: 360px;
+}
+
+/* ── Recipes Grid ─────────────────────────────────────────────────────────── */
+.recipes-grid-section {
+  max-width: 900px;
+  margin: 2rem auto 0;
+  padding: 0 1.5rem;
+}
+
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ── Recipe Card ──────────────────────────────────────────────────────────── */
+.recipe-card {
+  background: #fff;
+  border: 1px solid #e0ece0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.recipe-card:hover {
+  box-shadow: 0 4px 16px rgba(45, 122, 45, 0.1);
+  transform: translateY(-2px);
+}
+
+.recipe-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.recipe-card__name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a2e1a;
+  margin: 0;
+  flex: 1;
+}
+
+.recipe-card__goal {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: #e8f5e8;
+  color: #2d7a2d;
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+/* ── Nutrition Pills ──────────────────────────────────────────────────────── */
+.recipe-card__nutrition {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.nutrition-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f4faf4;
+  border: 1px solid #d8ead8;
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  min-width: 56px;
+}
+
+.nutrition-pill__value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a2e1a;
+  line-height: 1.1;
+}
+
+.nutrition-pill__unit {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: #5a7a5a;
+  margin-left: 1px;
+}
+
+.nutrition-pill__label {
+  font-size: 0.65rem;
+  color: #7a9a7a;
+  margin-top: 0.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ── Card Details ─────────────────────────────────────────────────────────── */
+.recipe-card__ingredients {
+  font-size: 0.82rem;
+  color: #5a7a5a;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.recipe-card__ingredients-label {
+  font-weight: 600;
+  color: #3a5a3a;
+}
+
+.recipe-card__notes {
+  font-size: 0.82rem;
+  color: #7a8a7a;
+  margin: 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.recipe-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.recipe-card__date {
+  font-size: 0.75rem;
+  color: #9aaa9a;
+}
+
+.recipe-card__delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #c0392b;
+  font-size: 0.78rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+
+.recipe-card__delete:hover { background: #fdf0ee; }
+
+/* ── Delete Modal ─────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+
+.modal__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a2e1a;
+  margin: 0 0 0.5rem;
+}
+
+.modal__text {
+  color: #5a7a5a;
+  margin: 0 0 1.5rem;
+  font-size: 0.92rem;
+}
+
+.modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .recipes-hero__title { font-size: 1.4rem; }
+  .recipes-grid { grid-template-columns: 1fr; }
+  .recipes-grid-section { padding: 0 1rem; }
+  .recipes-hero { padding: 1.5rem 1rem 1.25rem; }
+  .modal { padding: 1.5rem; }
+  .recipe-card__nutrition { gap: 0.4rem; }
+}
