@@ -28,7 +28,7 @@
 
       <div class="pf-nav__auth">
         {% if current_user.is_authenticated %}
-          <span class="pf-nav__who">Logged in as <strong>{{ current_user.email }}</strong></span>
+          <span class="pf-nav__who">👤 {{ current_user.email }}</span>
           <a class="pf-btn pf-btn--ghost" href="{{ url_for('logout') }}">Logout</a>
         {% else %}
           <a class="pf-btn pf-btn--ghost" href="{{ url_for('login') }}">Login</a>

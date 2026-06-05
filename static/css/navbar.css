@@ -75,7 +75,7 @@ html, body {
 
 .pf-nav__link {
   text-decoration: none;
-  color: #475569;
+  color: rgba(255,255,255,0.75);
   font-size: 0.92rem;
   font-weight: 500;
   padding: 8px 12px;
@@ -96,9 +96,9 @@ html, body {
   border-top: 1px solid #E2E8F0;
 }
 
-.pf-nav__who {
-  font-size: 0.82rem;
-  color: #475569;
+{REPLACE}
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.75);
   padding: 4px 12px;
 }
 
@@ -119,7 +119,7 @@ html, body {
 
 .pf-btn--ghost {
   background: transparent;
-  color: #475569;
+  color: rgba(255,255,255,0.75);
   border: 1px solid #E2E8F0;
 }
 
@@ -177,7 +177,7 @@ html, body {
     margin-left: auto;
   }
 
-  .pf-nav__who {
+  {REPLACE}
     padding: 0 8px 0 0;
   }
 }
