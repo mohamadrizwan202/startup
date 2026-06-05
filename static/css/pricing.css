@@ -642,24 +642,26 @@ body {
 
 .pricing-compare__row--header {
   background: #f4faf4;
-  font-weight: 700;
-  font-size: 0.8rem;
+  font-weight: 800;
+  font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #5a7a5a;
+  letter-spacing: 0.06em;
+  color: #1a2e1a;
 }
 
 .pricing-compare__feature {
-  padding: 0.75rem 1rem;
-  font-size: 0.88rem;
-  color: #3a5a3a;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  color: #1a2e1a;
+  font-weight: 500;
 }
 
 .pricing-compare__col {
-  padding: 0.75rem 0.5rem;
+  padding: 1rem 0.75rem;
   text-align: center;
-  font-size: 0.88rem;
-  color: #3a5a3a;
+  font-size: 1rem;
+  color: #1a2e1a;
+  font-weight: 500;
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
