@@ -215,7 +215,9 @@
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
+            name: 'Waitlist Signup',
             email: emailVal,
+            subject: 'Pro Waitlist',
             message: 'Pro waitlist signup from: ' + emailVal,
             category: 'Feature Request'
           })

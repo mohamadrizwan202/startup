@@ -53286,6 +53286,41 @@ if os.getenv("ENABLE_PUBLIC_CONTACT_API", "") == "1":
         except Exception as e:
             print("CONTACT_EMAIL_FAIL:", repr(e))
 
+
+        # Send confirmation email to user if this is a waitlist signup
+        if subject == "Pro Waitlist" and email:
+            try:
+                import os, ssl, smtplib
+                from email.message import EmailMessage
+                smtp_host = os.getenv("SMTP_HOST", "smtp.hostinger.com")
+                smtp_port = int(os.getenv("SMTP_PORT", "465"))
+                smtp_user = os.getenv("SMTP_USER", "support@purefyul.com")
+                smtp_pass = os.getenv("SMTP_PASS")
+                if smtp_pass:
+                    confirm = EmailMessage()
+                    confirm["Subject"] = "You're on the PureFyul Pro waitlist!"
+                    confirm["From"] = smtp_user
+                    confirm["To"] = email
+                    confirm.set_content(
+                        "Hi there,\n\n"
+                        "Thanks for joining the PureFyul Pro waitlist!\n\n"
+                        "You'll be the first to know when Pro launches with:\n"
+                        "- Save up to 50 Recipes\n"
+                        "- Weekly Meal Planner\n"
+                        "- Export Recipes as CSV\n"
+                        "- Priority Support\n\n"
+                        "As a beta waitlist user, you'll get a special grandfathered rate.\n\n"
+                        "Stay healthy,\n"
+                        "The PureFyul Team\n"
+                        "purefyul.com\n"
+                    )
+                    ctx = ssl.create_default_context()
+                    with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=20, context=ctx) as s:
+                        s.login(smtp_user, smtp_pass)
+                        s.send_message(confirm)
+            except Exception as e:
+                print("WAITLIST_EMAIL_FAIL:", repr(e))
+
         return jsonify({"ok": True, "id": msg_id}), 200
 
 
