@@ -3710,7 +3710,7 @@
     </header>
 
 
-    <section class="pf-start-panel" aria-label="How to start using PureFyul">
+    <section class="pf-start-panel" aria-label="How to start using PureFyul" style="display:none">
       <div class="pf-start-panel-head">
         <h2>What do you want to do today?</h2>
         <p>Pick the fastest path instead of figuring out the app on your own.</p>
@@ -4139,6 +4139,7 @@
   <div class="pf-results-sheet" role="dialog" aria-modal="true" aria-label="Smoothie Nutrition">
     <div class="pf-results-sheet-header">
       <div class="pf-results-sheet-title">Smoothie Nutrition</div>
+      <button type="button" id="pf-save-recipe-modal-btn" style="display:none;padding:7px 14px;background:#0EA5A4;color:#fff;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;margin-right:8px;">💾 Save Recipe</button>
       <button type="button" id="pf-smoothie-close" class="pf-results-close" aria-label="Close">✕</button>
     </div>
 
@@ -6391,6 +6392,9 @@
           modal.style.display = 'flex';
           modal.setAttribute('aria-hidden', 'false');
           document.body.classList.add('pf-modal-open');
+          // Show save button
+          const saveModalBtn = document.getElementById('pf-save-recipe-modal-btn');
+          if (saveModalBtn) saveModalBtn.style.display = 'inline-flex';
         }
 
         function pfCloseSmoothieModal(options = {}) {
@@ -16872,10 +16876,8 @@ const allergenPanel = allergenNames.length === 0
             `;
           }
           
-          // Open modal on mobile/tablet
-          if (pfIsMobileSmoothieMode()) {
-            pfOpenSmoothieModal();
-          }
+          // Always open modal
+          pfOpenSmoothieModal();
         }
         
         setSmoothieStatus('Building smoothie...');
@@ -17207,6 +17209,16 @@ const allergenPanel = allergenNames.length === 0
             timingDisplayText = timingOption ? timingOption.textContent : smoothieTimingEl.value;
           }
           
+          // Store for save recipe dialog before clearing
+          window._pfLastSmoothieTiming = timingDisplayText || '';
+          // Only overwrite preset goal if user actually picked one from dropdown
+          if (smoothieHealthGoalsEl && smoothieHealthGoalsEl.value && smoothieHealthGoalsEl.value !== '') {
+            window._pfLastSmoothieGoal = smoothieHealthGoalsEl.value;
+            window._pfLastSmoothieGoalText = smoothieHealthGoalsEl.options[smoothieHealthGoalsEl.selectedIndex].textContent;
+          } else if (selectedHealthGoal) {
+            window._pfLastSmoothieGoal = selectedHealthGoal;
+          }
+
           // Clear all dropdowns including health goal
           // Audience preserved after build so user can try another preset
           if (smoothieTimingEl) smoothieTimingEl.value = '';
@@ -18070,6 +18082,7 @@ const allergenPanel = allergenNames.length === 0
               <div class="sn2-subtitle">Smoothie nutrition results</div>
             </div>
             ${audienceLabel ? `<span class="sn2-audience-badge">${audienceLabel.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}</span>` : ''}
+            ${(window._pfLastSmoothieGoalText && window._pfLastSmoothieGoalText !== 'Health goal...' && window._pfLastSmoothieGoalText !== 'No specific goal') ? `<span class="sn2-audience-badge" style="background:#e0f2fe;color:#0369a1;margin-left:4px">${window._pfLastSmoothieGoalText.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}</span>` : ''}
           </div>
 
           <div class="sn2-kpi-grid">
@@ -18763,6 +18776,10 @@ const batchG = (smoothieBatchMlOverride != null)
         const bannerNote = document.getElementById('pfs-loaded-note');
         if (banner) {
           if (bannerTitle) bannerTitle.textContent = `${preset.name} · ${preset.healthGoal||''}`;
+          // Store for save recipe dialog
+          window._pfLastSmoothieGoal = preset.healthGoal || '';
+          window._pfLastSmoothieGoalText = preset.healthGoal || '';
+          window._pfLastSmoothieTiming = '';
           if (bannerIngs) {
             bannerIngs.innerHTML = preset.ingredients
               .map(ing=>`<span class="pfs-loaded-ing">${String(ing).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}</span>`)
@@ -19402,6 +19419,219 @@ const batchG = (smoothieBatchMlOverride != null)
         {% include "_legal_footer.html" %}
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>  {% include "_feedback.html" %}
-  </body>
+  
+<!-- ── Save Recipe Modal ────────────────────────────────────────── -->
+<div id="pf-save-recipe-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:3000;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <h3 style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0 0 0.4rem;">💾 Save This Recipe</h3>
+    <p style="font-size:0.85rem;color:#64748b;margin:0 0 0.75rem;">Give your smoothie a name to find it later in My Recipes.</p>
+    <div id="pf-save-context" style="display:none;font-size:0.8rem;color:#0EA5A4;background:#f0fdfa;padding:6px 10px;border-radius:8px;margin-bottom:1rem;font-weight:500;"></div>
+    <input type="text" id="pf-save-recipe-name"
+      placeholder="e.g. Morning Energy Boost"
+      maxlength="80"
+      style="width:100%;padding:0.7rem 1rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.95rem;outline:none;box-sizing:border-box;font-family:inherit;transition:border-color 0.15s;"
+      >
+    <div id="pf-save-recipe-error" style="display:none;color:#dc2626;font-size:0.82rem;margin-top:0.5rem;"></div>
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem;">
+      <button id="pf-save-cancel-btn"
+        style="padding:0.6rem 1.25rem;border:1.5px solid #0EA5A4;border-radius:8px;background:transparent;color:#0EA5A4;font-weight:600;font-size:0.9rem;cursor:pointer;font-family:inherit;">
+        Cancel
+      </button>
+      <button id="pf-save-recipe-confirm"
+        style="padding:0.6rem 1.25rem;border:none;border-radius:8px;background:#0EA5A4;color:#fff;font-weight:600;font-size:0.9rem;cursor:pointer;font-family:inherit;">
+        Save Recipe
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Save Recipe Toast ─────────────────────────────────────────── -->
+<div id="pf-save-toast" style="display:none;position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0EA5A4;color:#fff;padding:0.75rem 1.5rem;border-radius:10px;font-weight:600;font-size:0.92rem;z-index:4000;box-shadow:0 4px 16px rgba(0,0,0,0.15);white-space:nowrap;display:none;align-items:center;gap:10px;">
+  ✅ Recipe saved! <a href="/recipes" style="color:#fff;text-decoration:underline;font-weight:700;">View My Recipes →</a>
+</div>
+
+<script nonce="{{ csp_nonce }}">
+(function() {
+  var _smoothiePayload = null;
+
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // ── Wire Save button in results modal ───────────────────────
+    var saveBtn = document.getElementById('pf-save-recipe-modal-btn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', function() {
+        // Close results modal first
+        if (typeof pfCloseSmoothieModal === 'function') pfCloseSmoothieModal({ hideCard: false });
+
+        // Collect smoothie data
+        var smoothieNameEl = document.getElementById('smoothie-name');
+        var smoothieForEl = document.getElementById('smoothie-for');
+        var smoothieHealthGoalsEl = document.getElementById('smoothie-health-goals');
+        var smoothieTimingEl = document.getElementById('smoothie-timing');
+
+        var smoothieName = smoothieNameEl ? smoothieNameEl.value.trim() : '';
+        var audience = '';
+        if (smoothieForEl && smoothieForEl.selectedIndex >= 0) {
+          audience = smoothieForEl.options[smoothieForEl.selectedIndex].textContent;
+        }
+        // Use stored values (dropdowns are cleared after build)
+        var healthGoal = window._pfLastSmoothieGoal || '';
+        var healthGoalText = window._pfLastSmoothieGoalText || '';
+        var timing = window._pfLastSmoothieTiming || '';
+
+
+        _smoothiePayload = {
+          name: smoothieName || 'My Smoothie',
+          audience: audience,
+          healthGoal: healthGoal,
+          healthGoalText: healthGoalText,
+          timing: timing
+        };
+
+        // Set suggested name
+        var nameInput = document.getElementById('pf-save-recipe-name');
+        if (nameInput) nameInput.value = smoothieName || '';
+
+        // Update context display
+        var ctxEl = document.getElementById('pf-save-context');
+        if (ctxEl) {
+          var parts = [];
+          if (audience && audience !== 'Select audience...' && audience !== '') parts.push('👤 ' + audience);
+          if (timing && timing !== 'Timing...' && timing !== '' && timing !== 'Any time') parts.push('⏰ ' + timing);
+          if (healthGoalText && healthGoalText !== 'Health goal...' && healthGoalText !== '' && healthGoalText !== 'No specific goal') parts.push('🎯 ' + healthGoalText);
+          ctxEl.textContent = parts.length ? parts.join('  ·  ') : '';
+          ctxEl.style.display = parts.length ? 'block' : 'none';
+        }
+
+        // Show save modal
+        var overlay = document.getElementById('pf-save-recipe-overlay');
+        if (overlay) {
+          overlay.style.display = 'flex';
+          setTimeout(function() { if (nameInput) nameInput.focus(); }, 100);
+        }
+
+        // Clear error
+        var errEl = document.getElementById('pf-save-recipe-error');
+        if (errEl) errEl.style.display = 'none';
+      });
+    }
+
+    // ── Cancel + Confirm via delegation (works with dynamic modals) ──
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.id === 'pf-save-cancel-btn') pfCloseSaveRecipeModal();
+      if (e.target && e.target.id === 'pf-save-recipe-confirm') pfConfirmSaveRecipe();
+    });
+
+    // ── Enter key ────────────────────────────────────────────────
+    var nameInput = document.getElementById('pf-save-recipe-name');
+    if (nameInput) {
+      nameInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') pfConfirmSaveRecipe();
+      });
+    }
+
+    // ── Close on background click ────────────────────────────────
+    var overlay = document.getElementById('pf-save-recipe-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) pfCloseSaveRecipeModal();
+      });
+    }
+  });
+
+  // ── Close modal ──────────────────────────────────────────────
+  window.pfCloseSaveRecipeModal = function() {
+    var overlay = document.getElementById('pf-save-recipe-overlay');
+    if (overlay) overlay.style.display = 'none';
+    _smoothiePayload = null;
+    // Reopen results modal so user does not lose their smoothie
+    if (typeof pfOpenSmoothieModal === 'function') pfOpenSmoothieModal();
+  };
+
+  // ── Confirm save ─────────────────────────────────────────────
+  window.pfConfirmSaveRecipe = async function() {
+    var nameInput = document.getElementById('pf-save-recipe-name');
+    var errEl = document.getElementById('pf-save-recipe-error');
+    var btn = document.getElementById('pf-save-recipe-confirm');
+
+    var name = nameInput ? nameInput.value.trim() : '';
+    if (!name) {
+      if (errEl) { errEl.textContent = 'Please enter a name for your recipe.'; errEl.style.display = 'block'; }
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    btn.style.opacity = '0.7';
+
+    try {
+      var notes = [];
+      if (_smoothiePayload && _smoothiePayload.audience && _smoothiePayload.audience !== 'Select audience...') {
+        notes.push('For: ' + _smoothiePayload.audience);
+      }
+      if (_smoothiePayload && _smoothiePayload.timing && _smoothiePayload.timing !== 'Timing...') {
+        notes.push('Timing: ' + _smoothiePayload.timing);
+      }
+
+      var payload = {
+        name: name,
+        ingredients: [],
+        nutrition_summary: {},
+        health_goal: _smoothiePayload ? _smoothiePayload.healthGoal : '',
+        notes: notes.join(' | ')
+      };
+
+      var res;
+      try {
+        res = await fetch('/api/recipes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch(fetchErr) {
+        // Network error - likely not logged in
+        res = { status: 401, redirected: true };
+      }
+
+      if (res.status === 401 || res.redirected || (res.url && res.url.includes('/login'))) {
+        var overlay2 = document.getElementById('pf-save-recipe-overlay');
+        if (overlay2) {
+          overlay2.style.display = 'flex';
+          overlay2.querySelector('div').innerHTML = '<div style="text-align:center"><div style="font-size:2rem;margin-bottom:0.75rem">🔐</div><h3 style="font-size:1.05rem;font-weight:700;color:#0f172a;margin:0 0 0.5rem">Login Required</h3><p style="font-size:0.88rem;color:#64748b;margin:0 0 1.25rem">Log in to save your smoothie recipes.</p><div style="display:flex;gap:0.75rem;justify-content:center"><a href="/login?next=/app" style="padding:0.6rem 1.25rem;border:none;border-radius:8px;background:#0EA5A4;color:#fff;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-flex;align-items:center">Log In</a><a href="/register" style="padding:0.6rem 1.25rem;border:1.5px solid #0EA5A4;border-radius:8px;background:transparent;color:#0EA5A4;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-flex;align-items:center">Register</a></div></div>';
+        }
+        return;
+      }
+
+      if (res.status === 403) {
+        pfCloseSaveRecipeModal();
+        var overlay = document.getElementById('pf-save-recipe-overlay');
+        overlay.style.display = 'flex';
+        overlay.querySelector('div').innerHTML = '<div style="text-align:center"><div style="font-size:2rem;margin-bottom:0.75rem">🔒</div><h3 style="font-size:1.05rem;font-weight:700;color:#0f172a;margin:0 0 0.5rem">Pro Feature</h3><p style="font-size:0.88rem;color:#64748b;margin:0 0 1.25rem">Saving recipes requires a Pro plan ($4.99/month).</p><div style="display:flex;gap:0.75rem;justify-content:center"><a href="/pricing" style="padding:0.6rem 1.25rem;border:none;border-radius:8px;background:#0EA5A4;color:#fff;font-weight:600;font-size:0.9rem;text-decoration:none;display:inline-flex;align-items:center">View Pro Plan</a></div></div>';
+        return;
+      }
+
+      var data = await res.json();
+      if (data.success) {
+        pfCloseSaveRecipeModal();
+        var toast = document.getElementById('pf-save-toast');
+        if (toast) {
+          toast.style.display = 'flex';
+          setTimeout(function() { toast.style.display = 'none'; }, 4000);
+        }
+      } else {
+        if (errEl) { errEl.textContent = 'Could not save. Please try again.'; errEl.style.display = 'block'; }
+      }
+    } catch(e) {
+      if (errEl) { errEl.textContent = 'Something went wrong. Please try again.'; errEl.style.display = 'block'; }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save Recipe';
+      btn.style.opacity = '1';
+    }
+  };
+})();
+</script>
+
+</body>
 </html>
 
