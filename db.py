@@ -205,6 +205,16 @@ def ensure_schema():
                 # Column already exists, ignore
                 pass
         
+        # Add password reset columns if they do not exist
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN reset_token TEXT")
+        except Exception:
+            pass
+        try:
+            cursor.execute("ALTER TABLE users ADD COLUMN reset_token_expiry TEXT")
+        except Exception:
+            pass
+
         # Create nutrition_facts table for both Postgres and SQLite
         if USE_POSTGRES:
             # PostgreSQL schema
