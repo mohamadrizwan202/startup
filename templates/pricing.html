@@ -205,11 +205,15 @@
     });
 
     document.getElementById('notifySubmit').addEventListener('click', async function() {
+      const btn = document.getElementById('notifySubmit');
       const emailVal = document.getElementById('notifyEmail').value.trim();
       if (!emailVal || !emailVal.includes('@')) {
         alert('Please enter a valid email.');
         return;
       }
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+      btn.style.opacity = '0.7';
       try {
         await fetch('/api/contact', {
           method: 'POST',
@@ -225,7 +229,7 @@
       } catch(e) {}
       document.getElementById('notifySuccess').style.display = 'block';
       document.getElementById('notifyEmail').style.display = 'none';
-      document.getElementById('notifySubmit').style.display = 'none';
+      btn.style.display = 'none';
     });
     }); // end DOMContentLoaded
   </script>
