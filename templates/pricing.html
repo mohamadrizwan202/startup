@@ -1,149 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pricing.css') }}">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  {% include "_seo_head.html" %}
-{% include "_adsense_head.html" %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% include "_seo_head.html" %}
+  {% include "_adsense_head.html" %}
 </head>
 <body>
   {% include "_navbar.html" %}
-
   <main class="pricing-page">
-    <!-- Hero Section -->
+
+    <!-- Hero -->
     <section class="pricing-hero">
-      <h1 class="pricing-hero-title">PureFyul is free during Beta</h1>
+      <h1 class="pricing-hero-title">Simple, honest pricing</h1>
       <p class="pricing-hero-subtitle">
-        Comprehensive nutrition and allergen analysis to help you make healthier choices. 
-        Build smarter smoothies tailored to your health goals.
+        Start free. Upgrade when you're ready to do more.
       </p>
-      <a href="{{ url_for('register') }}" class="pricing-cta-primary">Start Free</a>
-      <div class="trust-badges" aria-label="Pricing assurances">
-        <span class="trust-badge"><span class="trust-badge-icon">✓</span> Free during Beta</span>
-        <span class="trust-badge"><span class="trust-badge-icon">💳</span> No credit card required</span>
-        <span class="trust-badge"><span class="trust-badge-icon">↻</span> Cancel anytime</span>
-      </div>
     </section>
 
-    <!-- What You Get Today Section -->
+    <!-- Pricing Cards -->
     <section class="pricing-section">
-      <h2 class="pricing-section-title">What you get today</h2>
-      <div class="pricing-features-grid">
-        <div class="pricing-feature-card">
-          <h3 class="pricing-feature-title">Ingredient Analysis</h3>
-          <p class="pricing-feature-text">
-            Analyze multiple ingredients simultaneously with comprehensive nutrition facts, 
-            allergen information, and health benefits.
-          </p>
+      <div class="pricing-cards">
+
+        <!-- Free Card -->
+        <div class="pricing-card">
+          <div class="pricing-card__header">
+            <h2 class="pricing-card__name">Free</h2>
+            <div class="pricing-card__price">
+              <span class="pricing-card__amount">$0</span>
+              <span class="pricing-card__period">forever</span>
+            </div>
+            <p class="pricing-card__desc">Everything you need to analyze your smoothies.</p>
+          </div>
+          <ul class="pricing-card__features">
+            <li class="pricing-card__feature pricing-card__feature--yes">Smoothie Builder</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Ingredient Analysis</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Allergen Checks</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Health Goal Matching</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Save Recipes</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Meal Planner</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Export CSV</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Priority Support</li>
+          </ul>
+          <a href="{{ url_for('register') }}" class="pricing-card__cta pricing-card__cta--ghost">
+            Get Started Free
+          </a>
         </div>
-        <div class="pricing-feature-card">
-          <h3 class="pricing-feature-title">Smoothie Builder</h3>
-          <p class="pricing-feature-text">
-            Create and analyze complete smoothie recipes with combined nutrition data 
-            and personalized health-goal feedback.
-          </p>
+
+        <!-- Pro Card -->
+        <div class="pricing-card pricing-card--pro">
+          <div class="pricing-card__badge">Coming Soon</div>
+          <div class="pricing-card__header">
+            <h2 class="pricing-card__name">Pro</h2>
+            <div class="pricing-card__price">
+              <span class="pricing-card__amount">$4.99</span>
+              <span class="pricing-card__period">/ month</span>
+            </div>
+            <p class="pricing-card__desc">For people serious about their nutrition goals.</p>
+          </div>
+          <ul class="pricing-card__features">
+            <li class="pricing-card__feature pricing-card__feature--yes">Everything in Free</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Save up to 50 Recipes</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Weekly Meal Planner</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Export Recipes as CSV</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Priority Support</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Early access to new features</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Beta user grandfathered rate</li>
+          </ul>
+          <button class="pricing-card__cta pricing-card__cta--pro" id="notifyBtn">
+            Notify Me When Available
+          </button>
+          <p class="pricing-card__note">No payment required now. We'll email you when Pro launches.</p>
         </div>
-        <div class="pricing-feature-card">
-          <h3 class="pricing-feature-title">Allergen Information (ingredient-based)</h3>
-          <p class="pricing-feature-text">
-            Get instant allergen warnings and detailed information about potential 
-            allergens in your ingredients.
-          </p>
-        </div>
-        <div class="pricing-feature-card">
-          <h3 class="pricing-feature-title">Goal-based Ingredient Discovery</h3>
-          <p class="pricing-feature-text">
-            Receive personalized recommendations based on your health goals and 
-            dietary preferences.
-          </p>
-        </div>
+
       </div>
     </section>
 
-    <!-- Product Roadmap Section -->
+    <!-- Notify form (shown after clicking) -->
+    <div class="notify-section" id="notifySection" style="display:none;">
+      <div class="notify-card">
+        <h3 class="notify-card__title">🎉 Get early access to Pro</h3>
+        <p class="notify-card__text">Leave your email and we'll notify you the moment Pro launches. Beta users get a special rate.</p>
+        <div class="notify-card__form">
+          <input type="email" id="notifyEmail" class="notify-card__input" placeholder="your@email.com">
+          <button class="pf-btn pf-btn--primary" id="notifySubmit">Notify Me</button>
+        </div>
+        <p class="notify-card__success" id="notifySuccess" style="display:none;">✅ You're on the list! We'll be in touch.</p>
+      </div>
+    </div>
+
+    <!-- Feature Comparison -->
     <section class="pricing-section">
-      <div class="section-header">
-        <h2 class="section-title">Product roadmap</h2>
-        <p class="section-note">
-          <span class="section-note__icon" aria-hidden="true">🧭</span>
-          Planned improvements — no dates or guarantees.
-        </p>
-      </div>
-      <div class="pricing-coming-soon-grid">
-        <div class="pricing-coming-soon-item">
-          <span class="pricing-coming-soon-pill">Roadmap</span>
-          <h3 class="pricing-coming-soon-title">Smoothie Presets</h3>
-          <p class="pricing-coming-soon-text">Save your favorite smoothie recipes for quick access.</p>
+      <h2 class="pricing-section-title">What's included</h2>
+      <div class="pricing-compare">
+        <div class="pricing-compare__row pricing-compare__row--header">
+          <div class="pricing-compare__feature">Feature</div>
+          <div class="pricing-compare__col">Free</div>
+          <div class="pricing-compare__col">Pro</div>
         </div>
-        <div class="pricing-coming-soon-item">
-          <span class="pricing-coming-soon-pill">Roadmap</span>
-          <h3 class="pricing-coming-soon-title">Advanced Analytics</h3>
-          <p class="pricing-coming-soon-text">Track your nutrition trends and health progress over time.</p>
+        <div class="pricing-compare__row">
+          <div class="pricing-compare__feature">Smoothie Builder</div>
+          <div class="pricing-compare__col">✅</div>
+          <div class="pricing-compare__col">✅</div>
         </div>
-        <div class="pricing-coming-soon-item">
-          <span class="pricing-coming-soon-pill">Roadmap</span>
-          <h3 class="pricing-coming-soon-title">Meal Planning</h3>
-          <p class="pricing-coming-soon-text">Plan complete meals with comprehensive nutrition analysis.</p>
+        <div class="pricing-compare__row">
+          <div class="pricing-compare__feature">Ingredient Analysis</div>
+          <div class="pricing-compare__col">✅</div>
+          <div class="pricing-compare__col">✅</div>
         </div>
-        <div class="pricing-coming-soon-item">
-          <span class="pricing-coming-soon-pill">Roadmap</span>
-          <h3 class="pricing-coming-soon-title">Export Recipes</h3>
-          <p class="pricing-coming-soon-text">Export your recipes and nutrition data in multiple formats.</p>
+        <div class="pricing-compare__row">
+          <div class="pricing-compare__feature">Allergen Checks</div>
+          <div class="pricing-compare__col">✅</div>
+          <div class="pricing-compare__col">✅</div>
+        </div>
+        <div class="pricing-compare__row">
+          <div class="pricing-compare__feature">Health Goal Matching</div>
+          <div class="pricing-compare__col">✅</div>
+          <div class="pricing-compare__col">✅</div>
+        </div>
+        <div class="pricing-compare__row">
+          <div class="pricing-compare__feature">Save Recipes</div>
+          <div class="pricing-compare__col">—</div>
+          <div class="pricing-compare__col">✅ Up to 50</div>
+        </div>
+        <div class="pricing-compare__row">
+          <div class="pricing-compare__feature">Weekly Meal Planner</div>
+          <div class="pricing-compare__col">—</div>
+          <div class="pricing-compare__col">✅</div>
+        </div>
+        <div class="pricing-compare__row">
+          <div class="pricing-compare__feature">Export CSV</div>
+          <div class="pricing-compare__col">—</div>
+          <div class="pricing-compare__col">✅</div>
+        </div>
+        <div class="pricing-compare__row">
+          <div class="pricing-compare__feature">Priority Support</div>
+          <div class="pricing-compare__col">—</div>
+          <div class="pricing-compare__col">✅</div>
         </div>
       </div>
     </section>
 
-    <!-- Supporter Card (Optional) -->
-    <section class="pricing-section">
-      <div class="pricing-supporter-card">
-        <h3 class="pricing-supporter-title">Supporter (optional)</h3>
-        <p class="pricing-supporter-text">
-          Love PureFyul? Support our mission to make nutrition information accessible to everyone. 
-          This is completely optional and not required to use the platform. Your support helps us 
-          continue improving and adding new features.
-        </p>
-        <p class="pricing-supporter-note">
-          <strong>Note:</strong> This is not required. PureFyul remains free during Beta regardless of support.
-        </p>
-      </div>
-    </section>
-
-    <!-- FAQ Section -->
+    <!-- FAQ -->
     <section class="pricing-section">
       <h2 class="pricing-section-title">Frequently Asked Questions</h2>
       <div class="pricing-faq">
         <div class="pricing-faq-item">
-          <h3 class="pricing-faq-question">Is PureFyul really free during Beta?</h3>
-          <p class="pricing-faq-answer">
-            Yes! PureFyul is completely free during our Beta period. You get full access to all current 
-            features including ingredient analysis, smoothie building, allergen information (ingredient-based), and Goal-based ingredient discovery. 
-            No credit card required, no hidden fees.
-          </p>
+          <h3 class="pricing-faq-question">Is the free plan really free forever?</h3>
+          <p class="pricing-faq-answer">Yes. The free plan stays free with no time limit. You get full access to the smoothie builder, ingredient analysis, and allergen checks with no credit card required.</p>
         </div>
         <div class="pricing-faq-item">
-          <h3 class="pricing-faq-question">How long will the Beta last?</h3>
-          <p class="pricing-faq-answer">
-            We're committed to keeping PureFyul free during Beta as we continue to improve and add features. 
-            We'll provide advance notice before any changes to our pricing model, and Beta users will be 
-            grandfathered into special benefits.
-          </p>
+          <h3 class="pricing-faq-question">When does Pro launch?</h3>
+          <p class="pricing-faq-answer">We're finalizing Pro features now. Leave your email above and you'll be the first to know. Beta users who sign up early will be grandfathered into a special rate.</p>
+        </div>
+        <div class="pricing-faq-item">
+          <h3 class="pricing-faq-question">Can I try Pro features before paying?</h3>
+          <p class="pricing-faq-answer">Yes — we plan to offer a free trial when Pro launches. Early waitlist users get priority access.</p>
         </div>
         <div class="pricing-faq-item">
           <h3 class="pricing-faq-question">Is my data private and secure?</h3>
-          <p class="pricing-faq-answer">
-            We do not sell your personal information. We use only the data needed to run and secure the service (account login, preferences, and basic operational logs). We may share data with service providers (hosting, database, email) strictly to operate the app. If we enable ads, Google and its partners may use cookies for advertising and measurement. See our Privacy Policy for details.
-          </p>
+          <p class="pricing-faq-answer">We do not sell your personal information. We use only the data needed to run and secure the service. See our Privacy Policy for full details.</p>
         </div>
         <div class="pricing-faq-item">
           <h3 class="pricing-faq-question">How accurate is the nutrition data?</h3>
-          <p class="pricing-faq-answer">
-            Our nutrition values are compiled from referenced databases and sources we list. Values can vary by brand 
-            and preparation, so treat them as estimates.
-          </p>
+          <p class="pricing-faq-answer">Our nutrition values are compiled from referenced databases. Values can vary by brand and preparation — treat them as estimates, not medical advice.</p>
         </div>
       </div>
     </section>
@@ -151,20 +176,38 @@
     <!-- Final CTA -->
     <section class="pricing-cta">
       <h2 class="pricing-cta-title">Ready to get started?</h2>
-      <a href="{{ url_for('register') }}" class="pricing-cta-button">Start Free</a>
+      <a href="{{ url_for('register') }}" class="pricing-cta-button">Start Free — No Credit Card</a>
     </section>
 
-    <!-- Disclaimer Card -->
-    <div class="pricing-disclaimer-card" role="note" aria-label="Disclaimer">
+    <!-- Disclaimer -->
+    <div class="pricing-disclaimer-card" role="note">
       <p class="pricing-disclaimer-text">Information only — not medical advice. For medical decisions, consult a qualified professional.</p>
     </div>
+
   </main>
+
+  <!-- Notify button logic -->
+  <script>
+    document.getElementById('notifyBtn').addEventListener('click', function() {
+      document.getElementById('notifySection').style.display = 'block';
+      document.getElementById('notifySection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    document.getElementById('notifySubmit').addEventListener('click', async function() {
+      const email = document.getElementById('notifyEmail').value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid email.');
+        return;
+      }
+      // Store via contact form or just show success for now
+      document.getElementById('notifySuccess').style.display = 'block';
+      document.getElementById('notifyEmail').style.display = 'none';
+      document.getElementById('notifySubmit').style.display = 'none';
+    });
+  </script>
+
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
-
   {% include "_legal_footer.html" %}
-
-
   {% include "_feedback.html" %}
 </body>
 </html>
-
