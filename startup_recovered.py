@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import re
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory, Response, current_app, make_response
 import time
@@ -52417,6 +52420,7 @@ def get_plan():
 # ── FORGOT PASSWORD ROUTES ───────────────────────────────────────────────────
 
 @app.route("/forgot-password", methods=["GET", "POST"])
+@csrf.exempt
 def forgot_password():
     """Show forgot password form and send reset email."""
     if request.method == "GET":
@@ -52489,6 +52493,7 @@ purefyul.com
 
 
 @app.route("/reset-password/<token>", methods=["GET", "POST"])
+@csrf.exempt
 def reset_password(token):
     """Validate token and allow user to set new password."""
     import datetime as dt
