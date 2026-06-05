@@ -6,23 +6,6 @@
   padding-bottom: 4rem;
 }
 
-/* ── Buttons ──────────────────────────────────────────────────────────────── */
-.pf-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.55rem 1.25rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  border: none;
-  transition: background 0.15s, opacity 0.15s;
-}
-.pf-btn--primary { background: #2d7a2d; color: #fff; }
-.pf-btn--primary:hover { background: #246424; }
-.pf-btn--ghost { background: transparent; color: #2d7a2d; border: 1.5px solid #2d7a2d; }
-.pf-btn--ghost:hover { background: #f0f7f0; }
 
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 .planner-hero {
