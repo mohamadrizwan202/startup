@@ -47,9 +47,15 @@
             <li class="pricing-card__feature pricing-card__feature--no">Export CSV</li>
             <li class="pricing-card__feature pricing-card__feature--no">Priority Support</li>
           </ul>
+          {% if current_user.is_authenticated %}
+          <a href="{{ url_for('index') }}" class="pricing-card__cta pricing-card__cta--ghost">
+            Go to App
+          </a>
+          {% else %}
           <a href="{{ url_for('register') }}" class="pricing-card__cta pricing-card__cta--ghost">
             Get Started Free
           </a>
+          {% endif %}
         </div>
 
         <!-- Pro Card -->
@@ -176,7 +182,11 @@
     <!-- Final CTA -->
     <section class="pricing-cta">
       <h2 class="pricing-cta-title">Ready to get started?</h2>
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('index') }}" class="pricing-cta-button">Go to App</a>
+      {% else %}
       <a href="{{ url_for('register') }}" class="pricing-cta-button">Start Free — No Credit Card</a>
+      {% endif %}
     </section>
 
     <!-- Disclaimer -->
@@ -188,6 +198,7 @@
 
   <!-- Notify button logic -->
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('notifyBtn').addEventListener('click', function() {
       document.getElementById('notifySection').style.display = 'block';
       document.getElementById('notifySection').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -214,6 +225,7 @@
       document.getElementById('notifyEmail').style.display = 'none';
       document.getElementById('notifySubmit').style.display = 'none';
     });
+    }); // end DOMContentLoaded
   </script>
 
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
