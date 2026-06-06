@@ -17087,6 +17087,9 @@ const allergenPanel = allergenNames.length === 0
             nutritionData: data,
             ageGroup: selectedAgeGroup
           };
+          // Store globally for save recipe dialog
+          window._pfCurrentIngredients = JSON.parse(JSON.stringify(smoothieIngredientData));
+          window._pfCurrentNutrition = data;
           hasBuiltSmoothie = true; // Mark that user has built a smoothie
           
           // Compute sweetener warning
@@ -19481,25 +19484,25 @@ const batchG = (smoothieBatchMlOverride != null)
         var timing = window._pfLastSmoothieTiming || '';
 
 
-        // Capture ingredients from currentSmoothie before they're cleared
+        // Use globally stored ingredients and nutrition
         var savedIngredients = [];
-        if (typeof currentSmoothie !== 'undefined' && currentSmoothie && currentSmoothie.ingredients) {
-          savedIngredients = currentSmoothie.ingredients.map(function(ing) {
-            return { name: ing.name || ing, quantity: ing.portionGrams || ing.quantity || '', unit: ing.unit || 'g' };
+        if (window._pfCurrentIngredients && window._pfCurrentIngredients.length) {
+          savedIngredients = window._pfCurrentIngredients.map(function(ing) {
+            return { name: ing.name || '', quantity: ing.totalGrams || ing.portionGrams || 0, unit: ing.unit || 'g' };
           });
         }
 
-        // Capture nutrition from currentSmoothie.nutritionData
         var savedNutrition = {};
-        if (typeof currentSmoothie !== 'undefined' && currentSmoothie && currentSmoothie.nutritionData) {
-          var nd = currentSmoothie.nutritionData;
+        if (window._pfCurrentNutrition) {
+          var nd = window._pfCurrentNutrition;
+          var tn = nd.total_nutrition || nd.nutrients || {};
           savedNutrition = {
-            calories: nd.total_nutrition ? nd.total_nutrition.calories : (nd.calories || 0),
-            protein: nd.total_nutrition ? nd.total_nutrition.protein : (nd.protein || 0),
-            carbs: nd.total_nutrition ? nd.total_nutrition.carbs : (nd.carbs || 0),
-            fat: nd.total_nutrition ? nd.total_nutrition.fat : (nd.fat || 0),
-            fiber: nd.total_nutrition ? nd.total_nutrition.fiber : (nd.fiber || 0),
-            sugar: nd.total_nutrition ? nd.total_nutrition.sugar : (nd.sugar || 0)
+            calories: tn.calories || nd.calories || 0,
+            protein: tn.protein || nd.protein || 0,
+            carbs: tn.carbs || nd.carbs || 0,
+            fat: tn.fat || nd.fat || 0,
+            fiber: tn.fiber || nd.fiber || 0,
+            sugar: tn.sugar || nd.sugar || 0
           };
         }
 
