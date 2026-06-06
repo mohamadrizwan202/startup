@@ -19446,8 +19446,9 @@ const batchG = (smoothieBatchMlOverride != null)
 </div>
 
 <!-- ── Save Recipe Toast ─────────────────────────────────────────── -->
-<div id="pf-save-toast" style="display:none;position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0EA5A4;color:#fff;padding:0.75rem 1.5rem;border-radius:10px;font-weight:600;font-size:0.92rem;z-index:4000;box-shadow:0 4px 16px rgba(0,0,0,0.15);white-space:nowrap;display:none;align-items:center;gap:10px;">
+<div id="pf-save-toast" style="display:none;position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0EA5A4;color:#fff;padding:0.75rem 1.5rem;border-radius:10px;font-weight:600;font-size:0.92rem;z-index:4000;box-shadow:0 4px 16px rgba(0,0,0,0.15);align-items:center;gap:12px;">
   ✅ Recipe saved! <a href="/recipes" style="color:#fff;text-decoration:underline;font-weight:700;">View My Recipes →</a>
+  <button onclick="document.getElementById('pf-save-toast').style.display='none'" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
 </div>
 
 <script nonce="{{ csp_nonce }}">
@@ -19615,7 +19616,6 @@ const batchG = (smoothieBatchMlOverride != null)
         var toast = document.getElementById('pf-save-toast');
         if (toast) {
           toast.style.display = 'flex';
-          setTimeout(function() { toast.style.display = 'none'; }, 4000);
         }
       } else {
         if (errEl) { errEl.textContent = 'Could not save. Please try again.'; errEl.style.display = 'block'; }

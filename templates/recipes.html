@@ -75,7 +75,7 @@
   {% include "_legal_footer.html" %}
   {% include "_feedback.html" %}
 
-  <script>
+  <script nonce="{{ csp_nonce }}">
     let recipeToDelete = null;
 
     // ── Fetch recipes on load ────────────────────────────────────────
