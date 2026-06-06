@@ -346,3 +346,9 @@
 .recipes-page .pf-btn--primary:hover {
   background: #0B7F7E;
 }
+
+.recipes-page .pf-btn.pf-btn--primary,
+.recipes-page a.pf-btn.pf-btn--primary {
+  color: #fff !important;
+  background: #0EA5A4 !important;
+}
