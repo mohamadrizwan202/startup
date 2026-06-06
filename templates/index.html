@@ -19540,12 +19540,11 @@ const batchG = (smoothieBatchMlOverride != null)
   });
 
   // ── Close modal ──────────────────────────────────────────────
-  window.pfCloseSaveRecipeModal = function() {
+  window.pfCloseSaveRecipeModal = function(skipReopen) {
     var overlay = document.getElementById('pf-save-recipe-overlay');
     if (overlay) overlay.style.display = 'none';
     _smoothiePayload = null;
-    // Reopen results modal so user does not lose their smoothie
-    if (typeof pfOpenSmoothieModal === 'function') pfOpenSmoothieModal();
+    if (!skipReopen && typeof pfOpenSmoothieModal === 'function') pfOpenSmoothieModal();
   };
 
   // ── Confirm save ─────────────────────────────────────────────
@@ -19612,7 +19611,7 @@ const batchG = (smoothieBatchMlOverride != null)
 
       var data = await res.json();
       if (data.success) {
-        pfCloseSaveRecipeModal();
+        pfCloseSaveRecipeModal(true);
         var toast = document.getElementById('pf-save-toast');
         if (toast) {
           toast.style.display = 'flex';
