@@ -19644,6 +19644,13 @@ const batchG = (smoothieBatchMlOverride != null)
       }
 
       var data = await res.json();
+      if (res.status === 409) {
+        if (errEl) {
+          errEl.textContent = data.message || 'A recipe with this name already exists. Please choose a different name.';
+          errEl.style.display = 'block';
+        }
+        return;
+      }
       if (data.success) {
         pfCloseSaveRecipeModal(true);
         var toast = document.getElementById('pf-save-toast');

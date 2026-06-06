@@ -52180,9 +52180,27 @@ def save_recipe():
     notes = data.get("notes", "")
 
     if not name:
-        return jsonify({"error": "Name and ingredients are required"}), 400
+        return jsonify({"error": "Name is required"}), 400
 
     conn = db.get_conn()
+    # Check for duplicate name for this user
+    try:
+        check_cursor = conn.cursor()
+        if db.USE_POSTGRES:
+            check_cursor.execute(
+                "SELECT id FROM saved_recipes WHERE user_id = %s AND LOWER(name) = LOWER(%s)",
+                (current_user.id, name)
+            )
+        else:
+            check_cursor.execute(
+                "SELECT id FROM saved_recipes WHERE user_id = ? AND LOWER(name) = LOWER(?)",
+                (current_user.id, name)
+            )
+        if check_cursor.fetchone():
+            conn.close()
+            return jsonify({"error": "duplicate_name", "message": f"You already have a recipe named '{name}'. Please choose a different name."}), 409
+    except Exception:
+        pass
     try:
         cursor = conn.cursor()
         if db.USE_POSTGRES:
