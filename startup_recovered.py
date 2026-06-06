@@ -52179,7 +52179,7 @@ def save_recipe():
     health_goal = data.get("health_goal", "")
     notes = data.get("notes", "")
 
-    if not name or not ingredients:
+    if not name:
         return jsonify({"error": "Name and ingredients are required"}), 400
 
     conn = db.get_conn()
