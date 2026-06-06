@@ -19602,8 +19602,14 @@ const batchG = (smoothieBatchMlOverride != null)
 
       var payload = {
         name: name,
-        ingredients: [],
-        nutrition_summary: {},
+        ingredients: window._pfCurrentIngredients ? window._pfCurrentIngredients.map(function(ing) {
+          return { name: ing.name || '', quantity: ing.totalGrams || ing.portionGrams || 0, unit: ing.unit || 'g' };
+        }) : (_smoothiePayload && _smoothiePayload.ingredients ? _smoothiePayload.ingredients : []),
+        nutrition_summary: window._pfCurrentNutrition ? (function() {
+          var nd = window._pfCurrentNutrition;
+          var tn = nd.total_nutrition || nd.nutrients || {};
+          return { calories: tn.calories || 0, protein: tn.protein || 0, carbs: tn.carbs || 0, fat: tn.fat || 0, fiber: tn.fiber || 0, sugar: tn.sugar || 0 };
+        })() : (_smoothiePayload && _smoothiePayload.nutrition ? _smoothiePayload.nutrition : {}),
         health_goal: _smoothiePayload ? _smoothiePayload.healthGoal : '',
         notes: notes.join(' | ')
       };
