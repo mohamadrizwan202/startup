@@ -124,7 +124,15 @@
         const nutrition = recipe.nutrition_summary || {};
         const ingredients = recipe.ingredients || [];
         const ingredientNames = ingredients
-          .map(i => typeof i === 'object' ? (i.name || '') : i)
+          .map(i => {
+            if (typeof i === 'object') {
+              var name = i.name || '';
+              var amount = i.totalGrams || i.portionGrams || i.quantity || '';
+              var unit = i.unit || 'g';
+              return amount ? name + ' ' + Math.round(amount) + unit : name;
+            }
+            return i;
+          })
           .filter(Boolean)
           .join(', ');
 
