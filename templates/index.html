@@ -19481,12 +19481,36 @@ const batchG = (smoothieBatchMlOverride != null)
         var timing = window._pfLastSmoothieTiming || '';
 
 
+        // Capture ingredients from currentSmoothie before they're cleared
+        var savedIngredients = [];
+        if (typeof currentSmoothie !== 'undefined' && currentSmoothie && currentSmoothie.ingredients) {
+          savedIngredients = currentSmoothie.ingredients.map(function(ing) {
+            return { name: ing.name || ing, quantity: ing.portionGrams || ing.quantity || '', unit: ing.unit || 'g' };
+          });
+        }
+
+        // Capture nutrition from currentSmoothie.nutritionData
+        var savedNutrition = {};
+        if (typeof currentSmoothie !== 'undefined' && currentSmoothie && currentSmoothie.nutritionData) {
+          var nd = currentSmoothie.nutritionData;
+          savedNutrition = {
+            calories: nd.total_nutrition ? nd.total_nutrition.calories : (nd.calories || 0),
+            protein: nd.total_nutrition ? nd.total_nutrition.protein : (nd.protein || 0),
+            carbs: nd.total_nutrition ? nd.total_nutrition.carbs : (nd.carbs || 0),
+            fat: nd.total_nutrition ? nd.total_nutrition.fat : (nd.fat || 0),
+            fiber: nd.total_nutrition ? nd.total_nutrition.fiber : (nd.fiber || 0),
+            sugar: nd.total_nutrition ? nd.total_nutrition.sugar : (nd.sugar || 0)
+          };
+        }
+
         _smoothiePayload = {
           name: smoothieName || 'My Smoothie',
           audience: audience,
           healthGoal: healthGoal,
           healthGoalText: healthGoalText,
-          timing: timing
+          timing: timing,
+          ingredients: savedIngredients,
+          nutrition: savedNutrition
         };
 
         // Set suggested name

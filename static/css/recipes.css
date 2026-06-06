@@ -324,3 +324,25 @@
   .modal { padding: 1.5rem; }
   .recipe-card__nutrition { gap: 0.4rem; }
 }
+
+/* ── Button fixes for white background pages ─────────────────── */
+.recipes-page .pf-btn--ghost,
+.modal .pf-btn--ghost {
+  color: #0EA5A4;
+  border-color: #0EA5A4;
+  background: transparent;
+}
+
+.recipes-page .pf-btn--ghost:hover,
+.modal .pf-btn--ghost:hover {
+  background: #f0fafa;
+}
+
+.recipes-page .pf-btn--primary {
+  background: #0EA5A4;
+  color: #fff;
+}
+
+.recipes-page .pf-btn--primary:hover {
+  background: #0B7F7E;
+}
