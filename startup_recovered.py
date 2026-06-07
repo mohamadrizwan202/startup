@@ -51872,6 +51872,7 @@ def _patch_seed_nutrition_response(resp):
 
     return resp
 
+@csrf.exempt
 @app.route('/api/analyze', methods=['POST'])
 def api_analyze():
     """Analyze ingredients endpoint - accepts both 'ingredients' array and 'query' string"""
