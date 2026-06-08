@@ -139,7 +139,15 @@
         const planRes2 = await fetch('/api/mealplans');
         const planData2 = await planRes2.json();
         if (planData2.plans && planData2.plans.length > 0) {
-          slots = planData2.plans[0].slots || {};
+          // Find plan matching current week
+          const dates = getWeekDates();
+          const currentWeekStart = dates[0].toISOString().split('T')[0];
+          const matchingPlan = planData2.plans.find(p => p.week_start === currentWeekStart);
+          if (matchingPlan) {
+            slots = matchingPlan.slots || {};
+          } else {
+            slots = {};
+          }
         }
 
         buildGrid();
@@ -281,8 +289,25 @@
     });
 
     // ── Week nav ─────────────────────────────────────────────────────
-    document.getElementById('prevWeek').addEventListener('click', () => { weekOffset--; buildGrid(); });
-    document.getElementById('nextWeek').addEventListener('click', () => { weekOffset++; buildGrid(); });
+    document.getElementById('prevWeek').addEventListener('click', async () => { weekOffset--; await loadWeekPlan(); buildGrid(); });
+    document.getElementById('nextWeek').addEventListener('click', async () => { weekOffset++; await loadWeekPlan(); buildGrid(); });
+
+    async function loadWeekPlan() {
+      try {
+        const res = await fetch('/api/mealplans');
+        const data = await res.json();
+        if (data.plans && data.plans.length > 0) {
+          const dates = getWeekDates();
+          const weekStart = dates[0].toISOString().split('T')[0];
+          const match = data.plans.find(p => p.week_start === weekStart);
+          slots = match ? (match.slots || {}) : {};
+        } else {
+          slots = {};
+        }
+      } catch(e) {
+        slots = {};
+      }
+    }
 
     // ── Clear week ───────────────────────────────────────────────────
     document.getElementById('clearBtn').addEventListener('click', () => {
