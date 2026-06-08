@@ -97,7 +97,7 @@
   {% include "_legal_footer.html" %}
   {% include "_feedback.html" %}
 
-  <script>
+  <script nonce="{{ csp_nonce }}">
     const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
     const MEAL_ICONS = { Breakfast: '🌅', Lunch: '☀️', Dinner: '🌙', Snack: '🍃' };
