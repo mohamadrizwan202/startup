@@ -142,7 +142,11 @@
           // Find plan matching current week
           const dates = getWeekDates();
           const currentWeekStart = dates[0].toISOString().split('T')[0];
-          const matchingPlan = planData2.plans.find(p => p.week_start === currentWeekStart);
+          const matchingPlan = planData2.plans.find(p => {
+            if (!p.week_start) return false;
+            const planDate = new Date(p.week_start).toISOString().split('T')[0];
+            return planDate === currentWeekStart;
+          });
           if (matchingPlan) {
             slots = matchingPlan.slots || {};
           } else {
@@ -299,7 +303,12 @@
         if (data.plans && data.plans.length > 0) {
           const dates = getWeekDates();
           const weekStart = dates[0].toISOString().split('T')[0];
-          const match = data.plans.find(p => p.week_start === weekStart);
+          const match = data.plans.find(p => {
+            if (!p.week_start) return false;
+            // Handle both "2026-06-08" and "Mon, 08 Jun 2026 00:00:00 GMT" formats
+            const planDate = new Date(p.week_start).toISOString().split('T')[0];
+            return planDate === weekStart;
+          });
           slots = match ? (match.slots || {}) : {};
         } else {
           slots = {};
