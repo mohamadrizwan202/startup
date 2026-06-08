@@ -52319,30 +52319,52 @@ def save_meal_plan():
     conn = db.get_conn()
     try:
         cursor = conn.cursor()
+        week_start = data.get("week_start")
+        slots_json = json.dumps(data.get("slots", {}))
+        name = data.get("name", "My Meal Plan")
+
         if db.USE_POSTGRES:
+            # Update if exists for this user+week, otherwise insert
             cursor.execute(
-                """INSERT INTO meal_plans (user_id, name, week_start, slots)
-                   VALUES (%s, %s, %s, %s) RETURNING id""",
-                (
-                    current_user.id,
-                    data.get("name", "My Meal Plan"),
-                    data.get("week_start"),
-                    json.dumps(data.get("slots", {}))
-                )
+                "SELECT id FROM meal_plans WHERE user_id = %s AND week_start = %s",
+                (current_user.id, week_start)
             )
-            result = cursor.fetchone()
-            new_id = db.row_to_dict(result)["id"]
+            existing = cursor.fetchone()
+            if existing:
+                existing_id = db.row_to_dict(existing)["id"]
+                cursor.execute(
+                    "UPDATE meal_plans SET slots = %s, name = %s WHERE id = %s",
+                    (slots_json, name, existing_id)
+                )
+                new_id = existing_id
+            else:
+                cursor.execute(
+                    """INSERT INTO meal_plans (user_id, name, week_start, slots)
+                       VALUES (%s, %s, %s, %s) RETURNING id""",
+                    (current_user.id, name, week_start, slots_json)
+                )
+                result = cursor.fetchone()
+                new_id = db.row_to_dict(result)["id"]
         else:
             cursor.execute(
-                """INSERT INTO meal_plans (user_id, name, week_start, slots)
-                   VALUES (?, ?, ?, ?)""",
-                (
-                    current_user.id,
-                    data.get("name", "My Meal Plan"),
-                    data.get("week_start"),
-                    json.dumps(data.get("slots", {}))
-                )
+                "SELECT id FROM meal_plans WHERE user_id = ? AND week_start = ?",
+                (current_user.id, week_start)
             )
+            existing = cursor.fetchone()
+            if existing:
+                existing_id = db.row_to_dict(existing)["id"]
+                cursor.execute(
+                    "UPDATE meal_plans SET slots = ?, name = ? WHERE id = ?",
+                    (slots_json, name, existing_id)
+                )
+                new_id = existing_id
+            else:
+                cursor.execute(
+                    """INSERT INTO meal_plans (user_id, name, week_start, slots)
+                       VALUES (?, ?, ?, ?)""",
+                    (current_user.id, name, week_start, slots_json)
+                )
+                new_id = cursor.lastrowid
             new_id = cursor.lastrowid
         conn.commit()
         return jsonify({"success": True, "id": new_id})
