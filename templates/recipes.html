@@ -44,25 +44,25 @@
     .rp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
     .rc { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #E5ECEA; transition: transform 0.18s, box-shadow 0.18s; }
     .rc:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(14,165,164,0.1); }
-    .rc__accent { height: 4px; background: linear-gradient(90deg, #0EA5A4, #5ECFCE); }
-    .rc__body { padding: 1.25rem; }
+    .rc__accent { height: 3px; background: linear-gradient(90deg, #0EA5A4, #5ECFCE); }
+    .rc__body { padding: 1.5rem; }
     .rc__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.85rem; }
     .rc__name { font-size: 1rem; font-weight: 700; color: #1A3532; line-height: 1.3; flex: 1; }
-    .rc__goal { font-size: 0.7rem; font-weight: 600; background: #E6F7F7; color: #0B7F7E; padding: 0.2rem 0.6rem; border-radius: 100px; white-space: nowrap; flex-shrink: 0; text-transform: capitalize; }
+    .rc__goal { font-size: 0.68rem; font-weight: 600; background: #E8F7F7; color: #0B7F7E; padding: 0.22rem 0.7rem; border-radius: 100px; white-space: nowrap; flex-shrink: 0; text-transform: capitalize; letter-spacing: 0.02em; }
     .rc__nutrition { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
-    .rc__nut { background: #F4FAFA; border-radius: 10px; padding: 0.5rem 0.25rem; text-align: center; }
+    .rc__nut { background: #F4FAFA; border-radius: 8px; padding: 0.6rem 0.35rem; text-align: center; border: 1px solid #E8F4F4; }
     .rc__nut-val { display: block; font-size: 1rem; font-weight: 700; color: #1A3532; line-height: 1.1; }
     .rc__nut-unit { font-size: 0.6rem; color: #0EA5A4; font-weight: 500; }
     .rc__nut-label { display: block; font-size: 0.6rem; color: #6B8A87; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.15rem; }
-    .rc__ings { margin-bottom: 0.85rem; }
-    .rc__ings-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6B8A87; margin-bottom: 0.4rem; }
+    .rc__ings { margin-bottom: 1rem; padding: 0.85rem; background: #F8FBFB; border-radius: 10px; }
+    .rc__ings-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #9AB5B3; margin-bottom: 0.5rem; }
     .rc__ings-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-    .rc__ing-pill { font-size: 0.75rem; background: #F0F4F3; color: #2D5553; padding: 0.2rem 0.6rem; border-radius: 100px; font-weight: 500; border: 1px solid #E0ECEA; }
+    .rc__ing-pill { font-size: 0.73rem; background: #fff; color: #2D5553; padding: 0.18rem 0.65rem; border-radius: 100px; font-weight: 500; border: 1px solid #D8ECEA; letter-spacing: 0.01em; }
     .rc__ing-amt { color: #9AB5B3; font-size: 0.65rem; }
     .rc__notes { font-size: 0.78rem; color: #6B8A87; margin-bottom: 0.85rem; line-height: 1.5; font-style: italic; }
-    .rc__footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid #F0F4F3; }
+    .rc__footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.85rem; margin-top: 0.25rem; border-top: 1px solid #EDF2F1; }
     .rc__date { font-size: 0.72rem; color: #9AB5B3; }
-    .rc__delete { background: none; border: none; cursor: pointer; color: #B0C4C2; font-size: 0.78rem; font-weight: 600; font-family: inherit; padding: 0.3rem 0.6rem; border-radius: 6px; transition: color 0.12s, background 0.12s; display: flex; align-items: center; gap: 4px; }
+    .rc__delete { background: none; border: none; cursor: pointer; color: #C8D8D6; font-size: 0.75rem; font-weight: 500; font-family: inherit; padding: 0.25rem 0.5rem; border-radius: 6px; transition: color 0.15s, background 0.15s; display: flex; align-items: center; gap: 3px; letter-spacing: 0.01em; }
     .rc__delete:hover { color: #E53E3E; background: #FFF5F5; }
     .rp-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
     .rp-modal { background: #fff; border-radius: 16px; padding: 2rem; max-width: 360px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
