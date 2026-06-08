@@ -235,12 +235,55 @@
 
       // Attach click listeners
       grid.querySelectorAll('.pg-slot').forEach(slot => {
-        slot.addEventListener('click', () => openDrawer(slot.dataset.slot));
+        slot.addEventListener('click', () => {
+          const key = slot.dataset.slot;
+          if (slots[key]) { openDetailPopup(key); } else { openDrawer(key); }
+        });
         slot.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openDrawer(slot.dataset.slot); });
       });
     }
 
     // ── Drawer ───────────────────────────────────────────────────────
+    function openDetailPopup(slotKey) {
+      var assigned = slots[slotKey];
+      if (!assigned) return;
+      activeSlot = slotKey;
+      var recipe = allRecipes.find(function(r){ return r.id === assigned.id; }) || {};
+      var nutrition = recipe.nutrition_summary || {};
+      var ingredients = recipe.ingredients || [];
+      var parts = slotKey.split('-');
+      document.getElementById('sd-label').textContent = parts[0] + ' ' + parts[1];
+      document.getElementById('sd-name').textContent = assigned.name;
+      var meta = document.getElementById('sd-meta');
+      meta.innerHTML = recipe.health_goal ? '<span class="sd-goal">' + escapeHtml(recipe.health_goal) + '</span>' : '';
+      if (recipe.notes) meta.innerHTML += '<span class="sd-notes">' + escapeHtml(recipe.notes) + '</span>';
+      var nutWrap = document.getElementById('sd-nut');
+      nutWrap.innerHTML = '';
+      var nuts = [['CAL', nutrition.calories, 'kcal'], ['PRO', nutrition.protein, 'g'], ['CARB', nutrition.carbs, 'g'], ['FAT', nutrition.fat, 'g']];
+      nuts.forEach(function(n) {
+        var val = (n[1] !== undefined && n[1] !== null) ? Math.round(n[1]) + n[2] : '-';
+        nutWrap.innerHTML += '<div class="sd-nut-box"><b>' + val + '</b><small>' + n[0] + '</small></div>';
+      });
+      var ingsWrap = document.getElementById('sd-ings');
+      ingsWrap.innerHTML = '';
+      if (ingredients.length) {
+        ingredients.forEach(function(i) {
+          var name = typeof i === 'object' ? (i.name || '') : i;
+          var amt = typeof i === 'object' ? (i.totalGrams || i.portionGrams || '') : '';
+          var unit = typeof i === 'object' ? (i.unit || 'g') : '';
+          ingsWrap.innerHTML += '<span class="sd-pill">' + escapeHtml(name) + (amt ? ' ' + Math.round(amt) + unit : '') + '</span>';
+        });
+      } else {
+        ingsWrap.innerHTML = '<span style="color:#9AB5B3;font-size:0.8rem;">No ingredients recorded</span>';
+      }
+      var overlay = document.getElementById('sd-overlay');
+      overlay.style.display = 'flex';
+      document.getElementById('sd-close').onclick = function() { overlay.style.display = 'none'; };
+      document.getElementById('sd-change').onclick = function() { overlay.style.display = 'none'; openDrawer(slotKey); };
+      document.getElementById('sd-remove').onclick = function() { delete slots[slotKey]; overlay.style.display = 'none'; buildGrid(); };
+      overlay.onclick = function(e) { if (e.target === overlay) overlay.style.display = 'none'; };
+    }
+
     function openDrawer(slotKey) {
       activeSlot = slotKey;
       const list = document.getElementById('drawerList');
@@ -351,5 +394,30 @@
 
     boot();
   </script>
+
+<style>
+.sd-goal{font-size:0.72rem;font-weight:600;background:#e6f7f7;color:#0B7F7E;padding:0.2rem 0.6rem;border-radius:100px;}
+.sd-notes{font-size:0.72rem;color:#64748b;}
+.sd-nut-box{background:#f4fafa;border-radius:10px;padding:0.5rem;text-align:center;display:flex;flex-direction:column;gap:2px;}
+.sd-nut-box b{font-size:1rem;color:#1A3532;}
+.sd-nut-box small{font-size:0.6rem;color:#6B8A87;text-transform:uppercase;}
+.sd-pill{font-size:0.75rem;background:#f0f4f3;color:#2D5553;padding:0.2rem 0.6rem;border-radius:100px;border:1px solid #e0ecea;}
+</style>
+<div id="sd-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;padding:1.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div><div id="sd-label" style="font-size:0.72rem;font-weight:700;text-transform:uppercase;color:#9AB5B3;margin-bottom:2px;"></div><h3 id="sd-name" style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0;"></h3></div>
+      <button id="sd-close" style="background:#f1f5f9;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;color:#64748b;font-size:1rem;">X</button>
+    </div>
+    <div id="sd-meta" style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.4rem;"></div>
+    <div id="sd-nut" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-bottom:1rem;"></div>
+    <div style="margin-bottom:1.25rem;"><div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#9AB5B3;margin-bottom:0.5rem;">Ingredients</div><div id="sd-ings" style="display:flex;flex-wrap:wrap;gap:0.35rem;"></div></div>
+    <div style="display:flex;gap:0.75rem;">
+      <button id="sd-change" style="flex:1;padding:0.75rem;background:#0EA5A4;color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;">Change Smoothie</button>
+      <button id="sd-remove" style="padding:0.75rem 1rem;background:#fff;color:#e53e3e;border:1.5px solid #e53e3e;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit;">Remove</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
