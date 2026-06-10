@@ -3,140 +3,289 @@
 <head>
   <meta charset="UTF-8">
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
-  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/home_public.css') }}">
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {% include "_seo_head.html" %}
-  {% include "_adsense_head.html" %}
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #0f172a; }
+    .hp-container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+    .hp-hero { background: #0EA5A4; padding: 5rem 1.5rem 6rem; text-align: center; position: relative; overflow: hidden; }
+    .hp-hero::before { content: ""; position: absolute; top: -80px; right: -80px; width: 320px; height: 320px; background: rgba(255,255,255,0.06); border-radius: 50%; }
+    .hp-hero::after { content: ""; position: absolute; bottom: -100px; left: -60px; width: 400px; height: 400px; background: rgba(255,255,255,0.04); border-radius: 50%; }
+    .hp-hero-inner { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; }
+    .hp-eyebrow { display: inline-block; background: rgba(255,255,255,0.18); color: #fff; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.35rem 1rem; border-radius: 100px; margin-bottom: 1.5rem; }
+    .hp-h1 { font-size: clamp(2rem, 5vw, 3.25rem); font-weight: 800; color: #fff; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 1.25rem; }
+    .hp-lead { font-size: clamp(1rem, 2vw, 1.2rem); color: rgba(255,255,255,0.82); line-height: 1.7; max-width: 580px; margin: 0 auto 2.5rem; }
+    .hp-cta-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hp-btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 0.85rem 2rem; background: #fff; color: #0EA5A4; border: none; border-radius: 100px; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,0.15); transition: transform 0.15s, box-shadow 0.15s; }
+    .hp-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+    .hp-btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 0.85rem 2rem; background: rgba(255,255,255,0.15); color: #fff; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 100px; font-size: 1rem; font-weight: 600; font-family: inherit; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .hp-btn-ghost:hover { background: rgba(255,255,255,0.25); }
+    .hp-chips { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
+    .hp-chip { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); font-size: 0.8rem; font-weight: 500; padding: 0.3rem 0.85rem; border-radius: 100px; border: 1px solid rgba(255,255,255,0.25); }
+    .hp-section { padding: 5rem 1.5rem; }
+    .hp-section-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #0EA5A4; margin-bottom: 0.5rem; text-align: center; }
+    .hp-section-title { font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 800; color: #0f172a; letter-spacing: -0.02em; text-align: center; margin-bottom: 0.75rem; }
+    .hp-section-sub { font-size: 0.95rem; color: #64748b; text-align: center; max-width: 520px; margin: 0 auto 3.5rem; line-height: 1.7; }
+    .hp-problem { background: #fff; }
+    .hp-problem-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+    .hp-problem-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.75rem; }
+    .hp-problem-icon { width: 44px; height: 44px; background: #0EA5A4; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 1rem; }
+    .hp-problem-card h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
+    .hp-problem-card p { font-size: 0.875rem; color: #64748b; line-height: 1.65; }
+    .hp-how { background: #f8fafc; }
+    .hp-how-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; }
+    .hp-how-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.75rem; }
+    .hp-how-num { width: 36px; height: 36px; background: #0EA5A4; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 800; margin-bottom: 1rem; }
+    .hp-how-card h4 { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 0.4rem; }
+    .hp-how-card p { font-size: 0.85rem; color: #64748b; line-height: 1.6; }
+    .hp-pro-tag { display: inline-block; background: #0EA5A4; color: #fff; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.12rem 0.4rem; border-radius: 4px; margin-left: 0.4rem; vertical-align: middle; }
+    .hp-features { background: #fff; }
+    .hp-features-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; }
+    .hp-feature-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.75rem; transition: border-color 0.15s, box-shadow 0.15s; }
+    .hp-feature-card:hover { border-color: #0EA5A4; box-shadow: 0 4px 20px rgba(14,165,164,0.1); }
+    .hp-feature-emoji { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+    .hp-feature-card h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
+    .hp-feature-card p { font-size: 0.875rem; color: #64748b; line-height: 1.65; }
+    .hp-gap { background: #0EA5A4; padding: 5rem 1.5rem; }
+    .hp-gap-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .hp-gap .hp-section-label { color: rgba(255,255,255,0.7); text-align: left; }
+    .hp-gap .hp-section-title { color: #fff; text-align: left; margin-bottom: 1rem; }
+    .hp-gap p { color: rgba(255,255,255,0.82); font-size: 0.95rem; line-height: 1.7; margin-bottom: 0.85rem; }
+    .hp-gap-btn { display: inline-flex; align-items: center; padding: 0.85rem 2rem; background: #fff; color: #0EA5A4; border: none; border-radius: 100px; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; margin-top: 1rem; }
+    .hp-compare { background: rgba(255,255,255,0.95); border-radius: 16px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
+    .hp-compare-row { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 0.85rem 1.25rem; border-bottom: 1px solid #e2e8f0; font-size: 0.875rem; align-items: center; }
+    .hp-compare-row:last-child { border-bottom: none; }
+    .hp-compare-row.hdr { background: #f8fafc; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; }
+    .hp-compare-row.hdr .pf { color: #0EA5A4; }
+    .hp-compare-row.hdr .other { color: #94a3b8; }
+    .hp-feat { color: #64748b; }
+    .hp-ck { color: #0EA5A4; font-weight: 700; }
+    .hp-xx { color: #cbd5e1; }
+    .hp-cta { background: #0f172a; padding: 5rem 1.5rem; text-align: center; }
+    .hp-cta .hp-section-label { color: rgba(255,255,255,0.5); }
+    .hp-cta h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-bottom: 1rem; }
+    .hp-cta p { color: rgba(255,255,255,0.65); font-size: 1rem; margin-bottom: 2.5rem; }
+    .hp-cta-btn { display: inline-flex; align-items: center; padding: 0.85rem 2rem; background: #0EA5A4; color: #fff; border: none; border-radius: 100px; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; margin: 0 0.5rem; }
+    .hp-cta-btn-ghost { display: inline-flex; align-items: center; padding: 0.85rem 2rem; background: rgba(255,255,255,0.1); color: #fff; border: 1.5px solid rgba(255,255,255,0.3); border-radius: 100px; font-size: 1rem; font-weight: 600; text-decoration: none; margin: 0 0.5rem; }
+    footer { background: #0f172a; border-top: 1px solid rgba(255,255,255,0.08); padding: 3rem 1.5rem; }
+    .hp-footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; }
+    .hp-footer-logo { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 0.75rem; }
+    .hp-footer-about { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+    .hp-footer-col h5 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.4); margin-bottom: 0.85rem; }
+    .hp-footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .hp-footer-col a { font-size: 0.875rem; color: rgba(255,255,255,0.65); text-decoration: none; }
+    .hp-footer-col a:hover { color: #fff; }
+    .hp-footer-bottom { max-width: 1100px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; font-size: 0.8rem; color: rgba(255,255,255,0.35); }
+    @media (max-width: 900px) {
+      .hp-problem-grid, .hp-features-grid { grid-template-columns: 1fr 1fr; }
+      .hp-how-grid { grid-template-columns: 1fr 1fr; }
+      .hp-gap-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .hp-footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .hp-hero { padding: 3.5rem 1.25rem 5rem; }
+      .hp-problem-grid, .hp-features-grid, .hp-how-grid { grid-template-columns: 1fr; }
+      .hp-footer-inner { grid-template-columns: 1fr; }
+      .hp-footer-bottom { flex-direction: column; gap: 0.5rem; }
+    }
+  </style>
 </head>
 <body>
   {% include "_navbar.html" %}
 
-  <div class="pf-page-bg" aria-hidden="true"></div>
-
-  <main class="home-public">
-    <div class="pf-container">
-
-      <section class="pf-hero">
-        <div class="pf-hero-grid">
-          <div>
-            <h1 class="pf-h1">Know what an ingredient does — and what it doesn't.</h1>
-            <p class="pf-lead">
-              PureFyul explains ingredients with cautious wording, clear scope, and transparent standards.
-              No hype. No medical promises.
-            </p>
-
-            <ul class="pf-chips">
-              <li class="pf-chip">Outfit-based theme</li>
-              <li class="pf-chip">No medical claims</li>
-              <li class="pf-chip">Clear editorial standards</li>
-            </ul>
-
-            <div class="pf-actions">
-              <a class="pf-btn pf-btn-primary" href="/ingredients">Browse Ingredients</a>
-              <a class="pf-btn pf-btn-ghost" href="/goals">Explore Goals</a>
-              <a class="pf-btn pf-btn-outline" href="/app" rel="nofollow">Open App</a>
-            </div>
-
-            <form class="pf-search" action="/ingredients" method="get" autocomplete="off">
-              <input class="pf-input" name="q" placeholder="Search an ingredient (e.g., ginger, magnesium)">
-              <button class="pf-btn pf-btn-ghost" type="submit">Search</button>
-            </form>
-          </div>
-
-          <aside class="pf-side">
-            <div class="pf-mini">
-              <h3>What you'll find</h3>
-              <p>Ingredient pages and goal browsing with honest scope and readable summaries.</p>
-            </div>
-            <div class="pf-mini">
-              <h3>What you won't find</h3>
-              <p>No diagnosis, no "guaranteed results," no treatment claims.</p>
-            </div>
-            <div class="pf-mini">
-              <h3>Need help?</h3>
-              <p>Use Contact with clear details so we can respond faster.</p>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <section class="pf-section">
-        <h2 class="pf-section-title">Start here</h2>
-
-        <div class="pf-cards">
-          <div class="pf-card">
-            <h3>Browse Ingredients</h3>
-            <p>Clean ingredient pages written to avoid exaggeration and keep scope clear.</p>
-            <a class="pf-btn pf-btn-primary" href="/ingredients">Open Ingredients</a>
-          </div>
-
-          <div class="pf-card">
-            <h3>Explore Goals</h3>
-            <p>Goal pages linking to relevant ingredients without medical promises.</p>
-            <a class="pf-btn pf-btn-ghost" href="/goals">Open Goals</a>
-          </div>
-
-          <div class="pf-card">
-            <h3>Open the App</h3>
-            <p>Interactive UI for users who want the full experience (not indexed).</p>
-            <a class="pf-btn pf-btn-outline" href="/app" rel="nofollow">Open App</a>
-          </div>
-        </div>
-      </section>
-
-      <section class="pf-section">
-        <h2 class="pf-section-title">Trust & safety</h2>
-
-        <div class="pf-safety">
-          <div class="pf-box">
-            <h3>Not medical advice</h3>
-            <p>Educational content only. Consult a qualified professional for medical decisions.</p>
-          </div>
-          <div class="pf-box">
-            <h3>Editorial standards</h3>
-            <p>We use cautious wording, clear scope, and transparent evaluation rules.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="pf-section">
-        <h2 class="pf-section-title">Quick links</h2>
-
-        <div class="pf-links">
-          <div class="pf-linklist">
-            <h3>Popular ingredients</h3>
-            <div class="pf-linkgrid">
-              <a class="pf-link" href="/ingredient/ginger">Ginger</a>
-              <a class="pf-link" href="/ingredient/turmeric">Turmeric</a>
-              <a class="pf-link" href="/ingredient/magnesium">Magnesium</a>
-              <a class="pf-link" href="/ingredient/vitamin-d">Vitamin D</a>
-            </div>
-          </div>
-
-          <div class="pf-linklist">
-            <h3>Popular goals</h3>
-            <div class="pf-linkgrid">
-              <a class="pf-link" href="/goal/blood-sugar-support">Blood Sugar Support</a>
-              <a class="pf-link" href="/goal/gut-health">Gut Health</a>
-              <a class="pf-link" href="/goal/sleep-support">Sleep Support</a>
-              <a class="pf-link" href="/goal/energy-support">Energy Support</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
+  <section class="hp-hero">
+    <div class="hp-hero-inner">
+      <span class="hp-eyebrow">Age-Smart Smoothie Nutrition</span>
+      <h1 class="hp-h1">The smoothie calculator that gets your age right</h1>
+      <p class="hp-lead">Every other app gives you one-size portions. PureFyul auto-adjusts ingredients for your exact age group with preset smoothies built around real health goals.</p>
+      <div class="hp-cta-row">
+        <a href="/app" class="hp-btn-primary">Try Free</a>
+        <a href="#how-it-works" class="hp-btn-ghost">How it works</a>
+      </div>
+      <div class="hp-chips">
+        <span class="hp-chip">Age-adjusted portions</span>
+        <span class="hp-chip">30+ preset smoothies</span>
+        <span class="hp-chip">Health goal matching</span>
+        <span class="hp-chip">Allergen checks</span>
+      </div>
     </div>
-  </main>
+  </section>
 
-  <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
+  <section class="hp-section hp-problem">
+    <div class="hp-container">
+      <p class="hp-section-label">The gap nobody solved</p>
+      <h2 class="hp-section-title">Every body is different. Most apps pretend otherwise.</h2>
+      <p class="hp-section-sub">Generic nutrition apps were built for adults. PureFyul was built for everyone.</p>
+      <div class="hp-problem-grid">
+        <div class="hp-problem-card">
+          <div class="hp-problem-icon">&#x1F4CA;</div>
+          <h3>Generic apps give generic portions</h3>
+          <p>MyFitnessPal and Cronometer track what you ate. They do not give you the right amounts for your age group, growth stage, or life phase.</p>
+        </div>
+        <div class="hp-problem-card">
+          <div class="hp-problem-icon">&#x1F46A;</div>
+          <h3>Families blend for multiple ages at once</h3>
+          <p>A toddler smoothie is not a scaled-down adult smoothie. Iron, calcium, and calorie needs differ enough that one recipe does not work for everyone at the table.</p>
+        </div>
+        <div class="hp-problem-card">
+          <div class="hp-problem-icon">&#x1F3AF;</div>
+          <h3>Health goals change what you blend</h3>
+          <p>Weight management, energy, muscle recovery, immune support — these are not the same smoothie. PureFyul maps presets to real health outcomes for your actual age.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hp-section hp-how" id="how-it-works">
+    <div class="hp-container">
+      <p class="hp-section-label">How It Works</p>
+      <h2 class="hp-section-title">From age profile to perfect blend in seconds</h2>
+      <p class="hp-section-sub">No nutrition degree required. PureFyul runs the math so you focus on blending.</p>
+      <div class="hp-how-grid">
+        <div class="hp-how-card">
+          <div class="hp-how-num">1</div>
+          <h4>Select your audience</h4>
+          <p>Choose from 12 specific age groups from Child 4-6 to Man or Woman 60+. PureFyul applies the right dietary reference intakes automatically.</p>
+        </div>
+        <div class="hp-how-card">
+          <div class="hp-how-num">2</div>
+          <h4>Pick a preset or build your own</h4>
+          <p>Browse 30+ preset smoothies organized by health goal, or search and add ingredients manually. Presets unlock after selecting your audience.</p>
+        </div>
+        <div class="hp-how-card">
+          <div class="hp-how-num">3</div>
+          <h4>See age-adjusted nutrition</h4>
+          <p>Get full macros, allergen flags, and goal-based warnings calibrated to your specific age group. No guesswork, no manual lookups.</p>
+        </div>
+        <div class="hp-how-card">
+          <div class="hp-how-num">4</div>
+          <h4>Save and plan your week <span class="hp-pro-tag">Pro</span></h4>
+          <p>Save custom recipes and build a weekly smoothie meal plan. Assign smoothies to any meal slot and track your week at a glance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hp-section hp-features">
+    <div class="hp-container">
+      <p class="hp-section-label">What is Inside</p>
+      <h2 class="hp-section-title">Everything you need to blend with intention</h2>
+      <p class="hp-section-sub">Built for parents, athletes, caregivers, and anyone who takes nutrition seriously.</p>
+      <div class="hp-features-grid">
+        <div class="hp-feature-card">
+          <span class="hp-feature-emoji">&#x1F476;</span>
+          <h3>Age-specific portions</h3>
+          <p>12 age groups from toddler to senior. Every ingredient portion is calibrated to the daily nutritional requirements for that exact life stage.</p>
+        </div>
+
+        <div class="hp-feature-card">
+          <span class="hp-feature-emoji">&#x1F50D;</span>
+          <h3>Ingredient analysis</h3>
+          <p>Check any single ingredient for serving size, allergen flags, nutrition breakdown, and health goal alignment.</p>
+        </div>
+
+        <div class="hp-feature-card">
+          <span class="hp-feature-emoji">&#x1F4BE;</span>
+          <h3>Save recipes <span class="hp-pro-tag">Pro</span></h3>
+          <p>Save your favourite smoothie builds with ingredients, nutrition, goal, and timing. Find them instantly in My Recipes.</p>
+        </div>
+        <div class="hp-feature-card">
+          <span class="hp-feature-emoji">&#x1F4C5;</span>
+          <h3>Weekly meal planner <span class="hp-pro-tag">Pro</span></h3>
+          <p>Plan your whole week. Assign saved smoothies to breakfast, lunch, dinner, or snack slots. View nutrition at a glance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hp-gap">
+    <div class="hp-gap-inner">
+      <div>
+        <p class="hp-section-label">Why PureFyul</p>
+        <h2 class="hp-section-title">The only smoothie tool built around age</h2>
+        <p>Generic nutrition apps track calories. PureFyul tells you if those calories are right for your age group.</p>
+        <p>A teenage girl needs 15mg of iron daily. A toddler needs 7mg. A post-workout smoothie for a 60-year-old man looks nothing like one for a 25-year-old woman. No other smoothie app accounts for this.</p>
+        <a href="/app" class="hp-gap-btn">Try it free</a>
+      </div>
+      <div class="hp-compare">
+        <div class="hp-compare-row hdr">
+          <div class="hp-feat">Feature</div>
+          <div class="pf">PureFyul</div>
+          <div class="other">Others</div>
+        </div>
+        <div class="hp-compare-row"><div class="hp-feat">Age-adjusted portions</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
+        <div class="hp-compare-row"><div class="hp-feat">12 specific age groups</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
+        <div class="hp-compare-row"><div class="hp-feat">Preset smoothies by goal</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
+        <div class="hp-compare-row"><div class="hp-feat">Health goal warnings</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
+        <div class="hp-compare-row"><div class="hp-feat">Allergen checks</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
+        <div class="hp-compare-row"><div class="hp-feat">Weekly meal planner</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hp-cta">
+    <div class="hp-container">
+      <p class="hp-section-label">Start today</p>
+      <h2>Nutrition sized right for every age at your table</h2>
+      <p>Free forever plan. No credit card. Start blending with intention today.</p>
+      <div style="margin-bottom:1rem;">
+        <a href="/app" class="hp-cta-btn">Start Building Free</a>
+        <a href="/pricing" class="hp-cta-btn-ghost">View Pricing</a>
+      </div>
+      <p style="font-size:0.78rem;color:rgba(255,255,255,0.3);">Educational information only. Not medical advice. Consult a qualified professional for health concerns.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="hp-footer-inner">
+      <div>
+        <div class="hp-footer-logo">PureFyul</div>
+        <p class="hp-footer-about">Age-smart smoothie nutrition. Built for families, athletes, and anyone who wants to blend with intention.</p>
+      </div>
+      <div class="hp-footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="/app">Smoothie Builder</a></li>
+          <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/register">Sign Up</a></li>
+        </ul>
+      </div>
+      <div class="hp-footer-col">
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="/blog">Blog</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="hp-footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/terms">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="hp-footer-bottom">
+      <p>2026 PureFyul. All rights reserved.</p>
+      <p>Made with intention</p>
+    </div>
+  </footer>
+
   {% include "_legal_footer.html" %}
   {% include "_feedback.html" %}
+
+  <script nonce="{{ csp_nonce }}">
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var t = document.querySelector(a.getAttribute('href'));
+      if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+  </script>
 </body>
 </html>
