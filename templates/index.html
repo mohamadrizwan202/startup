@@ -3581,7 +3581,7 @@
     }
 
   </style>
-  <script src="{{ url_for('static', filename='js/security.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/security.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
   <script nonce="{{ csp_nonce }}">
     // Check session validity immediately (before page renders)
@@ -19701,10 +19701,12 @@ const batchG = (smoothieBatchMlOverride != null)
       }
       if (data.success) {
         pfCloseSaveRecipeModal(true);
-        var toast = document.getElementById('pf-save-toast');
-        if (toast) {
-          toast.style.display = 'flex';
-        }
+        setTimeout(function() {
+          var toast = document.getElementById('pf-save-toast');
+          if (toast) {
+            toast.style.display = 'flex';
+          }
+        }, 300);
       } else {
         if (errEl) { errEl.textContent = 'Could not save. Please try again.'; errEl.style.display = 'block'; }
       }
