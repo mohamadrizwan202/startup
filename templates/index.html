@@ -19594,8 +19594,8 @@ const batchG = (smoothieBatchMlOverride != null)
 
     // ── Cancel + Confirm via delegation (works with dynamic modals) ──
     document.addEventListener('click', function(e) {
-      if (e.target && e.target.id === 'pf-save-cancel-btn') pfCloseSaveRecipeModal();
-      if (e.target && e.target.id === 'pf-save-recipe-confirm') pfConfirmSaveRecipe();
+      if (e.target && (e.target.id === 'pf-save-cancel-btn' || e.target.closest('#pf-save-cancel-btn'))) pfCloseSaveRecipeModal();
+      if (e.target && (e.target.id === 'pf-save-recipe-confirm' || e.target.closest('#pf-save-recipe-confirm'))) pfConfirmSaveRecipe();
     });
 
     // ── Enter key ────────────────────────────────────────────────
