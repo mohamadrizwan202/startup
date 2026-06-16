@@ -11545,6 +11545,16 @@ const allergenPanel = allergenNames.length === 0
         woman_60_plus: 150,   // 150g — smaller volume older women protein-dense
         man_60_plus: 170      // 170g — maintained older men protein needs
       },
+      'cottage cheese': {
+        child_4_8: 55,         // 55g — half portion children 4-8, proportional to greek yogurt scaling
+        child_9_13: 80,        // 80g — children 9-13, proportional scaling
+        teen_14_18: 110,       // 110g (1/2 cup) — standard USDA RACC serving
+        adult_19_30: 110,      // 110g (1/2 cup) — standard USDA RACC serving
+        woman_31_59: 110,      // 110g — standard serving maintained
+        man_31_59: 130,        // 130g — men 31-59 higher protein needs, proportional scaling
+        woman_60_plus: 95,     // 95g — smaller volume older women, proportional scaling
+        man_60_plus: 110       // 110g — maintained older men protein needs
+      },
       'yogurt': {
         child_4_8: 120,       // 120g — USDA child 4-8 dairy portion
         child_9_13: 170,      // 170g — USDA child 9-13 dairy portion
@@ -11581,6 +11591,7 @@ const allergenPanel = allergenNames.length === 0
       const n = (name || '').toLowerCase().trim();
       if (!n) return null;
       if (n.includes('greek yogurt')) return 'greek yogurt';
+      if (/\bcottage\s+cheese\b/.test(n)) return 'cottage cheese';
       if (/\byogurt\b/.test(n)) return 'yogurt';
       if (/\boatmeal\b/.test(n)) return 'oatmeal';
       if (/\brolled oats\b/.test(n) || /\boats\b/.test(n)) return 'oats';
@@ -16413,6 +16424,8 @@ const allergenPanel = allergenNames.length === 0
               const n = (name || "").toLowerCase().trim();
               if (!n) return false;
 
+              // Explicitly BLOCK cottage cheese variants we don't support in the smoothie builder (low-fat, probiotics)
+              if (n === 'cottage cheese (low-fat)' || n === 'cottage cheese (probiotics)') return false;
               // Explicitly ALLOW yogurt, greek yogurt, kefir, and cottage cheese (including low-fat variants)
               if (/\byogurt\b/.test(n) || /\bkefir\b/.test(n) || /\bcottage\s+cheese\b/.test(n) || /low[\s-]?fat.*(cottage|yogurt)/.test(n)) return true;
 
