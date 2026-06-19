@@ -17139,9 +17139,12 @@ const allergenPanel = allergenNames.length === 0
             const portionAmount = portion.amount || 0;
             const portionUnit = portion.unit || 'g';
             
+            // Use user-edited grams if set via gram buttons, else calculate normally
+            const userEditedGrams = typeof ing === 'object' && typeof ing._grams === 'number' ? ing._grams : null;
+            
             // Calculate total grams: portionAmount * quantity
             // For liquids (ml), quantity is already the ml amount, not a multiplier
-            const totalGrams = (portionUnit === 'ml') ? portionAmount : (portionAmount * quantity);
+            const totalGrams = userEditedGrams !== null ? userEditedGrams : ((portionUnit === 'ml') ? portionAmount : (portionAmount * quantity));
             
             // Map to nutrition database lookup key (plural → singular for berries)
             const nutritionLookupName = getNutritionLookupName(normalizedName);
@@ -17161,7 +17164,8 @@ const allergenPanel = allergenNames.length === 0
             return {
               name: ing.name || ingredientName,
               nutritionLookupName: nutritionLookupName,
-              portionGrams: portionAmount,
+              portionGrams: userEditedGrams !== null ? userEditedGrams : portionAmount,
+              _grams: userEditedGrams,
               totalGrams: totalGrams,
               quantity: quantity,
               unit: portionUnit,
