@@ -277,6 +277,14 @@
       border-left: 1px solid var(--border);
     }
 
+    .ss-gram-control { display: flex !important; align-items: center !important; gap: 4px !important; flex-wrap: nowrap !important; background: none !important; border: none !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; }
+    .ss-gram-btn { font-size: 12px !important; font-weight: 500 !important; padding: 0 11px !important; border-radius: 6px !important; height: 32px !important; white-space: nowrap !important; cursor: pointer !important; border: 1px solid #e2e8f0 !important; background: #ffffff !important; color: #0F172A !important; transition: all 0.15s !important; box-shadow: 0 1px 2px rgba(15,23,42,0.06) !important; outline: none !important; letter-spacing: -0.01em !important; }
+    .ss-gram-btn:hover:not(:disabled) { border-color: #0EA5A4 !important; color: #0EA5A4 !important; background: #f0fdfc !important; box-shadow: 0 1px 4px rgba(14,165,164,0.15) !important; }
+    .ss-gram-btn:active:not(:disabled) { transform: scale(0.96) !important; background: #ccfbf1 !important; }
+    .ss-gram-btn:disabled { opacity: 0.3 !important; cursor: not-allowed !important; box-shadow: none !important; }
+    .ss-gram-display { font-size: 13px !important; font-weight: 700 !important; color: #ffffff !important; min-width: 54px !important; text-align: center !important; background: #0EA5A4 !important; border-radius: 6px !important; padding: 0 12px !important; height: 32px !important; line-height: 32px !important; display: inline-block !important; border: none !important; box-shadow: 0 1px 3px rgba(14,165,164,0.3) !important; }
+    .ss-qty-control.ss-gram-control { border: none !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
       background: #f1f5f9; /* Professional slate workspace background */
@@ -12163,6 +12171,38 @@ const allergenPanel = allergenNames.length === 0
           const isVegan = isPlantBasedMilk(ingredientName);
           const isLiquid = isVegan && (portion.unit === 'ml' || portion.unit === 'cup');
 
+          // ── GRAM BUTTON INTERCEPT ──
+          if (qtyBtn.classList.contains('ss-gram-btn')) {
+            const delta = parseInt(qtyBtn.dataset.delta) || 0;
+            if (typeof smoothieIngredients[idx] === 'string') {
+              const _defaultUnit = isLiquid ? 'ml' : 'g';
+              const _defaultQty = isLiquid ? (parseFloat(portion.amount) || 150) : 1;
+              smoothieIngredients[idx] = { name: smoothieIngredients[idx], quantity: _defaultQty, unit: _defaultUnit };
+            }
+            const ingObj = smoothieIngredients[idx];
+            // For liquids, current value is ing.quantity (ml); for solids use _grams or portionAmount
+            let currentVal;
+            if (isLiquid) {
+              currentVal = typeof ingObj._grams === 'number' ? ingObj._grams : (Number(ingObj.quantity) || parseFloat(portion.amount) || 150);
+              const newVal = Math.min(720, Math.max(50, currentVal + delta));
+              ingObj._grams = newVal;
+              ingObj.quantity = newVal;
+              ingObj.unit = 'ml';
+            } else {
+              const portionAmt = parseFloat(portion.amount) || 1;
+              currentVal = typeof ingObj._grams === 'number' ? ingObj._grams : Math.round(portionAmt);
+              const newVal = Math.min(500, Math.max(1, currentVal + delta));
+              ingObj._grams = newVal;
+              ingObj.portionGrams = newVal;
+              ingObj.gramsUsed = newVal;
+            }
+            smoothieEditPanelOpen = true;
+            renderSmoothieIngredients();
+            updateSmoothieRecipe();
+            return;
+          }
+          // ── END GRAM BUTTON INTERCEPT ──
+
           // Determine increment direction
           const isIncrement = qtyBtn.classList.contains('increment');
           const sign = isIncrement ? 1 : -1;
@@ -14887,6 +14927,9 @@ const allergenPanel = allergenNames.length === 0
           inlineNoteHost.style.display = 'none';
         }
         buildSmoothieBtn.disabled = true;
+        // Always restore scroll when ingredients are empty (modal auto-closes)
+        document.body.style.overflow = '';
+        smoothieEditPanelOpen = false;
         return;
       }
 
@@ -15081,15 +15124,15 @@ const allergenPanel = allergenNames.length === 0
           // Build badges - can have multiple badges
           let badges = [];
           if (isDried) {
-            badges.push('<span class="smoothie-ingredient-badge" style="color: #92400e; background: #fef3c7;">Dried</span>');
+            badges.push('<span class="smoothie-ingredient-badge" style="color: #92400e; background: #fef3c7; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600;">Dried</span>');
           } else if (isFresh) {
-            badges.push('<span class="smoothie-ingredient-badge" style="color: #065f46; background: #d1fae5;">Fresh</span>');
+            badges.push('<span class="smoothie-ingredient-badge" style="color: #065f46; background: #d1fae5; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600;">Fresh</span>');
           }
           if (isVegan) {
-            badges.push('<span class="smoothie-ingredient-badge" style="color: #059669; background: #d1fae5;">🌱 Vegan</span>');
+            badges.push('<span class="smoothie-ingredient-badge" style="color: #059669; background: #d1fae5; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600;">Vegan</span>');
           }
           if (isUnsweetened && isVegan) {
-            badges.push('<span class="smoothie-ingredient-badge" style="color: #0EA5A4; background: rgba(14, 165, 164, 0.10);">Unsweetened</span>');
+            badges.push('<span class="smoothie-ingredient-badge" style="color: #0EA5A4; background: rgba(14, 165, 164, 0.10); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 600;">Unsweetened</span>');
           }
           const badge = badges.join('');
           
@@ -15130,12 +15173,12 @@ const allergenPanel = allergenNames.length === 0
           const ageGroupLabel = currentAgeGroup ? ` (${ageGroupOption?.textContent || currentAgeGroup})` : '';
           
           if (isLiquid) {
-            // For liquids (milks) - quantity IS the total amount (ml), not a multiplier
-            // Show simplified format: "160ml (Boy 14-18)"
-            const displayMl = isVegan && typeof ing === 'object' && ing.quantity ? ing.quantity : quantity;
+            const rawDisplayMl = isVegan && typeof ing === 'object' && ing.quantity ? ing.quantity : quantity;
+            const displayMl = rawDisplayMl > 10 ? rawDisplayMl : portionAmount;
             servingDisplay = `${Math.round(displayMl)}${portionUnit}${ageGroupLabel}`;
+          } else if (typeof ing === 'object' && typeof ing._grams === 'number') {
+            servingDisplay = `${ing._grams}g${ageGroupLabel}`;
           } else {
-            // For solids (fruits, dried fruits) - unit is 'g', quantity is a multiplier
             if (quantity === 1) {
               servingDisplay = `${Math.round(portionAmount)}${portionUnit}${ageGroupLabel}`;
             } else {
@@ -15560,25 +15603,19 @@ const allergenPanel = allergenNames.length === 0
           return `
           <div class="ssm-row fade-in" data-idx="${idx}">
             <div class="ssm-info">
-              <div class="ssm-name">${escapeHTML(displayName)}</div>
+              <div class="ssm-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${escapeHTML(displayName)}${badge ? badge : ''}</div>
               <div class="ssm-meta">${escapeHTML(servingDisplay)}</div>
-              ${badge ? `<div class="ssm-tags">${badge}</div>` : ''}
                 </div>
             <div class="ssm-qty">
-              <div class="ss-qty-control">
-                <button class="ss-qty-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-1" data-ss-modal-control="1" type="button" ${(isDried || (isFresh && !canIncrementFresh && quantity >= MAX_FRESH_FRUITS)) ? 'disabled' : ''}>−</button>
-                    <input 
-                      type="number" 
-                      class="smoothie-quantity-input ss-qty-input" 
-                      data-index="${idx}" 
-                      value="${quantity}" 
-                      min="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '50' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}" 
-                      max="${isDried ? '1' : (isFresh ? maxAllowedForThisIng : (isVegan ? (portionUnit === 'ml' ? '720' : (portionUnit === 'cup' ? '3' : '100')) : '3'))}" 
-                      step="${isDried ? '1' : (isVegan ? (portionUnit === 'ml' ? '10' : (portionUnit === 'cup' ? '0.5' : '1')) : (unit === 'cup' && quantity === 0.5 ? '0.5' : '1'))}"
-                  style="width: ${(isVegan && portionUnit === 'ml') ? '55px' : '40px'};"
-                      ${isDried ? 'readonly' : ''}
-                    />
-                <button class="ss-qty-btn increment" data-index="${idx}" data-idx="${idx}" data-delta="1" data-ss-modal-control="1" type="button" ${(isDried || (isFresh && !canIncrementFresh)) ? 'disabled' : ''}>+</button>
+              <div class="ss-qty-control ss-gram-control">
+                <input type="number" class="smoothie-quantity-input ss-qty-input" data-index="${idx}" value="${quantity}" min="1" max="500" step="1" style="display:none" ${isDried ? 'readonly' : ''} />
+                <button class="ss-qty-btn ss-gram-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-10" data-ss-modal-control="1" type="button" ${isDried ? 'disabled' : ''}>−10</button>
+                <button class="ss-qty-btn ss-gram-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-5" data-ss-modal-control="1" type="button" ${isDried ? 'disabled' : ''}>−5</button>
+                <button class="ss-qty-btn ss-gram-btn decrement" data-index="${idx}" data-idx="${idx}" data-delta="-1" data-ss-modal-control="1" type="button" ${isDried ? 'disabled' : ''}>−1</button>
+                <span class="ss-gram-display">${typeof ing._grams === 'number' ? ing._grams : (isLiquid ? (quantity > 10 ? Math.round(quantity) : Math.round(portionAmount)) : Math.round(portionAmount * quantity))}${isLiquid ? (portionUnit || 'ml') : 'g'}</span>
+                <button class="ss-qty-btn ss-gram-btn increment" data-index="${idx}" data-idx="${idx}" data-delta="1" data-ss-modal-control="1" type="button" ${isDried ? 'disabled' : ''}>+1</button>
+                <button class="ss-qty-btn ss-gram-btn increment" data-index="${idx}" data-idx="${idx}" data-delta="5" data-ss-modal-control="1" type="button" ${isDried ? 'disabled' : ''}>+5</button>
+                <button class="ss-qty-btn ss-gram-btn increment" data-index="${idx}" data-idx="${idx}" data-delta="10" data-ss-modal-control="1" type="button" ${isDried ? 'disabled' : ''}>+10</button>
                   </div>
                 </div>
             <button class="ss-remove-btn" data-index="${idx}" data-idx="${idx}" data-action="remove" data-ss-modal-control="1" title="Remove" type="button">×</button>
@@ -15604,7 +15641,7 @@ const allergenPanel = allergenNames.length === 0
       // Add "soak dried fruits" tip for woman-19-30 and man-19-30 (or any age group with dried fruits)
       let soakTipHtml = '';
       const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
-      if (hasDriedFruit && (selectedAudience === 'woman-19-30' || selectedAudience === 'man-19-30')) {
+      if (hasDriedFruit) {
         soakTipHtml = `
           <div style="margin-top: 12px; padding: 10px 12px; background: #e0f2fe; border-left: 3px solid #0284c7; border-radius: 6px; font-size: 0.8rem; color: #0c4a6e; line-height: 1.5;">
             <strong>💡 Tip:</strong> For better taste and digestion, consider soaking dried fruits in water overnight or for at least 30 minutes before blending.
@@ -15652,9 +15689,11 @@ const allergenPanel = allergenNames.length === 0
           const isLiquid = isVegan && portion.unit === 'ml';
           const totalAmount = isLiquid ? quantity : (portionAmount * quantity);
           const portionUnit = portion.unit || 'g';
-          const servingDisplay = isLiquid 
+          const servingDisplay = isLiquid
             ? `${Math.round(quantity)}${portionUnit}`
-            : (quantity === 1 ? `${Math.round(portionAmount)}${portionUnit}` : `${Math.round(totalAmount)}${portionUnit}`);
+            : (typeof ing === 'object' && typeof ing._grams === 'number'
+                ? `${ing._grams}g`
+                : (quantity === 1 ? `${Math.round(portionAmount)}${portionUnit}` : `${Math.round(totalAmount)}${portionUnit}`));
           return `<div class="ssm-chip"><span class="ssm-chip-name">${escapeHTML(ingredientName)}</span><span class="ssm-chip-portion">${escapeHTML(servingDisplay)}</span></div>`;
         }).join('');
         
@@ -15688,8 +15727,8 @@ const allergenPanel = allergenNames.length === 0
               </div>
               <div class="ssm-modal-scroll ss-edit-body">
                 ${infoMessages ? `<div class="ss-info-messages">${infoMessages}</div>` : ''}
+                ${soakTipHtml ? `<div style="margin-bottom: 12px; padding: 10px 12px; background: #e0f2fe; border-left: 3px solid #0284c7; border-radius: 6px; font-size: 0.8rem; color: #0c4a6e; line-height: 1.5;">${soakTipHtml}</div>` : ''}
                 ${chipsHtml}
-                ${soakTipHtml ? `<div style="margin-top: 12px; padding: 10px 12px; background: #e0f2fe; border-left: 3px solid #0284c7; border-radius: 6px; font-size: 0.8rem; color: #0c4a6e; line-height: 1.5;">${soakTipHtml}</div>` : ''}
               </div>
             </div>
           </div>
@@ -15899,6 +15938,8 @@ const allergenPanel = allergenNames.length === 0
       // Handle quantity button clicks (increment/decrement)
       container.querySelectorAll('.ss-qty-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
+          if (btn.classList.contains('ss-gram-btn')) return;
+
           const idx = parseInt(btn.dataset.index);
           const input = smoothieSelectedIngredientsEl.querySelector(`.smoothie-quantity-input[data-index="${idx}"]`);
           if (!input) return;
@@ -17123,7 +17164,8 @@ const allergenPanel = allergenNames.length === 0
               portionGrams: portionAmount,
               totalGrams: totalGrams,
               quantity: quantity,
-              unit: portionUnit
+              unit: portionUnit,
+              _grams: typeof ing === 'object' && typeof ing._grams === 'number' ? ing._grams : null
             };
           });
           
@@ -17528,6 +17570,9 @@ const allergenPanel = allergenNames.length === 0
               if (originalIng.unit) {
                 unit = originalIng.unit;
               }
+              if (typeof originalIng._grams === 'number') {
+                ing._userGrams = originalIng._grams;
+              }
             }
           }
         }
@@ -17617,19 +17662,30 @@ const allergenPanel = allergenNames.length === 0
         // Formula: totalGrams = baseServingGrams * quantity
         // Do NOT multiply grams by ml or by any UI constant
         let actualServingGrams;
-        if (actualPortionUnit === 'ml' || isVeganMilk) {
+
+        // Check if user edited grams directly via gram buttons
+        const originalIngForGrams = originalIngredients.find(orig => {
+          const origName = (typeof orig === 'string' ? orig : (orig.name || '')).toLowerCase().trim();
+          const apiNameLower = ingredientNameForPortion.toLowerCase().trim();
+          return origName === apiNameLower || apiNameLower.includes(origName) || origName.includes(apiNameLower);
+        });
+        const userEditedGrams = originalIngForGrams && typeof originalIngForGrams === 'object' && typeof originalIngForGrams._grams === 'number'
+          ? originalIngForGrams._grams
+          : null;
+
+        if (userEditedGrams !== null) {
+          // User directly set grams — use exactly that
+          actualServingGrams = userEditedGrams;
+          ing._userGrams = userEditedGrams;
+        } else if (actualPortionUnit === 'ml' || isVeganMilk) {
           // For liquids (vegan milks), the quantity IS the ml amount (not a multiplier)
-          // So we use quantity directly, not multiplied by portion amount
           if (unit === 'ml' && quantity > 0) {
-            // Quantity is already in ml, use it directly
-            actualServingGrams = quantity; // 1ml ≈ 1g for liquids
+            actualServingGrams = quantity;
           } else {
-            // Fallback: use portion amount if quantity is not in ml
             actualServingGrams = actualPortionAmount;
           }
         } else {
           // For solids (grams), quantity is a multiplier
-          // Formula: totalGrams = baseServingGrams * quantity
           actualServingGrams = actualPortionAmount * quantity;
         }
         
@@ -17845,15 +17901,17 @@ const allergenPanel = allergenNames.length === 0
           }
         }
         
-        // Get quantity from original ingredients array (match by name)
+        // Get quantity and user-edited grams from original ingredients array
         let quantity = 1; // Default quantity
+        let userEditedGramsForDisplay = null;
         if (originalIngredients && originalIngredients.length > 0) {
           const originalIng = originalIngredients.find(orig => {
             const origName = typeof orig === 'string' ? orig : orig.name;
             return origName && origName.toLowerCase().trim() === name.toLowerCase().trim();
           });
-          if (originalIng && typeof originalIng === 'object' && originalIng.quantity) {
-            quantity = originalIng.quantity;
+          if (originalIng && typeof originalIng === 'object') {
+            if (originalIng.quantity) quantity = originalIng.quantity;
+            if (typeof originalIng._grams === 'number') userEditedGramsForDisplay = originalIng._grams;
           }
         }
         
@@ -17913,15 +17971,17 @@ const allergenPanel = allergenNames.length === 0
               serving = `${Math.round(displayMl)}ml (default: ${Math.round(defaultMl)}ml for ${ageGroupLabel})`;
             }
           } else {
-            // For solids: quantity is a multiplier
-            if (quantity > 1) {
+            // For solids: use user-edited grams if set, else quantity multiplier
+            if (userEditedGramsForDisplay !== null) {
+              serving = `${userEditedGramsForDisplay}g`;
+            } else if (quantity > 1) {
               serving = `${effectiveGrams}g × ${quantity} = ${totalGrams}g`;
             } else {
               serving = `${totalGrams}g`;
             }
             
             // Add source indicator for micro-dose ingredients (optional, for clarity)
-            if (portion.source === 'microDoseDefault') {
+            if (portion.source === 'microDoseDefault' && userEditedGramsForDisplay === null) {
               serving += ' (micro-dose)';
             }
           }

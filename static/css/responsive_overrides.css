@@ -3004,43 +3004,64 @@ body.pf-modal-open {
 .ss-edit-modal .ssm-qty {
   display: inline-flex !important;
   align-items: center !important;
-  border-radius: 16px !important;
-  overflow: hidden !important;
+  gap: 4px !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
 }
 
 .ss-edit-modal .ssm-qty .ss-qty-control {
-  height: 44px !important;
-  border-radius: 14px !important;
-  background: rgba(15, 23, 42, 0.04) !important;
-  border: 1px solid rgba(15, 23, 42, 0.12) !important;
-  display: flex !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  display: inline-flex !important;
   align-items: center !important;
-  overflow: hidden !important;
+  overflow: visible !important;
+  gap: 4px !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 .ss-edit-modal .ssm-qty .ss-qty-btn {
-  flex: 0 0 36px !important;
-  width: 36px !important;
-  height: 100% !important;
-  border: none !important;
-  background: transparent !important;
-  color: rgba(15, 23, 42, 0.7) !important;
-  font-size: 1.1rem !important;
+  flex: none !important;
+  width: auto !important;
+  height: 34px !important;
+  padding: 0 12px !important;
+  border: 1px solid #0EA5A4 !important;
+  background: #f0fdfc !important;
+  color: #0B7F7E !important;
+  font-size: 12px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: background 0.15s ease !important;
+  border-radius: 8px !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+  letter-spacing: -0.01em !important;
+  box-shadow: none !important;
 }
 
 .ss-edit-modal .ssm-qty .ss-qty-btn:hover:not(:disabled) {
-  background: rgba(15, 23, 42, 0.08) !important;
+  background: #ccfbf1 !important;
+  border-color: #0B7F7E !important;
+}
+
+.ss-edit-modal .ssm-qty .ss-qty-btn:active:not(:disabled) {
+  transform: scale(0.96) !important;
+  background: #99f6e4 !important;
 }
 
 .ss-edit-modal .ssm-qty .ss-qty-btn:disabled {
-  opacity: 0.4 !important;
+  opacity: 0.25 !important;
   cursor: not-allowed !important;
+  border-color: #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #94a3b8 !important;
 }
 
 .ss-edit-modal .ssm-qty .ss-qty-input {
@@ -3056,20 +3077,23 @@ body.pf-modal-open {
 }
 
 .ss-edit-modal .ss-remove-btn {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 14px !important;
-  background: rgba(239, 68, 68, 0.08) !important;
-  border: 1px solid rgba(239, 68, 68, 0.2) !important;
-  color: rgba(239, 68, 68, 0.9) !important;
-  font-size: 1.4rem !important;
-  font-weight: 600 !important;
+  width: 32px !important;
+  height: 34px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  background: transparent !important;
+  color: #94a3b8 !important;
+  font-size: 18px !important;
   cursor: pointer !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: all 0.15s ease !important;
-  flex: 0 0 44px !important;
+  transition: color 0.15s !important;
+  box-shadow: none !important;
+}
+.ss-edit-modal .ss-remove-btn:hover {
+  color: #0F172A !important;
+  background: transparent !important;
 }
 
 .ss-edit-modal .ss-remove-btn:hover {
@@ -5760,9 +5784,12 @@ button.feedback-open:not(.feedback-fab) {
 .ss-qty-control {
   display: flex !important;
   align-items: center !important;
-  border: 1.5px solid #f59e0b !important;
-  border-radius: 8px !important;
-  overflow: hidden !important;
+  gap: 4px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  background: transparent !important;
+  box-shadow: none !important;
   background: white !important;
   box-shadow: 0 1px 3px rgba(245, 158, 11, 0.15) !important;
 }
