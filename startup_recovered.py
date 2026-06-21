@@ -1944,7 +1944,8 @@ def add_security_headers(response):
             "https://tpc.googlesyndication.com "
             "https://www.googletagservices.com "
             "https://fundingchoicesmessages.google.com "
-            "https://www.googletagmanager.com"
+            "https://www.googletagmanager.com "
+            "https://t.contentsquare.net"
         )
     else:
         csp_directives.append(
@@ -1953,13 +1954,14 @@ def add_security_headers(response):
             "https://tpc.googlesyndication.com "
             "https://www.googletagservices.com "
             "https://fundingchoicesmessages.google.com "
-            "https://www.googletagmanager.com"
+            "https://www.googletagmanager.com "
+            "https://t.contentsquare.net"
         )
 
     csp_directives.extend(
         [
             # AdSense/XHR beacons + allow self API calls from widget
-            "connect-src 'self' https://purefyul.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://www.google-analytics.com https://region1.google-analytics.com",
+            "connect-src 'self' https://purefyul.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://www.google-analytics.com https://region1.google-analytics.com https://t.contentsquare.net https://*.contentsquare.net",
 
             # Ads + CMP load in iframes
             "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.googlesyndication.com https://fundingchoicesmessages.google.com https://consent.google.com",
