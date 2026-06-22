@@ -56,7 +56,7 @@
 <link rel="canonical" href="{{ canonical }}">
 
 {% set rp = request.path %}
-{% if rp.startswith('/app') or rp.startswith('/api/') or rp.startswith('/admin') or rp in ['/login','/register'] %}
+{% if rp.startswith('/api/') or rp.startswith('/admin') or rp in ['/login','/register'] %}
 <meta name="robots" content="noindex,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
 {% else %}
 <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
