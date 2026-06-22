@@ -2191,13 +2191,12 @@ def app_home():
     html = render_template(
         "index.html",
         time=time,
-        page_title="PureFyul App",
-        meta_description="Use the PureFyul app to analyze ingredients and review blend summaries.",
+        page_title="Free Smoothie Nutrition Calculator — Age-Adjusted & Allergen Checked | PureFyul",
+        meta_description="Build a smoothie for your exact age group. Check calories, allergens, and health goal warnings before you blend. Free — no account needed.",
         canonical_url=canonical,
         og_url=canonical,
     )
     resp = make_response(html)
-    resp.headers["X-Robots-Tag"] = "noindex, follow"
     return resp
 
 
