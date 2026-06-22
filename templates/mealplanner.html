@@ -280,7 +280,7 @@
       overlay.style.display = 'flex';
       document.getElementById('sd-close').onclick = function() { overlay.style.display = 'none'; };
       document.getElementById('sd-change').onclick = function() { overlay.style.display = 'none'; openDrawer(slotKey); };
-      document.getElementById('sd-remove').onclick = function() { delete slots[slotKey]; overlay.style.display = 'none'; buildGrid(); };
+      document.getElementById('sd-remove').onclick = async function() { delete slots[slotKey]; overlay.style.display = 'none'; buildGrid(); await savePlan(); };
       overlay.onclick = function(e) { if (e.target === overlay) overlay.style.display = 'none'; };
     }
 
@@ -316,7 +316,7 @@
       activeSlot = null;
     }
 
-    function assignSlot(slotKey, recipe) {
+    async function assignSlot(slotKey, recipe) {
       const nutrition = recipe.nutrition_summary || {};
       slots[slotKey] = {
         id: recipe.id,
@@ -325,14 +325,16 @@
       };
       closeDrawer();
       buildGrid();
+      await savePlan();
     }
 
     document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
     document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
-    document.getElementById('clearSlotBtn').addEventListener('click', () => {
+    document.getElementById('clearSlotBtn').addEventListener('click', async () => {
       if (activeSlot) delete slots[activeSlot];
       closeDrawer();
       buildGrid();
+      await savePlan();
     });
 
     // ── Week nav ─────────────────────────────────────────────────────
@@ -370,7 +372,7 @@
     });
 
     // ── Save plan ────────────────────────────────────────────────────
-    document.getElementById('saveBtn').addEventListener('click', async () => {
+    async function savePlan() {
       const dates = getWeekDates();
       const weekStart = dates[0].toISOString().split('T')[0];
       const res = await fetch('/api/mealplans', {
@@ -383,7 +385,8 @@
         toast.style.display = 'block';
         setTimeout(() => { toast.style.display = 'none'; }, 2500);
       }
-    });
+    }
+    document.getElementById('saveBtn').addEventListener('click', savePlan);
 
     // ── Helpers ──────────────────────────────────────────────────────
     function showUpgradeBanner() { document.getElementById('upgradeBanner').style.display = 'block'; }

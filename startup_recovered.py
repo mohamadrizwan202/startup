@@ -52373,7 +52373,6 @@ def save_meal_plan():
                     (current_user.id, name, week_start, slots_json)
                 )
                 new_id = cursor.lastrowid
-            new_id = cursor.lastrowid
         conn.commit()
         return jsonify({"success": True, "id": new_id})
     finally:
