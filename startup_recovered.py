@@ -1930,7 +1930,7 @@ def add_security_headers(response):
         "form-action 'self'",
 
         # AdSense / CMP needs external images
-        "img-src 'self' data: https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://www.google-analytics.com",
+        "img-src 'self' data: https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://www.google-analytics.com https://*.contentsquare.net https://*.contentsquare.com",
 
         "style-src 'self' 'unsafe-inline'",
     ]
@@ -1945,7 +1945,9 @@ def add_security_headers(response):
             "https://www.googletagservices.com "
             "https://fundingchoicesmessages.google.com "
             "https://www.googletagmanager.com "
-            "https://t.contentsquare.net"
+            "https://t.contentsquare.net "
+            "https://*.contentsquare.net "
+            "https://*.contentsquare.com"
         )
     else:
         csp_directives.append(
@@ -1955,16 +1957,21 @@ def add_security_headers(response):
             "https://www.googletagservices.com "
             "https://fundingchoicesmessages.google.com "
             "https://www.googletagmanager.com "
-            "https://t.contentsquare.net"
+            "https://t.contentsquare.net "
+            "https://*.contentsquare.net "
+            "https://*.contentsquare.com"
         )
 
     csp_directives.extend(
         [
             # AdSense/XHR beacons + allow self API calls from widget
-            "connect-src 'self' https://purefyul.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://www.google-analytics.com https://region1.google-analytics.com https://t.contentsquare.net https://*.contentsquare.net",
+            "connect-src 'self' https://purefyul.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://www.google-analytics.com https://region1.google-analytics.com https://t.contentsquare.net https://*.contentsquare.net https://*.contentsquare.com",
 
             # Ads + CMP load in iframes
-            "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.googlesyndication.com https://fundingchoicesmessages.google.com https://consent.google.com",
+            "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.googlesyndication.com https://fundingchoicesmessages.google.com https://consent.google.com https://*.contentsquare.net https://*.contentsquare.com",
+
+            "worker-src 'self' blob:",
+            "child-src 'self' blob:",
 
             "upgrade-insecure-requests",
         ]
