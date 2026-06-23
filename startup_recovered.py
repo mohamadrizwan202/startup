@@ -53558,6 +53558,64 @@ def admin_contact_reply(msg_id):
     return redirect(url_for('admin_contact_detail', msg_id=msg_id))
 
 
+
+
+# AI SMOOTHIE CHAT
+
+@app.route('/api/ai-chat', methods=['POST'])
+@login_required
+@csrf.exempt
+@limiter.limit('20 per day')
+def ai_chat():
+    import anthropic
+    import os
+    import json as json_mod
+
+    data = request.get_json(force=True) or {}
+    messages = data.get('messages', [])
+
+    if not messages:
+        return jsonify({'error': 'no_messages'}), 400
+
+    system_prompt = (
+        'You are PureFyul AI, a friendly smoothie nutrition assistant. '
+        'Your job is to collect three things through natural conversation: '
+        '1. Who the smoothie is for (age group). '
+        '2. Their health goal. '
+        '3. Any ingredients they want (optional). '
+        'Ask ONE question at a time. Keep responses under 40 words. Be warm and friendly. '
+        'Valid audience keys: young-child-4-6, child-7-8, teen-girl-9-13, teen-boy-9-13, woman-19-30, man-19-30, woman-31-59, man-31-59, senior-60-plus. '
+        'Valid goal keys: blood-sugar-support, digestive-support, immune-support, energy-stamina, heart-support, weight-balance, bone-strength, muscle-recovery, brain-focus, skin-glow, stress-relief, iron-support, inflammation-support. '
+        'Map diabetes/blood sugar to blood-sugar-support. Map kids/child/toddler to correct age group. '
+        'When you have all three pieces, respond ONLY with this JSON and nothing else: '
+        '{"ready": true, "audience": "woman-31-59", "goal": "blood-sugar-support", "ingredients": ["banana", "mango", "oats"]}'
+    )
+
+    client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+
+    try:
+        response = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=200,
+            system=system_prompt,
+            messages=messages
+        )
+        reply = response.content[0].text.strip()
+
+        try:
+            parsed = json_mod.loads(reply)
+            if parsed.get('ready'):
+                return jsonify({'ready': True, 'data': parsed})
+        except Exception:
+            pass
+
+        return jsonify({'ready': False, 'message': reply})
+
+    except Exception as e:
+        logger.error('AI chat error: %s', str(e))
+        return jsonify({'error': 'ai_unavailable', 'message': 'AI is unavailable. Please try again.'}), 500
+
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))
     debug = True # os.getenv("FLASK_DEBUG", "0") == "1"
