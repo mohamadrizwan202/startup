@@ -3989,6 +3989,48 @@
 
     <!-- Smoothie Builder Tab Content -->
     <div id="smoothie-tab-content" class="main-tab-content{% if initial_app_tab != 'ingredient' %} active{% endif %}">
+
+    <!-- AI CHAT PANEL -->
+    <div id="pf-ai-chat" style="display:none;padding:1rem 1rem 0;">
+      <div style="background:#fff;border-radius:16px;border:2px solid #0EA5A4;max-width:580px;margin:0 auto;overflow:hidden;box-shadow:0 4px 24px rgba(14,165,164,0.10);">
+        <div style="background:linear-gradient(135deg,#0EA5A4,#0B8F8E);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px;">&#x1F916;</span>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:#fff;font-family:Outfit,sans-serif;">PureFyul AI</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.8);">Tell me what you want to make</div>
+            </div>
+          </div>
+          <span style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;">PRO</span>
+        </div>
+        <div id="pf-ai-messages" style="padding:16px;min-height:80px;max-height:260px;overflow-y:auto;">
+          <div class="pf-ai-msg pf-ai-msg--ai" style="display:flex;gap:8px;margin-bottom:12px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#0EA5A4;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><span style="font-size:14px;">&#x1F916;</span></div>
+            <div style="background:#f0fdfa;border-radius:0 10px 10px 10px;padding:10px 14px;font-size:13px;color:#0f172a;line-height:1.6;max-width:85%;">Hi! I can build a smoothie for you. What are you looking for? You can type anything like "something for blood sugar" or "a smoothie for my 6 year old".</div>
+          </div>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid #e0f2f1;">
+          <div style="display:flex;gap:8px;align-items:flex-end;">
+            <textarea id="pf-ai-input" placeholder="Type anything..." rows="1" style="flex:1;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13px;font-family:Outfit,sans-serif;resize:none;outline:none;line-height:1.5;max-height:80px;overflow-y:auto;"></textarea>
+            <button id="pf-ai-send" style="background:#0EA5A4;border:none;border-radius:10px;width:40px;height:40px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+            <button class="pf-ai-chip" onclick="pfAIChip(this)">Blood sugar smoothie</button>
+            <button class="pf-ai-chip" onclick="pfAIChip(this)">For my child 6 yrs</button>
+            <button class="pf-ai-chip" onclick="pfAIChip(this)">Post workout</button>
+            <button class="pf-ai-chip" onclick="pfAIChip(this)">Gut health</button>
+          </div>
+          <div id="pf-ai-typing" style="display:none;padding:6px 0;font-size:12px;color:#0EA5A4;">AI is thinking...</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:8px;margin-bottom:4px;">
+        <button onclick="pfSwitchToManual()" style="background:none;border:none;font-size:12px;color:#94a3b8;cursor:pointer;font-family:Outfit,sans-serif;">Build manually instead</button>
+      </div>
+    </div>
+    <!-- END AI CHAT PANEL -->
+
     <div id="pf-ws" style="display:none;padding:1.5rem;">
       <div style="background:#fff;border-radius:20px;padding:2rem;max-width:580px;margin:0 auto;box-shadow:0 4px 24px rgba(14,165,164,0.12);border:1px solid #e0f2f1;">
         <div style="text-align:center;margin-bottom:1.5rem;">
@@ -19796,6 +19838,235 @@ const batchG = (smoothieBatchMlOverride != null)
       btn.style.opacity = '1';
     }
   };
+})();
+</script>
+
+<script nonce="{{ csp_nonce }}">
+// ── PureFyul AI Chat ──────────────────────────────────────────────
+(function() {
+  const IS_PRO = {{ 'true' if is_pro else 'false' }};
+  let pfAIMessages = [];
+  let pfAIBuilding = false;
+
+  function pfAIInit() {
+    const chatPanel = document.getElementById('pf-ai-chat');
+    const wsPanel   = document.getElementById('pf-ws');
+    if (!chatPanel || !wsPanel) return;
+
+    // Show AI panel for Pro, age selector for free
+    if (IS_PRO) {
+      chatPanel.style.display = 'block';
+      wsPanel.style.display   = 'none';
+    } else {
+      chatPanel.style.display = 'none';
+      wsPanel.style.display   = 'block';
+    }
+
+    // Send button
+    const sendBtn = document.getElementById('pf-ai-send');
+    const input   = document.getElementById('pf-ai-input');
+    if (sendBtn) sendBtn.addEventListener('click', pfAISend);
+    if (input) {
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          pfAISend();
+        }
+      });
+      // Auto-resize textarea
+      input.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+      });
+    }
+  }
+
+  window.pfAIChip = function(btn) {
+    const input = document.getElementById('pf-ai-input');
+    if (input) {
+      input.value = btn.textContent;
+      pfAISend();
+    }
+  };
+
+  window.pfSwitchToManual = function() {
+    const chatPanel = document.getElementById('pf-ai-chat');
+    const wsPanel   = document.getElementById('pf-ws');
+    if (chatPanel) chatPanel.style.display = 'none';
+    if (wsPanel)   wsPanel.style.display   = 'block';
+  };
+
+  function pfAIAddMessage(text, role) {
+    const container = document.getElementById('pf-ai-messages');
+    if (!container) return;
+    const isAI = role === 'ai';
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;gap:8px;margin-bottom:12px;' + (isAI ? '' : 'flex-direction:row-reverse;');
+    div.innerHTML = isAI
+      ? '<div style="width:28px;height:28px;border-radius:50%;background:#0EA5A4;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;">&#x1F916;</div>'
+        + '<div style="background:#f0fdfa;border-radius:0 10px 10px 10px;padding:10px 14px;font-size:13px;color:#0f172a;line-height:1.6;max-width:85%;">' + pfEscape(text) + '</div>'
+      : '<div style="background:#0EA5A4;border-radius:10px 0 10px 10px;padding:10px 14px;font-size:13px;color:#fff;line-height:1.6;max-width:85%;">' + pfEscape(text) + '</div>';
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function pfEscape(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function pfAISend() {
+    if (pfAIBuilding) return;
+    const input = document.getElementById('pf-ai-input');
+    const typing = document.getElementById('pf-ai-typing');
+    const text = input ? input.value.trim() : '';
+    if (!text) return;
+
+    // Add user message to UI and history
+    pfAIAddMessage(text, 'user');
+    pfAIMessages.push({ role: 'user', content: text });
+    if (input) { input.value = ''; input.style.height = 'auto'; }
+    if (typing) typing.style.display = 'block';
+    pfAIBuilding = true;
+
+    fetch('/api/ai-chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': (document.querySelector('meta[name="csrf-token"]') || {}).content || ''
+      },
+      body: JSON.stringify({ messages: pfAIMessages })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (typing) typing.style.display = 'none';
+      pfAIBuilding = false;
+
+      if (data.error) {
+        pfAIAddMessage('Sorry, AI is unavailable right now. Please try again.', 'ai');
+        return;
+      }
+
+      if (data.ready && data.data) {
+        // AI has everything - build the smoothie
+        pfAIAddMessage('Got it! Building your smoothie now...', 'ai');
+        setTimeout(function() { pfAIBuildSmoothie(data.data); }, 600);
+      } else {
+        // AI needs more info - show next question
+        pfAIAddMessage(data.message, 'ai');
+        pfAIMessages.push({ role: 'assistant', content: data.message });
+      }
+    })
+    .catch(function() {
+      if (typing) typing.style.display = 'none';
+      pfAIBuilding = false;
+      pfAIAddMessage('Connection error. Please try again.', 'ai');
+    });
+  }
+
+  function pfAIBuildSmoothie(data) {
+    // Map AI audience key to your existing dropdown value
+    const audienceMap = {
+      'young-child-4-6':  'child-4-6',
+      'child-7-8':        'child-7-8',
+      'teen-girl-9-13':   'girl-9-13',
+      'teen-boy-9-13':    'boy-9-13',
+      'woman-19-30':      'woman-19-30',
+      'man-19-30':        'man-19-30',
+      'woman-31-59':      'woman-31-59',
+      'man-31-59':        'man-31-59',
+      'senior-60-plus':   'senior-60-plus'
+    };
+
+    const goalMap = {
+      'blood-sugar-support':   'blood-sugar-support',
+      'digestive-support':     'digestive-support',
+      'immune-support':        'immune-support',
+      'energy-stamina':        'energy-stamina',
+      'heart-support':         'heart-support',
+      'weight-balance':        'weight-balance',
+      'bone-strength':         'bone-strength',
+      'muscle-recovery':       'muscle-recovery',
+      'brain-focus':           'brain-focus',
+      'skin-glow':             'skin-glow',
+      'stress-relief':         'stress-relief',
+      'iron-support':          'iron-support',
+      'inflammation-support':  'inflammation-support'
+    };
+
+    const audienceVal = audienceMap[data.audience] || data.audience;
+    const goalVal     = goalMap[data.goal]     || data.goal;
+    const ingredients = data.ingredients || [];
+
+    // Hide AI panel
+    const chatPanel = document.getElementById('pf-ai-chat');
+    if (chatPanel) chatPanel.style.display = 'none';
+
+    // Set audience dropdown and trigger change
+    const forEl = document.getElementById('smoothie-for');
+    if (forEl) {
+      forEl.value = audienceVal;
+      forEl.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // Set goal dropdown and trigger change
+    const goalEl = document.getElementById('smoothie-health-goals');
+    if (goalEl) {
+      goalEl.value = goalVal;
+      goalEl.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // Add ingredients one by one with delay
+    if (ingredients.length > 0) {
+      pfAIAddIngredients(ingredients, 0, function() {
+        // Click build button after ingredients added
+        setTimeout(function() {
+          const buildBtn = document.getElementById('pfs-build-shortcut');
+          const mainBuildBtn = document.querySelector('.pfs-build-btn');
+          if (buildBtn && buildBtn.style.display !== 'none') {
+            buildBtn.click();
+          } else if (mainBuildBtn) {
+            mainBuildBtn.click();
+          }
+        }, 500);
+      });
+    }
+  }
+
+  function pfAIAddIngredients(ingredients, index, callback) {
+    if (index >= ingredients.length) {
+      if (callback) callback();
+      return;
+    }
+    const searchEl = document.getElementById('smoothie-ingredient-search');
+    if (searchEl) {
+      searchEl.value = ingredients[index];
+      searchEl.dispatchEvent(new Event('input', { bubbles: true }));
+      // Wait for suggestions to appear then click first one
+      setTimeout(function() {
+        const suggestions = document.querySelectorAll('.smoothie-ingredient-suggestion, .ingredient-suggestion, [data-ingredient]');
+        if (suggestions.length > 0) suggestions[0].click();
+        setTimeout(function() {
+          pfAIAddIngredients(ingredients, index + 1, callback);
+        }, 400);
+      }, 600);
+    } else {
+      pfAIAddIngredients(ingredients, index + 1, callback);
+    }
+  }
+
+  // Add chip styles
+  var style = document.createElement('style');
+  style.textContent = '.pf-ai-chip{background:#f0fdfa;border:1px solid #0EA5A4;color:#0f766e;font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:Outfit,sans-serif;white-space:nowrap;}' +
+    '.pf-ai-chip:hover{background:#0EA5A4;color:#fff;}' +
+    '@media(max-width:480px){#pf-ai-messages{max-height:200px;}#pf-ai-chat .pf-ai-chip{font-size:10px;padding:4px 9px;}}';
+  document.head.appendChild(style);
+
+  // Init on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', pfAIInit);
+  } else {
+    pfAIInit();
+  }
 })();
 </script>
 

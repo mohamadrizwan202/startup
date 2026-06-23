@@ -2188,6 +2188,9 @@ def index():
 @app.route("/app")
 def app_home():
     canonical = "https://purefyul.com/app"
+    is_pro = False
+    if current_user.is_authenticated:
+        is_pro = get_user_plan(current_user.id) == "pro"
     html = render_template(
         "index.html",
         time=time,
@@ -2195,6 +2198,7 @@ def app_home():
         meta_description="Build a smoothie for your exact age group. Check calories, allergens, and health goal warnings before you blend. Free — no account needed.",
         canonical_url=canonical,
         og_url=canonical,
+        is_pro=is_pro,
     )
     resp = make_response(html)
     return resp
