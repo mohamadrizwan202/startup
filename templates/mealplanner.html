@@ -269,7 +269,7 @@
       if (ingredients.length) {
         ingredients.forEach(function(i) {
           var name = typeof i === 'object' ? (i.name || '') : i;
-          var amt = typeof i === 'object' ? (i.totalGrams || i.portionGrams || '') : '';
+          var amt = typeof i === 'object' ? (i.totalGrams || i.portionGrams || i.quantity || '') : '';
           var unit = typeof i === 'object' ? (i.unit || 'g') : '';
           ingsWrap.innerHTML += '<span class="sd-pill">' + escapeHtml(name) + (amt ? ' ' + Math.round(amt) + unit : '') + '</span>';
         });
