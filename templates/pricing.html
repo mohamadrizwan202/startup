@@ -19,7 +19,7 @@
     <section class="pricing-hero">
       <h1 class="pricing-hero-title">Simple, honest pricing</h1>
       <p class="pricing-hero-subtitle">
-        Start free. Upgrade when you're ready to do more.
+        Build smoothies with age-adjusted portions for ages 4 to 60+. Start free, no credit card needed.
       </p>
     </section>
 
@@ -41,7 +41,7 @@
             <li class="pricing-card__feature pricing-card__feature--yes">Smoothie Builder</li>
             <li class="pricing-card__feature pricing-card__feature--yes">Ingredient Analysis</li>
             <li class="pricing-card__feature pricing-card__feature--yes">Allergen Checks</li>
-            <li class="pricing-card__feature pricing-card__feature--yes">Health Goal Matching</li>
+            <li class="pricing-card__feature pricing-card__feature--yes">Health Goal Guidance</li>
             <li class="pricing-card__feature pricing-card__feature--no">Save Recipes</li>
             <li class="pricing-card__feature pricing-card__feature--no">Meal Planner</li>
             <li class="pricing-card__feature pricing-card__feature--no">Export CSV</li>
@@ -125,7 +125,7 @@
           <div class="pricing-compare__col">✅</div>
         </div>
         <div class="pricing-compare__row">
-          <div class="pricing-compare__feature">Health Goal Matching</div>
+          <div class="pricing-compare__feature">Health Goal Guidance</div>
           <div class="pricing-compare__col">✅</div>
           <div class="pricing-compare__col">✅</div>
         </div>
@@ -166,7 +166,7 @@
         </div>
         <div class="pricing-faq-item">
           <h3 class="pricing-faq-question">Can I try Pro features before paying?</h3>
-          <p class="pricing-faq-answer">Yes — we plan to offer a free trial when Pro launches. Early waitlist users get priority access.</p>
+          <p class="pricing-faq-answer">Early waitlist users get priority access and a special grandfathered rate when Pro launches.</p>
         </div>
         <div class="pricing-faq-item">
           <h3 class="pricing-faq-question">Is my data private and secure?</h3>
@@ -183,7 +183,7 @@
     <section class="pricing-cta">
       <h2 class="pricing-cta-title">Ready to get started?</h2>
       {% if current_user.is_authenticated %}
-      <a href="{{ url_for('index') }}" class="pricing-cta-button">Go to App</a>
+      <a href="{{ url_for('app_home') }}" class="pricing-cta-button">Go to App</a>
       {% else %}
       <a href="{{ url_for('register') }}" class="pricing-cta-button">Start Free — No Credit Card</a>
       {% endif %}
