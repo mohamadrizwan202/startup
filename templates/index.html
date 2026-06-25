@@ -11434,7 +11434,8 @@ const allergenPanel = allergenNames.length === 0
         'chia','flax',
         'pumpkin seed','pumpkin seeds',
         'sunflower seed','sunflower seeds',
-        'hemp','sesame','tahini'
+        'hemp','sesame','tahini',
+        'psyllium','psyllium husk'
       ];
 
       return keys.some(k => s.includes(k));
@@ -11450,6 +11451,7 @@ const allergenPanel = allergenNames.length === 0
       if (/\bpumpkin\s+seed(s)?\b/.test(s)) return 'pumpkin seeds';
       if (/\bsunflower\s+seed(s)?\b/.test(s)) return 'sunflower seeds';
       if (/\bsesame\s+seed(s)?\b/.test(s) || /\bsesame\b/.test(s) || /\btahini\b/.test(s)) return 'sesame seeds';
+      if (/\bpsyllium\b/.test(s)) return 'psyllium husk';
 
       return null;
     }
@@ -11514,6 +11516,16 @@ const allergenPanel = allergenNames.length === 0
         man_31_59: 9,
         woman_60_plus: 9,
         man_60_plus: 9
+      },
+      'psyllium husk': {
+        child_4_8: 2,
+        child_9_13: 3,
+        teen_14_18: 5,
+        adult_19_30: 5,
+        woman_31_59: 5,
+        man_31_59: 5,
+        woman_60_plus: 5,
+        man_60_plus: 5
       }
     };
 

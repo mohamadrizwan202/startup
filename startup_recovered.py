@@ -108,6 +108,7 @@ PUBLISHED_INGREDIENTS = {
     "kale",
     "oats",
     "peanut-butter",
+    "psyllium-husk",
     "spinach",
     "strawberry",
 }
