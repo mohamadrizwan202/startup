@@ -108,6 +108,7 @@ PUBLISHED_INGREDIENTS = {
     "kale",
     "oats",
     "peanut-butter",
+    "apple-cider-vinegar",
     "psyllium-husk",
     "spinach",
     "strawberry",
@@ -558,6 +559,19 @@ def ensure_smoothie_seed_ingredients():
             "vitamins": "B1, B6, Folate",
             "minerals": "Calcium, Iron, Magnesium, Phosphorus",
         },
+        {
+            "ingredient": "apple cider vinegar",
+            "calories": 22,
+            "protein": 0,
+            "carbs": 0.9,
+            "fat": 0,
+            "fiber": 0,
+            "sugar": 0.4,
+            "sodium": 5,
+            "serving_size": 15,
+            "vitamins": "",
+            "minerals": "Potassium",
+        },
     ]
 
     category_rows = [
@@ -567,6 +581,7 @@ def ensure_smoothie_seed_ingredients():
         ("pumpkin seeds", "Muscle Health", "Plant-Based Protein Sources", "Mineral-rich smoothie add-in", "Protein, Magnesium, Zinc", "Pumpkin seeds add protein, zinc, and magnesium."),
         ("sunflower seeds", "Immune System", "Selenium-Rich Foods", "Vitamin E rich smoothie add-in", "Vitamin E, Selenium, Magnesium", "Sunflower seeds add vitamin E and minerals."),
         ("sesame seeds", "Anemia Prevention", "Copper-Rich Foods", "Copper-rich smoothie seed add-in", "Copper, Iron, Calcium", "Sesame seeds provide copper, iron, and calcium."),
+        ("apple cider vinegar", "Digestive Support", "Fermented Foods", "Digestive smoothie add-in", "Potassium, Acetic Acid", "Apple cider vinegar is added in small amounts for digestive support."),
     ]
 
     alias_rows = [
@@ -579,6 +594,8 @@ def ensure_smoothie_seed_ingredients():
         ("hemp seed", "hemp seeds"),
         ("pumpkin seed", "pumpkin seeds"),
         ("sunflower seed", "sunflower seeds"),
+        ("apple cider vinegar", "apple cider vinegar"),
+        ("acv", "apple cider vinegar"),
         ("sesame", "sesame seeds"),
         ("sesame seed", "sesame seeds"),
         ("tahini", "sesame seeds"),

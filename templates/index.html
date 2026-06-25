@@ -11435,7 +11435,8 @@ const allergenPanel = allergenNames.length === 0
         'pumpkin seed','pumpkin seeds',
         'sunflower seed','sunflower seeds',
         'hemp','sesame','tahini',
-        'psyllium','psyllium husk'
+        'psyllium','psyllium husk',
+        'apple cider vinegar','acv'
       ];
 
       return keys.some(k => s.includes(k));
@@ -11452,6 +11453,7 @@ const allergenPanel = allergenNames.length === 0
       if (/\bsunflower\s+seed(s)?\b/.test(s)) return 'sunflower seeds';
       if (/\bsesame\s+seed(s)?\b/.test(s) || /\bsesame\b/.test(s) || /\btahini\b/.test(s)) return 'sesame seeds';
       if (/\bpsyllium\b/.test(s)) return 'psyllium husk';
+      if (/\bapple\s+cider\s+vinegar\b/.test(s) || /\bacv\b/.test(s)) return 'apple cider vinegar';
 
       return null;
     }
@@ -11526,6 +11528,16 @@ const allergenPanel = allergenNames.length === 0
         man_31_59: 5,
         woman_60_plus: 5,
         man_60_plus: 5
+      },
+      'apple cider vinegar': {
+        child_4_8: 5,
+        child_9_13: 10,
+        teen_14_18: 15,
+        adult_19_30: 15,
+        woman_31_59: 15,
+        man_31_59: 15,
+        woman_60_plus: 15,
+        man_60_plus: 15
       }
     };
 
