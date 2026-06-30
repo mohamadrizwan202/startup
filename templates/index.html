@@ -18727,6 +18727,49 @@ const batchG = (smoothieBatchMlOverride != null)
       }
     }
     
+    // Refresh the KPI cards at the top with current per-serving nutrition
+    function pfRefreshServingKPIs() {
+      if (!lastSmoothieTotals || !lastSmoothieTotals.totalNutrients) return;
+      const totals = lastSmoothieTotals.totalNutrients;
+      const batchG = (smoothieBatchMlOverride != null) ? smoothieBatchMlOverride : totalSmoothieWeightGrams;
+      if (!batchG) return;
+      let ratio = 1;
+      if (smoothieServingMode === 'recommended' && recommendedPerServingG > 0) {
+        ratio = Math.min(1, recommendedPerServingG / batchG);
+      } else {
+        ratio = smoothieServings > 0 ? 1 / smoothieServings : 1;
+      }
+      const perServing = {
+        calories: (totals.calories || 0) * ratio,
+        protein:  (totals.protein  || 0) * ratio,
+        fiber:    (totals.fiber    || 0) * ratio,
+        sugar:    (totals.sugar    || 0) * ratio,
+        carbs:    (totals.carbs    || 0) * ratio,
+        fat:      (totals.fat      || 0) * ratio,
+        sodium:   (totals.sodium   || 0) * ratio,
+      };
+      // Update the 4 KPI cards directly
+      const card = document.querySelector('.sn2-card');
+      if (!card) return;
+      const kpis = card.querySelectorAll('.sn2-kpi');
+      if (kpis.length < 4) return;
+      const calVal = kpis[0].querySelector('.sn2-kpi-value');
+      const calUnit = kpis[0].querySelector('.sn2-kpi-unit');
+      if (calVal) calVal.textContent = Math.round(perServing.calories || 0);
+      if (calUnit) calUnit.textContent = 'kcal / portion';
+      const pv = kpis[1].querySelector('.sn2-kpi-value');
+      if (pv) pv.textContent = (perServing.protein || 0).toFixed(1);
+      const fv = kpis[2].querySelector('.sn2-kpi-value');
+      if (fv) fv.textContent = (perServing.fiber || 0).toFixed(1);
+      const sv = kpis[3].querySelector('.sn2-kpi-value');
+      if (sv) sv.textContent = (perServing.sugar || 0).toFixed(1);
+      // Update mini row (carbs, fat, sodium)
+      const minis = card.querySelectorAll('.sn2-mini .sn2-mini-value');
+      if (minis[0]) minis[0].textContent = (perServing.carbs || 0).toFixed(1) + 'g';
+      if (minis[1]) minis[1].textContent = (perServing.fat  || 0).toFixed(1) + 'g';
+      if (minis[2]) minis[2].textContent = Math.round(perServing.sodium || 0) + 'mg';
+    }
+
     // Function to setup weight servings control (for per-serving weight display)
     // This is separate from nutrition servings and can be hooked to age/target audience later
     function setupSmoothieWeightServingsControl() {
@@ -18758,10 +18801,7 @@ const batchG = (smoothieBatchMlOverride != null)
           updatePerServingWeightDisplay();
           updatePerServingDisplay();                   // update nutrition too
           // Force KPI cards to refresh immediately
-          const servingTabBtn = document.getElementById('smoothie-tab-serving');
-          if (servingTabBtn && servingTabBtn.classList.contains('active')) {
-            servingTabBtn.click();
-          }
+          pfRefreshServingKPIs();
         }
       });
       
@@ -18776,10 +18816,7 @@ const batchG = (smoothieBatchMlOverride != null)
           updatePerServingWeightDisplay();
           updatePerServingDisplay();                   // update nutrition too
           // Force KPI cards to refresh immediately
-          const servingTabBtn = document.getElementById('smoothie-tab-serving');
-          if (servingTabBtn && servingTabBtn.classList.contains('active')) {
-            servingTabBtn.click();
-          }
+          pfRefreshServingKPIs();
         }
       });
     }
