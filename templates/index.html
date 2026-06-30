@@ -14617,15 +14617,15 @@ const allergenPanel = allergenNames.length === 0
       
       // Timing position within the range (0 = min, 100 = max). Neutral default = 50.
       const timingPositionMap = {
-        'Bedtime': 10,
-        'Morning Snack': 20,
-        'Afternoon Snack': 20,
-        'Pre-Workout': 40,
-        'Anytime': 50,
-        'Post-Workout': 65,
-        'Breakfast': 75,
-        'Lunch': 90,
-        'Dinner': 90
+        'bedtime': 10,
+        'morning-snack': 20,
+        'afternoon-snack': 20,
+        'pre-workout': 40,
+        'anytime': 50,
+        'post-workout': 65,
+        'breakfast': 75,
+        'lunch': 90,
+        'dinner': 90
       };
       const timingPosition = (timing && timingPositionMap.hasOwnProperty(timing))
         ? timingPositionMap[timing]
