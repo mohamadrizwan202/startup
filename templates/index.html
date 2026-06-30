@@ -14610,10 +14610,26 @@ const allergenPanel = allergenNames.length === 0
      * @param {number} totalWeightG - Total smoothie weight in grams
      * @returns {Object} { perServingG: number, servings: number }
      */
-    function computeRecommendedServing(targetAudience, healthGoal, totalWeightG) {
+    function computeRecommendedServing(targetAudience, healthGoal, totalWeightG, timing) {
       if (!totalWeightG || totalWeightG <= 0) {
         return { perServingG: 250, servings: 1 };
       }
+      
+      // Timing position within the range (0 = min, 100 = max). Neutral default = 50.
+      const timingPositionMap = {
+        'Bedtime': 10,
+        'Morning Snack': 20,
+        'Afternoon Snack': 20,
+        'Pre-Workout': 40,
+        'Anytime': 50,
+        'Post-Workout': 65,
+        'Breakfast': 75,
+        'Lunch': 90,
+        'Dinner': 90
+      };
+      const timingPosition = (timing && timingPositionMap.hasOwnProperty(timing))
+        ? timingPositionMap[timing]
+        : 50; // neutral if no timing selected
       
       // IMPORTANT: UI values already match servingRanges keys. Do NOT normalize here.
       const audienceKey = targetAudience;
@@ -14657,18 +14673,18 @@ const allergenPanel = allergenNames.length === 0
         'Immune System', 'Immune Support' // Immune goals
       ];
       
-      // Determine base serving size based on health goal category
-      let base;
-      if (lowEndGoals.includes(goal)) {
-        // Use minimum of range for low-end goals (e.g., weight loss, diabetes)
-        base = range.min;
-      } else if (highEndGoals.includes(goal)) {
-        // Use maximum of range for high-end goals (e.g., muscle health, energy boost)
-        base = range.max;
-      } else {
-        // Use midpoint for all other health goals
-        base = (range.min + range.max) / 2;
+      // Goal position within the range (0 = min, 50 = mid, 100 = max)
+      let goalPosition = 50;
+      if (lowEndGoals.includes((healthGoal || '').trim())) {
+        goalPosition = 0;
+      } else if (highEndGoals.includes((healthGoal || '').trim())) {
+        goalPosition = 100;
       }
+      
+      // Blend timing position and goal position equally
+      const finalPosition = (timingPosition + goalPosition) / 2; // 0-100
+      const span = range.max - range.min;
+      const base = range.min + (span * (finalPosition / 100));
       
       // Clamp perServingG to not exceed totalWeightG
       const perServingG = Math.min(base, totalWeightG);
@@ -17862,11 +17878,13 @@ const allergenPanel = allergenNames.length === 0
       }
       
       // Compute recommended serving if we have audience (health goal optional)
+      const selectedTimingForServing1 = smoothieTimingEl ? smoothieTimingEl.value : '';
       if (selectedAudience && totalSmoothieWeightGrams > 0) {
         const recommended = computeRecommendedServing(
           selectedAudience,
           healthGoalName || null,
-          totalSmoothieWeightGrams
+          totalSmoothieWeightGrams,
+          selectedTimingForServing1 || null
         );
 
         recommendedPerServingG = recommended.perServingG;
@@ -18692,8 +18710,9 @@ const batchG = (smoothieBatchMlOverride != null)
       
       // Use recommended serving if available, otherwise use manual calculation
       let perServingWeightGrams;
+      const selectedTimingForServing2 = smoothieTimingEl ? smoothieTimingEl.value : '';
       if (selectedAudience && healthGoalName && totalSmoothieWeightGrams > 0) {
-        const recommended = computeRecommendedServing(selectedAudience, healthGoalName, totalSmoothieWeightGrams);
+        const recommended = computeRecommendedServing(selectedAudience, healthGoalName, totalSmoothieWeightGrams, selectedTimingForServing2 || null);
         recommendedPerServingG = recommended.perServingG;
         recommendedServings = recommended.servings;
         smoothieWeightServings = recommendedServings;
