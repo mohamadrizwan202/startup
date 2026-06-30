@@ -18300,6 +18300,8 @@ if (batchSel) batchSel.value = 'auto';
 
     // Renders the Recommended / Extra / Whole batch nutrition breakdown.
     // Replaces the old tab + counter system with a single always-visible view.
+    // Renders the Recommended / Extra / Whole batch nutrition breakdown.
+    // Dashboard-style version: no school table, compact, one-screen friendly.
     function renderServingBreakdown(totalNutrients, totalWeightG, recommendedG) {
       if (!totalNutrients || !totalWeightG) return;
 
@@ -18345,35 +18347,65 @@ if (batchSel) batchSel.value = 'auto';
 
       const showExtra = leftoverG >= 20;
 
-      const headerCells = ['', 'g', 'kcal', 'prot', 'fiber', 'sugar', 'carbs', 'fat', 'sodium']
-        .map((h, i) => '<div style="color:#94a3b8;text-align:' + (i === 0 ? 'left' : 'right') + ';font-size:10.5px">' + h + '</div>')
-        .join('');
+      const one = (v) => (Number(v || 0)).toFixed(1);
+      const kcal = (v) => Math.round(Number(v || 0));
+      const grams = (v) => Math.round(Number(v || 0));
+      const sodium = (v) => Math.round(Number(v || 0));
 
-      function rowHtml(label, data, bg, fg) {
-        const cells = [
-          '<div style="background:' + bg + ';color:' + fg + ';font-weight:700;padding:6px 8px;border-radius:6px;white-space:nowrap">' + label + '</div>',
-          '<div style="background:' + bg + ';color:' + fg + ';font-weight:700;text-align:right;padding:6px 4px;border-radius:6px">' + Math.round(data.g) + '</div>',
-          '<div style="background:' + bg + ';color:' + fg + ';font-weight:700;text-align:right;padding:6px 4px;border-radius:6px">' + Math.round(data.calories) + '</div>',
-          '<div style="background:' + bg + ';color:' + fg + ';font-weight:700;text-align:right;padding:6px 4px;border-radius:6px">' + data.protein.toFixed(1) + '</div>',
-          '<div style="background:' + bg + ';color:' + fg + ';font-weight:700;text-align:right;padding:6px 4px;border-radius:6px">' + data.fiber.toFixed(1) + '</div>',
-          '<div style="background:' + bg + ';color:' + fg + ';font-weight:700;text-align:right;padding:6px 4px;border-radius:6px">' + data.sugar.toFixed(1) + '</div>',
-          '<div style="background:' + bg + ';color:' + fg + ';font-weight:700;text-align:right;padding:6px 4px;border-radius:6px">' + data.carbs.toFixed(1) + '</div>',
-          '<div style="background:' + bg + ';color:' + fg + ';font-weight:700;text-align:right;padding:6px 4px;border-radius:6px">' + data.fat.toFixed(1) + '</div>',
-          '<div style="background:' + bg + ';color:' + fg + ';font-weight:700;text-align:right;padding:6px 8px;border-radius:6px">' + Math.round(data.sodium) + '</div>',
-        ];
-        return cells.join('');
+      function metric(label, value, unit) {
+        return `
+          <div style="min-width:0;padding:10px 10px;border:1px solid rgba(15,118,110,.10);background:#fff;border-radius:14px;">
+            <div style="font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</div>
+            <div style="font-size:16px;font-weight:950;color:#0f172a;line-height:1;">${value}<span style="font-size:11px;font-weight:800;color:#64748b;margin-left:2px;">${unit}</span></div>
+          </div>`;
       }
 
-      let rows = headerCells;
-      rows += rowHtml('Your portion', portionNutrients, '#dcfce7', '#166534');
-      if (showExtra) {
-        rows += rowHtml('Extra', extraNutrients, '#fef3c7', '#92400e');
+      function compactCard(label, data, bg, fg) {
+        return `
+          <div style="border:1px solid rgba(15,23,42,.08);background:${bg};border-radius:18px;padding:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+              <div style="font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:${fg};">${label}</div>
+              <div style="font-size:12px;font-weight:900;color:${fg};">${grams(data.g)}g · ${kcal(data.calories)} kcal</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;">
+              ${metric('Protein', one(data.protein), 'g')}
+              ${metric('Fiber', one(data.fiber), 'g')}
+              ${metric('Sugar', one(data.sugar), 'g')}
+              ${metric('Carbs', one(data.carbs), 'g')}
+              ${metric('Fat', one(data.fat), 'g')}
+              ${metric('Sodium', sodium(data.sodium), 'mg')}
+            </div>
+          </div>`;
       }
-      rows += rowHtml('Whole batch', wholeNutrients, '#dbeafe', '#1e40af');
 
-      container.innerHTML = '<div style="display:grid;grid-template-columns:86px repeat(8,1fr);gap:4px 5px;align-items:center;font-size:11px;min-width:480px">' + rows + '</div>';
+      container.style.overflow = 'visible';
+      container.style.marginBottom = '12px';
+
+      container.innerHTML = `
+        <div style="display:grid;grid-template-columns:1.05fr 2fr;gap:12px;margin-bottom:12px;">
+          <div style="background:linear-gradient(135deg,#0EA5A4,#0f766e);color:white;border-radius:20px;padding:16px;box-shadow:0 14px 32px rgba(14,165,164,.20);">
+            <div style="font-size:11px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;opacity:.85;margin-bottom:8px;">Your portion</div>
+            <div style="font-size:42px;font-weight:1000;letter-spacing:-.05em;line-height:.95;">${kcal(portionNutrients.calories)}<span style="font-size:15px;font-weight:850;margin-left:4px;">kcal</span></div>
+            <div style="margin-top:8px;font-size:13px;font-weight:850;opacity:.9;">${grams(portionNutrients.g)}g recommended serving</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;">
+            ${metric('Protein', one(portionNutrients.protein), 'g')}
+            ${metric('Fiber', one(portionNutrients.fiber), 'g')}
+            ${metric('Sugar', one(portionNutrients.sugar), 'g')}
+            ${metric('Carbs', one(portionNutrients.carbs), 'g')}
+            ${metric('Fat', one(portionNutrients.fat), 'g')}
+            ${metric('Sodium', sodium(portionNutrients.sodium), 'mg')}
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:${showExtra ? '1fr 1fr' : '1fr'};gap:10px;">
+          ${showExtra ? compactCard('Extra', extraNutrients, '#fffbeb', '#92400e') : ''}
+          ${compactCard('Whole batch', wholeNutrients, '#eff6ff', '#1d4ed8')}
+        </div>
+      `;
     }
-    
+
     function setupSmoothieNutritionTabs() {
       const wholeTab = document.getElementById('smoothie-tab-whole');
       const servingTab = document.getElementById('smoothie-tab-serving');
