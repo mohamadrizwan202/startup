@@ -14630,6 +14630,7 @@ const allergenPanel = allergenNames.length === 0
       const timingPosition = (timing && timingPositionMap.hasOwnProperty(timing))
         ? timingPositionMap[timing]
         : 50; // neutral if no timing selected
+      console.log('[TIMING DEBUG]', { timingReceived: timing, timingPosition, healthGoalReceived: healthGoal });
       
       // IMPORTANT: UI values already match servingRanges keys. Do NOT normalize here.
       const audienceKey = targetAudience;
