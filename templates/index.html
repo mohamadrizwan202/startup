@@ -14630,7 +14630,6 @@ const allergenPanel = allergenNames.length === 0
       const timingPosition = (timing && timingPositionMap.hasOwnProperty(timing))
         ? timingPositionMap[timing]
         : 50; // neutral if no timing selected
-      console.log('[TIMING DEBUG]', { timingReceived: timing, timingPosition, healthGoalReceived: healthGoal });
       
       // IMPORTANT: UI values already match servingRanges keys. Do NOT normalize here.
       const audienceKey = targetAudience;
@@ -18295,27 +18294,26 @@ const allergenPanel = allergenNames.length === 0
             </div>
           </div>
 
-          <div class="sn2-serving-card">
-            <div class="sn2-serving-left">
-              <div class="sn2-serving-title">Per serving</div>
-              <div class="sn2-serving-value">${perServingCalDisplay} · ${perServingWeightDisplay}</div>
-              <div class="sn2-serving-note">${audienceLabel ? `Recommended for ${audienceLabel.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}` : 'Based on smoothie weight'}</div>
-              <div class="sn2-serving-note" style="margin-top:3px;color:#94a3b8">Total recipe: ${totalWeightFormatted ? totalWeightFormatted.gramsDisplay : (Math.round(totalSmoothieWeightGrams) + 'g')}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;color:#166534;font-weight:700;margin-bottom:4px;text-align:center;text-transform:uppercase;letter-spacing:.04em">Servings</div>
-              <div style="display:flex;align-items:center;border:1.5px solid #10B981;border-radius:8px;overflow:hidden;background:#fff">
-                <button type="button" id="smoothie-weight-servings-decrement" style="width:28px;height:28px;background:#f0fdf4;color:#065f46;font-size:14px;font-weight:700;border:none;cursor:pointer;border-right:1px solid #10B981">−</button>
-                <input type="number" id="smoothie-weight-servings-input" value="${smoothieWeightServings}" min="1" max="10" step="1"
-                  style="width:36px;height:28px;text-align:center;font-size:13px;font-weight:700;color:#065f46;border:none;outline:none;background:#fff"/>
-                <button type="button" id="smoothie-weight-servings-increment" style="width:28px;height:28px;background:#f0fdf4;color:#065f46;font-size:14px;font-weight:700;border:none;cursor:pointer;border-left:1px solid #10B981">+</button>
-              </div>
-            </div>
+          <div id="sn2-recommended-block" class="sn2-serving-card" style="background:#f0fdf4;border-color:#bbf7d0">
+            <div class="sn2-serving-title" style="color:#166534">✓ Recommended for you</div>
+            <div class="sn2-serving-note" id="sn2-recommended-weight-note" style="color:#166534"></div>
+            <div id="sn2-recommended-metrics"></div>
           </div>
 
-          <div class="sn2-tabs">
-            <button id="smoothie-tab-whole" class="sn2-tab active" data-tab="whole" type="button">Full recipe</button>
-            <button id="smoothie-tab-serving" class="sn2-tab" data-tab="serving" type="button">My portion</button>
+          <div id="sn2-extra-block" class="sn2-serving-card" style="display:none;background:#fffbeb;border-color:#fde68a">
+            <div class="sn2-serving-title" style="color:#92400e">+ Extra if you finish the batch</div>
+            <div class="sn2-serving-note" id="sn2-extra-weight-note" style="color:#92400e"></div>
+            <div id="sn2-extra-metrics"></div>
+          </div>
+
+          <div id="sn2-perfect-match-block" class="sn2-serving-card" style="display:none;background:#f0fdf4;border-color:#bbf7d0">
+            <div class="sn2-serving-title" style="color:#166534">✓ Perfect match — this batch is just right for you</div>
+          </div>
+
+          <div id="sn2-whole-block" class="sn2-serving-card" style="background:#eff6ff;border-color:#bfdbfe">
+            <div class="sn2-serving-title" style="color:#1e40af">Whole batch total</div>
+            <div class="sn2-serving-note" id="sn2-whole-weight-note" style="color:#1e40af"></div>
+            <div id="sn2-whole-metrics"></div>
           </div>
 
           <div class="sn2-ings-section" style="margin-bottom:14px">
@@ -18351,32 +18349,75 @@ if (batchSel) batchSel.value = 'auto';
         servingsInputEl.value = smoothieServings;
       }
 
-      // Render nutrition metrics into their containers using DOM nodes
-      const wholeMetricsContainer = document.getElementById('smoothie-metrics-whole');
-      if (wholeMetricsContainer) {
-        wholeMetricsContainer.innerHTML = '';
-        wholeMetricsContainer.appendChild(renderSmoothieNutritionMetrics(totalNutrients, false));
-      }
+      // Render the Recommended / Extra / Whole batch breakdown
+      renderServingBreakdown(totalNutrients, totalSmoothieWeightGrams, recommendedPerServingG);
 
-      // Don't render serving metrics here - let updatePerServingDisplay() handle it
-      // This prevents double rendering and ensures correct calculation
-      
-      // Set up tab switching
-      setupSmoothieNutritionTabs();
-      
-      // Set up servings control (for nutrition tabs)
-      setupSmoothieServingsControl();
-      
       // ✅ NEW: Set up batch size selector (ml)
       setupSmoothieBatchSizeControl();
-      
-      // Set up weight servings control (for per-serving weight display)
-      setupSmoothieWeightServingsControl();
-      
-      // Initialize per-serving display (only if serving tab is active)
-      const servingTab = document.getElementById('smoothie-tab-serving');
-      if (servingTab && servingTab.classList.contains('active')) {
-        updatePerServingDisplay();
+    }
+
+    // Renders the Recommended / Extra / Whole batch nutrition breakdown.
+    // Replaces the old tab + counter system with a single always-visible view.
+    function renderServingBreakdown(totalNutrients, totalWeightG, recommendedG) {
+      if (!totalNutrients || !totalWeightG) return;
+
+      const safeRecommendedG = Math.min(recommendedG || totalWeightG, totalWeightG);
+      const ratio = totalWeightG > 0 ? (safeRecommendedG / totalWeightG) : 1;
+      const leftoverG = totalWeightG - safeRecommendedG;
+
+      const recommendedNutrients = {
+        calories: (totalNutrients.calories || 0) * ratio,
+        protein:  (totalNutrients.protein  || 0) * ratio,
+        fiber:    (totalNutrients.fiber    || 0) * ratio,
+        sugar:    (totalNutrients.sugar    || 0) * ratio,
+        carbs:    (totalNutrients.carbs    || 0) * ratio,
+        fat:      (totalNutrients.fat      || 0) * ratio,
+        sodium:   (totalNutrients.sodium   || 0) * ratio,
+      };
+
+      const extraNutrients = {
+        calories: (totalNutrients.calories || 0) - recommendedNutrients.calories,
+        protein:  (totalNutrients.protein  || 0) - recommendedNutrients.protein,
+        fiber:    (totalNutrients.fiber    || 0) - recommendedNutrients.fiber,
+        sugar:    (totalNutrients.sugar    || 0) - recommendedNutrients.sugar,
+        carbs:    (totalNutrients.carbs    || 0) - recommendedNutrients.carbs,
+        fat:      (totalNutrients.fat      || 0) - recommendedNutrients.fat,
+        sodium:   (totalNutrients.sodium   || 0) - recommendedNutrients.sodium,
+      };
+
+      const recNote = document.getElementById('sn2-recommended-weight-note');
+      const recMetrics = document.getElementById('sn2-recommended-metrics');
+      if (recNote) recNote.textContent = Math.round(safeRecommendedG) + 'g';
+      if (recMetrics) {
+        recMetrics.innerHTML = '';
+        recMetrics.appendChild(renderSmoothieNutritionMetrics(recommendedNutrients, true));
+      }
+
+      const extraBlock = document.getElementById('sn2-extra-block');
+      const perfectMatchBlock = document.getElementById('sn2-perfect-match-block');
+      const MIN_MEANINGFUL_LEFTOVER_G = 20;
+
+      if (leftoverG >= MIN_MEANINGFUL_LEFTOVER_G) {
+        if (extraBlock) extraBlock.style.display = 'block';
+        if (perfectMatchBlock) perfectMatchBlock.style.display = 'none';
+        const extraNote = document.getElementById('sn2-extra-weight-note');
+        const extraMetrics = document.getElementById('sn2-extra-metrics');
+        if (extraNote) extraNote.textContent = Math.round(leftoverG) + 'g';
+        if (extraMetrics) {
+          extraMetrics.innerHTML = '';
+          extraMetrics.appendChild(renderSmoothieNutritionMetrics(extraNutrients, true));
+        }
+      } else {
+        if (extraBlock) extraBlock.style.display = 'none';
+        if (perfectMatchBlock) perfectMatchBlock.style.display = 'block';
+      }
+
+      const wholeNote = document.getElementById('sn2-whole-weight-note');
+      const wholeMetrics = document.getElementById('sn2-whole-metrics');
+      if (wholeNote) wholeNote.textContent = Math.round(totalWeightG) + 'g';
+      if (wholeMetrics) {
+        wholeMetrics.innerHTML = '';
+        wholeMetrics.appendChild(renderSmoothieNutritionMetrics(totalNutrients, false));
       }
     }
     
