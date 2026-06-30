@@ -1,6 +1,12 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import os
+import anthropic
+
+# Anthropic Haiku client
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
 import re
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory, Response, current_app, make_response
 import time
@@ -21,6 +27,7 @@ from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 
 import sqlite3
 import os
+import anthropic
 import sys
 import hmac
 from pathlib import Path
@@ -1095,6 +1102,7 @@ else:
 
 # --- Postgres probe (psycopg v3) ---
 import os
+import anthropic
 import logging
 from importlib import metadata
 
@@ -53328,7 +53336,7 @@ if os.getenv("ENABLE_PUBLIC_CONTACT_API", "") == "1":
 
         # Email notification to support@purefyul.com
         try:
-            import os, ssl, smtplib
+            import os, anthropic, ssl, smtplib
             from email.message import EmailMessage
 
             smtp_host = os.getenv("SMTP_HOST", "smtp.hostinger.com")
@@ -53364,7 +53372,7 @@ if os.getenv("ENABLE_PUBLIC_CONTACT_API", "") == "1":
         # Send confirmation email to user if this is a waitlist signup
         if subject == "Pro Waitlist" and email:
             try:
-                import os, ssl, smtplib
+                import os, anthropic, ssl, smtplib
                 from email.message import EmailMessage
                 smtp_host = os.getenv("SMTP_HOST", "smtp.hostinger.com")
                 smtp_port = int(os.getenv("SMTP_PORT", "465"))

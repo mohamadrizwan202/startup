@@ -18751,8 +18751,12 @@ const batchG = (smoothieBatchMlOverride != null)
       decrementBtn.addEventListener('click', () => {
         if (smoothieWeightServings > 1) {
           smoothieWeightServings--;
+          smoothieServings = smoothieWeightServings;   // sync nutrition servings
+          manualServingsOverride = true;
+          smoothieServingMode = 'manual';
           servingsInput.value = smoothieWeightServings;
           updatePerServingWeightDisplay();
+          updatePerServingDisplay();                   // update nutrition too
         }
       });
       
@@ -18760,8 +18764,12 @@ const batchG = (smoothieBatchMlOverride != null)
       incrementBtn.addEventListener('click', () => {
         if (smoothieWeightServings < 10) {
           smoothieWeightServings++;
+          smoothieServings = smoothieWeightServings;   // sync nutrition servings
+          manualServingsOverride = true;
+          smoothieServingMode = 'manual';
           servingsInput.value = smoothieWeightServings;
           updatePerServingWeightDisplay();
+          updatePerServingDisplay();                   // update nutrition too
         }
       });
     }
