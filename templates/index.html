@@ -18757,6 +18757,11 @@ const batchG = (smoothieBatchMlOverride != null)
           servingsInput.value = smoothieWeightServings;
           updatePerServingWeightDisplay();
           updatePerServingDisplay();                   // update nutrition too
+          // Force KPI cards to refresh immediately
+          const servingTabBtn = document.getElementById('smoothie-tab-serving');
+          if (servingTabBtn && servingTabBtn.classList.contains('active')) {
+            servingTabBtn.click();
+          }
         }
       });
       
@@ -18770,6 +18775,11 @@ const batchG = (smoothieBatchMlOverride != null)
           servingsInput.value = smoothieWeightServings;
           updatePerServingWeightDisplay();
           updatePerServingDisplay();                   // update nutrition too
+          // Force KPI cards to refresh immediately
+          const servingTabBtn = document.getElementById('smoothie-tab-serving');
+          if (servingTabBtn && servingTabBtn.classList.contains('active')) {
+            servingTabBtn.click();
+          }
         }
       });
     }
