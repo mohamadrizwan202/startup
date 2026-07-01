@@ -18238,11 +18238,13 @@ const allergenPanel = allergenNames.length === 0
         const escAmt = String(ing.serving||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
         const isVegan = typeof isPlantBasedMilk === 'function' && isPlantBasedMilk(ing.originalName || ing.name);
         const isUnsweetened = isVegan && typeof isUnsweetenedMilk === 'function' && isUnsweetenedMilk(ing.originalName || ing.name);
+        // Extract raw gram value for per-serving scaling
+        const rawG = ing.portionGrams || ing.gramsUsed || ing.totalGrams || 0;
         return `
           <div class="sn2-ing-pill">
             <span class="sn2-ing-name">${escName}</span>
             <span class="sn2-ing-sep">·</span>
-            <span class="sn2-ing-amt">${escAmt}</span>
+            <span class="sn2-ing-amt sn2-ing-gram" data-original-g="${rawG}">${escAmt}</span>
             ${isVegan ? '<span class="sn2-ing-vegan">Vegan</span>' : ''}
             ${isUnsweetened ? '<span class="sn2-ing-unsweetened">Unsweetened</span>' : ''}
           </div>`;
@@ -18435,6 +18437,16 @@ if (batchSel) batchSel.value = 'auto';
         const totals = lastSmoothieTotals && lastSmoothieTotals.totalNutrients
           ? lastSmoothieTotals.totalNutrients : null;
         _applyKPIs(totals, 'kcal total');
+        // Restore ingredient gram labels to full batch amounts
+        const ingPanel = document.getElementById('smoothie-ingredients-panel');
+        if (ingPanel) {
+          ingPanel.querySelectorAll('.sn2-ing-gram').forEach(el => {
+            const original = parseFloat(el.getAttribute('data-original-g'));
+            if (!isNaN(original)) {
+              el.textContent = original + 'g';
+            }
+          });
+        }
       });
 
       servingTab.addEventListener('click', () => {
@@ -18465,6 +18477,18 @@ if (batchSel) batchSel.value = 'auto';
             sodium:   (totals.sodium   || 0) * ratio,
           };
           _applyKPIs(perServing, 'kcal / portion');
+
+          // Scale ingredient chip gram labels to match per-serving ratio
+          const ingPanel = document.getElementById('smoothie-ingredients-panel');
+          if (ingPanel && ratio < 1) {
+            ingPanel.querySelectorAll('.sn2-ing-gram').forEach(el => {
+              const original = parseFloat(el.getAttribute('data-original-g'));
+              if (!isNaN(original) && original > 0) {
+                const scaled = Math.round(original * ratio);
+                el.textContent = scaled > 0 ? scaled + 'g' : '< 1g';
+              }
+            });
+          }
         }, 80);
       });
     }
