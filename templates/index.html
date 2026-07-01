@@ -14610,72 +14610,103 @@ const allergenPanel = allergenNames.length === 0
      * @param {number} totalWeightG - Total smoothie weight in grams
      * @returns {Object} { perServingG: number, servings: number }
      */
-    function computeRecommendedServing(targetAudience, healthGoal, totalWeightG) {
+    function computeRecommendedServing(targetAudience, healthGoal, totalWeightG, timing) {
       if (!totalWeightG || totalWeightG <= 0) {
         return { perServingG: 250, servings: 1 };
       }
-      
-      // IMPORTANT: UI values already match servingRanges keys. Do NOT normalize here.
-      const audienceKey = targetAudience;
 
-      const goal = (healthGoal || '').trim();
-
-      const servingRanges = {
-        'child-4-6': { min: 150, max: 200 },
-        'child-7-8': { min: 150, max: 200 },
-        'child-4-8': { min: 150, max: 200 }, // backward compatibility
-        'girl-9-13': { min: 200, max: 250 },
-        'boy-9-13': { min: 200, max: 250 },
-        'girl-14-18': { min: 250, max: 300 },
-        'boy-14-18': { min: 250, max: 300 },
-        'woman-19-30': { min: 250, max: 350 },
-        'man-19-30': { min: 300, max: 400 },
-        'woman-31-59': { min: 250, max: 350 },
-        'man-31-59': { min: 300, max: 400 },
-        'woman-60+': { min: 250, max: 350 },
-        'man-60+': { min: 300, max: 400 }
+      // ── Step 1: Daily calorie budget by age/gender ─────────────────────────
+      // Source: USDA Dietary Guidelines for Americans 2020-2025 (moderate activity)
+      const dailyCalories = {
+        'child-4-6':   1400,
+        'child-7-8':   1400,
+        'child-4-8':   1400,  // backward compatibility
+        'girl-9-13':   1600,
+        'boy-9-13':    1800,
+        'girl-14-18':  1800,
+        'boy-14-18':   2200,
+        'woman-19-30': 2000,
+        'man-19-30':   2600,
+        'woman-31-59': 1800,
+        'man-31-59':   2400,
+        'woman-60+':   1600,
+        'man-60+':     2000,
       };
-      
-      const range = servingRanges[audienceKey] || { min: 250, max: 350 };
-      
-      // Categorize health goals (include both original DB names and UI labels for compatibility)
-      const lowEndGoals = [
-        'Weight Management', 'Weight Loss', 'Weight Balance', // Weight goals (DB name and label)
-        'Diabetes-Blood Sugar', 'Blood Sugar Support', // Diabetes goals
-        'Cholesterol Management', 'Cholesterol Support', // Cholesterol goals
-        'Blood Pressure', 'Blood Pressure Support', // Blood pressure goals
-        'Liver Health', 'Liver Support', // Liver goals
-        'Stress Management', 'Stress Relief' // Stress goals
-      ];
-      
-      const highEndGoals = [
-        'Muscle Health', 'Muscle Recovery', // Muscle goals
-        'Energy Boost', 'Energy & Stamina', // Energy goals
-        'Pregnancy Support', 'Prenatal Support', // Pregnancy goals
-        'Bone Health', 'Bone Strength', // Bone goals
-        'Anemia Prevention', 'Iron Support', // Anemia/Iron goals
-        'Immune System', 'Immune Support' // Immune goals
-      ];
-      
-      // Determine base serving size based on health goal category
-      let base;
-      if (lowEndGoals.includes(goal)) {
-        // Use minimum of range for low-end goals (e.g., weight loss, diabetes)
-        base = range.min;
-      } else if (highEndGoals.includes(goal)) {
-        // Use maximum of range for high-end goals (e.g., muscle health, energy boost)
-        base = range.max;
-      } else {
-        // Use midpoint for all other health goals
-        base = (range.min + range.max) / 2;
-      }
-      
-      // Clamp perServingG to not exceed totalWeightG
-      const perServingG = Math.min(base, totalWeightG);
-      
-      // Calculate number of servings (ensure at least 1 serving)
+
+      // ── Step 2: Timing as % of daily calories ──────────────────────────────
+      // Source: Kolasa & Boretti (ECU dietitian), NCBI breakfast 20% guideline
+      // Snacks <200 kcal, breakfast ~300 kcal, lunch ~500 kcal per dietitian guidance
+      const timingPct = {
+        'bedtime':           0.08,
+        'morning-snack':     0.10,
+        'afternoon-snack':   0.10,
+        'pre-workout':       0.12,
+        'anytime':           0.15,
+        'post-workout':      0.18,
+        'breakfast':         0.20,
+        'lunch':             0.25,
+        'dinner':            0.25,
+      };
+
+      // ── Step 3: Health goal modifier ───────────────────────────────────────
+      // Calorie deficit/surplus goals per standard dietitian practice
+      const goalModifiers = {
+        // Reduce: deliberate deficit or lighter digestion needed
+        'Weight Management': 0.85, 'Weight Loss': 0.85, 'Weight Balance': 0.85,
+        'Diabetes-Blood Sugar': 0.85, 'Blood Sugar Support': 0.85,
+        'Cholesterol Management': 0.90, 'Cholesterol Support': 0.90,
+        'Liver Health': 0.85, 'Liver Support': 0.85,
+        'Digestive Health': 0.90, 'Digestive Support': 0.90,
+        'Blood Pressure': 0.90, 'Blood Pressure Support': 0.90,
+        // Increase: higher energy/protein demand
+        'Muscle Health': 1.15, 'Muscle Recovery': 1.15,
+        'Energy Boost': 1.10, 'Energy & Stamina': 1.10,
+        'Pregnancy Support': 1.10, 'Prenatal Support': 1.10,
+        'Iron Support': 1.05, 'Anemia Prevention': 1.05,
+        // Neutral: ingredient quality matters, not volume
+        // (all others default to 1.0)
+      };
+
+      // ── Step 4: Minimum realistic smoothie size per age group ──────────────
+      // Nobody should drink less than these amounts — physically not meaningful
+      const minServing = {
+        'child-4-6': 120, 'child-7-8': 120, 'child-4-8': 120,
+        'girl-9-13': 150, 'boy-9-13': 150,
+        'girl-14-18': 150, 'boy-14-18': 180,
+        'woman-19-30': 180, 'man-19-30': 200,
+        'woman-31-59': 180, 'man-31-59': 200,
+        'woman-60+': 150, 'man-60+': 180,
+      };
+
+      // ── Calculation ────────────────────────────────────────────────────────
+      const daily = dailyCalories[targetAudience] || 2000;
+
+      // Use selected timing or default to 'anytime' (15%) if not selected
+      const timingKey = (timing || '').toLowerCase().trim();
+      const pct = timingPct[timingKey] || timingPct['anytime'];
+
+      // Smoothie calorie target for this timing
+      const targetKcal = daily * pct;
+
+      // Apply goal modifier (default 1.0 = no change)
+      const goal = (healthGoal || '').trim();
+      const modifier = goalModifiers[goal] || 1.0;
+      const adjustedKcal = targetKcal * modifier;
+
+      // Convert kcal to grams: smoothies average ~1 kcal per gram (fruit-based)
+      // This is a well-established approximation for whole-fruit smoothies
+      let recommendedG = Math.round(adjustedKcal);
+
+      // Apply minimum floor (can't recommend a meaninglessly small amount)
+      const floor = minServing[targetAudience] || 150;
+      recommendedG = Math.max(recommendedG, floor);
+
+      // Clamp to actual batch size (can't recommend more than what's in the blender)
+      const perServingG = Math.min(recommendedG, totalWeightG);
+
+      // Servings = how many times this portion fits in the batch
       const servings = Math.max(1, Math.ceil(totalWeightG / perServingG));
-      
+
       return { perServingG, servings };
     }
 
@@ -17862,11 +17893,13 @@ const allergenPanel = allergenNames.length === 0
       }
       
       // Compute recommended serving if we have audience (health goal optional)
+      const _timing1 = smoothieTimingEl ? smoothieTimingEl.value : '';
       if (selectedAudience && totalSmoothieWeightGrams > 0) {
         const recommended = computeRecommendedServing(
           selectedAudience,
           healthGoalName || null,
-          totalSmoothieWeightGrams
+          totalSmoothieWeightGrams,
+          _timing1 || null
         );
 
         recommendedPerServingG = recommended.perServingG;
@@ -18692,8 +18725,9 @@ const batchG = (smoothieBatchMlOverride != null)
       
       // Use recommended serving if available, otherwise use manual calculation
       let perServingWeightGrams;
+      const _timing2 = smoothieTimingEl ? smoothieTimingEl.value : '';
       if (selectedAudience && healthGoalName && totalSmoothieWeightGrams > 0) {
-        const recommended = computeRecommendedServing(selectedAudience, healthGoalName, totalSmoothieWeightGrams);
+        const recommended = computeRecommendedServing(selectedAudience, healthGoalName, totalSmoothieWeightGrams, _timing2 || null);
         recommendedPerServingG = recommended.perServingG;
         recommendedServings = recommended.servings;
         smoothieWeightServings = recommendedServings;
