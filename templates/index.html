@@ -18241,6 +18241,7 @@ const allergenPanel = allergenNames.length === 0
         // Extract raw gram value for per-serving scaling
         // Property priority matches how grams are stored across different ingredient types
         const rawG = ing.grams || ing.portionGrams || ing.quantityInGrams || ing.gramsUsed || ing._grams || 0;
+        console.log('[ING DEBUG]', ing.name, { grams: ing.grams, portionGrams: ing.portionGrams, quantityInGrams: ing.quantityInGrams, gramsUsed: ing.gramsUsed, _grams: ing._grams, rawG, serving: ing.serving });
         return `
           <div class="sn2-ing-pill">
             <span class="sn2-ing-name">${escName}</span>
