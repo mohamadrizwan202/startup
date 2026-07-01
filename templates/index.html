@@ -18238,10 +18238,8 @@ const allergenPanel = allergenNames.length === 0
         const escAmt = String(ing.serving||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
         const isVegan = typeof isPlantBasedMilk === 'function' && isPlantBasedMilk(ing.originalName || ing.name);
         const isUnsweetened = isVegan && typeof isUnsweetenedMilk === 'function' && isUnsweetenedMilk(ing.originalName || ing.name);
-        // Extract raw gram value for per-serving scaling
-        // Property priority matches how grams are stored across different ingredient types
-        const rawG = ing.grams || ing.portionGrams || ing.quantityInGrams || ing.gramsUsed || ing._grams || 0;
-        console.log('[ING DEBUG]', ing.name, { grams: ing.grams, portionGrams: ing.portionGrams, quantityInGrams: ing.quantityInGrams, gramsUsed: ing.gramsUsed, _grams: ing._grams, rawG, serving: ing.serving });
+        // Extract raw gram value from ing.serving string e.g. "150g" or "150ml"
+        const rawG = parseFloat((ing.serving || '0').replace(/[^0-9.]/g, '')) || 0;
         return `
           <div class="sn2-ing-pill">
             <span class="sn2-ing-name">${escName}</span>
