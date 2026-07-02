@@ -5737,6 +5737,7 @@
     const USDA_STANDARD_SERVING_SIZES = {
       // Berries - USDA standard is 1 cup fresh
       'blueberry': { grams: 148, display: '148g (1 cup) USDA standard' },
+      'blueberries': { grams: 148, display: '148g (1 cup) USDA standard' },
       'strawberry': { grams: 152, display: '152g (1 cup) USDA standard' },
       'blackberry': { grams: 144, display: '144g (1 cup) USDA standard' },
       'raspberry': { grams: 62, display: '62g (1/2 cup) USDA standard' },
@@ -5754,8 +5755,13 @@
       'brazil nut': { grams: 28, display: '28g (1 oz) USDA standard' },
       'pine nut': { grams: 28, display: '28g (1 oz) USDA standard' },
       
+      // Seeds - USDA RACC for ground flaxseed is 2 tbsp (16g)
+      'flaxseed': { grams: 16, display: '16g (2 tbsp) USDA standard' },
+      'flax seed': { grams: 16, display: '16g (2 tbsp) USDA standard' },
+      'flax seeds': { grams: 16, display: '16g (2 tbsp) USDA standard' },
+
       // Other ingredients - keep as null to use API response
-      // Only berries and tree nuts have explicit USDA standard overrides
+      // Only berries, tree nuts, and seeds have explicit USDA standard overrides
     };
     
     // Helper function to get USDA standard serving size for Ingredient tab display
