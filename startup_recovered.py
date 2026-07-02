@@ -53028,14 +53028,21 @@ def nlp_query():
                 # Works with both Postgres (dict rows) and SQLite (sqlite3.Row)
                 health_benefits_list = []
                 try:
+                    # Derive singular form for plural ingredient names (e.g. 'raspberries' -> 'raspberry', 'blueberries' -> 'blueberry')
+                    singular_name = clean_name
+                    if clean_name.endswith('ies'):
+                        singular_name = clean_name[:-3] + 'y'
+                    elif clean_name.endswith('s') and not clean_name.endswith('ss'):
+                        singular_name = clean_name[:-1]
                     hb_sql = db.prepare_query("""
                         SELECT DISTINCT category, subcategory, health_benefits, key_nutrients, description
                         FROM ingredient_categories
                         WHERE LOWER(TRIM(ingredient)) = LOWER(TRIM(?)) 
+                           OR LOWER(TRIM(ingredient)) = LOWER(TRIM(?))
                            OR LOWER(ingredient) LIKE ? 
                            OR LOWER(ingredient) LIKE ?
                     """)
-                    cursor.execute(hb_sql, (clean_name, f'%{clean_name}%', f'{clean_name}%'))
+                    cursor.execute(hb_sql, (clean_name, singular_name, f'%{clean_name}%', f'{clean_name}%'))
                     health_data = cursor.fetchall()
                     for row in health_data:
                         # Convert row to dict - handle both Postgres (dict) and SQLite (sqlite3.Row)
