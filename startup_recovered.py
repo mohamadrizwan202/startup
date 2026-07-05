@@ -51907,6 +51907,82 @@ def _patch_seed_nutrition_response(resp):
     return resp
 
 @csrf.exempt
+@app.route('/api/ai-suggest-smoothie', methods=['POST'])
+def api_ai_suggest_smoothie():
+    """AI Nutritionist Mode: suggest 4 ingredients based on audience, timing, and health goal."""
+    try:
+        data = request.get_json(force=True) or {}
+
+        audience = str(data.get('audience', '')).strip()
+        timing = str(data.get('timing', '')).strip()
+        health_goal = str(data.get('healthGoal', '')).strip()
+
+        if not audience:
+            return jsonify({'success': False, 'error': 'Audience is required'}), 400
+
+        # Build a readable label for the prompt
+        audience_label = audience.replace('-', ' ').title()
+        timing_label = timing.replace('-', ' ').title() if timing else 'any time of day'
+        goal_label = health_goal if health_goal else 'general health'
+
+        prompt = f"""You are a nutritionist suggesting smoothie ingredients.
+
+Audience: {audience_label}
+Timing: {timing_label}
+Health goal: {goal_label}
+
+Suggest exactly 4 smoothie ingredients (fruits, vegetables, dairy/milk, or seeds)
+that best support this goal and timing for this age group. Use simple common
+ingredient names only (e.g. "banana", "spinach", "greek yogurt", "almond milk",
+"chia seeds"). Do not suggest anything alcohol-based or non-Halal.
+
+Respond ONLY with valid JSON in this exact format, no other text:
+{{"ingredients": [{{"name": "ingredient name"}}, {{"name": "ingredient name"}}, {{"name": "ingredient name"}}, {{"name": "ingredient name"}}]}}"""
+
+        response = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=300,
+            messages=[{'role': 'user', 'content': prompt}]
+        )
+
+        raw_text = response.content[0].text.strip()
+
+        # Strip markdown code fences if Claude adds them
+        if raw_text.startswith('```'):
+            raw_text = raw_text.split('```')[1]
+            if raw_text.startswith('json'):
+                raw_text = raw_text[4:]
+            raw_text = raw_text.strip()
+
+        parsed = json.loads(raw_text)
+        suggested = parsed.get('ingredients', [])
+
+        # Safety: cap at 4, ensure each has a name
+        clean_suggestions = []
+        for item in suggested[:4]:
+            name = str(item.get('name', '')).strip().lower()
+            if name:
+                clean_suggestions.append({'name': name})
+
+        if not clean_suggestions:
+            return jsonify({'success': False, 'error': 'AI did not return valid ingredients'}), 500
+
+        return jsonify({
+            'success': True,
+            'ingredients': clean_suggestions,
+            'audience': audience,
+            'timing': timing,
+            'healthGoal': health_goal
+        })
+
+    except json.JSONDecodeError as e:
+        logger.error(f'AI smoothie suggestion JSON parse error: {e}')
+        return jsonify({'success': False, 'error': 'Could not parse AI response'}), 500
+    except Exception as e:
+        logger.error(f'AI smoothie suggestion error: {e}')
+        return jsonify({'success': False, 'error': 'Could not generate suggestions. Please try again.'}), 500
+
+
 @app.route('/api/analyze', methods=['POST'])
 def api_analyze():
     """Analyze ingredients endpoint - accepts both 'ingredients' array and 'query' string"""
