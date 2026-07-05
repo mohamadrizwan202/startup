@@ -4130,11 +4130,6 @@
             <div style="font-size:11px;color:#64748b;margin-bottom:6px">
               Limit: <strong style="color:#0EA5A4">3 fresh fruits</strong> · <strong style="color:#0EA5A4">1 dried fruit</strong>
             </div>
-            <button type="button" id="ai-suggest-smoothie-btn" style="width:100%;padding:11px;margin-bottom:10px;background:linear-gradient(135deg,#0EA5A4,#0d9488);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-              <span id="ai-suggest-btn-icon">✨</span>
-              <span id="ai-suggest-btn-text">Build AI Smoothie for me</span>
-            </button>
-            <div id="ai-suggest-error" style="display:none;font-size:12px;color:#dc2626;margin-bottom:8px;text-align:center"></div>
             <div class="pfs-confirm-banner" id="pfs-confirm-banner">
               <div class="pfs-confirm-text">This will replace your loaded preset — continue?</div>
               <div class="pfs-confirm-btns">
@@ -16978,107 +16973,6 @@ const allergenPanel = allergenNames.length === 0
             console.error('Smoothie search error:', err);
           }
         }, 300);
-      });
-    }
-
-    // AI Nutritionist Mode: simulate the search-and-click flow for each suggested ingredient
-    // This reuses ALL existing validation (age portions, fruit limits, duplicates) safely.
-    function addIngredientViaSearchFlow(name) {
-      return new Promise((resolve) => {
-        if (!smoothieIngredientSearchEl || !smoothieIngredientSuggestionsEl) {
-          resolve(false);
-          return;
-        }
-        smoothieIngredientSearchEl.value = name;
-        smoothieIngredientSearchEl.dispatchEvent(new Event('input', { bubbles: true }));
-
-        setTimeout(() => {
-          const items = smoothieIngredientSuggestionsEl.querySelectorAll('.suggestion-item');
-          let matched = null;
-          items.forEach(item => {
-            const val = (item.dataset.ingredient || '').toLowerCase();
-            if (!matched && val === name.toLowerCase()) matched = item;
-          });
-          if (!matched) {
-            items.forEach(item => {
-              const val = (item.dataset.ingredient || '').toLowerCase();
-              if (!matched && val.includes(name.toLowerCase())) matched = item;
-            });
-          }
-          if (matched && !matched.classList.contains('suggestion-item-disabled')) {
-            matched.click();
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-        }, 450);
-      });
-    }
-
-    const aiSuggestBtn = document.getElementById('ai-suggest-smoothie-btn');
-    const aiSuggestBtnText = document.getElementById('ai-suggest-btn-text');
-    const aiSuggestBtnIcon = document.getElementById('ai-suggest-btn-icon');
-    const aiSuggestErrorEl = document.getElementById('ai-suggest-error');
-
-    if (aiSuggestBtn) {
-      aiSuggestBtn.addEventListener('click', async () => {
-        if (aiSuggestErrorEl) { aiSuggestErrorEl.style.display = 'none'; aiSuggestErrorEl.textContent = ''; }
-
-        const audience = smoothieForEl ? smoothieForEl.value : '';
-        if (!audience) {
-          if (aiSuggestErrorEl) {
-            aiSuggestErrorEl.textContent = 'Please select who this smoothie is for first.';
-            aiSuggestErrorEl.style.display = 'block';
-          }
-          return;
-        }
-
-        const timing = smoothieTimingEl ? smoothieTimingEl.value : '';
-        const healthGoalText = smoothieHealthGoalsEl && smoothieHealthGoalsEl.selectedIndex > 0
-          ? smoothieHealthGoalsEl.options[smoothieHealthGoalsEl.selectedIndex].textContent
-          : '';
-
-        aiSuggestBtn.disabled = true;
-        if (aiSuggestBtnIcon) aiSuggestBtnIcon.textContent = '⏳';
-        if (aiSuggestBtnText) aiSuggestBtnText.textContent = 'Thinking...';
-
-        try {
-          const res = await fetch('/api/ai-suggest-smoothie', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ audience, timing, healthGoal: healthGoalText })
-          });
-          const data = await res.json();
-
-          if (!data.success || !data.ingredients || data.ingredients.length === 0) {
-            throw new Error(data.error || 'Could not get suggestions');
-          }
-
-          let addedCount = 0;
-          for (const ing of data.ingredients) {
-            const ok = await addIngredientViaSearchFlow(ing.name);
-            if (ok) addedCount++;
-          }
-
-          if (addedCount === 0) {
-            if (aiSuggestErrorEl) {
-              aiSuggestErrorEl.textContent = 'Could not add AI suggestions automatically. Try searching manually.';
-              aiSuggestErrorEl.style.display = 'block';
-            }
-          } else {
-            setSmoothieStatus(`AI added ${addedCount} ingredient${addedCount !== 1 ? 's' : ''}`);
-          }
-        } catch (err) {
-          console.error('[ai-suggest-smoothie] error:', err);
-          if (aiSuggestErrorEl) {
-            aiSuggestErrorEl.textContent = 'Something went wrong getting AI suggestions. Please try again.';
-            aiSuggestErrorEl.style.display = 'block';
-          }
-        } finally {
-          aiSuggestBtn.disabled = false;
-          if (aiSuggestBtnIcon) aiSuggestBtnIcon.textContent = '✨';
-          if (aiSuggestBtnText) aiSuggestBtnText.textContent = 'Build AI Smoothie for me';
-        }
       });
     }
 
