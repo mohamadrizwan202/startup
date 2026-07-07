@@ -16450,6 +16450,94 @@ const allergenPanel = allergenNames.length === 0
 
     // Smoothie ingredient search
     // Helper function to clear smoothie ingredient search UI
+    // Clean, reusable ingredient-add function. Foundation for History Rebuild
+    // and any future AI features. Mirrors the existing search-click validation.
+    function addIngredientByName(ingredientName) {
+      if (!ingredientName) return { success: false, reason: 'no_name' };
+
+      if (ingredientExists(ingredientName)) {
+        return { success: false, reason: 'duplicate' };
+      }
+
+      const selectedAudience = smoothieForEl ? smoothieForEl.value : '';
+      if (!selectedAudience) {
+        return { success: false, reason: 'no_audience' };
+      }
+
+      if (!hasValidAgePortion(ingredientName, selectedAudience)) {
+        return { success: false, reason: 'invalid_age_portion' };
+      }
+
+      const { freshFruitCount, driedFruitCount } = countFruitTypes();
+      if (isDriedFruit(ingredientName) && driedFruitCount >= MAX_DRIED_FRUITS) {
+        return { success: false, reason: 'dried_fruit_limit' };
+      }
+      if (isFreshFruit(ingredientName) && freshFruitCount >= MAX_FRESH_FRUITS) {
+        return { success: false, reason: 'fresh_fruit_limit' };
+      }
+
+      let defaultQuantity = 1;
+      let defaultUnit = 'g';
+
+      if (isSweetener(ingredientName)) {
+        defaultQuantity = 1;
+        defaultUnit = 'g';
+      } else if (isDriedFruit(ingredientName)) {
+        defaultQuantity = 1;
+        defaultUnit = 'g';
+      } else if (isPlantBasedMilk(ingredientName)) {
+        const portion = getIngredientPortion(ingredientName, selectedAudience);
+        if (portion && portion.unit === 'ml' && portion.amount > 0) {
+          defaultQuantity = portion.amount;
+        } else {
+          defaultQuantity = (selectedAudience === 'child-4-6' || selectedAudience === 'child-7-8' || selectedAudience === 'child-4-8') ? 120 : 150;
+        }
+        defaultUnit = 'ml';
+      } else if (isFreshFruit(ingredientName)) {
+        defaultQuantity = 1;
+        defaultUnit = 'g';
+      } else if (isVegetable(ingredientName)) {
+        defaultQuantity = 1;
+        defaultUnit = 'g';
+      }
+
+      const ingredientObj = {
+        name: ingredientName,
+        quantity: defaultQuantity,
+        unit: defaultUnit
+      };
+
+      if (isVegetable(ingredientName)) {
+        const vegKey = normalizeVegetableKey(ingredientName);
+        const portionGrams = getVegPortionGrams(selectedAudience, vegKey, 0);
+        if (portionGrams > 0) {
+          ingredientObj.portionGrams = portionGrams;
+          ingredientObj.gramsUsed = portionGrams;
+          ingredientObj.portionSource = 'veg-age-specific';
+        }
+      }
+
+      if (isSweetener(ingredientName)) {
+        const sweetenerGrams = getSweetenerPortionGrams(ingredientName, selectedAudience);
+        if (sweetenerGrams != null && sweetenerGrams > 0) {
+          ingredientObj.portionGrams = sweetenerGrams;
+          ingredientObj.gramsUsed = sweetenerGrams;
+          ingredientObj.portionSource = 'sweetener-age-specific';
+        }
+      }
+
+      smoothieIngredients.push(ingredientObj);
+      renderSmoothieIngredients();
+      updateSmoothieRecipe();
+      checkAndShowVeganMilkRecommendation();
+      setSmoothieStatus(`Added "${ingredientName}"`);
+      if (typeof maybeShowDriedFruitTip === 'function') {
+        maybeShowDriedFruitTip(ingredientName);
+      }
+
+      return { success: true };
+    }
+
     function clearSmoothieIngredientSearchUI() {
       // Query DOM fresh (do not use cached variables)
       const input = document.getElementById('smoothie-ingredient-search');
