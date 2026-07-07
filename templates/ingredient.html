@@ -33,6 +33,14 @@
       </ul>
     {% endif %}
 
+    {% if ingredient.long_description %}
+      <section style="margin-top: 20px;">
+        {% for para in ingredient.long_description.split('\n\n') %}
+          <p style="color:#444; margin: 0 0 10px;">{{ para }}</p>
+        {% endfor %}
+      </section>
+    {% endif %}
+
     <p>
       <a href="/app?entry=ingredient">Open in PureFyul Analyzer</a>
     </p>

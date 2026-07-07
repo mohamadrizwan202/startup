@@ -6,7 +6,8 @@
       "Naturally sweet; pairs well with cocoa, peanut butter, oats",
       "Helps thicken smoothies without added sugar",
       "Contains potassium and fiber"
-    ]
+    ],
+    "long_description": "Bananas are one of the most common smoothie bases because they blend into a naturally sweet, creamy texture without needing added sugar. A ripe, spotty banana blends smoother and tastes sweeter than a firm, green-tipped one — many people keep a bag of peeled bananas in the freezer specifically for smoothies, since frozen banana also thickens the blend and keeps it cold without watering it down with ice.\n\nBananas pair especially well with cocoa powder, peanut butter, and oats for a milkshake-style smoothie, or with berries and yogurt for a lighter, fruitier blend. Because they contain natural sugars, portion size matters if you're watching total sugar intake — the PureFyul calculator can show you the exact breakdown for your blend.\n\nThis page is informational only, not medical advice. For personalized dietary guidance, consult a registered dietitian or healthcare provider."
   },
   "peanut-butter": {
     "name": "Peanut Butter",
@@ -15,7 +16,8 @@
       "Adds creamy texture and nutty flavor",
       "Common in high-calorie or protein-style smoothies",
       "Pairs well with banana, cocoa, oats, and milk/plant milk"
-    ]
+    ],
+    "long_description": "Peanut butter is a popular smoothie add-in when the goal is a thicker, more filling, higher-protein blend — it's especially common in post-workout or meal-replacement style smoothies. A tablespoon or two adds richness and a nutty flavor without needing much else to make a smoothie feel satisfying.\n\nWhen choosing a peanut butter for smoothies, natural varieties with minimal added sugar or oil tend to blend just as smoothly while keeping the ingredient list simpler. It pairs especially well with banana, cocoa powder, and oats, and works nicely with either dairy or plant-based milk as the liquid base.\n\nBecause peanut butter is calorie-dense, even small amounts add up quickly — the PureFyul calculator can help you see exactly how much it's contributing to your blend's total calories and fat. This page is informational only, not medical advice."
   },
   "blueberries": {
     "name": "Blueberries",
@@ -24,7 +26,8 @@
       "Easy fruit base for many smoothie recipes",
       "Pairs well with yogurt, oats, spinach, and banana",
       "Works great frozen for thickness"
-    ]
+    ],
+    "long_description": "Blueberries are a smoothie staple thanks to their balance of sweetness and tartness, plus the deep purple color they add to any blend. Both fresh and frozen work well — frozen blueberries are often preferred since they double as a thickener and don't require separate ice.\n\nThey pair especially well with Greek yogurt for a tangy, protein-rich smoothie, with oats for a heartier breakfast blend, or with spinach for a green smoothie where the berries help mask the vegetable flavor. Because blueberries are relatively low in calories compared to their flavor impact, they're a popular choice for lighter, fruit-forward smoothies.\n\nUse the PureFyul calculator to see exactly how blueberries affect your smoothie's sugar and fiber content. This page is informational only, not medical advice."
   },
   "spinach": {
     "name": "Spinach",
@@ -33,7 +36,8 @@
       "Mild flavor; easy to 'hide' in fruit smoothies",
       "Pairs well with banana, berries, and yogurt",
       "Often used as a starter green for beginners"
-    ]
+    ],
+    "long_description": "Spinach is often the first leafy green people try in smoothies because it has a genuinely mild taste — when blended with a couple of pieces of fruit, it mostly just adds color rather than a strong vegetable flavor. This makes it a common starting point for anyone building their first green smoothie.\n\nIt pairs especially well with banana (which mellows any remaining bitterness), berries, or a splash of yogurt for creaminess. Because spinach blends down significantly in volume, a large handful of raw leaves often reduces to just a few tablespoons once blended — it's easy to add more than you'd expect from looking at the leaves alone.\n\nUse the PureFyul calculator to check exactly how much spinach is contributing to your smoothie's nutrition profile. This page is informational only, not medical advice."
   },
   "strawberry": {
     "name": "Strawberry",
@@ -42,7 +46,8 @@
       "Classic smoothie fruit; easy to combine with banana and yogurt",
       "Frozen strawberries help thicken smoothies",
       "Pairs well with oats, chia, and spinach"
-    ]
+    ],
+    "long_description": "Strawberries are one of the most classic smoothie fruits, prized for their sweetness and bright red color. Like most berries, they work well fresh or frozen — frozen strawberries in particular help thicken a smoothie and keep it cold without diluting the flavor with ice cubes.\n\nThey pair especially well with banana and yogurt for a simple, kid-friendly blend, or with oats and chia seed for a more filling, breakfast-style smoothie. Because strawberries have a naturally strong flavor even in smaller amounts, they're an easy way to mask the taste of leafy greens like spinach without needing a large quantity.\n\nUse the PureFyul calculator to check the sugar and nutrient content of your strawberry-based blend. This page is informational only, not medical advice."
   },
   "avocado": {
     "name": "Avocado",
@@ -51,7 +56,8 @@
       "Adds creaminess without dairy",
       "Pairs well with cocoa, banana, and berries",
       "Common in green smoothies with spinach or kale"
-    ]
+    ],
+    "long_description": "Avocado is a favorite smoothie add-in for anyone looking for a thick, creamy texture without using dairy — its mild flavor mostly disappears into the blend, especially alongside cocoa powder or a sweeter fruit like banana. Unlike frozen fruit, avocado adds creaminess through fat content rather than ice crystals, so it won't make a smoothie taste watery.\n\nIt pairs especially well with cocoa powder and banana for a dessert-style smoothie, or with spinach and citrus in green smoothies, where it balances out the more bitter, vegetal flavors. Because avocado is calorie-dense, even a quarter or half of one adds a meaningful amount to your blend's total — the PureFyul calculator can show you exactly how much.\n\nThis page is informational only, not medical advice. For personalized dietary guidance, consult a registered dietitian or healthcare provider."
   },
   "chia-seed": {
     "name": "Chia Seed",
@@ -60,7 +66,8 @@
       "Can thicken smoothies if allowed to sit",
       "Pairs well with berries, oats, and yogurt",
       "Often used in fiber-focused blends"
-    ]
+    ],
+    "long_description": "Chia seeds are typically added to smoothies in small spoonfuls, either blended in directly for a bit of texture or soaked briefly beforehand to form a gel that thickens the whole smoothie. Many people prepare a quick chia gel (seeds soaked in water or milk for 10-15 minutes) ahead of time so it blends in smoothly rather than staying crunchy.\n\nThey pair especially well with berries, oats, and yogurt, and are a common addition to fiber-focused smoothie recipes since they contribute noticeably to fiber content even in small amounts. Because they absorb liquid over time, a smoothie with chia seed may thicken further if it sits for a few minutes before drinking.\n\nUse the PureFyul calculator to see how chia seed affects your smoothie's fiber and texture profile. This page is informational only, not medical advice."
   },
   "kale": {
     "name": "Kale",
@@ -69,7 +76,8 @@
       "Stronger flavor; best balanced with banana or berries",
       "Common in green smoothies",
       "Pairs well with avocado and citrus"
-    ]
+    ],
+    "long_description": "Kale is a leafy green with a noticeably stronger, slightly bitter flavor compared to spinach, so it's often recommended for people who already enjoy green smoothies rather than as a first-timer's choice. Balancing kale with a good amount of fruit is the most common way to make it more palatable.\n\nIt pairs especially well with banana or berries to offset the bitterness, and with avocado or citrus, which are frequently used in kale-based green smoothie recipes to round out the flavor. Removing the tougher center stem before blending can also help the smoothie blend more smoothly.\n\nUse the PureFyul calculator to check exactly how kale contributes to your smoothie's overall nutrition. This page is informational only, not medical advice."
   },
   "oats": {
     "name": "Oats",
@@ -81,7 +89,8 @@
     ],
     "clusters": [
       "metabolic_balance"
-    ]
+    ],
+    "long_description": "Oats are a common smoothie add-in when the goal is a thicker, more filling, breakfast-style blend rather than a light fruit drink. Old-fashioned or quick oats both work well blended raw — no cooking needed — and they add a mild, neutral base that takes on the flavor of whatever else is in the smoothie.\n\nThey pair especially well with banana, berries, peanut butter, and a dash of cinnamon for a smoothie that feels closer to a meal than a snack. Because oats absorb liquid, a smoothie made with oats may continue to thicken slightly if it sits, so some people prefer to blend them fresh right before drinking.\n\nUse the PureFyul calculator to check how oats affect your smoothie's fiber content and overall thickness. This page is informational only, not medical advice."
   },
   "almond-milk": {
     "name": "Almond Milk",
@@ -93,7 +102,8 @@
     ],
     "clusters": [
       "metabolic_balance"
-    ]
+    ],
+    "long_description": "Almond milk is one of the most popular plant-based liquid bases for smoothies, valued for its light, slightly nutty flavor that doesn't overpower other ingredients. It's commonly used by anyone who prefers a dairy-free option or simply wants a thinner consistency than yogurt or regular milk would give.\n\nIt pairs well with almost any combination of fruit, and is especially common alongside berries, banana, and oats. Because unsweetened almond milk is relatively low in calories and sugar compared to some other liquid bases, it's a frequent choice for lighter smoothies — though sweetened varieties do add extra sugar, so it's worth checking the label.\n\nUse the PureFyul calculator to see exactly how your choice of almond milk (sweetened vs. unsweetened) changes your smoothie's nutrition. This page is informational only, not medical advice."
   },
   "greek-yogurt": {
     "name": "Greek Yogurt",
@@ -105,7 +115,8 @@
     ],
     "clusters": [
       "metabolic_balance"
-    ]
+    ],
+    "long_description": "Greek yogurt is a popular smoothie add-in for anyone wanting a thicker, creamier, more protein-rich blend that feels closer to a meal than a drink. Its tangy flavor works well with sweeter fruit, which is why it's such a common pairing in fruit-based smoothies.\n\nIt pairs especially well with berries, banana, and a drizzle of honey, and is frequently used in \"meal-replacement\" style smoothies because of the protein and creaminess it adds. Plain Greek yogurt keeps added sugar lower than flavored varieties, giving you more control over the final sweetness of your smoothie.\n\nUse the PureFyul calculator to see exactly how Greek yogurt affects your smoothie's protein and total nutrition. This page is informational only, not medical advice."
   },
   "flaxseed": {
     "name": "Flaxseed",
@@ -118,7 +129,8 @@
     "clusters": [
       "anti_inflammation",
       "metabolic_balance"
-    ]
+    ],
+    "long_description": "Flaxseed is typically added to smoothies in small amounts — usually a tablespoon or so — mainly for its texture and nutritional contribution rather than flavor, since it has a mild, slightly nutty taste. Ground flaxseed blends much more smoothly than whole flaxseed, which can otherwise pass through a blender mostly intact.\n\nIt pairs well with berries, banana, oats, and yogurt, and is a common addition to smoothies aimed at boosting fiber or general nutrient content. Because ground flaxseed can slightly thicken a smoothie the longer it sits, some people prefer to drink their smoothie soon after blending.\n\nUse the PureFyul calculator to check how flaxseed contributes to your smoothie's fiber and overall nutrition profile. This page is informational only, not medical advice."
   },
   "apple": {
     "name": "Apple",
@@ -130,6 +142,7 @@
     ],
     "clusters": [
       "metabolic_balance"
-    ]
+    ],
+    "long_description": "Apple adds a fresh, light sweetness to smoothies without the heaviness that some other fruits bring, making it a popular choice for brighter, fruit-forward blends. Because apples aren't typically frozen for smoothies the way bananas or berries are, they're often paired with other frozen fruit to help thicken the blend.\n\nApple pairs especially well with spinach (a very common combination in beginner green smoothies), along with berries, banana, and a dash of cinnamon for a dessert-like flavor. Leaving the peel on adds a bit of extra fiber and color, though some prefer peeling for a smoother texture.\n\nUse the PureFyul calculator to see exactly how apple affects your smoothie's sugar and fiber content. This page is informational only, not medical advice."
   }
 }

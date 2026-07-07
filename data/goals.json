@@ -27,7 +27,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Iron plays a key role in carrying oxygen through the blood, and many people look to food-first strategies to help meet their daily needs alongside guidance from a healthcare provider. Plant-based iron (non-heme iron) is found in leafy greens like spinach and kale, and its absorption can be supported when paired with vitamin C-rich fruit such as apple or strawberry in the same smoothie.\n\nA simple approach: blend spinach or kale with a vitamin C source, a source of healthy fat like flaxseed, and a protein base such as Greek yogurt or almond milk. Oats add fiber and help make the smoothie more filling as part of a balanced meal or snack.\n\nUse the PureFyul calculator to check the iron-relevant ingredients in your blend and see the full nutrition breakdown. This content is educational only and not medical advice — anyone concerned about iron levels or fatigue should speak with a healthcare provider, especially before starting supplements."
     },
     {
       "slug": "inflammation-support",
@@ -50,7 +51,8 @@
           "chia seed",
           "flaxseed"
         ]
-      }
+      },
+      "long_description": "Diets rich in antioxidants and omega-3 fatty acids are commonly discussed in the context of general inflammation support. Berries like blueberries are well known for their antioxidant content, while flaxseed and chia seed provide plant-based omega-3s (ALA).\n\nLeafy greens such as kale and spinach add polyphenols and fiber, which many people include as part of an overall anti-inflammatory eating pattern alongside regular movement, sleep, and stress management — inflammation is influenced by many lifestyle factors, not diet alone.\n\nA simple smoothie approach: blend blueberries with spinach or kale, add a spoonful of chia or flaxseed, and blend with your preferred liquid base. Use the PureFyul calculator to see the full nutrient breakdown of your blend. This is educational content only, not medical advice — persistent inflammation or pain should be evaluated by a healthcare provider."
     },
     {
       "slug": "circulation-support",
@@ -72,7 +74,8 @@
           "spinach",
           "avocado"
         ]
-      }
+      },
+      "long_description": "Healthy circulation is often discussed alongside foods that support the blood vessels and heart, including those rich in nitrates, healthy fats, and antioxidants. Leafy greens like spinach are a source of dietary nitrates, while avocado provides monounsaturated fats commonly associated with cardiovascular wellness.\n\nBlueberries are frequently mentioned in circulation-related nutrition discussions for their antioxidant (anthocyanin) content. Combining a leafy green, a fat source like avocado, and a serving of berries is a simple way to build a circulation-focused smoothie.\n\nRegular physical activity, hydration, and not smoking are the most well-established factors for circulatory health — food is one piece of a broader picture. Use the PureFyul calculator to check your blend's nutrition profile. Educational content only, not medical advice; anyone with circulation concerns should consult a healthcare provider."
     },
     {
       "slug": "blood-pressure-support",
@@ -94,7 +97,8 @@
           "spinach",
           "avocado"
         ]
-      }
+      },
+      "long_description": "Diets like DASH (Dietary Approaches to Stop Hypertension) commonly emphasize potassium-rich foods, lower sodium intake, and foods with magnesium. Bananas are a well-known source of potassium, while spinach contributes both potassium and magnesium.\n\nAvocado adds healthy monounsaturated fat and additional potassium, making it a popular addition to blood-pressure-conscious smoothies. Because smoothies are naturally low in sodium when made from whole ingredients (rather than processed add-ins), they can fit well into this type of eating pattern.\n\nA simple starting blend: banana, spinach, and a small amount of avocado with your preferred liquid base. Use the PureFyul calculator to check the sodium, potassium, and full nutrition profile of your smoothie. This content is educational only, not medical advice — blood pressure should be monitored and managed with a healthcare provider, especially if you take medication."
     },
     {
       "slug": "bone-strength",
@@ -120,7 +124,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Bone-supportive nutrition commonly centers on calcium, vitamin D, and magnesium, along with adequate protein. Spinach provides calcium and magnesium, while Greek yogurt and almond milk (especially fortified varieties) are common calcium sources used in smoothies.\n\nFlaxseed and chia seed add plant-based nutrients and fiber, and oats contribute additional minerals along with a filling texture. Combining a calcium source with a protein source is a simple way to build a bone-health-focused smoothie.\n\nWeight-bearing exercise and adequate vitamin D (from sunlight, food, or supplements as advised by a provider) are also widely recognized as important for bone health — nutrition is one part of the picture. Use the PureFyul calculator to check the calcium and full nutrient content of your blend. Educational content only, not medical advice — those with bone health concerns, including osteoporosis, should consult a healthcare provider."
     },
     {
       "slug": "brain-focus",
@@ -142,7 +147,8 @@
           "chia seed",
           "flaxseed"
         ]
-      }
+      },
+      "long_description": "Foods rich in antioxidants and omega-3 fatty acids are frequently discussed in relation to general cognitive wellness and focus. Blueberries are one of the most studied fruits for antioxidant (flavonoid) content, while chia seed and flaxseed provide plant-based omega-3s (ALA).\n\nStaying hydrated and maintaining steady blood sugar (rather than sugar spikes and crashes) are also commonly mentioned alongside diet when people discuss focus and mental clarity throughout the day.\n\nA simple focus-oriented blend: blueberries with a spoonful of chia or flaxseed and a protein or fiber source to help slow sugar absorption. Use the PureFyul calculator to review the full nutrition breakdown. This is educational content only, not medical advice — cognitive concerns should be discussed with a healthcare provider."
     },
     {
       "slug": "cholesterol-support",
@@ -170,7 +176,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Soluble fiber is one of the most commonly discussed nutrients in relation to cholesterol-conscious eating, and oats are a well-known source. Chia seed also provides soluble fiber, while avocado contributes monounsaturated fat, a type of fat often favored over saturated fat in heart-healthy eating patterns.\n\nBlueberries add antioxidants, and Greek yogurt or almond milk can serve as the liquid/protein base depending on dietary preference. Combining oats, chia seed, and a fruit like apple or blueberries is a simple way to build a fiber-forward smoothie.\n\nUse the PureFyul calculator to see the fiber and fat breakdown of your blend. This content is educational only, not medical advice — cholesterol levels should be monitored and managed with a healthcare provider, particularly if you take medication."
     },
     {
       "slug": "oral-health",
@@ -192,7 +199,8 @@
           "blueberries",
           "flaxseed"
         ]
-      }
+      },
+      "long_description": "Oral health is influenced by many factors, and diet is one of them — particularly added sugar intake and foods that support saliva and gum tissue. Strawberries and blueberries provide vitamin C, which is involved in gum tissue health, while flaxseed adds fiber without added sugar.\n\nBecause smoothies made from whole fruit still contain natural sugars, many people choose to keep portions moderate and rinse with water afterward, similar to general guidance around other naturally sweet foods.\n\nA simple lower-sugar approach: pair strawberries or blueberries with a source of healthy fat like flaxseed and a lower-sugar liquid base. Use the PureFyul calculator to check the sugar content of your blend. Educational content only, not medical advice — always follow the guidance of a dentist or healthcare provider for oral health concerns."
     },
     {
       "slug": "blood-sugar-support",
@@ -219,7 +227,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Balancing a smoothie with fiber, protein, and healthy fat alongside fruit is a commonly discussed approach for those mindful of blood sugar spikes. Chia seed and oats provide fiber that can help slow sugar absorption, while Greek yogurt, almond milk, or peanut butter add protein or fat to further moderate the response.\n\nBerries like blueberries tend to have a lower glycemic impact compared to some other fruits, making them a popular base for blood-sugar-conscious smoothies. Spinach and avocado can be added for additional fiber and nutrients without much natural sugar.\n\nA simple approach: blueberries, spinach, a spoonful of chia seed, and a protein source like Greek yogurt or peanut butter. Use the PureFyul calculator to see the total sugar and fiber content before you blend. This is educational content only, not medical advice — those managing diabetes or blood sugar conditions should work directly with a healthcare provider."
     },
     {
       "slug": "digestive-support",
@@ -246,7 +255,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Fiber and hydration are two of the most commonly discussed factors in general digestive wellness. Chia seed is notable for its fiber and gel-forming texture when soaked, while oats provide additional soluble fiber. Bananas are often mentioned for their fiber content and gentle profile.\n\nGreek yogurt (when it contains live cultures) is sometimes included for its probiotic content, while almond milk offers a lighter, dairy-free liquid base for those who prefer it. Leafy greens like spinach round out a fiber-rich blend without adding much sweetness.\n\nA simple digestion-focused smoothie: banana, a spoonful of chia seed, spinach, and your preferred liquid base. Use the PureFyul calculator to check the fiber content of your blend. Educational content only, not medical advice — ongoing digestive symptoms should be evaluated by a healthcare provider."
     },
     {
       "slug": "energy-stamina",
@@ -274,7 +284,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Smoothies built for energy and stamina commonly combine a quick source of carbohydrate with protein and a small amount of fat, to provide both fast and sustained fuel. Bananas are a popular pre-activity choice for their natural sugars and potassium, while peanut butter and Greek yogurt add protein and staying power.\n\nOats can be blended in for slower-digesting carbohydrates, and strawberries or chia seed add extra nutrients without much added weight to the blend. Timing (before vs. after activity) often changes what people prioritize — lighter and higher-carb before, more protein-forward after.\n\nA simple energy blend: banana, peanut butter, and a splash of almond milk, with oats added for a more filling, longer-lasting version. Use the PureFyul calculator to check the calorie and macro breakdown for your activity level. Educational content only, not medical advice."
     },
     {
       "slug": "vision-support",
@@ -297,7 +308,8 @@
           "blueberries",
           "flaxseed"
         ]
-      }
+      },
+      "long_description": "Nutrients like lutein and zeaxanthin, along with vitamin A precursors (beta-carotene), are commonly discussed in relation to general eye health. Leafy greens such as spinach and kale are well-known sources of lutein and zeaxanthin, while blueberries contribute additional antioxidants.\n\nFlaxseed adds omega-3s, which are sometimes mentioned alongside eye health discussions as well. Because these nutrients are fat-soluble, pairing greens with a small amount of healthy fat (such as flaxseed or a nut-based milk) may support their absorption.\n\nA simple approach: blend spinach or kale with blueberries and a spoonful of flaxseed. Use the PureFyul calculator to see the full nutrient content of your blend. This is educational content only, not medical advice — vision changes or concerns should always be evaluated by an eye care professional."
     },
     {
       "slug": "heart-support",
@@ -327,7 +339,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Heart-conscious eating patterns commonly emphasize fiber, healthy unsaturated fats, and antioxidant-rich produce, while being mindful of sodium and saturated fat. Avocado provides monounsaturated fat, oats and chia seed contribute soluble fiber, and blueberries and spinach add antioxidants and potassium.\n\nGreek yogurt or almond milk can serve as your liquid and protein base depending on preference, and kale is another leafy green frequently included in heart-health-focused recipes for its nutrient density.\n\nA simple heart-healthy blend: spinach or kale, blueberries, a small amount of avocado, and oats or chia seed for fiber. Use the PureFyul calculator to check the fat, fiber, and sodium content of your smoothie. Educational content only, not medical advice — heart health should be monitored and managed with a healthcare provider, especially if you have an existing condition or take medication."
     },
     {
       "slug": "immune-support",
@@ -351,7 +364,8 @@
           "kale",
           "flaxseed"
         ]
-      }
+      },
+      "long_description": "Vitamin C and zinc are two of the most commonly discussed nutrients in relation to general immune wellness, alongside overall diet quality, sleep, and stress management. Strawberries and blueberries are good sources of vitamin C and antioxidants, while leafy greens like spinach and kale add additional vitamins and fiber.\n\nFlaxseed contributes a small amount of zinc along with healthy fats. Because immune wellness is influenced by many lifestyle factors together, no single smoothie replaces a balanced diet, adequate sleep, and regular movement.\n\nA simple immune-supportive blend: strawberries or blueberries with spinach or kale and a spoonful of flaxseed. Use the PureFyul calculator to check the vitamin and nutrient content of your blend. This is educational content only, not medical advice — persistent illness or immune concerns should be evaluated by a healthcare provider."
     },
     {
       "slug": "joint-mobility",
@@ -375,7 +389,8 @@
           "chia seed",
           "flaxseed"
         ]
-      }
+      },
+      "long_description": "Diets that emphasize antioxidants and omega-3 fatty acids are commonly discussed alongside general joint comfort and mobility, often together with regular movement and stretching. Blueberries provide antioxidants, while chia seed and flaxseed offer plant-based omega-3s (ALA).\n\nLeafy greens like kale and spinach add additional polyphenols and nutrients that are frequently mentioned in joint-focused nutrition discussions. As with general inflammation support, diet is one factor among several, including activity level, sleep, and body weight.\n\nA simple joint-focused blend: blueberries, kale or spinach, and a spoonful of chia or flaxseed. Use the PureFyul calculator to review the full nutrition profile of your smoothie. Educational content only, not medical advice — ongoing joint pain or stiffness should be evaluated by a healthcare provider."
     },
     {
       "slug": "liver-support",
@@ -404,7 +419,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "General liver wellness discussions often include fiber-rich foods, cruciferous vegetables, and antioxidants, alongside limiting alcohol and maintaining a healthy weight. Kale and spinach are leafy greens frequently mentioned in this context, and blueberries add antioxidant content.\n\nOats and flaxseed provide additional fiber, while Greek yogurt or almond milk can round out the smoothie as a protein or liquid base. As with most organ-specific nutrition topics, no single food or smoothie is a substitute for medical care when there's a diagnosed condition.\n\nA simple blend: kale or spinach, blueberries, and a spoonful of flaxseed or a serving of oats. Use the PureFyul calculator to check the fiber and nutrient content. This is educational content only, not medical advice — liver health concerns should always be directed to a healthcare provider."
     },
     {
       "slug": "muscle-recovery",
@@ -431,7 +447,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Post-activity nutrition commonly emphasizes protein for muscle repair, along with carbohydrates to replenish energy stores. Greek yogurt and peanut butter are popular protein sources for recovery smoothies, while banana and oats provide carbohydrates and potassium.\n\nStrawberries add vitamin C and antioxidants, and almond milk or apple can round out the liquid base depending on taste preference. Many people aim to have a recovery smoothie within a couple of hours after activity, though individual timing needs vary.\n\nA simple recovery blend: banana, Greek yogurt or peanut butter, and a handful of strawberries. Use the PureFyul calculator to check the protein and total calorie content for your training needs. Educational content only, not medical advice — for personalized sports nutrition guidance, consult a registered dietitian or sports medicine provider."
     },
     {
       "slug": "prenatal-support",
@@ -458,7 +475,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Prenatal nutrition discussions commonly highlight folate, iron, and calcium as key nutrients, always alongside guidance from an OB-GYN or midwife. Spinach provides folate and iron, while Greek yogurt and almond milk (fortified varieties) contribute calcium.\n\nBlueberries and chia seed add antioxidants and fiber, and apple or oats can round out a filling, balanced smoothie. Because nutrient needs and food safety guidance change throughout pregnancy, this content is general and educational only — it does not replace individualized prenatal care.\n\nA simple starting blend (always confirm with your provider first): spinach, blueberries, a spoonful of chia seed, and a protein source like Greek yogurt. Use the PureFyul calculator to check the nutrient content of your blend. Educational content only, not medical advice — always follow your OB-GYN or midwife's specific guidance during pregnancy."
     },
     {
       "slug": "skin-glow",
@@ -483,7 +501,8 @@
           "chia seed",
           "flaxseed"
         ]
-      }
+      },
+      "long_description": "Skin-focused nutrition discussions commonly center on hydration, vitamin C, and antioxidants, alongside broader habits like sleep, sun protection, and stress management. Strawberries and blueberries are rich in vitamin C and antioxidants, while spinach and kale contribute additional vitamins.\n\nChia seed and flaxseed add omega-3s, which are sometimes mentioned in skin-health discussions for supporting the skin's moisture barrier. As with most beauty-adjacent nutrition topics, diet is one supporting factor among many, not a stand-alone solution.\n\nA simple blend: strawberries or blueberries with spinach or kale and a spoonful of chia or flaxseed. Use the PureFyul calculator to check the vitamin and fat content of your smoothie. This is educational content only, not medical advice — for specific skin concerns, consult a dermatologist."
     },
     {
       "slug": "stress-relief",
@@ -512,7 +531,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "General stress-support nutrition discussions often mention magnesium-rich foods, along with hydration, sleep, and movement as key non-food factors. Bananas provide magnesium and potassium, while almond milk and oats can also contribute magnesium depending on the variety.\n\nBlueberries and strawberries add antioxidants, which are sometimes discussed alongside general wellness and stress topics, and flaxseed contributes omega-3 fats. A calming smoothie routine can also simply serve as a small, consistent self-care habit in a busy day.\n\nA simple blend: banana, a handful of berries, and a spoonful of flaxseed with almond milk as the base. Use the PureFyul calculator to check the nutrient content of your smoothie. Educational content only, not medical advice — ongoing stress, anxiety, or sleep difficulty should be discussed with a healthcare provider."
     },
     {
       "slug": "thyroid-support",
@@ -540,7 +560,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "General thyroid-related nutrition discussions often mention iodine, selenium, and zinc, though needs vary significantly by individual and should always be guided by a healthcare provider, especially for anyone with a diagnosed thyroid condition. Almond milk and oats provide general nutritional support, while blueberries and spinach add antioxidants and other vitamins.\n\nFlaxseed contributes healthy fats and fiber. Because thyroid conditions and medications can interact with certain foods and supplements (including iodine intake), this content is intentionally general — it is not a substitute for personalized guidance from an endocrinologist or healthcare provider.\n\nA simple general-wellness blend: blueberries, spinach, and a spoonful of flaxseed with almond milk as the base. Use the PureFyul calculator to check the nutrient content of your smoothie. Educational content only, not medical advice — always follow your healthcare provider's specific guidance for thyroid health."
     },
     {
       "slug": "weight-balance",
@@ -567,7 +588,8 @@
           "greek yogurt",
           "oats"
         ]
-      }
+      },
+      "long_description": "Smoothies built around weight balance commonly emphasize protein and fiber to support fullness, while being mindful of total calories and added sugars. Greek yogurt and peanut butter add protein, while chia seed and oats contribute fiber that can help a smoothie feel more filling.\n\nBanana and strawberry add natural sweetness and nutrients without needing added sugar, and almond milk offers a lower-calorie liquid base compared to some alternatives, depending on the variety chosen. Portion size and overall daily intake matter more than any single ingredient.\n\nA simple balanced blend: Greek yogurt or peanut butter, a handful of strawberries or banana, and a spoonful of chia seed. Use the PureFyul calculator to check the full calorie and macro breakdown before you blend. Educational content only, not medical advice — for personalized weight management guidance, consult a registered dietitian or healthcare provider."
     }
   ]
 }
