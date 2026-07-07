@@ -1345,26 +1345,56 @@ def sitemap_xml():
     base = "https://purefyul.com"
     today = date.today().isoformat()
 
-    # Always-allowed public pages
-    paths = [
+    # Always-allowed public pages (no per-page lastmod data available)
+    static_paths = [
         "/", "/about", "/pricing", "/contact", "/privacy", "/terms",
-        "/ingredients", "/goals",
+        "/ingredients", "/goals", "/blog",
     ]
-
-    # Only published ingredient detail pages
-    for slug in sorted(PUBLISHED_INGREDIENTS):
-        paths.append(f"/ingredient/{slug}")
-
-    # Only published goal detail pages (empty for now)
-    for slug in sorted(PUBLISHED_GOALS):
-        paths.append(f"/goal/{slug}")
 
     xml = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         f'<urlset xmlns="{SITEMAP_NS}">'
     ]
-    for p in paths:
+
+    for p in static_paths:
         xml.append(f"<url><loc>{base}{p}</loc><lastmod>{today}</lastmod></url>")
+
+    # Only published ingredient detail pages
+    for slug in sorted(PUBLISHED_INGREDIENTS):
+        xml.append(f"<url><loc>{base}/ingredient/{slug}</loc><lastmod>{today}</lastmod></url>")
+
+    # Only published goal detail pages
+    for slug in sorted(PUBLISHED_GOALS):
+        xml.append(f"<url><loc>{base}/goal/{slug}</loc><lastmod>{today}</lastmod></url>")
+
+    # Published blog posts - this is the fix: these were previously missing
+    # from the sitemap entirely, so Google had no reliable way to discover them.
+    if db.USE_POSTGRES:
+        try:
+            conn = get_conn()
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT slug, updated_at, published_at
+                FROM public.blog_posts
+                WHERE status = 'published'
+                ORDER BY published_at DESC
+            """)
+            rows = cur.fetchall()
+            desc = cur.description
+            cur.close()
+            conn.close()
+
+            for r in rows:
+                post = _row_to_dict(r, desc)
+                slug = post.get("slug")
+                if not slug:
+                    continue
+                lastmod_dt = post.get("updated_at") or post.get("published_at")
+                lastmod = lastmod_dt.date().isoformat() if lastmod_dt else today
+                xml.append(f"<url><loc>{base}/blog/{slug}</loc><lastmod>{lastmod}</lastmod></url>")
+        except Exception:
+            current_app.logger.exception("Sitemap: failed to load blog posts")
+
     xml.append("</urlset>")
 
     return Response("".join(xml), mimetype="application/xml")
