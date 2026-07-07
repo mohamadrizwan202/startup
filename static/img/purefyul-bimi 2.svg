@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.2"
+     baseProfile="tiny-ps"
+     xmlns="http://www.w3.org/2000/svg"
+     width="96" height="96"
+     viewBox="0 0 96 96">
+  <title>PureFyul</title>
+  <desc>PureFyul brand mark</desc>
+
+  <rect width="96" height="96" rx="20" ry="20" fill="#0F766E"/>
+
+  <path fill="#FFFFFF" d="
+    M48 18
+    C35 28 29 41 31 55
+    C33 69 42 78 48 82
+    C54 78 63 69 65 55
+    C67 41 61 28 48 18
+    Z"/>
+</svg>

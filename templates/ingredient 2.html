@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "_seo_head.html" %}
+  {# BreadcrumbList JSON-LD (helps SEO) #}
+  <script type="application/ld+json" nonce="{{ csp_nonce }}">
+{{ {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://purefyul.com/"},
+    {"@type": "ListItem", "position": 2, "name": "Ingredient Directory", "item": "https://purefyul.com/ingredients"},
+    {"@type": "ListItem", "position": 3, "name": (ingredient.name or ingredient.display_name or "Ingredient"), "item": canonical_url}
+  ]
+} | tojson }}
+  </script>
+
+
+</head>
+<body>
+  <main style="max-width: 780px; margin: 40px auto; padding: 0 16px;">
+    <h1>{{ ingredient.name }}</h1>
+
+    {% if ingredient.summary %}
+      <p>{{ ingredient.summary }}</p>
+    {% endif %}
+
+    {% if ingredient.highlights %}
+      <ul>
+        {% for item in ingredient.highlights %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <p>
+      <a href="/app?entry=ingredient">Open in PureFyul Analyzer</a>
+    </p>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">Related health goals</h2>
+      {% if related_goals and related_goals|length > 0 %}
+        <ul style="margin: 0; padding-left: 18px;">
+          {% for g in related_goals %}
+            <li>
+              <a href="/goal/{{ g.slug }}">{{ g.name }}</a>
+              {% if g.summary %}
+                <span style="color: #555; font-size: 0.9rem;">— {{ g.summary }}</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p style="color: #555; font-size: 0.9rem; margin: 0;">No related goals yet.</p>
+      {% endif %}
+    </section>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">How to use {{ ingredient.name }} in smoothies</h2>
+      <p style="color:#444; margin: 0 0 10px;">
+        A simple way to use <strong>{{ ingredient.name }}</strong> is to start small, blend, taste, and adjust.
+        If you're not sure what pairs well, open the analyzer and experiment with 2–4 ingredients.
+      </p>
+      <ul style="margin: 0; padding-left: 18px;">
+        <li>Start with a small amount first, then increase gradually based on taste and tolerance.</li>
+        <li>Balance sweetness, acidity, and thickness by adjusting your liquids and complementary ingredients.</li>
+        <li>Keep it simple: fewer ingredients usually means a better, more predictable flavor.</li>
+      </ul>
+      <p style="color:#555; font-size: 0.92rem; margin: 10px 0 0;">
+        Tip: use the PureFyul Analyzer link above to see how this ingredient fits your goal.
+      </p>
+    </section>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">Shopping + storage</h2>
+      <ul style="margin: 0; padding-left: 18px;">
+        <li>Choose fresh, clean, and good-quality versions of {{ ingredient.name }} when possible.</li>
+        <li>Store properly to avoid spoilage; if freshness is an issue, consider freezing for smoothies.</li>
+        <li>Wash and prep safely (especially for produce).</li>
+      </ul>
+    </section>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">Cautions</h2>
+      <p style="color:#444; margin: 0 0 10px;">
+        This page is informational only and not medical advice. If you have allergies, sensitivities, or a medical condition,
+        check ingredients and consult a qualified professional when needed.
+      </p>
+      <ul style="margin: 0; padding-left: 18px;">
+        <li>If you feel any adverse reaction, stop using the ingredient and seek appropriate help.</li>
+        <li>Be careful with portion sizes if you’re tracking sugar, sodium, or calories.</li>
+      </ul>
+    </section>
+
+    <section style="margin-top: 24px;">
+      <h2 style="font-size: 1.15rem; margin: 0 0 10px;">Explore more</h2>
+      <ul style="margin: 0; padding-left: 18px;">
+        <li><a href="/ingredients">Browse Ingredient Directory</a></li>
+        <li><a href="/goals">Browse Health Goals</a></li>
+        <li><a href="/app?entry=ingredient">Open {{ ingredient.name }} in PureFyul Analyzer</a></li>
+      </ul>
+    </section>
+  </main>
+
+  {% include "_legal_footer.html" %}
+
+
+  {% include "_feedback.html" %}
+</body>
+</html>
+

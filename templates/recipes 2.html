@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Saved Recipes | PureFyul</title>
+  {% include "_seo_head.html" %}
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #F0F4F3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .rp-page { min-height: 100vh; padding-bottom: 5rem; }
+    .rp-hero { background: #0EA5A4; padding: 2.5rem 2rem 3.5rem; position: relative; overflow: hidden; }
+    .rp-hero::before { content: ''; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; background: rgba(255,255,255,0.06); border-radius: 50%; }
+    .rp-hero::after { content: ''; position: absolute; bottom: -60px; left: 30%; width: 280px; height: 280px; background: rgba(255,255,255,0.04); border-radius: 50%; }
+    .rp-hero__inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+    .rp-hero__eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 0.5rem; }
+    .rp-hero__title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; color: #fff; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 0.5rem; }
+    .rp-hero__sub { font-size: 0.95rem; color: rgba(255,255,255,0.72); margin-bottom: 1.75rem; max-width: 420px; }
+    .rp-hero__actions { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+    .rp-btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 0.65rem 1.35rem; background: #fff; color: #0EA5A4; border: none; border-radius: 100px; font-size: 0.88rem; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+    .rp-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.18); }
+    .rp-btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 0.65rem 1.35rem; background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 100px; font-size: 0.88rem; font-weight: 600; font-family: inherit; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .rp-btn-ghost:hover { background: rgba(255,255,255,0.25); }
+    .rp-btn-empty { background: #0EA5A4; color: #fff; margin-top: 0.5rem; }
+    .rp-stats { background: #fff; border-bottom: 1px solid #E5ECEA; padding: 0.85rem 2rem; }
+    .rp-stats__inner { max-width: 1100px; margin: 0 auto; }
+    .rp-stats__count { font-size: 0.82rem; color: #6B8A87; font-weight: 500; }
+    .rp-stats__count strong { color: #0EA5A4; font-weight: 700; }
+    .upgrade-banner { background: #FFF8E6; border-bottom: 1px solid #F0D060; padding: 0.85rem 2rem; display: none; }
+    .upgrade-banner__inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .upgrade-banner__text { flex: 1; color: #7A5C00; font-size: 0.9rem; }
+    .upgrade-banner__btn { background: #E6A800; color: #fff; padding: 0.4rem 1rem; border-radius: 100px; font-weight: 700; font-size: 0.82rem; text-decoration: none; }
+    .rp-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6rem 1rem; gap: 1rem; color: #6B8A87; }
+    .rp-spinner { width: 32px; height: 32px; border: 3px solid #D0E8E6; border-top-color: #0EA5A4; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .rp-empty { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 6rem 1.5rem; text-align: center; gap: 1rem; }
+    .rp-empty__icon { font-size: 3.5rem; line-height: 1; }
+    .rp-empty__title { font-size: 1.3rem; font-weight: 700; color: #1A3532; }
+    .rp-empty__text { font-size: 0.92rem; color: #6B8A87; max-width: 320px; line-height: 1.6; }
+    .rp-grid-wrap { max-width: 1100px; margin: 2rem auto 0; padding: 0 2rem; display: none; }
+    .rp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+    .rc { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #E5ECEA; transition: transform 0.18s, box-shadow 0.18s; }
+    .rc:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(14,165,164,0.1); }
+    .rc__accent { height: 3px; background: linear-gradient(90deg, #0EA5A4, #5ECFCE); }
+    .rc__body { padding: 1.5rem; }
+    .rc__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.85rem; }
+    .rc__name { font-size: 1rem; font-weight: 700; color: #1A3532; line-height: 1.3; flex: 1; }
+    .rc__goal { font-size: 0.68rem; font-weight: 600; background: #E8F7F7; color: #0B7F7E; padding: 0.22rem 0.7rem; border-radius: 100px; white-space: nowrap; flex-shrink: 0; text-transform: capitalize; letter-spacing: 0.02em; }
+    .rc__nutrition { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .rc__nut { background: #F4FAFA; border-radius: 8px; padding: 0.6rem 0.35rem; text-align: center; border: 1px solid #E8F4F4; }
+    .rc__nut-val { display: block; font-size: 1rem; font-weight: 700; color: #1A3532; line-height: 1.1; }
+    .rc__nut-unit { font-size: 0.6rem; color: #0EA5A4; font-weight: 500; margin-left: 1px; vertical-align: super; line-height: 0; }
+    .rc__nut-label { display: block; font-size: 0.6rem; color: #6B8A87; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.15rem; }
+    .rc__ings { margin-bottom: 1rem; padding: 0.85rem; background: #F8FBFB; border-radius: 10px; }
+    .rc__ings-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #9AB5B3; margin-bottom: 0.5rem; }
+    .rc__ings-pills { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .rc__ing-pill { font-size: 0.73rem; background: #fff; color: #2D5553; padding: 0.18rem 0.65rem; border-radius: 100px; font-weight: 500; border: 1px solid #D8ECEA; letter-spacing: 0.01em; }
+    .rc__ing-amt { color: #9AB5B3; font-size: 0.65rem; }
+    .rc__notes { font-size: 0.78rem; color: #6B8A87; margin-bottom: 0.85rem; line-height: 1.5; font-style: italic; }
+    .rc__footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.85rem; margin-top: 0.25rem; border-top: 1px solid #EDF2F1; }
+    .rc__date { font-size: 0.72rem; color: #9AB5B3; }
+    .rc__delete { background: none; border: none; cursor: pointer; color: #C8D8D6; font-size: 0.75rem; font-weight: 500; font-family: inherit; padding: 0.25rem 0.5rem; border-radius: 6px; transition: color 0.15s, background 0.15s; display: flex; align-items: center; gap: 3px; letter-spacing: 0.01em; }
+    .rc__delete:hover { color: #E53E3E; background: #FFF5F5; }
+    .rp-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+    .rp-modal { background: #fff; border-radius: 16px; padding: 2rem; max-width: 360px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    .rp-modal__icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .rp-modal__title { font-size: 1.1rem; font-weight: 700; color: #1A3532; margin-bottom: 0.4rem; }
+    .rp-modal__text { font-size: 0.88rem; color: #6B8A87; margin-bottom: 1.5rem; line-height: 1.5; }
+    .rp-modal__actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+    .rp-modal__cancel { padding: 0.6rem 1.25rem; background: #F0F4F3; color: #2D5553; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .rp-modal__cancel:hover { background: #E0ECEA; }
+    .rp-modal__delete { padding: 0.6rem 1.25rem; background: #E53E3E; color: #fff; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .rp-modal__delete:hover { background: #C53030; }
+    @media (max-width: 600px) {
+      .rp-hero { padding: 2rem 1.25rem 2.75rem; }
+      .rp-grid-wrap { padding: 0 1rem; margin-top: 1.25rem; }
+      .rp-grid { grid-template-columns: 1fr; }
+      .rp-stats { padding: 0.75rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  {% include "_navbar.html" %}
+  <main class="rp-page">
+    <section class="rp-hero">
+      <div class="rp-hero__inner">
+        <p class="rp-hero__eyebrow">My Collection</p>
+        <h1 class="rp-hero__title">Saved Recipes</h1>
+        <p class="rp-hero__sub">Your personal smoothie library. Every build, saved for later.</p>
+        <div class="rp-hero__actions">
+          <a href="{{ url_for('index') }}" class="rp-btn-primary">+ Build a Smoothie</a>
+          <button class="rp-btn-ghost" id="exportBtn">↓ Export CSV</button>
+        </div>
+      </div>
+    </section>
+    <div class="rp-stats" id="statsBar" style="display:none">
+      <div class="rp-stats__inner">
+        <p class="rp-stats__count"><strong id="recipeCount">0</strong> recipes saved</p>
+      </div>
+    </div>
+    <div class="upgrade-banner" id="upgradeBanner">
+      <div class="upgrade-banner__inner">
+        <span>🔒</span>
+        <div class="upgrade-banner__text"><strong>Pro feature</strong> — Saving recipes requires a Pro plan ($4.99/month).</div>
+        <a href="{{ url_for('pricing') }}" class="upgrade-banner__btn">Upgrade</a>
+      </div>
+    </div>
+    <div class="rp-loading" id="recipesLoading">
+      <div class="rp-spinner"></div>
+      <p>Loading your recipes...</p>
+    </div>
+    <div class="rp-empty" id="recipesEmpty">
+      <div class="rp-empty__icon">🥤</div>
+      <h2 class="rp-empty__title">No saved recipes yet</h2>
+      <p class="rp-empty__text">Build a smoothie and hit Save Recipe to start your collection.</p>
+      <a href="{{ url_for('index') }}" class="rp-btn-primary rp-btn-empty">Build Your First Smoothie</a>
+    </div>
+    <div class="rp-grid-wrap" id="recipesSection">
+      <div class="rp-grid" id="recipesGrid"></div>
+    </div>
+  </main>
+  <div class="rp-modal-overlay" id="deleteModal" role="dialog" aria-modal="true">
+    <div class="rp-modal">
+      <div class="rp-modal__icon">🗑️</div>
+      <h3 class="rp-modal__title">Delete this recipe?</h3>
+      <p class="rp-modal__text">This action cannot be undone. Your recipe will be permanently removed.</p>
+      <div class="rp-modal__actions">
+        <button class="rp-modal__cancel" id="cancelDelete">Keep it</button>
+        <button class="rp-modal__delete" id="confirmDelete">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
+  {% include "_legal_footer.html" %}
+  {% include "_feedback.html" %}
+  <script nonce="{{ csp_nonce }}">
+    let recipeToDelete = null;
+    async function loadRecipes() {
+      try {
+        const res = await fetch('/api/recipes');
+        if (res.status === 401 || res.redirected) { window.location.href = '/login?next=/recipes'; return; }
+        if (res.status === 403) {
+          const data = await res.json();
+          if (data.error === 'upgrade_required') { showUpgradeBanner(); hideLoading(); showEmpty(); return; }
+        }
+        const data = await res.json();
+        hideLoading();
+        if (!data.recipes || data.recipes.length === 0) { showEmpty(); return; }
+        renderRecipes(data.recipes);
+      } catch (err) { hideLoading(); showEmpty(); }
+    }
+    function renderRecipes(recipes) {
+      const grid = document.getElementById('recipesGrid');
+      grid.innerHTML = '';
+      const countEl = document.getElementById('recipeCount');
+      if (countEl) countEl.textContent = recipes.length;
+      const statsBar = document.getElementById('statsBar');
+      if (statsBar) statsBar.style.display = 'block';
+      recipes.forEach(recipe => {
+        const nutrition = recipe.nutrition_summary || {};
+        const ingredients = recipe.ingredients || [];
+        const pillsHtml = ingredients.length ? ingredients.map(i => {
+          const name = typeof i === 'object' ? (i.name || '') : i;
+          const amt = typeof i === 'object' ? (i.totalGrams || i.portionGrams || i.quantity || '') : '';
+          const unit = typeof i === 'object' ? (i.unit || 'g') : '';
+          return '<span class="rc__ing-pill">' + escapeHtml(name) + (amt ? ' <span class="rc__ing-amt">' + Math.round(amt) + unit + '</span>' : '') + '</span>';
+        }).join('') : '';
+        const card = document.createElement('div');
+        card.className = 'rc';
+        card.innerHTML =
+          '<div class="rc__accent"></div>' +
+          '<div class="rc__body">' +
+            '<div class="rc__top">' +
+              '<h3 class="rc__name">' + escapeHtml(recipe.name) + '</h3>' +
+              (recipe.health_goal ? '<span class="rc__goal">' + escapeHtml(recipe.health_goal) + '</span>' : '') +
+            '</div>' +
+            '<div class="rc__nutrition">' +
+              nutBox('CAL', nutrition.calories, 'kcal') +
+              nutBox('PRO', nutrition.protein, 'g') +
+              nutBox('CARB', nutrition.carbs, 'g') +
+              nutBox('FAT', nutrition.fat, 'g') +
+            '</div>' +
+            (pillsHtml ? '<div class="rc__ings"><div class="rc__ings-label">Ingredients</div><div class="rc__ings-pills">' + pillsHtml + '</div></div>' : '') +
+            (recipe.notes ? '<p class="rc__notes">' + escapeHtml(recipe.notes) + '</p>' : '') +
+            '<div class="rc__footer">' +
+              '<span class="rc__date">' + formatDate(recipe.created_at) + '</span>' +
+              '<button class="rc__delete" data-id="' + recipe.id + '">🗑 Delete</button>' +
+            '</div>' +
+          '</div>';
+        grid.appendChild(card);
+      });
+      grid.querySelectorAll('.rc__delete').forEach(btn => {
+        btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
+      });
+      document.getElementById('recipesSection').style.display = 'block';
+    }
+    function nutBox(label, value, unit) {
+      const v = (value === undefined || value === null || value === '') ? '&mdash;' : Math.round(value) + '<span class="rc__nut-unit">' + unit + '</span>';
+      return '<div class="rc__nut"><span class="rc__nut-val">' + v + '</span><span class="rc__nut-label">' + label + '</span></div>';
+    }
+    document.getElementById('exportBtn').addEventListener('click', async () => {
+      const res = await fetch('/api/recipes/export');
+      if (res.status === 403) { showUpgradeBanner(); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'purefyul_recipes.csv'; a.click();
+      URL.revokeObjectURL(url);
+    });
+    function openDeleteModal(id) { recipeToDelete = id; document.getElementById('deleteModal').style.display = 'flex'; }
+    document.getElementById('cancelDelete').addEventListener('click', () => { document.getElementById('deleteModal').style.display = 'none'; recipeToDelete = null; });
+    document.getElementById('confirmDelete').addEventListener('click', async () => {
+      if (!recipeToDelete) return;
+      await fetch('/api/recipes/' + recipeToDelete, { method: 'DELETE' });
+      document.getElementById('deleteModal').style.display = 'none';
+      recipeToDelete = null;
+      loadRecipes();
+    });
+    function showUpgradeBanner() { document.getElementById('upgradeBanner').style.display = 'block'; }
+    function hideLoading() { document.getElementById('recipesLoading').style.display = 'none'; }
+    function showEmpty() { document.getElementById('recipesEmpty').style.display = 'flex'; }
+    function escapeHtml(str) { return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function formatDate(str) {
+      if (!str) return '';
+      const d = new Date(str);
+      return isNaN(d) ? str : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    loadRecipes();
+  </script>
+</body>
+</html>

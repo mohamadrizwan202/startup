@@ -1,0 +1,46 @@
+{# templates/email/notification.html #}
+{% extends "email/_layout.html" %}
+
+{% block headline %}
+{{ headline or "Notification" }}
+{% endblock %}
+
+{% block content %}
+  {% if intro %}
+    <p style="margin:0 0 12px 0;">{{ intro }}</p>
+  {% endif %}
+
+  {% if details %}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+           style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px;">
+      <tr>
+        <td style="padding:14px; font-size:14px; line-height:1.7; color:#0F172A;">
+          {% for label, value in details %}
+            <div style="margin:0 0 6px 0;">
+              <span style="font-weight:800;">{{ label }}:</span>
+              <span style="color:#334155;">{{ value }}</span>
+            </div>
+          {% endfor %}
+        </td>
+      </tr>
+    </table>
+  {% endif %}
+
+  {% if message %}
+    <div style="margin-top:14px; font-weight:800; color:#0F172A;">Message</div>
+    <div style="margin-top:8px; padding:14px; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:14px;
+                white-space:pre-wrap; word-break:break-word; font-size:14px; line-height:1.7; color:#334155;">
+      {{ message }}
+    </div>
+  {% endif %}
+
+  {% if cta_url and cta_label %}
+    <div style="margin-top:16px;">
+      <a href="{{ cta_url }}"
+         style="display:inline-block; background:#0F766E; color:#FFFFFF; text-decoration:none;
+                padding:10px 14px; border-radius:10px; font-weight:800; font-size:14px;">
+        {{ cta_label }}
+      </a>
+    </div>
+  {% endif %}
+{% endblock %}

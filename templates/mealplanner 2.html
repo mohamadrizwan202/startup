@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive_overrides.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/mealplanner.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meal Planner | PureFyul</title>
+  {% include "_seo_head.html" %}
+</head>
+<body>
+  {% include "_navbar.html" %}
+
+  <main class="planner-page">
+
+    <!-- Hero -->
+    <section class="planner-hero">
+      <div class="planner-hero__inner">
+        <div class="planner-hero__left">
+          <h1 class="planner-hero__title">Weekly Meal Planner</h1>
+          <p class="planner-hero__sub">Assign your saved smoothies to any meal slot. Plan your whole week in minutes.</p>
+        </div>
+        <div class="planner-hero__actions">
+          <button class="pf-btn pf-btn--ghost" id="clearBtn">Clear Week</button>
+          <button class="pf-btn pf-btn--primary" id="saveBtn">Save Plan</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upgrade Banner -->
+    <div class="upgrade-banner" id="upgradeBanner" style="display:none;">
+      <div class="upgrade-banner__inner">
+        <span class="upgrade-banner__icon">🔒</span>
+        <div class="upgrade-banner__text">
+          <strong>Pro feature</strong> — Meal planning requires a Pro plan ($4.99/month).
+        </div>
+        <a href="{{ url_for('pricing') }}" class="upgrade-banner__btn">Upgrade →</a>
+      </div>
+    </div>
+
+    <!-- Save feedback -->
+    <div class="save-toast" id="saveToast" style="display:none;">
+      ✅ Meal plan saved!
+    </div>
+
+    <!-- Loading -->
+    <div class="planner-loading" id="plannerLoading">
+      <div class="planner-loading__spinner"></div>
+      <p>Loading your recipes…</p>
+    </div>
+
+    <!-- No recipes state -->
+    <div class="planner-empty" id="plannerEmpty" style="display:none;">
+      <div class="planner-empty__icon">🥤</div>
+      <h2 class="planner-empty__title">No saved recipes yet</h2>
+      <p class="planner-empty__text">Save some smoothies first, then come back to plan your week.</p>
+      <a href="{{ url_for('index') }}" class="pf-btn pf-btn--primary">Build a Smoothie</a>
+    </div>
+
+    <!-- Planner Grid -->
+    <section class="planner-section" id="plannerSection" style="display:none;">
+
+      <!-- Week navigation -->
+      <div class="week-nav">
+        <button class="week-nav__btn" id="prevWeek" aria-label="Previous week">‹</button>
+        <span class="week-nav__label" id="weekLabel"></span>
+        <button class="week-nav__btn" id="nextWeek" aria-label="Next week">›</button>
+      </div>
+
+      <!-- Grid -->
+      <div class="planner-grid-wrapper">
+        <div class="planner-grid" id="plannerGrid">
+          <!-- Built by JS -->
+        </div>
+      </div>
+
+      <!-- Recipe Drawer (pick a recipe for a slot) -->
+      <div class="recipe-drawer" id="recipeDrawer" style="display:none;">
+        <div class="recipe-drawer__header">
+          <h3 class="recipe-drawer__title">Choose a Smoothie</h3>
+          <button class="recipe-drawer__close" id="closeDrawer" aria-label="Close">✕</button>
+        </div>
+        <div class="recipe-drawer__list" id="drawerList"></div>
+        <div class="recipe-drawer__footer">
+          <button class="pf-btn pf-btn--ghost" id="clearSlotBtn">Remove from slot</button>
+        </div>
+      </div>
+      <div class="drawer-overlay" id="drawerOverlay" style="display:none;"></div>
+
+    </section>
+
+  </main>
+
+  <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
+  {% include "_legal_footer.html" %}
+  {% include "_feedback.html" %}
+
+  <script nonce="{{ csp_nonce }}">
+    const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+    const MEAL_ICONS = { Breakfast: '🌅', Lunch: '☀️', Dinner: '🌙', Snack: '🍃' };
+
+    let allRecipes = [];
+    let slots = {};         // { "Mon-Breakfast": { id, name, calories } }
+    let activeSlot = null;
+    let weekOffset = 0;     // 0 = current week
+
+    // ── Boot ────────────────────────────────────────────────────────
+    async function boot() {
+      try {
+        // Check plan first
+        const planRes = await fetch('/api/plan');
+        if (planRes.status === 401 || planRes.redirected) {
+          window.location.href = '/login?next=/mealplanner';
+          return;
+        }
+        const planData = await planRes.json();
+        if (planData.plan === 'free') {
+          showUpgradeBanner();
+          document.getElementById('plannerLoading').style.display = 'none';
+          return;
+        }
+
+        // Load recipes
+        const recRes = await fetch('/api/recipes');
+        const recData = await recRes.json();
+        allRecipes = recData.recipes || [];
+
+        document.getElementById('plannerLoading').style.display = 'none';
+
+        if (allRecipes.length === 0) {
+          document.getElementById('plannerEmpty').style.display = 'flex';
+          return;
+        }
+
+        // Load existing plan if any
+        const planRes2 = await fetch('/api/mealplans');
+        const planData2 = await planRes2.json();
+        if (planData2.plans && planData2.plans.length > 0) {
+          // Find plan matching current week
+          const dates = getWeekDates();
+          const currentWeekStart = dates[0].toISOString().split('T')[0];
+          const matchingPlan = planData2.plans.find(p => {
+            if (!p.week_start) return false;
+            const planDate = new Date(p.week_start).toISOString().split('T')[0];
+            return planDate === currentWeekStart;
+          });
+          if (matchingPlan) {
+            slots = matchingPlan.slots || {};
+          } else {
+            slots = {};
+          }
+        }
+
+        buildGrid();
+        document.getElementById('plannerSection').style.display = 'block';
+
+      } catch (err) {
+        document.getElementById('plannerLoading').style.display = 'none';
+        console.error('Boot failed:', err);
+      }
+    }
+
+    // ── Week label ───────────────────────────────────────────────────
+    function getWeekDates() {
+      const now = new Date();
+      const day = now.getDay(); // 0=Sun
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1) + (weekOffset * 7));
+      const dates = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        dates.push(d);
+      }
+      return dates;
+    }
+
+    function updateWeekLabel() {
+      const dates = getWeekDates();
+      const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      document.getElementById('weekLabel').textContent =
+        `${fmt(dates[0])} – ${fmt(dates[6])}`;
+    }
+
+    // ── Build Grid ───────────────────────────────────────────────────
+    function buildGrid() {
+      const grid = document.getElementById('plannerGrid');
+      const dates = getWeekDates();
+      updateWeekLabel();
+
+      let html = '';
+
+      // Corner cell
+      html += '<div class="pg-corner"></div>';
+
+      // Day headers
+      dates.forEach((d, i) => {
+        const isToday = d.toDateString() === new Date().toDateString();
+        html += `<div class="pg-day-header ${isToday ? 'pg-day-header--today' : ''}">
+          <span class="pg-day-name">${DAYS[i]}</span>
+          <span class="pg-day-date">${d.getDate()}</span>
+        </div>`;
+      });
+
+      // Meal rows
+      MEALS.forEach(meal => {
+        // Row header
+        html += `<div class="pg-meal-header">
+          <span class="pg-meal-icon">${MEAL_ICONS[meal]}</span>
+          <span class="pg-meal-name">${meal}</span>
+        </div>`;
+
+        // Slots
+        DAYS.forEach(day => {
+          const key = `${day}-${meal}`;
+          const assigned = slots[key];
+          html += `<div class="pg-slot ${assigned ? 'pg-slot--filled' : 'pg-slot--empty'}"
+                        data-slot="${key}"
+                        role="button"
+                        tabindex="0"
+                        aria-label="${assigned ? assigned.name : 'Add smoothie to ' + day + ' ' + meal}">
+            ${assigned
+              ? `<span class="pg-slot__name">${escapeHtml(assigned.name)}</span>
+                 ${assigned.calories ? `<span class="pg-slot__cal">${Math.round(assigned.calories)} kcal</span>` : ''}`
+              : `<span class="pg-slot__add">+</span>`
+            }
+          </div>`;
+        });
+      });
+
+      grid.innerHTML = html;
+
+      // Attach click listeners
+      grid.querySelectorAll('.pg-slot').forEach(slot => {
+        slot.addEventListener('click', () => {
+          const key = slot.dataset.slot;
+          if (slots[key]) { openDetailPopup(key); } else { openDrawer(key); }
+        });
+        slot.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openDrawer(slot.dataset.slot); });
+      });
+    }
+
+    // ── Drawer ───────────────────────────────────────────────────────
+    function openDetailPopup(slotKey) {
+      var assigned = slots[slotKey];
+      if (!assigned) return;
+      activeSlot = slotKey;
+      var recipe = allRecipes.find(function(r){ return r.id === assigned.id; }) || {};
+      var nutrition = recipe.nutrition_summary || {};
+      var ingredients = recipe.ingredients || [];
+      var parts = slotKey.split('-');
+      document.getElementById('sd-label').textContent = parts[0] + ' ' + parts[1];
+      document.getElementById('sd-name').textContent = assigned.name;
+      var meta = document.getElementById('sd-meta');
+      meta.innerHTML = recipe.health_goal ? '<span class="sd-goal">' + escapeHtml(recipe.health_goal) + '</span>' : '';
+      if (recipe.notes) meta.innerHTML += '<span class="sd-notes">' + escapeHtml(recipe.notes) + '</span>';
+      var nutWrap = document.getElementById('sd-nut');
+      nutWrap.innerHTML = '';
+      var nuts = [['CAL', nutrition.calories, 'kcal'], ['PRO', nutrition.protein, 'g'], ['CARB', nutrition.carbs, 'g'], ['FAT', nutrition.fat, 'g']];
+      nuts.forEach(function(n) {
+        var val = (n[1] !== undefined && n[1] !== null) ? Math.round(n[1]) + n[2] : '-';
+        nutWrap.innerHTML += '<div class="sd-nut-box"><b>' + val + '</b><small>' + n[0] + '</small></div>';
+      });
+      var ingsWrap = document.getElementById('sd-ings');
+      ingsWrap.innerHTML = '';
+      if (ingredients.length) {
+        ingredients.forEach(function(i) {
+          var name = typeof i === 'object' ? (i.name || '') : i;
+          var amt = typeof i === 'object' ? (i.totalGrams || i.portionGrams || '') : '';
+          var unit = typeof i === 'object' ? (i.unit || 'g') : '';
+          ingsWrap.innerHTML += '<span class="sd-pill">' + escapeHtml(name) + (amt ? ' ' + Math.round(amt) + unit : '') + '</span>';
+        });
+      } else {
+        ingsWrap.innerHTML = '<span style="color:#9AB5B3;font-size:0.8rem;">No ingredients recorded</span>';
+      }
+      var overlay = document.getElementById('sd-overlay');
+      overlay.style.display = 'flex';
+      document.getElementById('sd-close').onclick = function() { overlay.style.display = 'none'; };
+      document.getElementById('sd-change').onclick = function() { overlay.style.display = 'none'; openDrawer(slotKey); };
+      document.getElementById('sd-remove').onclick = function() { delete slots[slotKey]; overlay.style.display = 'none'; buildGrid(); };
+      overlay.onclick = function(e) { if (e.target === overlay) overlay.style.display = 'none'; };
+    }
+
+    function openDrawer(slotKey) {
+      activeSlot = slotKey;
+      const list = document.getElementById('drawerList');
+      list.innerHTML = '';
+
+      allRecipes.forEach(r => {
+        const nutrition = r.nutrition_summary || {};
+        const item = document.createElement('div');
+        item.className = 'drawer-item';
+        const isActive = slots[slotKey] && slots[slotKey].id === r.id;
+        if (isActive) item.classList.add('drawer-item--active');
+        item.innerHTML = `
+          <div class="drawer-item__name">${escapeHtml(r.name)}</div>
+          <div class="drawer-item__meta">
+            ${nutrition.calories ? `<span>${Math.round(nutrition.calories)} kcal</span>` : ''}
+            ${r.health_goal ? `<span class="drawer-item__goal">${escapeHtml(r.health_goal)}</span>` : ''}
+          </div>
+        `;
+        item.addEventListener('click', () => assignSlot(slotKey, r));
+        list.appendChild(item);
+      });
+
+      document.getElementById('recipeDrawer').style.display = 'flex';
+      document.getElementById('drawerOverlay').style.display = 'block';
+    }
+
+    function closeDrawer() {
+      document.getElementById('recipeDrawer').style.display = 'none';
+      document.getElementById('drawerOverlay').style.display = 'none';
+      activeSlot = null;
+    }
+
+    function assignSlot(slotKey, recipe) {
+      const nutrition = recipe.nutrition_summary || {};
+      slots[slotKey] = {
+        id: recipe.id,
+        name: recipe.name,
+        calories: nutrition.calories || null
+      };
+      closeDrawer();
+      buildGrid();
+    }
+
+    document.getElementById('closeDrawer').addEventListener('click', closeDrawer);
+    document.getElementById('drawerOverlay').addEventListener('click', closeDrawer);
+    document.getElementById('clearSlotBtn').addEventListener('click', () => {
+      if (activeSlot) delete slots[activeSlot];
+      closeDrawer();
+      buildGrid();
+    });
+
+    // ── Week nav ─────────────────────────────────────────────────────
+    document.getElementById('prevWeek').addEventListener('click', async () => { weekOffset--; await loadWeekPlan(); buildGrid(); });
+    document.getElementById('nextWeek').addEventListener('click', async () => { weekOffset++; await loadWeekPlan(); buildGrid(); });
+
+    async function loadWeekPlan() {
+      try {
+        const res = await fetch('/api/mealplans');
+        const data = await res.json();
+        if (data.plans && data.plans.length > 0) {
+          const dates = getWeekDates();
+          const weekStart = dates[0].toISOString().split('T')[0];
+          const match = data.plans.find(p => {
+            if (!p.week_start) return false;
+            // Handle both "2026-06-08" and "Mon, 08 Jun 2026 00:00:00 GMT" formats
+            const planDate = new Date(p.week_start).toISOString().split('T')[0];
+            return planDate === weekStart;
+          });
+          slots = match ? (match.slots || {}) : {};
+        } else {
+          slots = {};
+        }
+      } catch(e) {
+        slots = {};
+      }
+    }
+
+    // ── Clear week ───────────────────────────────────────────────────
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (confirm('Clear all slots for this week?')) {
+        slots = {};
+        buildGrid();
+      }
+    });
+
+    // ── Save plan ────────────────────────────────────────────────────
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const dates = getWeekDates();
+      const weekStart = dates[0].toISOString().split('T')[0];
+      const res = await fetch('/api/mealplans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: `Week of ${weekStart}`, week_start: weekStart, slots })
+      });
+      if (res.ok) {
+        const toast = document.getElementById('saveToast');
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+      }
+    });
+
+    // ── Helpers ──────────────────────────────────────────────────────
+    function showUpgradeBanner() { document.getElementById('upgradeBanner').style.display = 'block'; }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    boot();
+  </script>
+
+<style>
+.sd-goal{font-size:0.72rem;font-weight:600;background:#e6f7f7;color:#0B7F7E;padding:0.2rem 0.6rem;border-radius:100px;}
+.sd-notes{font-size:0.72rem;color:#64748b;}
+.sd-nut-box{background:#f4fafa;border-radius:10px;padding:0.5rem;text-align:center;display:flex;flex-direction:column;gap:2px;}
+.sd-nut-box b{font-size:1rem;color:#1A3532;}
+.sd-nut-box small{font-size:0.6rem;color:#6B8A87;text-transform:uppercase;}
+.sd-pill{font-size:0.75rem;background:#f0f4f3;color:#2D5553;padding:0.2rem 0.6rem;border-radius:100px;border:1px solid #e0ecea;}
+</style>
+<div id="sd-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;padding:1.5rem;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div><div id="sd-label" style="font-size:0.72rem;font-weight:700;text-transform:uppercase;color:#9AB5B3;margin-bottom:2px;"></div><h3 id="sd-name" style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0;"></h3></div>
+      <button id="sd-close" style="background:#f1f5f9;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;color:#64748b;font-size:1rem;">X</button>
+    </div>
+    <div id="sd-meta" style="margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.4rem;"></div>
+    <div id="sd-nut" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-bottom:1rem;"></div>
+    <div style="margin-bottom:1.25rem;"><div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:#9AB5B3;margin-bottom:0.5rem;">Ingredients</div><div id="sd-ings" style="display:flex;flex-wrap:wrap;gap:0.35rem;"></div></div>
+    <div style="display:flex;gap:0.75rem;">
+      <button id="sd-change" style="flex:1;padding:0.75rem;background:#0EA5A4;color:#fff;border:none;border-radius:10px;font-size:0.9rem;font-weight:700;cursor:pointer;font-family:inherit;">Change Smoothie</button>
+      <button id="sd-remove" style="padding:0.75rem 1rem;background:#fff;color:#e53e3e;border:1.5px solid #e53e3e;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:inherit;">Remove</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
