@@ -52017,6 +52017,97 @@ Respond ONLY with valid JSON in this exact format, no other text:
         return jsonify({'success': False, 'error': 'Could not generate suggestions. Please try again.'}), 500
 
 
+@app.route('/api/history', methods=['POST'])
+@login_required
+@csrf.exempt
+def log_smoothie_history():
+    """Auto-log a built smoothie to the logged-in user's history (free feature)."""
+    try:
+        data = request.get_json(force=True) or {}
+        ingredients = data.get('ingredients', [])
+        nutrition_summary = data.get('nutrition_summary', {})
+        audience = data.get('audience', '')
+        timing = data.get('timing', '')
+        health_goal = data.get('health_goal', '')
+
+        if not ingredients:
+            return jsonify({'success': False, 'error': 'No ingredients provided'}), 400
+
+        conn = db.get_conn()
+        cursor = conn.cursor()
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """INSERT INTO smoothie_history
+                   (user_id, ingredients, nutrition_summary, audience, timing, health_goal)
+                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                (current_user.id, json.dumps(ingredients), json.dumps(nutrition_summary),
+                 audience, timing, health_goal)
+            )
+        else:
+            cursor.execute(
+                """INSERT INTO smoothie_history
+                   (user_id, ingredients, nutrition_summary, audience, timing, health_goal)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (current_user.id, json.dumps(ingredients), json.dumps(nutrition_summary),
+                 audience, timing, health_goal)
+            )
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        logger.error(f'History log error: {e}')
+        return jsonify({'success': False, 'error': 'Could not log history'}), 200
+
+
+@app.route('/api/history', methods=['GET'])
+@login_required
+def get_smoothie_history():
+    """Return the logged-in user's recent smoothie history (last 10)."""
+    try:
+        conn = db.get_conn()
+        cursor = conn.cursor()
+        if db.USE_POSTGRES:
+            cursor.execute(
+                "SELECT * FROM smoothie_history WHERE user_id = %s ORDER BY created_at DESC LIMIT 10",
+                (current_user.id,)
+            )
+        else:
+            cursor.execute(
+                "SELECT * FROM smoothie_history WHERE user_id = ? ORDER BY created_at DESC LIMIT 10",
+                (current_user.id,)
+            )
+        rows = cursor.fetchall()
+        conn.close()
+
+        def _parse(val):
+            if isinstance(val, (list, dict)):
+                return val
+            if isinstance(val, (str, bytes)) and val:
+                try:
+                    return json.loads(val)
+                except (json.JSONDecodeError, TypeError):
+                    return []
+            return []
+
+        history = []
+        for row in rows:
+            r = db.row_to_dict(row) if hasattr(db, 'row_to_dict') else dict(row)
+            history.append({
+                "id": r.get("id"),
+                "ingredients": _parse(r.get("ingredients")),
+                "nutrition_summary": _parse(r.get("nutrition_summary")),
+                "audience": r.get("audience", ""),
+                "timing": r.get("timing", ""),
+                "health_goal": r.get("health_goal", ""),
+                "created_at": str(r.get("created_at", "")),
+            })
+
+        return jsonify({'success': True, 'history': history})
+    except Exception as e:
+        logger.error(f'History fetch error: {e}')
+        return jsonify({'success': False, 'error': 'Could not load history'}), 200
+
+
 @app.route('/api/analyze', methods=['POST'])
 def api_analyze():
     """Analyze ingredients endpoint - accepts both 'ingredients' array and 'query' string"""
