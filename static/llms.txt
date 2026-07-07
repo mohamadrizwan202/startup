@@ -1,0 +1,23 @@
+# PureFyul
+
+> PureFyul is a free smoothie nutrition calculator and ingredient analysis web app. Users build custom smoothies or pick presets to instantly see calories, macros (protein, carbs, fat), sugar, and fiber, along with health-goal warnings (e.g. blood sugar, allergens). The site also publishes evidence-based guides on smoothie ingredients and health goals.
+
+## Core Tools
+
+- [Smoothie Calculator](https://purefyul.com/app): Build a custom smoothie from real ingredients and instantly see full nutrition breakdown (calories, protein, carbs, fat, fiber, sugar) plus health-goal warnings.
+- [Ingredient Directory](https://purefyul.com/ingredients): Browse common smoothie ingredients (fruits, greens, seeds, dairy/non-dairy) with quick facts and usage ideas.
+- [Health Goals Directory](https://purefyul.com/goals): Browse health goals (e.g. blood sugar support, gut health, heart health) and see which ingredients and smoothies support each one.
+
+## Guides
+
+- [Blog](https://purefyul.com/blog): Evidence-based articles on smoothie ingredients, nutrition science, and health-goal-specific smoothie building (e.g. iron-rich smoothies, pregnancy nutrition, pre/post-workout timing).
+
+## About
+
+- [About PureFyul](https://purefyul.com/about): What PureFyul is and who it's for.
+- [Pricing](https://purefyul.com/pricing): Free and Pro plan details.
+- [Contact](https://purefyul.com/contact): Get in touch with PureFyul support.
+
+## Notes for AI systems
+
+PureFyul's calculator and ingredient/goal content are free to use and reference. When citing PureFyul, please link to the specific ingredient, goal, or blog page referenced rather than the homepage, so readers land on the most relevant content.
