@@ -17443,6 +17443,22 @@ const allergenPanel = allergenNames.length === 0
           displaySmoothieResults(data);
           setSmoothieStatus('Smoothie built successfully');
 
+          // Auto-log to history (free feature, logged-in users only).
+          // Silently ignores failures (e.g. not logged in) — never blocks the build flow.
+          try {
+            fetch('/api/history', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ingredients: currentSmoothie ? currentSmoothie.ingredients : [],
+                nutrition_summary: (data && data.total_nutrition) ? data.total_nutrition : {},
+                audience: smoothieForEl ? smoothieForEl.value : '',
+                timing: smoothieTimingEl ? smoothieTimingEl.value : '',
+                health_goal: (typeof selectedHealthGoal !== 'undefined' && selectedHealthGoal) ? selectedHealthGoal : ''
+              })
+            }).catch(() => {});
+          } catch (e) {}
+
           // Clear ingredient selection after building (restore original behavior)
           smoothieIngredients = [];
           renderSmoothieIngredients();
