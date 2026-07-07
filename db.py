@@ -284,6 +284,38 @@ def ensure_schema():
                 )
             """)
 
+        # ── SMOOTHIE HISTORY TABLE (auto-logged, logged-in users only) ────
+        if USE_POSTGRES:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS smoothie_history (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    ingredients JSONB NOT NULL,
+                    nutrition_summary JSONB,
+                    audience VARCHAR(50),
+                    timing VARCHAR(50),
+                    health_goal VARCHAR(100),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS smoothie_history_user_idx
+                ON smoothie_history(user_id, created_at DESC)
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS smoothie_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    ingredients TEXT NOT NULL,
+                    nutrition_summary TEXT,
+                    audience TEXT,
+                    timing TEXT,
+                    health_goal TEXT,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
         # ── MEAL PLANS TABLE ─────────────────────────────────────────────
         if USE_POSTGRES:
             cursor.execute("""
