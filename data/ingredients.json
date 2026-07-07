@@ -144,5 +144,25 @@
       "metabolic_balance"
     ],
     "long_description": "Apple adds a fresh, light sweetness to smoothies without the heaviness that some other fruits bring, making it a popular choice for brighter, fruit-forward blends. Because apples aren't typically frozen for smoothies the way bananas or berries are, they're often paired with other frozen fruit to help thicken the blend.\n\nApple pairs especially well with spinach (a very common combination in beginner green smoothies), along with berries, banana, and a dash of cinnamon for a dessert-like flavor. Leaving the peel on adds a bit of extra fiber and color, though some prefer peeling for a smoother texture.\n\nUse the PureFyul calculator to see exactly how apple affects your smoothie's sugar and fiber content. This page is informational only, not medical advice."
+  },
+  "apple-cider-vinegar": {
+    "name": "Apple Cider Vinegar",
+    "summary": "Apple cider vinegar is sometimes added to smoothies in small amounts for tang and a functional twist. A little goes a long way. Informational only—not medical advice.",
+    "highlights": [
+      "Strong, tangy flavor; start with a teaspoon or less",
+      "Best balanced with sweeter fruit like banana or apple",
+      "Dilute well since it can be harsh on its own"
+    ],
+    "long_description": "Apple cider vinegar (ACV) shows up in smoothies mainly as a small functional add-in rather than a flavor base — most people use just a teaspoon or two, since it's quite strong and sharp on its own. Unfiltered, \"with the mother\" varieties are the most common choice for this kind of use, though the taste difference from filtered ACV is minimal once it's blended into a smoothie.\n\nBecause of its sharp acidity, ACV pairs best with naturally sweet, mellow ingredients that can balance it out — banana and apple are especially common pairings, along with a bit of honey or cinnamon to soften the taste further. Starting with a small amount (half a teaspoon) and adjusting up is the easiest way to find a level you actually enjoy.\n\nUse the PureFyul calculator to see exactly how ACV fits into your smoothie's overall nutrition profile. This page is informational only, not medical advice — if you have acid reflux, a sensitive stomach, or take medication, check with a healthcare provider before making ACV a regular habit."
+  },
+  "psyllium-husk": {
+    "name": "Psyllium Husk",
+    "summary": "Psyllium husk is a fiber supplement sometimes blended into smoothies. It absorbs liquid and thickens quickly, so start with a small amount. Informational only—not medical advice.",
+    "highlights": [
+      "Thickens smoothies fast — add gradually",
+      "Best blended immediately and consumed soon after",
+      "Often paired with plenty of liquid to avoid a overly thick texture"
+    ],
+    "long_description": "Psyllium husk is a fiber supplement occasionally added to smoothies by people specifically looking to boost their fiber intake. Unlike most smoothie ingredients, it doesn't add flavor — its main effect is texture, since it absorbs liquid rapidly and can turn a smoothie noticeably thicker within just a minute or two of blending.\n\nBecause of how fast it thickens, most people start with a small amount (around a teaspoon) and blend it in right before drinking, rather than letting the smoothie sit — it can become quite gel-like if left too long. Using a bit more liquid than usual in the recipe helps keep the texture drinkable rather than overly thick or pudding-like.\n\nUse the PureFyul calculator to see how psyllium husk affects your smoothie's fiber content. This page is informational only, not medical advice — fiber supplements can interact with certain medications and existing digestive conditions, so check with a healthcare provider before adding it regularly, and always accompany fiber supplements with adequate water intake."
   }
 }
