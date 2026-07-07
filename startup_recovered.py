@@ -51907,6 +51907,214 @@ def _patch_seed_nutrition_response(resp):
     return resp
 
 @csrf.exempt
+@app.route('/api/ai-weekly-plan', methods=['POST'])
+@login_required
+def api_ai_weekly_plan():
+    """Pro feature: generate a 7-day smoothie plan from the user's saved recipe history."""
+    try:
+        if get_user_plan(current_user.id) == "free":
+            return jsonify({
+                "error": "upgrade_required",
+                "message": "Weekly AI plans are a Pro feature. Upgrade for $4.99/month."
+            }), 403
+
+        conn = db.get_conn()
+        cursor = conn.cursor()
+        if db.USE_POSTGRES:
+            cursor.execute(
+                "SELECT * FROM saved_recipes WHERE user_id = %s ORDER BY created_at DESC LIMIT 20",
+                (current_user.id,)
+            )
+        else:
+            cursor.execute(
+                "SELECT * FROM saved_recipes WHERE user_id = ? ORDER BY created_at DESC LIMIT 20",
+                (current_user.id,)
+            )
+        rows = cursor.fetchall()
+
+        cursor2 = conn.cursor()
+        sql = db.prepare_query("SELECT DISTINCT ingredient FROM ingredient_categories ORDER BY ingredient")
+        cursor2.execute(sql)
+        ing_rows = cursor2.fetchall()
+        conn.close()
+
+        valid_ingredients = [r['ingredient'] if isinstance(r, dict) else r[0] for r in ing_rows]
+
+        if not rows:
+            return jsonify({
+                "success": False,
+                "reason": "no_history",
+                "message": "Save a few smoothies first so I can personalize your week."
+            })
+
+        def _parse_ingredients(val):
+            if isinstance(val, (list, dict)):
+                return val
+            if isinstance(val, (str, bytes)) and val:
+                try:
+                    return json.loads(val)
+                except (json.JSONDecodeError, TypeError):
+                    return []
+            return []
+
+        history = []
+        for r in rows:
+            row = dict(r) if not isinstance(r, dict) else r
+            history.append({
+                "name": row.get("name", ""),
+                "ingredients": _parse_ingredients(row.get("ingredients")),
+                "health_goal": row.get("health_goal", ""),
+            })
+
+        prompt = f"""You are building a 7-day smoothie plan for a returning user based on
+their ACTUAL saved smoothie history below. Use their history to personalize choices —
+repeat patterns you notice, vary ingredients so nothing repeats within the week.
+
+User's saved smoothie history:
+{json.dumps(history[:20])}
+
+Valid ingredients (pick ONLY from this list, never invent new ones):
+{', '.join(valid_ingredients[:300])}
+
+Rules:
+- Generate exactly 7 entries, one per day (Monday-Sunday)
+- Each entry needs 3-4 ingredients from the valid list, no repeats across the week
+- Each entry MUST include a "why" field: one sentence explaining the choice,
+  referencing something specific from their saved history (a goal they picked before,
+  an ingredient they like, a pattern you noticed). Never write a generic reason.
+
+Respond ONLY with valid JSON in this exact shape:
+{{"success": true, "plan": [
+  {{"day": "Monday", "name": "...", "ingredients": ["..."], "why": "..."}}
+]}}"""
+
+        response = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=1500,
+            messages=[{'role': 'user', 'content': prompt}]
+        )
+
+        raw_text = response.content[0].text.strip()
+        if raw_text.startswith('```'):
+            raw_text = raw_text.split('```')[1]
+            if raw_text.startswith('json'):
+                raw_text = raw_text[4:]
+            raw_text = raw_text.strip()
+
+        parsed = json.loads(raw_text)
+
+        # Validate: strip any ingredient not in our real list, drop entries with no "why"
+        clean_plan = []
+        for day in parsed.get('plan', []):
+            valid_ings = [i for i in day.get('ingredients', []) if i in valid_ingredients]
+            if valid_ings and day.get('why'):
+                clean_plan.append({
+                    "day": day.get("day", ""),
+                    "name": day.get("name", "Smoothie"),
+                    "ingredients": valid_ings[:4],
+                    "why": day.get("why", "")
+                })
+
+        if not clean_plan:
+            return jsonify({"success": False, "reason": "generation_failed",
+                             "message": "Could not generate a plan. Please try again."})
+
+        return jsonify({"success": True, "plan": clean_plan})
+
+    except json.JSONDecodeError as e:
+        logger.error(f'AI weekly plan JSON error: {e}')
+        return jsonify({"success": False, "reason": "parse_error"}), 200
+    except Exception as e:
+        logger.error(f'AI weekly plan error: {e}')
+        return jsonify({"success": False, "reason": "server_error"}), 200
+
+
+@app.route('/api/ai-parse-request', methods=['POST'])
+def api_ai_parse_request():
+    """AI Nutritionist Mode: parse free-text into audience/timing/goal/ingredients."""
+    try:
+        data = request.get_json(force=True) or {}
+        user_text = str(data.get('text', '')).strip()
+
+        if len(user_text) < 5:
+            return jsonify({'understood': False, 'reason': 'too_short'})
+
+        valid_audiences = ['child-4-6','child-7-8','girl-9-13','boy-9-13','girl-14-18','boy-14-18',
+                            'woman-19-30','man-19-30','woman-31-59','man-31-59','woman-60+','man-60+']
+        valid_timings = ['breakfast','morning-snack','lunch','afternoon-snack','dinner',
+                          'pre-workout','post-workout','bedtime','anytime']
+
+        conn = get_conn()
+        cursor = conn.cursor()
+        sql = db.prepare_query("SELECT DISTINCT ingredient FROM ingredient_categories ORDER BY ingredient")
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        conn.close()
+        valid_ingredients = [r['ingredient'] if isinstance(r, dict) else r[0] for r in rows]
+
+        prompt = f"""You parse a user's smoothie request into structured data.
+
+Valid audience values (pick exactly one, or null): {valid_audiences}
+Valid timing values (pick exactly one, or null): {valid_timings}
+Valid ingredients (pick 3-4 ONLY from this exact list, never invent new ones):
+{', '.join(valid_ingredients[:300])}
+
+User request: "{user_text}"
+
+Rules:
+- If the request is NOT about building a smoothie for a person, respond:
+  {{"understood": false, "reason": "not_smoothie_related"}}
+- If you cannot determine WHO the smoothie is for (age/gender), respond:
+  {{"understood": false, "reason": "missing_audience"}}
+- Otherwise respond with ALL of: audience, timing (or null), healthGoal (short text or null),
+  ingredients (3-4 names copied EXACTLY from the valid list above), excluded (array, ingredients
+  the user asked to avoid, empty if none).
+
+Respond ONLY with valid JSON, no other text, in this exact shape:
+{{"understood": true, "audience": "...", "timing": "...", "healthGoal": "...", "ingredients": ["..."], "excluded": []}}"""
+
+        response = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=400,
+            messages=[{'role': 'user', 'content': prompt}]
+        )
+
+        raw_text = response.content[0].text.strip()
+        if raw_text.startswith('```'):
+            raw_text = raw_text.split('```')[1]
+            if raw_text.startswith('json'):
+                raw_text = raw_text[4:]
+            raw_text = raw_text.strip()
+
+        parsed = json.loads(raw_text)
+
+        if not parsed.get('understood'):
+            return jsonify(parsed)
+
+        if parsed.get('audience') not in valid_audiences:
+            return jsonify({'understood': False, 'reason': 'missing_audience'})
+
+        if parsed.get('timing') not in valid_timings:
+            parsed['timing'] = None
+
+        parsed['ingredients'] = [
+            i for i in parsed.get('ingredients', [])
+            if i in valid_ingredients
+        ][:4]
+
+        if not parsed['ingredients']:
+            return jsonify({'understood': False, 'reason': 'no_valid_ingredients'})
+
+        return jsonify(parsed)
+
+    except json.JSONDecodeError as e:
+        logger.error(f'AI parse JSON error: {e}')
+        return jsonify({'understood': False, 'reason': 'parse_error'}), 200
+    except Exception as e:
+        logger.error(f'AI parse error: {e}')
+        return jsonify({'understood': False, 'reason': 'server_error'}), 200
+
+
 @app.route('/api/ai-suggest-smoothie', methods=['POST'])
 def api_ai_suggest_smoothie():
     """AI Nutritionist Mode: suggest 4 ingredients based on audience, timing, and health goal."""
