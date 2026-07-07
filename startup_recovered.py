@@ -1402,6 +1402,10 @@ def sitemap_xml():
 @app.get("/robots.txt")
 def robots():
     return send_from_directory("static", "robots.txt", mimetype="text/plain")
+
+@app.get("/llms.txt")
+def llms_txt():
+    return send_from_directory("static", "llms.txt", mimetype="text/plain")
     
 ADS_TXT = "google.com, pub-2189084482915714, DIRECT, f08c47fec0942fa0\n"
 
