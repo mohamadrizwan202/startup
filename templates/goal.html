@@ -90,7 +90,11 @@
     <div class="grid">
       <section class="card">
         <h2>What this goal usually means</h2>
-        {% if goal.details %}
+        {% if goal.long_description %}
+          {% for para in goal.long_description.split('\n\n') %}
+            <p class="muted">{{ para }}</p>
+          {% endfor %}
+        {% elif goal.details %}
           <p class="muted">{{ goal.details }}</p>
         {% else %}
           <p class="muted">
