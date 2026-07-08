@@ -17457,28 +17457,6 @@ const allergenPanel = allergenNames.length === 0
           displaySmoothieResults(data);
           setSmoothieStatus('Smoothie built successfully');
 
-          // Auto-log to history (free feature, logged-in users only).
-          // Silently ignores failures (e.g. not logged in) — never blocks the build flow.
-          try {
-            fetch('/api/history', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                ingredients: currentSmoothie ? currentSmoothie.ingredients : [],
-                nutrition_summary: (data && data.total_nutrition) ? data.total_nutrition : {},
-                audience: smoothieForEl ? smoothieForEl.value : '',
-                timing: smoothieTimingEl ? smoothieTimingEl.value : '',
-                health_goal: (window._pfLastSmoothieGoalText && window._pfLastSmoothieGoalText !== 'Health goal...' && window._pfLastSmoothieGoalText !== 'No specific goal') ? window._pfLastSmoothieGoalText : '',
-                total_weight_g: (typeof totalSmoothieWeightGrams !== 'undefined' && totalSmoothieWeightGrams > 0) ? totalSmoothieWeightGrams : null,
-                recommended_per_serving_g: (typeof recommendedPerServingG !== 'undefined' && recommendedPerServingG > 0) ? recommendedPerServingG : null
-              })
-            }).then(() => {
-              if (typeof window.pfLoadRecentSmoothies === 'function') {
-                window.pfLoadRecentSmoothies();
-              }
-            }).catch(() => {});
-          } catch (e) {}
-
           // Clear ingredient selection after building (restore original behavior)
           smoothieIngredients = [];
           renderSmoothieIngredients();
@@ -17514,6 +17492,30 @@ const allergenPanel = allergenNames.length === 0
           } else if (selectedHealthGoal) {
             window._pfLastSmoothieGoal = selectedHealthGoal;
           }
+
+          // Auto-log to history (free feature, logged-in users only).
+          // Moved here specifically so it runs AFTER window._pfLastSmoothieGoalText
+          // is freshly set above — reading it earlier captured stale/previous
+          // data instead of the goal just selected for this build.
+          try {
+            fetch('/api/history', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                ingredients: currentSmoothie ? currentSmoothie.ingredients : [],
+                nutrition_summary: (data && data.total_nutrition) ? data.total_nutrition : {},
+                audience: smoothieForEl ? smoothieForEl.value : '',
+                timing: smoothieTimingEl ? smoothieTimingEl.value : '',
+                health_goal: (window._pfLastSmoothieGoalText && window._pfLastSmoothieGoalText !== 'Health goal...' && window._pfLastSmoothieGoalText !== 'No specific goal') ? window._pfLastSmoothieGoalText : '',
+                total_weight_g: (typeof totalSmoothieWeightGrams !== 'undefined' && totalSmoothieWeightGrams > 0) ? totalSmoothieWeightGrams : null,
+                recommended_per_serving_g: (typeof recommendedPerServingG !== 'undefined' && recommendedPerServingG > 0) ? recommendedPerServingG : null
+              })
+            }).then(() => {
+              if (typeof window.pfLoadRecentSmoothies === 'function') {
+                window.pfLoadRecentSmoothies();
+              }
+            }).catch(() => {});
+          } catch (e) {}
 
           // Clear all dropdowns including health goal
           // Audience preserved after build so user can try another preset
