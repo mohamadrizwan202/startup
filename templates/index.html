@@ -17468,7 +17468,9 @@ const allergenPanel = allergenNames.length === 0
                 nutrition_summary: (data && data.total_nutrition) ? data.total_nutrition : {},
                 audience: smoothieForEl ? smoothieForEl.value : '',
                 timing: smoothieTimingEl ? smoothieTimingEl.value : '',
-                health_goal: (window._pfLastSmoothieGoalText && window._pfLastSmoothieGoalText !== 'Health goal...' && window._pfLastSmoothieGoalText !== 'No specific goal') ? window._pfLastSmoothieGoalText : ''
+                health_goal: (window._pfLastSmoothieGoalText && window._pfLastSmoothieGoalText !== 'Health goal...' && window._pfLastSmoothieGoalText !== 'No specific goal') ? window._pfLastSmoothieGoalText : '',
+                total_weight_g: (typeof totalSmoothieWeightGrams !== 'undefined' && totalSmoothieWeightGrams > 0) ? totalSmoothieWeightGrams : null,
+                recommended_per_serving_g: (typeof recommendedPerServingG !== 'undefined' && recommendedPerServingG > 0) ? recommendedPerServingG : null
               })
             }).then(() => {
               if (typeof window.pfLoadRecentSmoothies === 'function') {
@@ -18194,7 +18196,7 @@ const allergenPanel = allergenNames.length === 0
           }
         }
         
-        return { name: displayName, serving, calories, originalName: name };
+        return { name: displayName, serving, calories, originalName: name, totalGrams, unit: isLiquid ? 'ml' : 'g' };
       });
       
       // ============================================
@@ -18366,13 +18368,16 @@ const allergenPanel = allergenNames.length === 0
         const escAmt = String(ing.serving||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
         const isVegan = typeof isPlantBasedMilk === 'function' && isPlantBasedMilk(ing.originalName || ing.name);
         const isUnsweetened = isVegan && typeof isUnsweetenedMilk === 'function' && isUnsweetenedMilk(ing.originalName || ing.name);
-        // Extract raw gram value from ing.serving string e.g. "150g" or "150ml"
-        const rawG = parseFloat((ing.serving || '0').replace(/[^0-9.]/g, '')) || 0;
+        // Use the real computed total (already handles liquid vs solid correctly
+        // upstream) instead of parsing the display text, which can contain
+        // multiple numbers (e.g. "160ml (default: 150ml for Child 7-8)" or
+        // "50g × 3 = 150g") and produce garbage when naively regex-stripped.
+        const rawG = typeof ing.totalGrams === 'number' ? ing.totalGrams : 0;
         return `
           <div class="sn2-ing-pill">
             <span class="sn2-ing-name">${escName}</span>
             <span class="sn2-ing-sep">·</span>
-            <span class="sn2-ing-amt sn2-ing-gram" data-original-g="${rawG}">${escAmt}</span>
+            <span class="sn2-ing-amt sn2-ing-gram" data-original-g="${rawG}" data-unit="${ing.unit || 'g'}">${escAmt}</span>
             ${isVegan ? '<span class="sn2-ing-vegan">Vegan</span>' : ''}
             ${isUnsweetened ? '<span class="sn2-ing-unsweetened">Unsweetened</span>' : ''}
           </div>`;
@@ -18570,8 +18575,9 @@ if (batchSel) batchSel.value = 'auto';
         if (ingPanel) {
           ingPanel.querySelectorAll('.sn2-ing-gram').forEach(el => {
             const original = parseFloat(el.getAttribute('data-original-g'));
+            const unit = el.getAttribute('data-unit') || 'g';
             if (!isNaN(original)) {
-              el.textContent = original + 'g';
+              el.textContent = original + unit;
             }
           });
         }
@@ -18611,9 +18617,10 @@ if (batchSel) batchSel.value = 'auto';
           if (ingPanel && ratio < 1) {
             ingPanel.querySelectorAll('.sn2-ing-gram').forEach(el => {
               const original = parseFloat(el.getAttribute('data-original-g'));
+              const unit = el.getAttribute('data-unit') || 'g';
               if (!isNaN(original) && original > 0) {
                 const scaled = Math.round(original * ratio);
-                el.textContent = scaled > 0 ? scaled + 'g' : '< 1g';
+                el.textContent = scaled > 0 ? scaled + unit : '< 1' + unit;
               }
             });
           }
@@ -19275,7 +19282,17 @@ const batchG = (smoothieBatchMlOverride != null)
       }
       
       smoothieNameEl.value = preset.name;
-      smoothieIngredients = validPresetIngredients;
+
+      // Use the same validated add function everywhere (addIngredientByName)
+      // instead of assigning raw ingredient name strings directly. Presets
+      // only store plain names with no quantity/ml data — dumping them
+      // straight into smoothieIngredients skipped all age-based portion
+      // calculation, defaulting liquids to quantity=1 (showing as "1ml").
+      smoothieIngredients = [];
+      validPresetIngredients.forEach(ing => {
+        const ingredientName = typeof ing === 'string' ? ing : (ing && ing.name ? ing.name : '');
+        if (ingredientName) addIngredientByName(ingredientName);
+      });
 
       // Also set the health goal dropdown from the preset's associated goal,
       // matching by option text since preset.healthGoal is a human label
@@ -20172,22 +20189,34 @@ const batchG = (smoothieBatchMlOverride != null)
           var servingLine = '';
           var ingPillsHtml = '';
           try {
-            var totalWeightG = (item.ingredients || []).reduce(function(sum, ing) {
-              return sum + (ing.portionGrams || ing.totalGrams || 0);
-            }, 0);
+            // Prefer the REAL numbers captured live at build time (matches
+            // exactly what the user saw on the results screen). Only fall
+            // back to recalculating for older entries logged before this
+            // fix existed (which won't have these two stored fields).
+            var totalWeightG = (typeof item.total_weight_g === 'number' && item.total_weight_g > 0)
+              ? item.total_weight_g
+              : (item.ingredients || []).reduce(function(sum, ing) {
+                  return sum + (ing.portionGrams || ing.totalGrams || 0);
+                }, 0);
 
-            var ratio = 1;
-            if (totalWeightG > 0 && typeof computeRecommendedServing === 'function') {
-              var rec = computeRecommendedServing(item.audience, item.health_goal, totalWeightG, item.timing);
-              ratio = rec.perServingG > 0 ? Math.min(1, rec.perServingG / totalWeightG) : 1;
+            var recPerServingG = (typeof item.recommended_per_serving_g === 'number' && item.recommended_per_serving_g > 0)
+              ? item.recommended_per_serving_g
+              : (totalWeightG > 0 && typeof computeRecommendedServing === 'function'
+                  ? computeRecommendedServing(item.audience, item.health_goal, totalWeightG, item.timing).perServingG
+                  : 0);
+
+            var ratio = (recPerServingG > 0 && totalWeightG > 0) ? Math.min(1, recPerServingG / totalWeightG) : 1;
+
+            if (recPerServingG > 0) {
               var ns = item.nutrition_summary || {};
               var cal = Math.round((ns.calories || 0) * ratio);
-              servingLine = Math.round(rec.perServingG) + 'g · ' + cal + ' kcal';
+              servingLine = Math.round(recPerServingG) + 'g · ' + cal + ' kcal';
             }
 
             ingPillsHtml = '<div style="display:flex;flex-wrap:wrap;gap:6px">' + (item.ingredients || []).map(function(ing) {
               var g = Math.round((ing.portionGrams || ing.totalGrams || 0) * ratio);
-              return '<span style="font-size:11px;color:#334155;background:#fff;border:0.5px solid #e2e8f0;border-radius:6px;padding:4px 8px"><span style="margin-right:4px">' + ing.name + '</span>' + (g > 0 ? '<span style="color:#94a3b8">' + g + 'g</span>' : '') + '</span>';
+              var unit = ing.unit || 'g';
+              return '<span style="font-size:11px;color:#334155;background:#fff;border:0.5px solid #e2e8f0;border-radius:6px;padding:4px 8px"><span style="margin-right:4px">' + ing.name + '</span>' + (g > 0 ? '<span style="color:#94a3b8">' + g + unit + '</span>' : '') + '</span>';
             }).join('') + '</div>';
           } catch (e) { /* fall back to empty pills/serving line */ }
 
