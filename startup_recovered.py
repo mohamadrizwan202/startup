@@ -52059,6 +52059,37 @@ def log_smoothie_history():
         return jsonify({'success': False, 'error': 'Could not log history'}), 200
 
 
+@app.route('/api/history/<int:history_id>', methods=['DELETE'])
+@login_required
+@csrf.exempt
+def delete_smoothie_history(history_id):
+    """Delete one history entry — only if it belongs to the logged-in user."""
+    try:
+        conn = db.get_conn()
+        cursor = conn.cursor()
+        if db.USE_POSTGRES:
+            cursor.execute(
+                "DELETE FROM smoothie_history WHERE id = %s AND user_id = %s",
+                (history_id, current_user.id)
+            )
+        else:
+            cursor.execute(
+                "DELETE FROM smoothie_history WHERE id = ? AND user_id = ?",
+                (history_id, current_user.id)
+            )
+        deleted = cursor.rowcount
+        conn.commit()
+        conn.close()
+
+        if deleted == 0:
+            return jsonify({'success': False, 'error': 'Not found'}), 404
+
+        return jsonify({'success': True})
+    except Exception as e:
+        logger.error(f'History delete error: {e}')
+        return jsonify({'success': False, 'error': 'Could not delete'}), 200
+
+
 @app.route('/api/history', methods=['GET'])
 @login_required
 def get_smoothie_history():
