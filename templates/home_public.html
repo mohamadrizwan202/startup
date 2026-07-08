@@ -49,6 +49,23 @@
     .hp-feature-emoji { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
     .hp-feature-card h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
     .hp-feature-card p { font-size: 0.875rem; color: #64748b; line-height: 1.65; }
+    .hp-scale-items { margin-top: 2rem; }
+    .hp-scale-item { display: flex; gap: 18px; align-items: flex-start; background: #F0FDFA; border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+    .hp-scale-item-last { margin-bottom: 0; }
+    .hp-scale-icon { flex-shrink: 0; width: 44px; height: 44px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .hp-scale-body { min-width: 0; }
+    .hp-scale-eyebrow { font-size: 0.75rem; color: #0d9488; font-weight: 600; margin: 0 0 4px; }
+    .hp-scale-item h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
+    .hp-scale-item p { font-size: 0.9rem; color: #475569; line-height: 1.6; margin: 0; }
+    .hp-pro-panel { margin: 1.5rem 0 0; padding: 1.5rem 1.75rem; background: #FDF4E7; border-radius: 14px; }
+    .hp-pro-panel-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #B45309; margin: 0 0 1rem; }
+    .hp-pro-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .hp-pro-panel-grid h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
+    .hp-pro-panel-grid p { font-size: 0.875rem; color: #64748b; line-height: 1.6; margin: 0; }
+    @media (max-width: 768px) {
+      .hp-pro-panel { margin-left: 0; }
+      .hp-pro-panel-grid { grid-template-columns: 1fr; }
+    }
     .hp-gap { background: #0EA5A4; padding: 5rem 1.5rem; }
     .hp-gap-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
     .hp-gap .hp-section-label { color: rgba(255,255,255,0.7); text-align: left; }
@@ -173,28 +190,66 @@
       <p class="hp-section-label">What is Inside</p>
       <h2 class="hp-section-title">Everything you need to blend with intention</h2>
       <p class="hp-section-sub">Built for parents, athletes, caregivers, and anyone who takes nutrition seriously.</p>
-      <div class="hp-features-grid">
-        <div class="hp-feature-card">
-          <span class="hp-feature-emoji">&#x1F476;</span>
-          <h3>Age-specific portions</h3>
-          <p>12 age groups from age 4 to 60+. Every ingredient portion is sized to the nutritional needs of that exact age group.</p>
+
+      <div class="hp-scale-items">
+        <div class="hp-scale-item hp-scale-item-age">
+          <div class="hp-scale-icon">
+            <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+              <line x1="14" y1="3" x2="14" y2="25" stroke="#0EA5A4" stroke-width="1.5"/>
+              <line x1="9" y1="3" x2="19" y2="3" stroke="#0EA5A4" stroke-width="1.5"/>
+              <line x1="9" y1="9" x2="19" y2="9" stroke="#0EA5A4" stroke-width="1.5"/>
+              <line x1="9" y1="15" x2="19" y2="15" stroke="#0EA5A4" stroke-width="1.5"/>
+              <line x1="9" y1="21" x2="19" y2="21" stroke="#0EA5A4" stroke-width="1.5"/>
+              <line x1="9" y1="25" x2="19" y2="25" stroke="#0EA5A4" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="hp-scale-body">
+            <p class="hp-scale-eyebrow">Ages 4 to 60+</p>
+            <h3>Age-specific portions</h3>
+            <p>12 age groups, each with its own portion size. An ingredient scaled for a 4 year old is never the same amount scaled for a 60 year old.</p>
+          </div>
         </div>
 
-        <div class="hp-feature-card">
-          <span class="hp-feature-emoji">&#x1F50D;</span>
-          <h3>Ingredient analysis</h3>
-          <p>Check any single ingredient for serving size, allergen flags, nutrition breakdown, and health goal alignment.</p>
+        <div class="hp-scale-item">
+          <div class="hp-scale-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0EA5A4" stroke-width="1.6" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="6.5"/>
+              <line x1="15.3" y1="15.3" x2="21" y2="21"/>
+            </svg>
+          </div>
+          <div class="hp-scale-body">
+            <p class="hp-scale-eyebrow">Any age, any ingredient</p>
+            <h3>Ingredient analysis</h3>
+            <p>Check one ingredient on its own for serving size, allergen flags, and whether it fits a health goal.</p>
+          </div>
         </div>
 
-        <div class="hp-feature-card">
-          <span class="hp-feature-emoji">&#x1F4BE;</span>
-          <h3>Save recipes <span class="hp-pro-tag">Pro</span></h3>
-          <p>Save your favourite smoothie builds with ingredients, nutrition, goal, and timing. Find them instantly in My Recipes.</p>
+        <div class="hp-scale-item hp-scale-item-last">
+          <div class="hp-scale-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0EA5A4" stroke-width="1.6" aria-hidden="true">
+              <path d="M20 11a8 8 0 1 0-2.3 5.7"/>
+              <path d="M20 5v6h-6"/>
+            </svg>
+          </div>
+          <div class="hp-scale-body">
+            <p class="hp-scale-eyebrow">Every build, remembered</p>
+            <h3>Recent smoothies</h3>
+            <p>What you build is kept automatically. Rebuild any past smoothie in one tap, nothing to re-enter.</p>
+          </div>
         </div>
-        <div class="hp-feature-card">
-          <span class="hp-feature-emoji">&#x1F4C5;</span>
-          <h3>Weekly meal planner <span class="hp-pro-tag">Pro</span></h3>
-          <p>Plan your whole week. Assign saved smoothies to breakfast, lunch, dinner, or snack slots. View nutrition at a glance.</p>
+      </div>
+
+      <div class="hp-pro-panel">
+        <p class="hp-pro-panel-label">Pro</p>
+        <div class="hp-pro-panel-grid">
+          <div>
+            <h3>Save recipes</h3>
+            <p>Keep your best builds with ingredients, nutrition, goal, and timing attached.</p>
+          </div>
+          <div>
+            <h3>Weekly meal planner</h3>
+            <p>Assign saved smoothies to breakfast, lunch, dinner, or a snack slot for the week.</p>
+          </div>
         </div>
       </div>
     </div>
