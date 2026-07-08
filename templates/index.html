@@ -17468,7 +17468,7 @@ const allergenPanel = allergenNames.length === 0
                 nutrition_summary: (data && data.total_nutrition) ? data.total_nutrition : {},
                 audience: smoothieForEl ? smoothieForEl.value : '',
                 timing: smoothieTimingEl ? smoothieTimingEl.value : '',
-                health_goal: (typeof selectedHealthGoal !== 'undefined' && selectedHealthGoal) ? selectedHealthGoal : ''
+                health_goal: (window._pfLastSmoothieGoalText && window._pfLastSmoothieGoalText !== 'Health goal...' && window._pfLastSmoothieGoalText !== 'No specific goal') ? window._pfLastSmoothieGoalText : ''
               })
             }).then(() => {
               if (typeof window.pfLoadRecentSmoothies === 'function') {
@@ -19276,6 +19276,21 @@ const batchG = (smoothieBatchMlOverride != null)
       
       smoothieNameEl.value = preset.name;
       smoothieIngredients = validPresetIngredients;
+
+      // Also set the health goal dropdown from the preset's associated goal,
+      // matching by option text since preset.healthGoal is a human label
+      // (e.g. "Bone Strength") while dropdown values are slugs.
+      if (smoothieHealthGoalsEl && preset.healthGoal) {
+        const goalLower = preset.healthGoal.toLowerCase();
+        for (const opt of smoothieHealthGoalsEl.options) {
+          if (opt.textContent.toLowerCase() === goalLower) {
+            smoothieHealthGoalsEl.value = opt.value;
+            smoothieHealthGoalsEl.dispatchEvent(new Event('change', { bubbles: true }));
+            break;
+          }
+        }
+      }
+
       renderSmoothieIngredients();
       updateSmoothieRecipe();
       setSmoothieStatus(`Loaded "${preset.name}"`);
@@ -20070,13 +20085,18 @@ const batchG = (smoothieBatchMlOverride != null)
     fetch('/api/history')
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (!data.success || !data.history || data.history.length === 0) return;
-
         var toggleBtn = document.getElementById('recent-smoothies-toggle');
         var modal = document.getElementById('recent-smoothies-modal');
         var closeBtn = document.getElementById('recent-smoothies-close');
         var list = document.getElementById('recent-smoothies-list');
         if (!toggleBtn || !modal || !list) return;
+
+        if (!data.success || !data.history || data.history.length === 0) {
+          toggleBtn.style.display = 'none';
+          modal.style.display = 'none';
+          list.innerHTML = '';
+          return;
+        }
 
         toggleBtn.style.display = 'inline-block';
         toggleBtn.addEventListener('click', function() {
@@ -20229,14 +20249,25 @@ const batchG = (smoothieBatchMlOverride != null)
           btn.addEventListener('click', function() {
             var id = btn.getAttribute('data-id');
             if (!id) return;
+
+            var card = btn.closest('div[style*="background:#f8fafc"]');
+            btn.disabled = true;
+
             fetch('/api/history/' + id, { method: 'DELETE' })
               .then(function(r) { return r.json(); })
               .then(function(res) {
-                if (res.success && typeof window.pfLoadRecentSmoothies === 'function') {
-                  window.pfLoadRecentSmoothies();
+                if (!res.success) { btn.disabled = false; return; }
+
+                // Remove the card directly — no need to re-fetch the whole list
+                if (card && card.parentNode) card.parentNode.removeChild(card);
+
+                // If nothing's left, hide the toggle button and close the modal
+                if (list.children.length === 0) {
+                  if (toggleBtn) toggleBtn.style.display = 'none';
+                  if (modal) modal.style.display = 'none';
                 }
               })
-              .catch(function() {});
+              .catch(function() { btn.disabled = false; });
           });
         });
       })
