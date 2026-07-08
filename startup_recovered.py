@@ -52029,6 +52029,8 @@ def log_smoothie_history():
         audience = data.get('audience', '')
         timing = data.get('timing', '')
         health_goal = data.get('health_goal', '')
+        total_weight_g = data.get('total_weight_g')
+        recommended_per_serving_g = data.get('recommended_per_serving_g')
 
         if not ingredients:
             return jsonify({'success': False, 'error': 'No ingredients provided'}), 400
@@ -52038,18 +52040,20 @@ def log_smoothie_history():
         if db.USE_POSTGRES:
             cursor.execute(
                 """INSERT INTO smoothie_history
-                   (user_id, ingredients, nutrition_summary, audience, timing, health_goal)
-                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                   (user_id, ingredients, nutrition_summary, audience, timing, health_goal,
+                    total_weight_g, recommended_per_serving_g)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
                 (current_user.id, json.dumps(ingredients), json.dumps(nutrition_summary),
-                 audience, timing, health_goal)
+                 audience, timing, health_goal, total_weight_g, recommended_per_serving_g)
             )
         else:
             cursor.execute(
                 """INSERT INTO smoothie_history
-                   (user_id, ingredients, nutrition_summary, audience, timing, health_goal)
-                   VALUES (?, ?, ?, ?, ?, ?)""",
+                   (user_id, ingredients, nutrition_summary, audience, timing, health_goal,
+                    total_weight_g, recommended_per_serving_g)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                 (current_user.id, json.dumps(ingredients), json.dumps(nutrition_summary),
-                 audience, timing, health_goal)
+                 audience, timing, health_goal, total_weight_g, recommended_per_serving_g)
             )
         conn.commit()
         conn.close()
@@ -52131,6 +52135,8 @@ def get_smoothie_history():
                 "timing": r.get("timing", ""),
                 "health_goal": r.get("health_goal", ""),
                 "created_at": str(r.get("created_at", "")),
+                "total_weight_g": r.get("total_weight_g"),
+                "recommended_per_serving_g": r.get("recommended_per_serving_g"),
             })
 
         return jsonify({'success': True, 'history': history})
