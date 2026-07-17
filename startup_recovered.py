@@ -2248,9 +2248,25 @@ def index():
 @app.route("/app")
 def app_home():
     canonical = "https://purefyul.com/app"
+
+    is_authenticated = bool(current_user.is_authenticated)
+    user_plan = "guest"
+
+    if is_authenticated:
+        try:
+            user_plan = get_user_plan(current_user.id)
+        except Exception:
+            # Fail closed: never unlock Premium Save if plan lookup fails.
+            user_plan = "free"
+
+    can_save_recipes = is_authenticated and user_plan != "free"
+
     html = render_template(
         "index.html",
         time=time,
+        is_authenticated=is_authenticated,
+        user_plan=user_plan,
+        can_save_recipes=can_save_recipes,
         page_title="Free Smoothie Nutrition Calculator — Age-Adjusted & Allergen Checked | PureFyul",
         meta_description="Build a smoothie for your exact age group. Check calories, allergens, and health goal warnings before you blend. Free — no account needed.",
         canonical_url=canonical,
@@ -52021,46 +52037,327 @@ Respond ONLY with valid JSON in this exact format, no other text:
 @login_required
 @csrf.exempt
 def log_smoothie_history():
-    """Auto-log a built smoothie to the logged-in user's history (free feature)."""
+    """Auto-log a built smoothie without storing exact duplicates."""
+
+    def normalize_text(value):
+        return str(value or "").strip().lower()
+
+    def normalize_number(value):
+        try:
+            return round(float(value), 4)
+        except (TypeError, ValueError):
+            return None
+
+    def ingredient_signature(ingredient):
+        if isinstance(ingredient, str):
+            return {
+                "name": normalize_text(ingredient),
+                "amount": None,
+                "unit": "",
+            }
+
+        if not isinstance(ingredient, dict):
+            return {
+                "name": normalize_text(ingredient),
+                "amount": None,
+                "unit": "",
+            }
+
+        amount = None
+
+        # Prefer the calculated amount actually used in the smoothie.
+        for key in (
+            "portionGrams",
+            "totalGrams",
+            "_grams",
+            "quantity",
+        ):
+            if ingredient.get(key) is not None:
+                amount = normalize_number(ingredient.get(key))
+                break
+
+        return {
+            "name": normalize_text(
+                ingredient.get("name")
+                or ingredient.get("ingredient")
+                or ingredient.get("display_name")
+            ),
+            "amount": amount,
+            "unit": normalize_text(ingredient.get("unit")),
+        }
+
+    def history_fingerprint(
+        ingredients,
+        audience,
+        timing,
+        health_goal,
+    ):
+        normalized_ingredients = [
+            ingredient_signature(ingredient)
+            for ingredient in (ingredients or [])
+        ]
+
+        normalized_ingredients.sort(
+            key=lambda item: (
+                item["name"],
+                item["unit"],
+                item["amount"] if item["amount"] is not None else -1,
+            )
+        )
+
+        return json.dumps(
+            {
+                "ingredients": normalized_ingredients,
+                "audience": normalize_text(audience),
+                "timing": normalize_text(timing),
+                "health_goal": normalize_text(health_goal),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+
+    conn = None
+
     try:
         data = request.get_json(force=True) or {}
-        ingredients = data.get('ingredients', [])
-        nutrition_summary = data.get('nutrition_summary', {})
-        audience = data.get('audience', '')
-        timing = data.get('timing', '')
-        health_goal = data.get('health_goal', '')
-        total_weight_g = data.get('total_weight_g')
-        recommended_per_serving_g = data.get('recommended_per_serving_g')
+
+        ingredients = data.get("ingredients", [])
+        nutrition_summary = data.get("nutrition_summary", {})
+        audience = data.get("audience", "")
+        timing = data.get("timing", "")
+        health_goal = data.get("health_goal", "")
+        total_weight_g = data.get("total_weight_g")
+        recommended_per_serving_g = data.get(
+            "recommended_per_serving_g"
+        )
 
         if not ingredients:
-            return jsonify({'success': False, 'error': 'No ingredients provided'}), 400
+            return jsonify({
+                "success": False,
+                "error": "No ingredients provided",
+            }), 400
+
+        incoming_fingerprint = history_fingerprint(
+            ingredients,
+            audience,
+            timing,
+            health_goal,
+        )
 
         conn = db.get_conn()
         cursor = conn.cursor()
+
+        # Check all existing entries for the same user. Newest comes first.
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """SELECT id, ingredients, audience, timing, health_goal
+                   FROM smoothie_history
+                   WHERE user_id = %s
+                   ORDER BY created_at DESC, id DESC""",
+                (current_user.id,),
+            )
+        else:
+            cursor.execute(
+                """SELECT id, ingredients, audience, timing, health_goal
+                   FROM smoothie_history
+                   WHERE user_id = ?
+                   ORDER BY created_at DESC, id DESC""",
+                (current_user.id,),
+            )
+
+        matching_ids = []
+
+        for row in cursor.fetchall():
+            record = db.row_to_dict(row)
+
+            stored_ingredients = record.get("ingredients", [])
+
+            if isinstance(stored_ingredients, str):
+                try:
+                    stored_ingredients = json.loads(stored_ingredients)
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    stored_ingredients = []
+
+            stored_fingerprint = history_fingerprint(
+                stored_ingredients,
+                record.get("audience", ""),
+                record.get("timing", ""),
+                record.get("health_goal", ""),
+            )
+
+            if stored_fingerprint == incoming_fingerprint:
+                matching_ids.append(record.get("id"))
+
+        matching_ids = [
+            history_id
+            for history_id in matching_ids
+            if history_id is not None
+        ]
+
+        if matching_ids:
+            # Refresh the newest identical entry so a rebuild moves it to
+            # the top of history. Remove any older duplicate copies.
+            kept_history_id = matching_ids[0]
+            ingredients_json = json.dumps(ingredients)
+            nutrition_json = json.dumps(nutrition_summary)
+
+            if db.USE_POSTGRES:
+                cursor.execute(
+                    """UPDATE smoothie_history
+                       SET ingredients = %s,
+                           nutrition_summary = %s,
+                           audience = %s,
+                           timing = %s,
+                           health_goal = %s,
+                           total_weight_g = %s,
+                           recommended_per_serving_g = %s,
+                           created_at = CURRENT_TIMESTAMP
+                       WHERE id = %s AND user_id = %s""",
+                    (
+                        ingredients_json,
+                        nutrition_json,
+                        audience,
+                        timing,
+                        health_goal,
+                        total_weight_g,
+                        recommended_per_serving_g,
+                        kept_history_id,
+                        current_user.id,
+                    ),
+                )
+            else:
+                cursor.execute(
+                    """UPDATE smoothie_history
+                       SET ingredients = ?,
+                           nutrition_summary = ?,
+                           audience = ?,
+                           timing = ?,
+                           health_goal = ?,
+                           total_weight_g = ?,
+                           recommended_per_serving_g = ?,
+                           created_at = CURRENT_TIMESTAMP
+                       WHERE id = ? AND user_id = ?""",
+                    (
+                        ingredients_json,
+                        nutrition_json,
+                        audience,
+                        timing,
+                        health_goal,
+                        total_weight_g,
+                        recommended_per_serving_g,
+                        kept_history_id,
+                        current_user.id,
+                    ),
+                )
+
+            for duplicate_id in matching_ids[1:]:
+                if db.USE_POSTGRES:
+                    cursor.execute(
+                        """DELETE FROM smoothie_history
+                           WHERE id = %s AND user_id = %s""",
+                        (duplicate_id, current_user.id),
+                    )
+                else:
+                    cursor.execute(
+                        """DELETE FROM smoothie_history
+                           WHERE id = ? AND user_id = ?""",
+                        (duplicate_id, current_user.id),
+                    )
+
+            conn.commit()
+
+            return jsonify({
+                "success": True,
+                "duplicate": True,
+                "moved_to_top": True,
+                "history_id": kept_history_id,
+                "removed_duplicates": max(
+                    0,
+                    len(matching_ids) - 1,
+                ),
+            })
+
+        ingredients_json = json.dumps(ingredients)
+        nutrition_json = json.dumps(nutrition_summary)
+
         if db.USE_POSTGRES:
             cursor.execute(
                 """INSERT INTO smoothie_history
-                   (user_id, ingredients, nutrition_summary, audience, timing, health_goal,
-                    total_weight_g, recommended_per_serving_g)
+                   (
+                     user_id,
+                     ingredients,
+                     nutrition_summary,
+                     audience,
+                     timing,
+                     health_goal,
+                     total_weight_g,
+                     recommended_per_serving_g
+                   )
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-                (current_user.id, json.dumps(ingredients), json.dumps(nutrition_summary),
-                 audience, timing, health_goal, total_weight_g, recommended_per_serving_g)
+                (
+                    current_user.id,
+                    ingredients_json,
+                    nutrition_json,
+                    audience,
+                    timing,
+                    health_goal,
+                    total_weight_g,
+                    recommended_per_serving_g,
+                ),
             )
         else:
             cursor.execute(
                 """INSERT INTO smoothie_history
-                   (user_id, ingredients, nutrition_summary, audience, timing, health_goal,
-                    total_weight_g, recommended_per_serving_g)
+                   (
+                     user_id,
+                     ingredients,
+                     nutrition_summary,
+                     audience,
+                     timing,
+                     health_goal,
+                     total_weight_g,
+                     recommended_per_serving_g
+                   )
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                (current_user.id, json.dumps(ingredients), json.dumps(nutrition_summary),
-                 audience, timing, health_goal, total_weight_g, recommended_per_serving_g)
+                (
+                    current_user.id,
+                    ingredients_json,
+                    nutrition_json,
+                    audience,
+                    timing,
+                    health_goal,
+                    total_weight_g,
+                    recommended_per_serving_g,
+                ),
             )
+
         conn.commit()
-        conn.close()
-        return jsonify({'success': True})
-    except Exception as e:
-        logger.error(f'History log error: {e}')
-        return jsonify({'success': False, 'error': 'Could not log history'}), 200
+
+        return jsonify({
+            "success": True,
+            "duplicate": False,
+        })
+
+    except Exception as error:
+        if conn is not None:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+
+        logger.error(f"History log error: {error}")
+
+        return jsonify({
+            "success": False,
+            "error": "Could not log history",
+        }), 200
+
+    finally:
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                pass
 
 
 @app.route('/api/history/<int:history_id>', methods=['DELETE'])
