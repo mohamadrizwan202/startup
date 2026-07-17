@@ -3153,62 +3153,1466 @@
       .pfs-build-btn{font-size:14px;padding:13px}
       .pfs-scratch-row{grid-template-columns:1fr}
     }
-    /* === SMOOTHIE RESULTS REDESIGN === */
-    .sn2-card{background:#fff;border-radius:16px;padding:20px 22px;border:1px solid rgba(15,23,42,0.06)}
-    .sn2-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:0.5px solid rgba(15,23,42,0.08)}
-    .sn2-title-group{display:flex;flex-direction:column;gap:3px}
-    .sn2-title{font-size:16px;font-weight:700;color:#0f172a;letter-spacing:-0.01em;margin:0}
-    .sn2-subtitle{font-size:12px;color:#64748b}
-    .sn2-audience-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;color:#0f766e;background:#CCFBF1;padding:4px 10px;border-radius:999px;white-space:nowrap}
-    .sn2-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
-    .sn2-kpi{background:#f8fafc;border-radius:12px;padding:12px 14px;border:1px solid rgba(15,23,42,0.04)}
-    .sn2-kpi-label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
-    .sn2-kpi-value{font-size:22px;font-weight:700;color:#0f172a;line-height:1;margin-bottom:2px;letter-spacing:-0.02em}
-    .sn2-kpi-unit{font-size:11px;color:#94a3b8;font-weight:500}
-    .sn2-kpi.sn2-primary{background:#fef7ea;border-color:rgba(239,159,39,0.18)}
-    .sn2-kpi.sn2-primary .sn2-kpi-label{color:#854F0B}
-    .sn2-kpi.sn2-primary .sn2-kpi-value{color:#633806}
-    .sn2-kpi.sn2-primary .sn2-kpi-unit{color:#ba7517}
-    .sn2-mini-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-    .sn2-mini{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:10px;padding:10px 14px;border:1px solid rgba(15,23,42,0.04)}
-    .sn2-mini-label{font-size:12px;color:#64748b;font-weight:500}
-    .sn2-mini-value{font-size:14px;font-weight:700;color:#0f172a}
-    .sn2-serving-card{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#F0FDF4;border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:11px 14px;margin-bottom:14px;flex-wrap:wrap}
-    .sn2-serving-left{display:flex;flex-direction:column;gap:3px}
-    .sn2-serving-title{font-size:10px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.06em}
-    .sn2-serving-value{font-size:15px;font-weight:700;color:#14532d;line-height:1.2}
-    .sn2-serving-note{font-size:11px;color:#15803d}
-    .sn2-tabs{display:flex;gap:4px;background:#f8fafc;padding:3px;border-radius:8px;margin-bottom:14px}
-    .sn2-tab{flex:1;padding:7px;font-size:12px;font-weight:600;color:#64748b;background:transparent;border:none;border-radius:6px;cursor:pointer;text-align:center;transition:all .15s}
-    .sn2-tab.active{background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(15,23,42,0.08)}
-    .sn2-ings-label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-    .sn2-ings-grid{display:flex;flex-wrap:wrap;gap:6px}
-    .sn2-ing-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:#fff;border:1px solid rgba(239,159,39,0.3);border-radius:8px}
-    .sn2-ing-name{font-size:12px;font-weight:600;color:#78350f}
-    .sn2-ing-sep{font-size:10px;color:#d97706;opacity:.5}
-    .sn2-ing-amt{font-size:11px;color:#92400e;font-weight:500}
-    .sn2-ing-vegan{font-size:9px;color:#059669;background:#d1fae5;padding:1px 5px;border-radius:3px;font-weight:600}
-    .sn2-ing-unsweetened{font-size:9px;color:#0EA5A4;background:rgba(14,165,164,0.1);padding:1px 5px;border-radius:3px;font-weight:600}
-    .sn2-warn{background:#FFFBEB;border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start}
-    .sn2-warn-icon{width:18px;height:18px;border-radius:50%;background:#F59E0B;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-    .sn2-warn-body{font-size:11px;line-height:1.5;color:#92400E}
-    .sn2-warn-title{font-weight:700;font-size:12px;display:block;margin-bottom:2px}
-    .sn2-metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
-    @media (max-width:640px){
-      .sn2-card{padding:16px 18px}
-      .sn2-title{font-size:15px}
-      .sn2-kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
-      .sn2-kpi{padding:10px 12px}
-      .sn2-kpi-value{font-size:20px}
-      .sn2-mini{flex-direction:column;align-items:center;gap:2px;padding:6px 8px}
-      .sn2-mini-label{font-size:10px}
-      .sn2-mini-value{font-size:13px}
-      .sn2-mini-row{gap:6px}
-      .sn2-serving-card{flex-direction:column;gap:8px}
-      .sn2-ing-pill{padding:5px 8px}
-      .sn2-ing-name{font-size:11px}
-      .sn2-ing-amt{font-size:10px}
+    /* === SMOOTHIE RESULT — DEMO-ALIGNED LAYOUT === */
+
+    /* Remove the legacy result shell/header around the new card. */
+    #smoothie-results-card > .card-header {
+      display: none !important;
     }
+
+    #smoothie-results-card {
+      padding: 0 !important;
+      border: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    #smoothie-results-body {
+      padding: 0 !important;
+    }
+
+    #pf-smoothie-modal .pf-results-sheet {
+      width: min(1420px, calc(100vw - 28px));
+      max-width: 1420px;
+      max-height: calc(100vh - 28px);
+      border-radius: 22px;
+      overflow: auto;
+    }
+
+    #pf-smoothie-modal .pf-results-sheet-header {
+      display: none;
+    }
+
+    #pf-smoothie-modal .pf-results-sheet-body {
+      padding: 0;
+    }
+
+    #pf-smoothie-modal #smoothie-results-card {
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+      padding: 0;
+    }
+
+    #pf-smoothie-modal #smoothie-results-body {
+      padding: 0;
+    }
+
+    .sn2-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 22px;
+      padding: 26px 30px 24px;
+      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+      color: #0f172a;
+    }
+
+    .sn2-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 28px;
+      margin-bottom: 18px;
+    }
+
+    .sn2-title {
+      max-width: 620px;
+      margin: 0;
+      color: #115e59;
+      font-size: clamp(28px, 3vw, 43px);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.035em;
+      overflow-wrap: anywhere;
+    }
+
+    .sn2-title-accent {
+      width: 58px;
+      height: 4px;
+      margin-top: 16px;
+      border-radius: 999px;
+      background: #e5a32d;
+    }
+
+    .sn2-actions {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .sn2-action-wrap {
+      min-width: 160px;
+      text-align: center;
+    }
+
+    .sn2-action-btn {
+      width: 100%;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 11px;
+      background: #ffffff;
+      color: #0f172a;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 750;
+      cursor: pointer;
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+    }
+
+    .sn2-action-icon,
+    .sn2-lock-icon,
+    .sn2-tab-icon,
+    .sn2-portion-icon svg,
+    .sn2-allergen-icon svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 auto;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .sn2-lock-icon {
+      width: 13px;
+      height: 13px;
+      margin-left: 2px;
+    }
+
+    .sn2-action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    .sn2-action-btn--share {
+      border-color: #0f766e;
+      background: linear-gradient(135deg, #0f766e, #115e59);
+      color: #ffffff;
+    }
+
+    .sn2-action-btn.is-locked {
+      background: #f8fafc;
+      color: #475569;
+    }
+
+    .sn2-action-note {
+      display: block;
+      margin-top: 6px;
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .sn2-hero {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.82fr) minmax(480px, 1.38fr);
+      gap: 28px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+
+    .sn2-overview {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding-right: 28px;
+      border-right: 1px solid #dbe3e8;
+    }
+
+    .sn2-summary {
+      margin: 0 0 24px;
+      color: #334155;
+      font-size: 15px;
+      line-height: 1.62;
+    }
+
+    .sn2-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: auto;
+      margin-bottom: 22px;
+    }
+
+    .sn2-meta-item {
+      min-width: 0;
+      padding: 0 14px;
+      text-align: center;
+    }
+
+    .sn2-meta-item:first-child {
+      padding-left: 0;
+    }
+
+    .sn2-meta-item:last-child {
+      padding-right: 0;
+    }
+
+    .sn2-meta-item + .sn2-meta-item {
+      border-left: 1px solid #cbd5e1;
+    }
+
+    .sn2-meta-label {
+      display: block;
+      margin-bottom: 7px;
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .sn2-meta-value {
+      display: block;
+      color: #115e59;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .sn2-portion-strip {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0;
+      padding: 15px 18px;
+      border: 1px solid #d5ebe7;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f0fdfa, #f8fffe);
+    }
+
+    .sn2-portion-item {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      column-gap: 10px;
+      align-items: center;
+      padding: 0 14px;
+    }
+
+    .sn2-portion-icon {
+      grid-row: 1 / 3;
+      width: 31px;
+      height: 31px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f766e;
+    }
+
+    .sn2-portion-item:first-child {
+      padding-left: 0;
+    }
+
+    .sn2-portion-item:last-child {
+      padding-right: 0;
+    }
+
+    .sn2-portion-item + .sn2-portion-item {
+      border-left: 1px solid #bcd9d4;
+    }
+
+    .sn2-portion-label {
+      display: block;
+      margin-bottom: 5px;
+      color: #0f766e;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .sn2-portion-value {
+      display: block;
+      color: #115e59;
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .sn2-nutrition-panel {
+      min-width: 0;
+      padding: 20px 28px 22px;
+      border: 1px solid #dfeceb;
+      border-radius: 18px;
+      background:
+        radial-gradient(
+          circle at 22% 25%,
+          rgba(245, 158, 11, 0.13),
+          transparent 30%
+        ),
+        linear-gradient(135deg, #fbffff 0%, #f1f9f8 100%);
+    }
+
+    .sn2-nutrition-heading {
+      margin-bottom: 16px;
+      color: #0f172a;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .sn2-kpi-grid {
+      display: grid;
+      grid-template-columns: 170px repeat(3, minmax(90px, 1fr));
+      align-items: center;
+      gap: 0;
+      margin-bottom: 22px;
+    }
+
+    .sn2-kpi {
+      min-width: 0;
+      padding: 8px 20px;
+      text-align: center;
+    }
+
+    .sn2-kpi + .sn2-kpi {
+      border-left: 1px solid #d6e2e1;
+    }
+
+    .sn2-kpi.sn2-primary {
+      width: 158px;
+      min-height: 146px;
+      justify-self: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      border: 0;
+      border-radius: 54% 46% 58% 42% / 46% 54% 46% 54%;
+      background: linear-gradient(145deg, #fff4d7, #fde5b6);
+      box-shadow: 0 12px 28px rgba(217, 119, 6, 0.09);
+    }
+
+    .sn2-kpi-label {
+      color: #475569;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .sn2-kpi-value {
+      margin-bottom: 6px;
+      color: #0f172a;
+      font-size: 27px;
+      font-weight: 850;
+      line-height: 1;
+      letter-spacing: -0.025em;
+    }
+
+    .sn2-kpi-unit {
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .sn2-kpi.sn2-primary .sn2-kpi-label {
+      order: 3;
+      margin-top: 4px;
+      color: #78350f;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .sn2-kpi.sn2-primary .sn2-kpi-value {
+      order: 1;
+      margin: 0;
+      color: #422006;
+      font-size: 43px;
+    }
+
+    .sn2-kpi.sn2-primary .sn2-kpi-unit {
+      order: 2;
+      margin-top: 4px;
+      color: #78350f;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .sn2-mini-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      padding-top: 20px;
+      border-top: 1px solid #cbdedb;
+    }
+
+    .sn2-mini {
+      min-width: 0;
+      padding: 0 22px;
+      text-align: center;
+    }
+
+    .sn2-mini + .sn2-mini {
+      border-left: 1px solid #d6e2e1;
+    }
+
+    .sn2-mini-value {
+      display: block;
+      margin-bottom: 6px;
+      color: #0f172a;
+      font-size: 20px;
+      font-weight: 850;
+    }
+
+    .sn2-mini-label {
+      display: block;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .sn2-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 0;
+      border: 1px solid #d9e2ec;
+      border-radius: 13px 13px 0 0;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .sn2-tab {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 0;
+      border-bottom: 4px solid transparent;
+      background: #ffffff;
+      color: #64748b;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .sn2-tab + .sn2-tab {
+      border-left: 1px solid #e2e8f0;
+    }
+
+    .sn2-tab.active {
+      border-bottom-color: #0f766e;
+      color: #115e59;
+      background: #fbfefe;
+    }
+
+    .sn2-ings-section {
+      margin: 0;
+      padding: 0;
+      border: 1px solid #d9e2ec;
+      border-top: 0;
+      border-radius: 0 0 13px 13px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .sn2-ings-header {
+      display: none;
+    }
+
+    .sn2-ings-title {
+      color: #334155;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .sn2-ings-count {
+      color: #94a3b8;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .sn2-ings-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 0;
+      background: #ffffff;
+    }
+
+    .sn2-ings-grid::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: #e6edf3;
+      transform: translateX(-0.5px);
+      pointer-events: none;
+    }
+
+    .sn2-ing-pill {
+      min-width: 0;
+      min-height: 60px;
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr) auto;
+      align-items: center;
+      column-gap: 12px;
+      padding: 10px 18px;
+      border-bottom: 1px solid #e6edf3;
+      border-radius: 0;
+      transition: background 0.15s ease;
+    }
+
+    .sn2-ing-avatar {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: center;
+      border: 1px solid rgba(15, 118, 110, 0.16);
+      border-radius: 50%;
+      background: linear-gradient(145deg, #f0fdfa, #dff7f3);
+      color: #0f766e;
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .sn2-ing-pill:nth-child(4n + 2) .sn2-ing-avatar {
+      border-color: rgba(245, 158, 11, 0.18);
+      background: linear-gradient(145deg, #fffbeb, #fef3c7);
+      color: #a16207;
+    }
+
+    .sn2-ing-pill:nth-child(4n + 3) .sn2-ing-avatar {
+      border-color: rgba(34, 197, 94, 0.18);
+      background: linear-gradient(145deg, #f0fdf4, #dcfce7);
+      color: #15803d;
+    }
+
+    .sn2-ing-pill:nth-child(4n + 4) .sn2-ing-avatar {
+      border-color: rgba(59, 130, 246, 0.16);
+      background: linear-gradient(145deg, #eff6ff, #dbeafe);
+      color: #1d4ed8;
+    }
+
+    .sn2-ing-pill:hover {
+      background: #f8fffe;
+    }
+
+    .sn2-ing-name {
+      min-width: 0;
+      color: #0f172a;
+      font-size: 12px;
+      font-weight: 760;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .sn2-ing-sep {
+      display: none;
+    }
+
+    .sn2-ing-meta {
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .sn2-ing-amt {
+      color: #0f766e;
+      font-size: 11px;
+      font-weight: 800;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .sn2-ing-pill__badges {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin: 0;
+    }
+
+    .sn2-ing-vegan,
+    .sn2-ing-unsweetened {
+      display: inline-flex;
+      width: auto;
+      justify-self: start;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .sn2-ing-vegan {
+      color: #15803d;
+      background: #dcfce7;
+    }
+
+    .sn2-ing-unsweetened {
+      color: #0369a1;
+      background: #e0f2fe;
+    }
+
+    .sn2-allergen {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      margin-top: 13px;
+      padding: 12px 16px;
+      border: 1px solid #fed7aa;
+      border-radius: 11px;
+      background: linear-gradient(90deg, #fff7ed, #fffbeb);
+    }
+
+    .sn2-allergen-icon {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #b45309;
+    }
+
+    .sn2-allergen-content {
+      min-width: 0;
+    }
+
+    .sn2-allergen-title {
+      margin: 0;
+      color: #7c2d12;
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+
+    .sn2-allergen-note {
+      color: #64748b;
+      font-size: 9px;
+      line-height: 1.4;
+      text-align: right;
+    }
+
+    .sn2-allergen--clear {
+      border-color: #bbf7d0;
+      background: linear-gradient(90deg, #f0fdf4, #f7fff9);
+    }
+
+    .sn2-allergen--clear .sn2-allergen-title,
+    .sn2-allergen--clear .sn2-allergen-icon {
+      color: #166534;
+    }
+
+    .sn2-warn {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border: 1px solid #fde68a;
+      border-radius: 9px;
+      background: #fffbeb;
+    }
+
+    .sn2-warn-icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #f59e0b;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .sn2-warn-body {
+      color: #92400e;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .sn2-warn-title {
+      display: block;
+      font-weight: 800;
+    }
+
+    @media (max-width: 1000px) {
+      .sn2-card {
+        padding: 22px;
+      }
+
+      .sn2-header,
+      .sn2-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .sn2-actions {
+        justify-content: flex-start;
+      }
+
+      .sn2-overview {
+        padding-right: 0;
+        padding-bottom: 22px;
+        border-right: 0;
+        border-bottom: 1px solid #dbe3e8;
+      }
+    }
+
+    @media (max-width: 700px) {
+      #pf-smoothie-modal .pf-results-sheet {
+        width: 100vw;
+        max-height: 100vh;
+        border-radius: 0;
+      }
+
+      .sn2-card {
+        padding: 18px 15px;
+        border-radius: 0;
+      }
+
+      .sn2-title {
+        font-size: 29px;
+      }
+
+      .sn2-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+      }
+
+      .sn2-action-wrap {
+        min-width: 0;
+      }
+
+      .sn2-meta-grid,
+      .sn2-portion-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .sn2-meta-item {
+        padding: 11px 0;
+        text-align: left;
+      }
+
+      .sn2-meta-item + .sn2-meta-item {
+        border-top: 1px solid #e2e8f0;
+        border-left: 0;
+      }
+
+      .sn2-portion-item {
+        padding: 10px 0;
+      }
+
+      .sn2-portion-item + .sn2-portion-item {
+        border-top: 1px solid #bcd9d4;
+        border-left: 0;
+      }
+
+      .sn2-kpi-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        row-gap: 18px;
+      }
+
+      .sn2-kpi.sn2-primary {
+        grid-column: 1 / -1;
+      }
+
+      .sn2-kpi:not(.sn2-primary) {
+        padding: 4px 8px;
+      }
+
+      .sn2-kpi:not(.sn2-primary) + .sn2-kpi {
+        border-left: 1px solid #d6e2e1;
+      }
+
+      .sn2-mini {
+        padding: 0 8px;
+      }
+
+      .sn2-mini-value {
+        font-size: 16px;
+      }
+
+      .sn2-ings-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sn2-ings-grid::before {
+        display: none;
+      }
+
+      .sn2-allergen {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+      }
+
+      .sn2-allergen-note {
+        text-align: left;
+      }
+    }
+
+    /* Final allergen alignment */
+    .sn2-allergen {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      justify-content: start;
+      align-items: center;
+      column-gap: 12px;
+    }
+
+    .sn2-allergen-icon {
+      width: 28px;
+      height: 28px;
+      align-self: center;
+      justify-self: center;
+    }
+
+    .sn2-allergen-content {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .sn2-allergen-title,
+    .sn2-allergen-note {
+      width: auto;
+      margin: 0;
+      padding: 0;
+      text-align: left !important;
+    }
+
+    .sn2-allergen-title {
+      line-height: 1.3;
+    }
+
+    .sn2-allergen-note {
+      line-height: 1.4;
+    }
+
+    /* === EMBEDDED RESULT TAB RESPONSIVENESS === */
+
+    #smoothie-results-card,
+    #smoothie-results-body {
+      min-width: 0;
+    }
+
+    #smoothie-results-body {
+      container-type: inline-size;
+      container-name: smoothie-result;
+    }
+
+    @container smoothie-result (max-width: 820px) {
+      .sn2-card {
+        min-width: 0;
+        padding: 20px 18px;
+      }
+
+      .sn2-header {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+      }
+
+      .sn2-actions {
+        justify-content: flex-start;
+      }
+
+      .sn2-action-wrap {
+        min-width: 145px;
+      }
+
+      .sn2-hero {
+        grid-template-columns:
+          minmax(225px, 0.72fr)
+          minmax(0, 1.28fr);
+        gap: 18px;
+      }
+
+      .sn2-overview {
+        min-width: 0;
+        padding-right: 18px;
+      }
+
+      .sn2-summary {
+        margin-bottom: 18px;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .sn2-meta-item {
+        padding: 0 9px;
+      }
+
+      .sn2-meta-label {
+        font-size: 8px;
+      }
+
+      .sn2-meta-value {
+        font-size: 11px;
+      }
+
+      .sn2-portion-strip {
+        padding: 12px;
+      }
+
+      .sn2-portion-item {
+        grid-template-columns: 27px minmax(0, 1fr);
+        column-gap: 7px;
+        padding: 0 8px;
+      }
+
+      .sn2-portion-icon {
+        width: 25px;
+        height: 25px;
+      }
+
+      .sn2-portion-label {
+        font-size: 8px;
+      }
+
+      .sn2-portion-value {
+        font-size: 14px;
+      }
+
+      .sn2-nutrition-panel {
+        min-width: 0;
+        padding: 15px 13px 17px;
+        overflow: hidden;
+      }
+
+      .sn2-nutrition-heading {
+        margin-bottom: 12px;
+        font-size: 12px;
+      }
+
+      .sn2-kpi-grid {
+        grid-template-columns:
+          110px
+          repeat(3, minmax(0, 1fr));
+        margin-bottom: 16px;
+      }
+
+      .sn2-kpi {
+        min-width: 0;
+        padding: 5px 8px;
+      }
+
+      .sn2-kpi.sn2-primary {
+        width: 104px;
+        min-height: 104px;
+        padding: 10px;
+      }
+
+      .sn2-kpi.sn2-primary .sn2-kpi-value {
+        font-size: 31px;
+      }
+
+      .sn2-kpi.sn2-primary .sn2-kpi-unit {
+        font-size: 10px;
+      }
+
+      .sn2-kpi.sn2-primary .sn2-kpi-label {
+        font-size: 9px;
+      }
+
+      .sn2-kpi-value {
+        font-size: 18px;
+      }
+
+      .sn2-kpi-label,
+      .sn2-kpi-unit {
+        font-size: 8px;
+      }
+
+      .sn2-mini-row {
+        padding-top: 14px;
+      }
+
+      .sn2-mini {
+        padding: 0 7px;
+      }
+
+      .sn2-mini-value {
+        font-size: 15px;
+      }
+
+      .sn2-mini-label {
+        font-size: 8px;
+      }
+
+      .sn2-tabs {
+        margin-top: 0;
+      }
+
+      .sn2-tab {
+        min-height: 42px;
+        font-size: 10px;
+      }
+
+      .sn2-ing-pill {
+        min-height: 50px;
+        grid-template-columns: 30px minmax(0, 1fr) auto;
+        column-gap: 8px;
+        padding: 8px 10px;
+      }
+
+      .sn2-ing-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 9px;
+      }
+
+      .sn2-ing-name,
+      .sn2-ing-amt {
+        font-size: 9px;
+      }
+
+      .sn2-ing-meta {
+        gap: 5px;
+      }
+
+      .sn2-ing-vegan,
+      .sn2-ing-unsweetened {
+        padding: 1px 4px;
+        font-size: 6px;
+      }
+    }
+
+    @container smoothie-result (max-width: 620px) {
+      .sn2-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .sn2-overview {
+        padding-right: 0;
+        padding-bottom: 18px;
+        border-right: 0;
+        border-bottom: 1px solid #dbe3e8;
+      }
+
+      .sn2-nutrition-panel {
+        width: 100%;
+      }
+
+      .sn2-ings-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sn2-ings-grid::before {
+        display: none;
+      }
+    }
+
+    /* === FINAL RESULT POPUP SHELL POLISH === */
+
+    #pf-smoothie-modal .pf-results-sheet {
+      position: relative;
+      padding: 0 !important;
+      overflow: auto;
+    }
+
+    /* Remove the obsolete "Smoothie Nutrition" heading strip. */
+    #pf-smoothie-modal .pf-results-sheet-header,
+    #pf-smoothie-modal .results-sheet-header,
+    #pf-smoothie-modal .modal-header,
+    #pf-smoothie-modal #smoothie-results-card > .card-header {
+      display: none !important;
+    }
+
+    #pf-smoothie-modal .pf-results-sheet-body,
+    #pf-smoothie-modal #smoothie-results-body,
+    #pf-smoothie-modal #smoothie-results-card {
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+
+    #pf-smoothie-modal .sn2-card {
+      margin: 0 !important;
+      border-radius: 20px;
+    }
+
+    /* Keep the success notice compact and clear of the title. */
+    #pf-smoothie-modal .smoothie-success-toast,
+    #pf-smoothie-modal .pf-success-toast,
+    #pf-smoothie-modal [class*="success-toast"] {
+      position: absolute !important;
+      top: 14px !important;
+      right: 18px !important;
+      z-index: 20;
+      width: auto !important;
+      max-width: calc(100% - 36px);
+      margin: 0 !important;
+      padding: 8px 13px !important;
+      border-radius: 999px !important;
+      box-shadow: 0 7px 20px rgba(15, 23, 42, 0.09);
+      font-size: 11px !important;
+      line-height: 1.3;
+    }
+
+    @media (max-width: 700px) {
+      #pf-smoothie-modal .sn2-card {
+        border-radius: 0;
+      }
+
+      #pf-smoothie-modal .smoothie-success-toast,
+      #pf-smoothie-modal .pf-success-toast,
+      #pf-smoothie-modal [class*="success-toast"] {
+        top: 10px !important;
+        right: 10px !important;
+      }
+    }
+
+    /* === FINAL MOBILE RESULT POLISH === */
+
+    @media (max-width: 700px) {
+      #pf-smoothie-modal .pf-results-sheet {
+        width: calc(100vw - 16px);
+        max-height: calc(100vh - 16px);
+        border-radius: 18px;
+        overflow-x: hidden;
+      }
+
+      /*
+       * The active legacy markup uses .results-header.
+       * Convert it into a floating status chip instead of a tall header.
+       */
+      #pf-smoothie-modal
+      #smoothie-results-card
+      > .results-header {
+        position: absolute !important;
+        top: 12px !important;
+        left: 18px !important;
+        right: 18px !important;
+        z-index: 30;
+        width: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      #pf-smoothie-modal
+      #smoothie-results-card
+      > .results-header
+      .card-title {
+        display: none !important;
+      }
+
+      #pf-smoothie-modal
+      #smoothie-results-card
+      > .results-header
+      .status-indicator {
+        width: fit-content;
+        min-height: 34px;
+        display: inline-flex !important;
+        align-items: center;
+        gap: 8px;
+        margin: 0 !important;
+        padding: 8px 13px !important;
+        border: 1px solid rgba(15, 118, 110, 0.10);
+        border-radius: 999px;
+        background: #f0fdfa;
+        color: #0f172a;
+        box-shadow: none;
+        font-size: 11px;
+        font-weight: 650;
+        line-height: 1.2;
+      }
+
+      #pf-smoothie-modal
+      #smoothie-results-card
+      > .results-header
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        flex: 0 0 8px;
+      }
+
+      #pf-smoothie-modal .sn2-card {
+        padding: 62px 18px 20px !important;
+        border-radius: 18px;
+      }
+
+      .sn2-header {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .sn2-title {
+        font-size: 30px;
+        line-height: 1.12;
+      }
+
+      .sn2-title-accent {
+        width: 48px;
+        margin-top: 13px;
+      }
+
+      .sn2-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        width: 100%;
+      }
+
+      .sn2-action-wrap {
+        min-width: 0;
+      }
+
+      .sn2-action-btn {
+        min-height: 46px;
+        padding: 10px 8px;
+        font-size: 11px;
+      }
+
+      .sn2-action-note {
+        margin-top: 5px;
+        font-size: 9px;
+      }
+
+      .sn2-hero {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .sn2-overview {
+        padding: 0 0 20px;
+        border-right: 0;
+        border-bottom: 1px solid #dbe3e8;
+      }
+
+      .sn2-summary {
+        margin-bottom: 22px;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      /*
+       * Keep the three result attributes compact and horizontal.
+       */
+      .sn2-meta-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-bottom: 18px;
+      }
+
+      .sn2-meta-item {
+        padding: 0 8px;
+        text-align: center;
+      }
+
+      .sn2-meta-item:first-child {
+        padding-left: 0;
+      }
+
+      .sn2-meta-item:last-child {
+        padding-right: 0;
+      }
+
+      .sn2-meta-item + .sn2-meta-item {
+        border-top: 0;
+        border-left: 1px solid #cbd5e1;
+      }
+
+      .sn2-meta-label {
+        margin-bottom: 5px;
+        font-size: 8px;
+      }
+
+      .sn2-meta-value {
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      /*
+       * Keep Built Portion and Designed For side by side.
+       */
+      .sn2-portion-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 13px 12px;
+      }
+
+      .sn2-portion-item {
+        grid-template-columns: 28px minmax(0, 1fr);
+        padding: 0 9px;
+        column-gap: 7px;
+      }
+
+      .sn2-portion-item:first-child {
+        padding-left: 0;
+      }
+
+      .sn2-portion-item:last-child {
+        padding-right: 0;
+      }
+
+      .sn2-portion-item + .sn2-portion-item {
+        padding-top: 0;
+        border-top: 0;
+        border-left: 1px solid #bcd9d4;
+      }
+
+      .sn2-portion-icon {
+        width: 25px;
+        height: 25px;
+      }
+
+      .sn2-portion-label {
+        font-size: 8px;
+      }
+
+      .sn2-portion-value {
+        font-size: 14px;
+      }
+
+      .sn2-nutrition-panel {
+        width: 100%;
+        padding: 17px 15px 18px;
+        border-radius: 15px;
+      }
+
+      .sn2-nutrition-heading {
+        margin-bottom: 14px;
+        font-size: 13px;
+      }
+
+      .sn2-kpi-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        row-gap: 17px;
+        margin-bottom: 18px;
+      }
+
+      .sn2-kpi.sn2-primary {
+        grid-column: 1 / -1;
+        width: 132px;
+        min-height: 132px;
+        justify-self: center;
+      }
+
+      .sn2-kpi.sn2-primary .sn2-kpi-value {
+        font-size: 36px;
+      }
+
+      .sn2-kpi:not(.sn2-primary) {
+        padding: 4px 7px;
+        border-left: 0;
+      }
+
+      .sn2-kpi:not(.sn2-primary) + .sn2-kpi {
+        border-left: 1px solid #d6e2e1;
+      }
+
+      .sn2-kpi-value {
+        font-size: 18px;
+      }
+
+      .sn2-kpi-label {
+        font-size: 8px;
+      }
+
+      .sn2-mini-row {
+        padding-top: 15px;
+      }
+
+      .sn2-mini {
+        padding: 0 7px;
+      }
+
+      .sn2-mini-value {
+        font-size: 16px;
+      }
+
+      .sn2-mini-label {
+        font-size: 8px;
+      }
+
+      .sn2-tabs {
+        border-radius: 12px 12px 0 0;
+      }
+
+      .sn2-tab {
+        min-height: 45px;
+        gap: 6px;
+        font-size: 10px;
+      }
+
+      .sn2-ing-pill {
+        min-height: 58px;
+        grid-template-columns: 34px minmax(0, 1fr);
+        row-gap: 4px;
+        padding: 9px 12px;
+      }
+
+      .sn2-ing-avatar {
+        grid-row: 1 / 3;
+        width: 30px;
+        height: 30px;
+        font-size: 9px;
+      }
+
+      .sn2-ing-name {
+        font-size: 10px;
+      }
+
+      .sn2-ing-meta {
+        grid-column: 2;
+        justify-self: start;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+
+      .sn2-ing-amt {
+        font-size: 9px;
+      }
+
+      .sn2-ing-vegan,
+      .sn2-ing-unsweetened {
+        padding: 1px 4px;
+        font-size: 6px;
+      }
+
+      .sn2-allergen {
+        grid-template-columns: 27px minmax(0, 1fr);
+        gap: 10px;
+        padding: 13px 14px;
+      }
+
+      .sn2-allergen-icon {
+        width: 25px;
+        height: 25px;
+      }
+
+      .sn2-allergen-title {
+        font-size: 10px;
+      }
+
+      .sn2-allergen-note {
+        font-size: 8px;
+      }
+    }
+
     /* === HEALTH BENEFITS TAB REDESIGN (goal hero + benefit grid) === */
     .pfb-goal-hero{padding:18px 20px;border-radius:14px;margin-bottom:14px;background:#F3E8FF;background:linear-gradient(135deg,#F3E8FF 0%,#E9D5FF 100%);border:1px solid rgba(147,51,234,0.18)}
     .pfb-goal-label{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6B21A8;margin-bottom:8px;line-height:1}
@@ -4011,7 +5415,78 @@
       </div>
     </div>
     <style>.pfwb{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:0.85rem 0.25rem;cursor:pointer;font-family:inherit;width:100%;font-size:0.78rem;line-height:1.6;transition:all 0.15s;}.pfwb:hover{border-color:#0EA5A4;background:#f0fdfa;transform:translateY(-2px);}</style>
-    <script nonce="{{ csp_nonce }}">(function(){function hide(){var s=document.getElementById('pf-ws');if(s)s.style.display='none';}function pick(v){var sel=document.getElementById('smoothie-for');if(sel){sel.value=v;sel.dispatchEvent(new Event('change',{bubbles:true}));}hide();}document.addEventListener('DOMContentLoaded',function(){var s=document.getElementById('pf-ws');if(s)s.style.display='block';document.querySelectorAll('.pfwb').forEach(function(b){b.addEventListener('click',function(){pick(b.getAttribute('data-v'));});});var sk=document.getElementById('pfwskip');if(sk)sk.addEventListener('click',hide);});})();</script>
+    <script nonce="{{ csp_nonce }}">
+      (function() {
+        function dismissAudienceWelcome() {
+          var panel = document.getElementById('pf-ws');
+
+          if (panel) {
+            panel.style.display = 'none';
+          }
+        }
+
+        window.pfDismissAudienceWelcome =
+          dismissAudienceWelcome;
+
+        function pickAudience(value) {
+          var select =
+            document.getElementById('smoothie-for');
+
+          if (select) {
+            select.value = value;
+            select.dispatchEvent(
+              new Event('change', { bubbles: true })
+            );
+          }
+
+          dismissAudienceWelcome();
+        }
+
+        document.addEventListener(
+          'DOMContentLoaded',
+          function() {
+            var panel = document.getElementById('pf-ws');
+
+            // Show onboarding again on every fresh page load.
+            // It remains hidden only until the current page is refreshed.
+            if (panel) {
+              panel.style.display = 'block';
+            }
+
+            try {
+              sessionStorage.removeItem(
+                'pfAudienceWelcomeDismissed'
+              );
+            } catch (error) {
+              // Storage cleanup is optional.
+            }
+
+            document
+              .querySelectorAll('.pfwb')
+              .forEach(function(button) {
+                button.addEventListener(
+                  'click',
+                  function() {
+                    pickAudience(
+                      button.getAttribute('data-v')
+                    );
+                  }
+                );
+              });
+
+            var skipButton =
+              document.getElementById('pfwskip');
+
+            if (skipButton) {
+              skipButton.addEventListener(
+                'click',
+                dismissAudienceWelcome
+              );
+            }
+          }
+        );
+      })();
+    </script>
      
       <div class="main-content-grid">
         <!-- Left: Smoothie Builder (redesigned) -->
@@ -4220,6 +5695,12 @@
 
 
   <script nonce="{{ csp_nonce }}">
+    const PF_RESULT_PERMISSIONS = Object.freeze({
+      isAuthenticated: {{ is_authenticated|default(false)|tojson }},
+      canSaveRecipes: {{ can_save_recipes|default(false)|tojson }},
+      userPlan: {{ user_plan|default("guest")|tojson }}
+    });
+
     // DOM Elements
     const categoryListEl = document.getElementById('category-list');
     const subcatListEl = document.getElementById('subcategory-list');
@@ -6469,9 +7950,9 @@
           modal.style.display = 'flex';
           modal.setAttribute('aria-hidden', 'false');
           document.body.classList.add('pf-modal-open');
-          // Show save button
+          // Save and Share now live inside the result card.
           const saveModalBtn = document.getElementById('pf-save-recipe-modal-btn');
-          if (saveModalBtn) saveModalBtn.style.display = 'inline-flex';
+          if (saveModalBtn) saveModalBtn.style.display = 'none';
         }
 
         function pfCloseSmoothieModal(options = {}) {
@@ -17454,6 +18935,44 @@ const allergenPanel = allergenNames.length === 0
           currentSmoothie.bloodPressureTip = bloodPressureTip;
           
           // Display smoothie nutrition using the same display function
+          // Capture result context BEFORE rendering the result card.
+          // The card reads these stored values immediately.
+          if (smoothieTimingEl && smoothieTimingEl.value) {
+            const resultTimingOption =
+              smoothieTimingEl.options[smoothieTimingEl.selectedIndex];
+
+            window._pfLastSmoothieTiming =
+              resultTimingOption
+                ? resultTimingOption.textContent.trim()
+                : smoothieTimingEl.value;
+          } else {
+            window._pfLastSmoothieTiming = '';
+          }
+
+          if (smoothieHealthGoalsEl && smoothieHealthGoalsEl.value) {
+            const resultGoalOption =
+              smoothieHealthGoalsEl.options[
+                smoothieHealthGoalsEl.selectedIndex
+              ];
+
+            window._pfLastSmoothieGoal =
+              smoothieHealthGoalsEl.value;
+
+            window._pfLastSmoothieGoalText =
+              resultGoalOption
+                ? resultGoalOption.textContent.trim()
+                : smoothieHealthGoalsEl.value;
+          }
+
+          // Successful builds permanently dismiss the large
+          // audience onboarding panel for this browser session.
+          if (
+            typeof window.pfDismissAudienceWelcome ===
+            'function'
+          ) {
+            window.pfDismissAudienceWelcome();
+          }
+
           displaySmoothieResults(data);
           setSmoothieStatus('Smoothie built successfully');
 
@@ -17512,9 +19031,33 @@ const allergenPanel = allergenNames.length === 0
               })
             }).then(() => {
               if (typeof window.pfLoadRecentSmoothies === 'function') {
-                window.pfLoadRecentSmoothies();
+                const wasHistoryRebuild =
+                  window._pfHistoryRebuildPending === true;
+
+                window._pfHistoryRebuildPending = false;
+
+                // Refresh history silently after rebuilding.
+                // The rebuilt smoothie moves to the top, but the modal
+                // must remain closed after the smoothie result opens.
+                if (wasHistoryRebuild) {
+                  const recentHistoryModal =
+                    document.getElementById(
+                      'recent-smoothies-modal'
+                    );
+
+                  if (recentHistoryModal) {
+                    recentHistoryModal.style.display = 'none';
+                  }
+                }
+
+                window.pfLoadRecentSmoothies({
+                  reopen: false,
+                  scrollTop: false
+                });
               }
-            }).catch(() => {});
+            }).catch(() => {
+              window._pfHistoryRebuildPending = false;
+            });
           } catch (e) {}
 
           // Clear all dropdowns including health goal
@@ -17639,6 +19182,153 @@ const allergenPanel = allergenNames.length === 0
 
       wrap.appendChild(miniRow);
       return wrap;
+    }
+
+    function pfGetSmoothieAllergenNames(ingredients) {
+      const names = new Set();
+      const plantMilks = [
+        'almond milk',
+        'cashew milk',
+        'walnut milk',
+        'pistachio milk',
+        'hazelnut milk',
+        'pecan milk',
+        'macadamia milk',
+        'oat milk',
+        'soy milk',
+        'coconut milk',
+        'rice milk',
+        'pea milk',
+        'hemp milk',
+        'flax milk'
+      ];
+
+      const treeNuts = [
+        'almond',
+        'cashew',
+        'walnut',
+        'pecan',
+        'hazelnut',
+        'pistachio',
+        'macadamia',
+        'brazil nut',
+        'pine nut'
+      ];
+
+      (ingredients || []).forEach(ingredient => {
+        const rawName = String(
+          ingredient.ingredient ||
+          ingredient.display_name ||
+          ingredient.name ||
+          ''
+        ).toLowerCase().replace(/-/g, ' ');
+
+        const allergen = ingredient.allergens;
+
+        if (
+          allergen &&
+          typeof allergen === 'object' &&
+          !Array.isArray(allergen) &&
+          allergen.name
+        ) {
+          const backendName = String(allergen.name);
+
+          if (
+            !(backendName === 'Eggs' && rawName.includes('eggplant')) &&
+            !(
+              backendName === 'Milk' &&
+              plantMilks.some(milk => rawName.includes(milk))
+            ) &&
+            !(
+              backendName === 'Tree Nuts' &&
+              rawName.includes('coconut')
+            )
+          ) {
+            names.add(backendName);
+          }
+        }
+
+        if (
+          rawName.includes('soy') ||
+          rawName.includes('tofu') ||
+          rawName.includes('tempeh') ||
+          rawName.includes('edamame')
+        ) {
+          names.add('Soy');
+        }
+
+        if (rawName.includes('peanut')) {
+          names.add('Peanuts');
+        }
+
+        if (
+          rawName.includes('sesame') ||
+          rawName.includes('tahini')
+        ) {
+          names.add('Sesame');
+        }
+
+        const matchedTreeNut = treeNuts.some(nut => {
+          return rawName.includes(nut);
+        });
+
+        if (matchedTreeNut && !rawName.includes('coconut')) {
+          names.add('Tree Nuts');
+        }
+
+        const isPlantMilk = plantMilks.some(milk => {
+          return rawName.includes(milk);
+        });
+
+        if (
+          !isPlantMilk &&
+          (
+            rawName.includes('milk') ||
+            rawName.includes('yogurt') ||
+            rawName.includes('whey') ||
+            rawName.includes('casein') ||
+            rawName.includes('cream') ||
+            rawName.includes('cheese') ||
+            rawName.includes('kefir') ||
+            rawName.includes('ghee')
+          )
+        ) {
+          names.add('Milk');
+        }
+
+        if (
+          rawName.includes('wheat') ||
+          rawName.includes('barley')
+        ) {
+          names.add('Wheat');
+        }
+      });
+
+      const order = [
+        'Milk',
+        'Eggs',
+        'Fish',
+        'Shellfish',
+        'Tree Nuts',
+        'Peanuts',
+        'Wheat',
+        'Soy',
+        'Sesame'
+      ];
+
+      return Array.from(names).sort((a, b) => {
+        const ai = order.indexOf(a);
+        const bi = order.indexOf(b);
+
+        if (ai === -1 && bi === -1) {
+          return a.localeCompare(b);
+        }
+
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+
+        return ai - bi;
+      });
     }
 
     function displaySmoothieResults(data) {
@@ -18328,10 +20018,28 @@ const allergenPanel = allergenNames.length === 0
         ? audienceSel.options[audienceSel.selectedIndex].text
         : '';
 
-      // Build smoothie display name
-      const smoothieDisplayName = (typeof smoothieNameEl !== 'undefined' && smoothieNameEl && smoothieNameEl.value)
-        ? smoothieNameEl.value
-        : 'Your Smoothie';
+      const timingLabel =
+        window._pfLastSmoothieTiming &&
+        window._pfLastSmoothieTiming !== 'Timing...'
+          ? window._pfLastSmoothieTiming
+          : 'Any time';
+
+      const goalLabel =
+        window._pfLastSmoothieGoalText &&
+        window._pfLastSmoothieGoalText !== 'Health goal...' &&
+        window._pfLastSmoothieGoalText !== 'No specific goal'
+          ? window._pfLastSmoothieGoalText
+          : 'No specific goal';
+
+      const smoothieAllergens =
+        pfGetSmoothieAllergenNames(ingredients);
+
+      const smoothieDisplayName =
+        (typeof smoothieNameEl !== 'undefined' &&
+         smoothieNameEl &&
+         smoothieNameEl.value)
+          ? smoothieNameEl.value
+          : 'Your Smoothie';
 
       // Build warnings HTML (child fruit + sweetener)
       const warningsHtml = [childFruitWarningHtml, sweetenerWarningHtml]
@@ -18377,11 +20085,29 @@ const allergenPanel = allergenNames.length === 0
         const rawG = typeof ing.totalGrams === 'number' ? ing.totalGrams : 0;
         return `
           <div class="sn2-ing-pill">
+            <span
+              class="sn2-ing-avatar"
+              aria-hidden="true"
+            >${escName.charAt(0) || 'I'}</span>
+
             <span class="sn2-ing-name">${escName}</span>
-            <span class="sn2-ing-sep">·</span>
-            <span class="sn2-ing-amt sn2-ing-gram" data-original-g="${rawG}" data-unit="${ing.unit || 'g'}">${escAmt}</span>
-            ${isVegan ? '<span class="sn2-ing-vegan">Vegan</span>' : ''}
-            ${isUnsweetened ? '<span class="sn2-ing-unsweetened">Unsweetened</span>' : ''}
+
+            <span class="sn2-ing-meta">
+              <span
+                class="sn2-ing-amt sn2-ing-gram"
+                data-original-g="${rawG}"
+                data-unit="${ing.unit || 'g'}"
+              >${escAmt}</span>
+
+              ${
+                isVegan || isUnsweetened
+                  ? `<span class="sn2-ing-pill__badges">
+                      ${isVegan ? '<span class="sn2-ing-vegan">Vegan</span>' : ''}
+                      ${isUnsweetened ? '<span class="sn2-ing-unsweetened">Unsweetened</span>' : ''}
+                     </span>`
+                  : ''
+              }
+            </span>
           </div>`;
       }).join('');
 
@@ -18393,6 +20119,44 @@ const allergenPanel = allergenNames.length === 0
         ? perServingWeightFormatted.gramsDisplay
         : '—';
 
+      const escapeResultText = value => {
+        return String(value || '').replace(/[&<>"']/g, character => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[character]));
+      };
+
+      const safeName =
+        escapeResultText(smoothieDisplayName);
+
+      const safeAudience =
+        escapeResultText(audienceLabel || 'General audience');
+
+      const safeTiming =
+        escapeResultText(timingLabel);
+
+      const safeGoal =
+        escapeResultText(goalLabel);
+
+      const summaryText =
+        goalLabel !== 'No specific goal'
+          ? `A portion-aware blend designed for ${audienceLabel || 'your selected audience'}, ${timingLabel.toLowerCase()}, and ${goalLabel.toLowerCase()}.`
+          : `A portion-aware blend calculated from your selected audience, timing, and ingredient amounts.`;
+
+      const saveLocked =
+        !PF_RESULT_PERMISSIONS.canSaveRecipes;
+
+      const shareLocked =
+        !PF_RESULT_PERMISSIONS.isAuthenticated;
+
+      const allergenTitle =
+        smoothieAllergens.length
+          ? `Contains: ${smoothieAllergens.join(', ')}`
+          : 'No major allergens identified from selected ingredient records.';
+
       let html = `
         <div class="sn2-card">
 
@@ -18400,98 +20164,450 @@ const allergenPanel = allergenNames.length === 0
           ${sweetenerHtml}
 
           <div class="sn2-header">
-            <div class="sn2-title-group">
-              <div class="sn2-title">${smoothieDisplayName.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}</div>
-              <div class="sn2-subtitle">Smoothie nutrition results</div>
-            </div>
-            ${audienceLabel ? `<span class="sn2-audience-badge">${audienceLabel.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}</span>` : ''}
-            ${(window._pfLastSmoothieGoalText && window._pfLastSmoothieGoalText !== 'Health goal...' && window._pfLastSmoothieGoalText !== 'No specific goal') ? `<span class="sn2-audience-badge" style="background:#e0f2fe;color:#0369a1;margin-left:4px">${window._pfLastSmoothieGoalText.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}</span>` : ''}
-          </div>
-
-          <div class="sn2-kpi-grid">
-            <div class="sn2-kpi sn2-primary">
-              <div class="sn2-kpi-label">Calories</div>
-              <div class="sn2-kpi-value">${Math.round(totalNutrients.calories||0)}</div>
-              <div class="sn2-kpi-unit">kcal total</div>
-            </div>
-            <div class="sn2-kpi">
-              <div class="sn2-kpi-label">Protein</div>
-              <div class="sn2-kpi-value">${(totalNutrients.protein||0).toFixed(1)}</div>
-              <div class="sn2-kpi-unit">grams</div>
-            </div>
-            <div class="sn2-kpi">
-              <div class="sn2-kpi-label">Fiber</div>
-              <div class="sn2-kpi-value">${(totalNutrients.fiber||0).toFixed(1)}</div>
-              <div class="sn2-kpi-unit">grams</div>
-            </div>
-            <div class="sn2-kpi">
-              <div class="sn2-kpi-label">Sugar</div>
-              <div class="sn2-kpi-value">${(totalNutrients.sugar||0).toFixed(1)}</div>
-              <div class="sn2-kpi-unit">grams</div>
-            </div>
-          </div>
-
-          <div class="sn2-mini-row">
-            <div class="sn2-mini">
-              <span class="sn2-mini-label">Carbs</span>
-              <span class="sn2-mini-value">${(totalNutrients.carbs||0).toFixed(1)}g</span>
-            </div>
-            <div class="sn2-mini">
-              <span class="sn2-mini-label">Fat</span>
-              <span class="sn2-mini-value">${(totalNutrients.fat||0).toFixed(1)}g</span>
-            </div>
-            <div class="sn2-mini">
-              <span class="sn2-mini-label">Sodium</span>
-              <span class="sn2-mini-value">${Math.round(totalNutrients.sodium||0)}mg</span>
-            </div>
-          </div>
-
-          <div class="sn2-serving-card">
-            <div class="sn2-serving-left">
-              <div class="sn2-serving-title">Per serving</div>
-              <div class="sn2-serving-value">${perServingCalDisplay} · ${perServingWeightDisplay}</div>
-              <div class="sn2-serving-note">${audienceLabel ? `Recommended for ${audienceLabel.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}` : 'Based on smoothie weight'}</div>
-              <div class="sn2-serving-note" style="margin-top:3px;color:#94a3b8">Total recipe: ${totalWeightFormatted ? totalWeightFormatted.gramsDisplay : (Math.round(totalSmoothieWeightGrams) + 'g')}</div>
-            </div>
             <div>
-              <div style="font-size:10px;color:#166534;font-weight:700;margin-bottom:4px;text-align:center;text-transform:uppercase;letter-spacing:.04em">Servings</div>
-              <div style="display:flex;align-items:center;border:1.5px solid #10B981;border-radius:8px;overflow:hidden;background:#fff">
-                <button type="button" id="smoothie-weight-servings-decrement" style="width:28px;height:28px;background:#f0fdf4;color:#065f46;font-size:14px;font-weight:700;border:none;cursor:pointer;border-right:1px solid #10B981">−</button>
-                <input type="number" id="smoothie-weight-servings-input" value="${smoothieWeightServings}" min="1" max="10" step="1"
-                  style="width:36px;height:28px;text-align:center;font-size:13px;font-weight:700;color:#065f46;border:none;outline:none;background:#fff"/>
-                <button type="button" id="smoothie-weight-servings-increment" style="width:28px;height:28px;background:#f0fdf4;color:#065f46;font-size:14px;font-weight:700;border:none;cursor:pointer;border-left:1px solid #10B981">+</button>
+              <h2 class="sn2-title">${safeName}</h2>
+              <div class="sn2-title-accent"></div>
+            </div>
+
+            <div class="sn2-actions">
+              <div class="sn2-action-wrap">
+                <button
+                  type="button"
+                  id="pf-result-save-btn"
+                  class="sn2-action-btn ${saveLocked ? 'is-locked' : ''}"
+                >
+                  <svg
+                    class="sn2-action-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M6 4.75h12v15l-6-3.7-6 3.7z"></path>
+                  </svg>
+
+                  <span>Save Recipe</span>
+
+                  ${
+                    saveLocked
+                      ? `<svg
+                          class="sn2-lock-icon"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <rect
+                            x="5"
+                            y="10"
+                            width="14"
+                            height="10"
+                            rx="2"
+                          ></rect>
+                          <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                        </svg>`
+                      : ''
+                  }
+                </button>
+
+                <span class="sn2-action-note">
+                  ${
+                    PF_RESULT_PERMISSIONS.isAuthenticated
+                      ? (
+                          PF_RESULT_PERMISSIONS.canSaveRecipes
+                            ? 'Included with your plan'
+                            : 'Premium required'
+                        )
+                      : 'Login and Premium required'
+                  }
+                </span>
+              </div>
+
+              <div class="sn2-action-wrap">
+                <button
+                  type="button"
+                  id="pf-result-share-btn"
+                  class="sn2-action-btn sn2-action-btn--share ${
+                    shareLocked ? 'is-locked' : ''
+                  }"
+                >
+                  <svg
+                    class="sn2-action-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <circle cx="18" cy="5" r="2.5"></circle>
+                    <circle cx="6" cy="12" r="2.5"></circle>
+                    <circle cx="18" cy="19" r="2.5"></circle>
+                    <path d="m8.2 10.8 7.6-4.5"></path>
+                    <path d="m8.2 13.2 7.6 4.5"></path>
+                  </svg>
+
+                  <span>Share Result</span>
+
+                  ${
+                    shareLocked
+                      ? `<svg
+                          class="sn2-lock-icon"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <rect
+                            x="5"
+                            y="10"
+                            width="14"
+                            height="10"
+                            rx="2"
+                          ></rect>
+                          <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                        </svg>`
+                      : ''
+                  }
+                </button>
+
+                <span class="sn2-action-note">
+                  ${
+                    shareLocked
+                      ? 'Login required to share'
+                      : 'Ready to share'
+                  }
+                </span>
               </div>
             </div>
           </div>
 
+          <div class="sn2-hero">
+            <section class="sn2-overview">
+              <p class="sn2-summary">
+                ${escapeResultText(summaryText)}
+              </p>
+
+              <div class="sn2-meta-grid">
+                <div class="sn2-meta-item">
+                  <span class="sn2-meta-label">Audience</span>
+                  <span class="sn2-meta-value">${safeAudience}</span>
+                </div>
+
+                <div class="sn2-meta-item">
+                  <span class="sn2-meta-label">Timing</span>
+                  <span class="sn2-meta-value">${safeTiming}</span>
+                </div>
+
+                <div class="sn2-meta-item">
+                  <span class="sn2-meta-label">Health Goal</span>
+                  <span class="sn2-meta-value">${safeGoal}</span>
+                </div>
+              </div>
+
+              <div class="sn2-portion-strip">
+                <div class="sn2-portion-item">
+                  <span class="sn2-portion-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6 3h12l-1.5 18h-9z"></path>
+                      <path d="M7.5 8h9"></path>
+                    </svg>
+                  </span>
+
+                  <span class="sn2-portion-label">Built portion</span>
+
+                  <span class="sn2-portion-value">
+                    ${perServingWeightDisplay}
+                  </span>
+                </div>
+
+                <div class="sn2-portion-item">
+                  <span class="sn2-portion-icon">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <circle cx="12" cy="7" r="3.5"></circle>
+                      <path d="M5 21a7 7 0 0 1 14 0"></path>
+                    </svg>
+                  </span>
+
+                  <span class="sn2-portion-label">Designed for</span>
+
+                  <span class="sn2-portion-value">
+                    ${safeAudience}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <section class="sn2-nutrition-panel">
+              <div class="sn2-nutrition-heading">
+                Nutrition Summary
+              </div>
+
+              <div class="sn2-kpi-grid">
+                <div class="sn2-kpi sn2-primary">
+                  <div class="sn2-kpi-label">Calories</div>
+                  <div class="sn2-kpi-value">
+                    ${Math.round(totalNutrients.calories || 0)}
+                  </div>
+                  <div class="sn2-kpi-unit">kcal</div>
+                </div>
+
+                <div class="sn2-kpi">
+                  <div class="sn2-kpi-value">
+                    ${(totalNutrients.protein || 0).toFixed(1)}g
+                  </div>
+                  <div class="sn2-kpi-label">Protein</div>
+                </div>
+
+                <div class="sn2-kpi">
+                  <div class="sn2-kpi-value">
+                    ${(totalNutrients.fiber || 0).toFixed(1)}g
+                  </div>
+                  <div class="sn2-kpi-label">Fiber</div>
+                </div>
+
+                <div class="sn2-kpi">
+                  <div class="sn2-kpi-value">
+                    ${(totalNutrients.sugar || 0).toFixed(1)}g
+                  </div>
+                  <div class="sn2-kpi-label">Sugar</div>
+                </div>
+              </div>
+
+              <div class="sn2-mini-row">
+                <div class="sn2-mini">
+                  <span class="sn2-mini-value">
+                    ${(totalNutrients.carbs || 0).toFixed(1)}g
+                  </span>
+                  <span class="sn2-mini-label">Carbs</span>
+                </div>
+
+                <div class="sn2-mini">
+                  <span class="sn2-mini-value">
+                    ${(totalNutrients.fat || 0).toFixed(1)}g
+                  </span>
+                  <span class="sn2-mini-label">Fat</span>
+                </div>
+
+                <div class="sn2-mini">
+                  <span class="sn2-mini-value">
+                    ${Math.round(totalNutrients.sodium || 0)}mg
+                  </span>
+                  <span class="sn2-mini-label">Sodium</span>
+                </div>
+              </div>
+            </section>
+          </div>
+
           <div class="sn2-tabs">
-            <button id="smoothie-tab-whole" class="sn2-tab active" data-tab="whole" type="button">Full recipe</button>
-            <button id="smoothie-tab-serving" class="sn2-tab" data-tab="serving" type="button">My portion</button>
+            <button
+              id="smoothie-tab-whole"
+              class="sn2-tab active"
+              data-tab="whole"
+              type="button"
+            >
+              <svg
+                class="sn2-tab-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+                <path d="M9 8h6"></path>
+                <path d="M9 12h6"></path>
+                <path d="M9 16h4"></path>
+              </svg>
+              Full Recipe
+            </button>
+
+            <button
+              id="smoothie-tab-serving"
+              class="sn2-tab"
+              data-tab="serving"
+              type="button"
+            >
+              <svg
+                class="sn2-tab-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="7" r="3"></circle>
+                <path d="M6 21a6 6 0 0 1 12 0"></path>
+              </svg>
+              My Portion
+            </button>
           </div>
 
-          <div class="sn2-ings-section" style="margin-bottom:14px">
-            <div class="sn2-ings-label">Ingredients · ${ingredients.length} item${ingredients.length !== 1 ? 's' : ''}</div>
-            <div class="sn2-ings-grid" id="smoothie-ingredients-panel">${ingsPillsHtml}</div>
+          <div class="sn2-ings-section">
+            <div
+              class="sn2-ings-grid"
+              id="smoothie-ingredients-panel"
+            >
+              ${ingsPillsHtml}
+            </div>
           </div>
 
-          <div id="smoothie-nutrition-whole" class="smoothie-nutrition-tab-content" style="display:none">
+          <div class="sn2-allergen ${
+            smoothieAllergens.length
+              ? ''
+              : 'sn2-allergen--clear'
+          }">
+            <div class="sn2-allergen-icon" aria-hidden="true">
+              ${
+                smoothieAllergens.length
+                  ? `<svg viewBox="0 0 24 24">
+                      <path d="M12 3 2.7 20h18.6z"></path>
+                      <path d="M12 9v5"></path>
+                      <path d="M12 17.5h.01"></path>
+                     </svg>`
+                  : `<svg viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <path d="m8 12 2.5 2.5L16 9"></path>
+                     </svg>`
+              }
+            </div>
+
+            <div class="sn2-allergen-content">
+              <div class="sn2-allergen-title">
+                ${escapeResultText(allergenTitle)}
+              </div>
+
+              <div class="sn2-allergen-note">
+                ${
+                  smoothieAllergens.length
+                    ? 'Always check product labels if you have food allergies.'
+                    : 'Check product labels because formulations and cross-contact can vary.'
+                }
+              </div>
+            </div>
+          </div>
+
+          <div
+            id="smoothie-nutrition-whole"
+            class="smoothie-nutrition-tab-content"
+            style="display:none"
+          >
             <div id="smoothie-metrics-whole"></div>
           </div>
-          <div id="smoothie-nutrition-serving" class="smoothie-nutrition-tab-content" style="display:none">
+
+          <div
+            id="smoothie-nutrition-serving"
+            class="smoothie-nutrition-tab-content"
+            style="display:none"
+          >
             <div id="smoothie-metrics-serving"></div>
           </div>
-          <div id="smoothie-servings-control" style="display:none">
-            <div id="smoothie-serving-message" style="display:none"></div>
-          </div>
-          <input type="number" id="smoothie-servings-input" style="display:none" value="${smoothieServings}" min="1" max="10" step="1"/>
-          <button id="smoothie-servings-decrement" style="display:none" type="button"></button>
-          <button id="smoothie-servings-increment" style="display:none" type="button"></button>
 
+          <div id="smoothie-servings-control" style="display:none">
+            <div
+              id="smoothie-serving-message"
+              style="display:none"
+            ></div>
+          </div>
+
+          <input
+            type="number"
+            id="smoothie-servings-input"
+            value="${smoothieServings}"
+            min="1"
+            max="10"
+            step="1"
+            style="display:none"
+          />
+
+          <button
+            id="smoothie-servings-decrement"
+            type="button"
+            style="display:none"
+          ></button>
+
+          <button
+            id="smoothie-servings-increment"
+            type="button"
+            style="display:none"
+          ></button>
         </div>
       `;
+
       smoothieBatchMlOverride = null;
 
       smoothieResultsBodyEl.innerHTML = html;
+
+      const resultSaveBtn =
+        document.getElementById('pf-result-save-btn');
+
+      if (resultSaveBtn) {
+        resultSaveBtn.addEventListener('click', () => {
+          if (!PF_RESULT_PERMISSIONS.isAuthenticated) {
+            window.location.assign('/login?next=/app');
+            return;
+          }
+
+          if (!PF_RESULT_PERMISSIONS.canSaveRecipes) {
+            window.location.assign('/pricing');
+            return;
+          }
+
+          const existingSaveButton =
+            document.getElementById('pf-save-recipe-modal-btn');
+
+          if (existingSaveButton) {
+            existingSaveButton.click();
+          }
+        });
+      }
+
+      const resultShareBtn =
+        document.getElementById('pf-result-share-btn');
+
+      if (resultShareBtn) {
+        resultShareBtn.addEventListener('click', async () => {
+          if (!PF_RESULT_PERMISSIONS.isAuthenticated) {
+            window.location.assign('/login?next=/app');
+            return;
+          }
+
+          const ingredientText = ingredientsList
+            .map(ingredient => {
+              return `${ingredient.name}: ${ingredient.serving}`;
+            })
+            .join(', ');
+
+          const shareText = [
+            smoothieDisplayName,
+            `Audience: ${audienceLabel || 'General audience'}`,
+            `Timing: ${timingLabel}`,
+            `Health goal: ${goalLabel}`,
+            `${Math.round(totalNutrients.calories || 0)} kcal`,
+            `Protein: ${(totalNutrients.protein || 0).toFixed(1)}g`,
+            `Fiber: ${(totalNutrients.fiber || 0).toFixed(1)}g`,
+            `Sugar: ${(totalNutrients.sugar || 0).toFixed(1)}g`,
+            `Ingredients: ${ingredientText}`,
+            allergenTitle,
+            'Built with PureFyul'
+          ].join('\\n');
+
+          const shareUrl = `${window.location.origin}/app`;
+
+          try {
+            if (navigator.share) {
+              await navigator.share({
+                title: smoothieDisplayName,
+                text: shareText,
+                url: shareUrl
+              });
+              return;
+            }
+
+            await navigator.clipboard.writeText(
+              `${shareText}\\n${shareUrl}`
+            );
+
+            const originalText = resultShareBtn.textContent;
+            resultShareBtn.textContent = 'Result Copied';
+
+            setTimeout(() => {
+              resultShareBtn.textContent = originalText;
+            }, 1600);
+          } catch (error) {
+            if (error && error.name === 'AbortError') {
+              return;
+            }
+
+            console.warn('[smoothie-share]', error);
+          }
+        });
+      }
+
       const batchSel = document.getElementById('smoothie-batch-ml');
 if (batchSel) batchSel.value = 'auto';
 
@@ -20100,7 +22216,9 @@ const batchG = (smoothieBatchMlOverride != null)
 
 <script nonce="{{ csp_nonce }}">
 (function() {
-  function pfLoadRecentSmoothies() {
+  function pfLoadRecentSmoothies(options) {
+    options = options || {};
+
     fetch('/api/history')
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -20118,17 +22236,22 @@ const batchG = (smoothieBatchMlOverride != null)
         }
 
         toggleBtn.style.display = 'inline-block';
-        toggleBtn.addEventListener('click', function() {
+        // Use assigned handlers because this list can reload repeatedly.
+        toggleBtn.onclick = function() {
           modal.style.display = 'flex';
-        });
+        };
+
         if (closeBtn) {
-          closeBtn.addEventListener('click', function() {
+          closeBtn.onclick = function() {
             modal.style.display = 'none';
-          });
+          };
         }
-        modal.addEventListener('click', function(e) {
-          if (e.target === modal) modal.style.display = 'none';
-        });
+
+        modal.onclick = function(e) {
+          if (e.target === modal) {
+            modal.style.display = 'none';
+          }
+        };
 
         // Small inline SVG icons (no external font/CDN — CSP here only allows
         // 'self' + 'unsafe-inline' for styles, so any external icon font would
@@ -20257,14 +22380,119 @@ const batchG = (smoothieBatchMlOverride != null)
             var item = data.history[idx];
             if (!item) return;
 
-            if (typeof smoothieForEl !== 'undefined' && smoothieForEl && item.audience) {
-              smoothieForEl.value = item.audience;
-              smoothieForEl.dispatchEvent(new Event('change', { bubbles: true }));
+            // After this smoothie is built, refresh history and reopen it
+            // at the top so the rebuilt item is immediately visible.
+            window._pfHistoryRebuildPending = true;
+
+            function pfRestoreHistorySelect(selectEl, storedValue) {
+              if (!selectEl || !storedValue) return null;
+
+              var normalizedStored =
+                String(storedValue).trim().toLowerCase();
+
+              var matchedOption = Array.from(selectEl.options).find(
+                function(option) {
+                  var optionValue =
+                    String(option.value || '').trim().toLowerCase();
+
+                  var optionText =
+                    String(option.textContent || '').trim().toLowerCase();
+
+                  return (
+                    optionValue === normalizedStored ||
+                    optionText === normalizedStored
+                  );
+                }
+              );
+
+              if (!matchedOption) {
+                var storedSlug = normalizedStored
+                  .replace(/&/g, 'and')
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/^-+|-+$/g, '');
+
+                matchedOption = Array.from(selectEl.options).find(
+                  function(option) {
+                    var optionTextSlug =
+                      String(option.textContent || '')
+                        .trim()
+                        .toLowerCase()
+                        .replace(/&/g, 'and')
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+
+                    return (
+                      String(option.value || '').toLowerCase() === storedSlug ||
+                      optionTextSlug === storedSlug
+                    );
+                  }
+                );
+              }
+
+              if (!matchedOption) return null;
+
+              selectEl.value = matchedOption.value;
+              selectEl.dispatchEvent(
+                new Event('change', { bubbles: true })
+              );
+
+              return matchedOption;
             }
-            if (typeof smoothieTimingEl !== 'undefined' && smoothieTimingEl && item.timing) {
-              smoothieTimingEl.value = item.timing;
-              smoothieTimingEl.dispatchEvent(new Event('change', { bubbles: true }));
+
+            var restoredAudienceOption = null;
+            var restoredTimingOption = null;
+            var restoredGoalOption = null;
+
+            if (
+              typeof smoothieForEl !== 'undefined' &&
+              smoothieForEl &&
+              item.audience
+            ) {
+              restoredAudienceOption =
+                pfRestoreHistorySelect(
+                  smoothieForEl,
+                  item.audience
+                );
             }
+
+            if (
+              typeof smoothieTimingEl !== 'undefined' &&
+              smoothieTimingEl &&
+              item.timing
+            ) {
+              restoredTimingOption =
+                pfRestoreHistorySelect(
+                  smoothieTimingEl,
+                  item.timing
+                );
+            }
+
+            if (
+              typeof smoothieHealthGoalsEl !== 'undefined' &&
+              smoothieHealthGoalsEl &&
+              item.health_goal
+            ) {
+              restoredGoalOption =
+                pfRestoreHistorySelect(
+                  smoothieHealthGoalsEl,
+                  item.health_goal
+                );
+            }
+
+            window._pfLastSmoothieTiming =
+              restoredTimingOption
+                ? restoredTimingOption.textContent.trim()
+                : String(item.timing || '').trim();
+
+            window._pfLastSmoothieGoal =
+              restoredGoalOption
+                ? restoredGoalOption.value
+                : String(item.health_goal || '').trim();
+
+            window._pfLastSmoothieGoalText =
+              restoredGoalOption
+                ? restoredGoalOption.textContent.trim()
+                : String(item.health_goal || '').trim();
 
             (item.ingredients || []).forEach(function(ing) {
               if (typeof addIngredientByName === 'function') {
@@ -20301,11 +22529,32 @@ const batchG = (smoothieBatchMlOverride != null)
               .catch(function() { btn.disabled = false; });
           });
         });
+        if (options.reopen) {
+          modal.style.display = 'flex';
+
+          if (options.scrollTop) {
+            modal.scrollTop = 0;
+            list.scrollTop = 0;
+
+            var scrollContainer =
+              list.closest('[style*="overflow"]');
+
+            if (scrollContainer) {
+              scrollContainer.scrollTop = 0;
+            }
+          }
+        }
       })
-      .catch(function() { /* not logged in or error - toggle stays hidden */ });
+      .catch(function() {
+        window._pfHistoryRebuildPending = false;
+      });
   }
+
   window.pfLoadRecentSmoothies = pfLoadRecentSmoothies;
-  document.addEventListener('DOMContentLoaded', pfLoadRecentSmoothies);
+
+  document.addEventListener('DOMContentLoaded', function() {
+    pfLoadRecentSmoothies();
+  });
 })();
 </script>
 
