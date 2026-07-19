@@ -684,7 +684,7 @@
 
     .pf-smoothie-guide {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 0.7fr) minmax(130px, 1.45fr);
       gap: 10px;
       margin-top: 10px;
     }
@@ -3223,7 +3223,9 @@
       font-weight: 800;
       line-height: 1.12;
       letter-spacing: -0.035em;
-      overflow-wrap: anywhere;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
     }
 
     .sn2-title-accent {
@@ -3336,6 +3338,21 @@
       color: #334155;
       font-size: 15px;
       line-height: 1.62;
+    }
+
+    .sn2-insight-label {
+      display: block;
+      margin-bottom: 7px;
+      color: #0f766e;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    #pf-ai-smoothie-insight-text {
+      display: block;
+      min-height: 48px;
     }
 
     .sn2-meta-grid {
@@ -14588,6 +14605,641 @@ const allergenPanel = allergenNames.length === 0
       return value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
     
+    let pfAiSmoothieNameRequestToken = 0;
+
+    function pfGetSelectedOptionText(selectElement) {
+      if (
+        !selectElement ||
+        selectElement.selectedIndex < 0
+      ) {
+        return '';
+      }
+
+      const option =
+        selectElement.options[
+          selectElement.selectedIndex
+        ];
+
+      return option
+        ? String(option.textContent || '').trim()
+        : '';
+    }
+
+    function pfBuildAiSmoothieNamePayload(data) {
+      const sourceIngredients =
+        data &&
+        Array.isArray(data.ingredients)
+          ? data.ingredients
+          : (
+              currentSmoothie &&
+              Array.isArray(currentSmoothie.ingredients)
+                ? currentSmoothie.ingredients
+                : []
+            );
+
+      const ingredients = sourceIngredients
+        .map(item => {
+          if (typeof item === 'string') {
+            const name = item.trim();
+
+            return name
+              ? { name }
+              : null;
+          }
+
+          if (!item || typeof item !== 'object') {
+            return null;
+          }
+
+          const name = String(
+            item.originalName ||
+            item.name ||
+            item.ingredient ||
+            ''
+          ).trim();
+
+          if (!name) {
+            return null;
+          }
+
+          const normalizedIngredient = {
+            name
+          };
+
+          const volumeMl = Number(
+            item.volume_ml ??
+            item.volumeMl
+          );
+
+          const reportedUnit = String(
+            item.unit || ''
+          ).trim().toLowerCase();
+
+          const unit =
+            (
+              Number.isFinite(volumeMl) &&
+              volumeMl > 0
+            ) ||
+            reportedUnit === 'ml'
+              ? 'ml'
+              : 'g';
+
+          const amount =
+            unit === 'ml'
+              ? Number(
+                  item.volume_ml ??
+                  item.volumeMl ??
+                  item._amount ??
+                  item.amount ??
+                  item.quantity
+                )
+              : Number(
+                  item.nutrition_weight_g ??
+                  item.nutritionWeightG ??
+                  item.serving_size_g ??
+                  item._grams ??
+                  item.grams ??
+                  item.totalGrams ??
+                  item.amount
+                );
+
+          if (
+            Number.isFinite(amount) &&
+            amount > 0 &&
+            amount <= 2000
+          ) {
+            normalizedIngredient.amount =
+              Math.round(amount * 100) / 100;
+
+            normalizedIngredient.unit =
+              unit;
+          }
+
+          const nutritionWeightG =
+            Number(
+              item.nutrition_weight_g ??
+              item.nutritionWeightG ??
+              item.serving_size_g
+            );
+
+          if (
+            Number.isFinite(nutritionWeightG) &&
+            nutritionWeightG > 0 &&
+            nutritionWeightG <= 2000
+          ) {
+            normalizedIngredient.nutritionWeightG =
+              Math.round(
+                nutritionWeightG * 1000
+              ) / 1000;
+          }
+
+          const nutritionSource =
+            item.nutrition &&
+            typeof item.nutrition === 'object'
+              ? item.nutrition
+              : {};
+
+          const nutrientAliases = {
+            calories: [
+              'calories',
+              'kcal'
+            ],
+            protein: [
+              'protein',
+              'protein_g'
+            ],
+            fiber: [
+              'fiber',
+              'fiber_g'
+            ],
+            carbs: [
+              'carbs',
+              'carbohydrates',
+              'carbs_g'
+            ],
+            sugar: [
+              'sugar',
+              'sugar_g'
+            ],
+            fat: [
+              'fat',
+              'fat_g'
+            ]
+          };
+
+          Object.entries(
+            nutrientAliases
+          ).forEach(([nutrient, aliases]) => {
+            let rawValue;
+
+            for (const alias of aliases) {
+              if (
+                Object.prototype.hasOwnProperty.call(
+                  item,
+                  alias
+                )
+              ) {
+                rawValue = item[alias];
+                break;
+              }
+
+              if (
+                Object.prototype.hasOwnProperty.call(
+                  nutritionSource,
+                  alias
+                )
+              ) {
+                rawValue =
+                  nutritionSource[alias];
+                break;
+              }
+            }
+
+            const nutrientValue =
+              Number(rawValue);
+
+            if (
+              Number.isFinite(nutrientValue) &&
+              nutrientValue >= 0 &&
+              nutrientValue <= 5000
+            ) {
+              normalizedIngredient[nutrient] =
+                Math.round(
+                  nutrientValue * 1000
+                ) / 1000;
+            }
+          });
+
+          return normalizedIngredient;
+        })
+        .filter(Boolean)
+        .slice(0, 12);
+
+      let healthGoal = '';
+
+      if (
+        smoothieHealthGoalsEl &&
+        smoothieHealthGoalsEl.value
+      ) {
+        healthGoal = getHealthGoalName(
+          smoothieHealthGoalsEl.value
+        );
+      } else if (
+        window._pfLastSmoothieGoalText &&
+        window._pfLastSmoothieGoalText !==
+          'Health goal...' &&
+        window._pfLastSmoothieGoalText !==
+          'No specific goal'
+      ) {
+        healthGoal =
+          window._pfLastSmoothieGoalText;
+      }
+
+      return {
+        ingredients,
+        audience:
+          pfGetSelectedOptionText(
+            smoothieForEl
+          ) ||
+          (
+            smoothieForEl
+              ? smoothieForEl.value
+              : ''
+          ),
+        timing:
+          pfGetSelectedOptionText(
+            smoothieTimingEl
+          ) ||
+          (
+            smoothieTimingEl
+              ? smoothieTimingEl.value
+              : ''
+          ),
+        healthGoal
+      };
+    }
+
+    function pfBuildDeterministicIngredientInsight(
+      ingredients
+    ) {
+      if (!Array.isArray(ingredients)) {
+        return (
+          'This insight is based on the selected ' +
+          'ingredient portions.'
+        );
+      }
+
+      const metrics = [
+        {
+          key: 'fiber',
+          label: 'fiber'
+        },
+        {
+          key: 'protein',
+          label: 'protein'
+        },
+        {
+          key: 'carbs',
+          label: 'carbohydrate'
+        },
+        {
+          key: 'sugar',
+          label: 'sugar'
+        }
+      ];
+
+      const contributors = metrics
+        .map(metric => {
+          const ranked = ingredients
+            .map(ingredient => ({
+              name: String(
+                ingredient.name || ''
+              ).trim(),
+              value: Number(
+                ingredient[metric.key]
+              ),
+              metric: metric.label
+            }))
+            .filter(item => (
+              item.name &&
+              Number.isFinite(item.value) &&
+              item.value > 0
+            ))
+            .sort(
+              (first, second) =>
+                second.value - first.value
+            );
+
+          return ranked.length
+            ? ranked[0]
+            : null;
+        })
+        .filter(Boolean);
+
+      if (contributors.length >= 2) {
+        const first = contributors[0];
+
+        const second =
+          contributors.find(
+            contributor =>
+              contributor.name.toLowerCase() !==
+              first.name.toLowerCase()
+          ) ||
+          contributors[1];
+
+        if (
+          first.name.toLowerCase() ===
+          second.name.toLowerCase()
+        ) {
+          return (
+            `${first.name} makes the largest ` +
+            `${first.metric} and ` +
+            `${second.metric} contributions ` +
+            `in this blend.`
+          );
+        }
+
+        return (
+          `${first.name} makes the largest ` +
+          `${first.metric} contribution, while ` +
+          `${second.name} contributes the most ` +
+          `${second.metric}.`
+        );
+      }
+
+      if (contributors.length === 1) {
+        const contributor =
+          contributors[0];
+
+        return (
+          `${contributor.name} makes the largest ` +
+          `${contributor.metric} contribution among ` +
+          `the selected ingredients.`
+        );
+      }
+
+      const ingredientNames = ingredients
+        .map(ingredient =>
+          String(
+            ingredient.name || ''
+          ).trim()
+        )
+        .filter(Boolean);
+
+      if (ingredientNames.length >= 2) {
+        return (
+          `${ingredientNames[0]} and ` +
+          `${ingredientNames[1]} are the main ` +
+          `ingredients shaping this blend.`
+        );
+      }
+
+      if (ingredientNames.length === 1) {
+        return (
+          `${ingredientNames[0]} is the primary ` +
+          `ingredient shaping this blend.`
+        );
+      }
+
+      return (
+        'This insight is based on the selected ' +
+        'ingredient portions.'
+      );
+    }
+
+    function pfShowAiSmoothieLoading() {
+      const resultTitle =
+        document.getElementById(
+          'pf-ai-smoothie-result-name'
+        );
+
+      const insightElement =
+        document.getElementById(
+          'pf-ai-smoothie-insight-text'
+        );
+
+      if (resultTitle) {
+        resultTitle.textContent =
+          'Creating your smoothie name…';
+      }
+
+      if (insightElement) {
+        insightElement.textContent =
+          'Analyzing ingredient contributions…';
+      }
+    }
+
+    function pfRestoreAiSmoothieFallback(
+      fallbackName,
+      fallbackInsight
+    ) {
+      const resultTitle =
+        document.getElementById(
+          'pf-ai-smoothie-result-name'
+        );
+
+      const insightElement =
+        document.getElementById(
+          'pf-ai-smoothie-insight-text'
+        );
+
+      if (resultTitle) {
+        resultTitle.textContent =
+          fallbackName || 'Your Smoothie';
+      }
+
+      if (insightElement) {
+        insightElement.textContent =
+          fallbackInsight ||
+          (
+            'This insight is based on the selected ' +
+            'ingredient portions.'
+          );
+      }
+    }
+
+    function pfApplyAiSmoothieName(
+      name,
+      insight,
+      fallbackInsight
+    ) {
+      const cleanName =
+        String(name || '').trim();
+
+      const cleanInsight =
+        String(
+          insight ||
+          fallbackInsight ||
+          ''
+        ).trim();
+
+      if (
+        cleanName.length < 2 ||
+        cleanName.length > 48
+      ) {
+        return false;
+      }
+
+      const resultTitle =
+        document.getElementById(
+          'pf-ai-smoothie-result-name'
+        );
+
+      const insightElement =
+        document.getElementById(
+          'pf-ai-smoothie-insight-text'
+        );
+
+      // The result was cleared or replaced.
+      if (!resultTitle) {
+        return false;
+      }
+
+      // Update both AI outputs together.
+      resultTitle.textContent =
+        cleanName;
+
+      if (insightElement) {
+        insightElement.textContent =
+          cleanInsight ||
+          (
+            'This insight is based on the selected ' +
+            'ingredient portions.'
+          );
+      }
+
+      if (smoothieNameEl) {
+        smoothieNameEl.value =
+          cleanName;
+      }
+
+      if (smoothieNameDisplayEl) {
+        smoothieNameDisplayEl.textContent =
+          cleanName;
+      }
+
+      if (smoothieNameBarEl) {
+        smoothieNameBarEl.style.display =
+          'block';
+      }
+
+      if (
+        currentSmoothie &&
+        typeof currentSmoothie === 'object'
+      ) {
+        currentSmoothie.name =
+          cleanName;
+
+        currentSmoothie.insight =
+          cleanInsight;
+      }
+
+      if (
+        currentSmoothieData &&
+        typeof currentSmoothieData === 'object'
+      ) {
+        currentSmoothieData.name =
+          cleanName;
+
+        currentSmoothieData.insight =
+          cleanInsight;
+      }
+
+      window._pfLastSmoothieName =
+        cleanName;
+
+      window._pfLastSmoothieInsight =
+        cleanInsight;
+
+      return true;
+    }
+
+    async function pfRequestAiSmoothieName(
+      payload,
+      fallbackName,
+      fallbackInsight
+    ) {
+      if (
+        !payload ||
+        !Array.isArray(payload.ingredients) ||
+        payload.ingredients.length === 0
+      ) {
+        pfRestoreAiSmoothieFallback(
+          fallbackName,
+          fallbackInsight
+        );
+
+        return;
+      }
+
+      const requestToken =
+        ++pfAiSmoothieNameRequestToken;
+
+      const controller =
+        new AbortController();
+
+      const timeoutId =
+        window.setTimeout(
+          () => controller.abort(),
+          10000
+        );
+
+      try {
+        const response = await fetch(
+          '/api/ai-name-smoothie',
+          {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type':
+                'application/json'
+            },
+            body: JSON.stringify(payload),
+            signal: controller.signal
+          }
+        );
+
+        if (
+          requestToken !==
+          pfAiSmoothieNameRequestToken
+        ) {
+          return;
+        }
+
+        if (!response.ok) {
+          pfRestoreAiSmoothieFallback(
+            fallbackName,
+            fallbackInsight
+          );
+
+          return;
+        }
+
+        const result =
+          await response.json();
+
+        if (
+          requestToken !==
+          pfAiSmoothieNameRequestToken
+        ) {
+          return;
+        }
+
+        if (
+          !result ||
+          result.success !== true ||
+          typeof result.name !== 'string'
+        ) {
+          pfRestoreAiSmoothieFallback(
+            fallbackName,
+            fallbackInsight
+          );
+
+          return;
+        }
+
+        pfApplyAiSmoothieName(
+          result.name,
+          typeof result.insight === 'string'
+            ? result.insight
+            : fallbackInsight,
+          fallbackInsight
+        );
+      } catch (error) {
+        if (
+          requestToken ===
+          pfAiSmoothieNameRequestToken
+        ) {
+          pfRestoreAiSmoothieFallback(
+            fallbackName,
+            fallbackInsight
+          );
+        }
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
+    }
+
     // Function to update smoothie name from health goal
     function updateSmoothieNameFromHealthGoal() {
       if (!smoothieHealthGoalsEl || !smoothieNameEl || !smoothieNameDisplayEl || !smoothieNameBarEl) {
@@ -19320,7 +19972,36 @@ const allergenPanel = allergenNames.length === 0
             window.pfDismissAudienceWelcome();
           }
 
+          const fallbackSmoothieName =
+            (
+              smoothieNameEl &&
+              smoothieNameEl.value
+            )
+              ? smoothieNameEl.value
+              : 'Your Smoothie';
+
+          // This scales every ingredient to the real
+          // selected portion before the AI payload is built.
           displaySmoothieResults(data);
+
+          const aiSmoothieNamePayload =
+            pfBuildAiSmoothieNamePayload(data);
+
+          const fallbackIngredientInsight =
+            pfBuildDeterministicIngredientInsight(
+              aiSmoothieNamePayload.ingredients
+            );
+
+          pfShowAiSmoothieLoading();
+
+          // One Claude request returns both the name
+          // and the grounded ingredient insight.
+          void pfRequestAiSmoothieName(
+            aiSmoothieNamePayload,
+            fallbackSmoothieName,
+            fallbackIngredientInsight
+          );
+
           setSmoothieStatus('Smoothie built successfully');
 
           // Clear ingredient selection after building (restore original behavior)
@@ -20794,9 +21475,7 @@ const allergenPanel = allergenNames.length === 0
         escapeResultText(goalLabel);
 
       const summaryText =
-        goalLabel !== 'No specific goal'
-          ? `A portion-aware blend designed for ${audienceLabel || 'your selected audience'}, ${timingLabel.toLowerCase()}, and ${goalLabel.toLowerCase()}.`
-          : `A portion-aware blend calculated from your selected audience, timing, and ingredient amounts.`;
+        'Analyzing ingredient contributions…';
 
       const saveLocked =
         !PF_RESULT_PERMISSIONS.canSaveRecipes;
@@ -20817,7 +21496,7 @@ const allergenPanel = allergenNames.length === 0
 
           <div class="sn2-header">
             <div>
-              <h2 class="sn2-title">${safeName}</h2>
+              <h2 class="sn2-title" id="pf-ai-smoothie-result-name" aria-live="polite">${safeName}</h2>
               <div class="sn2-title-accent"></div>
             </div>
 
@@ -20926,9 +21605,16 @@ const allergenPanel = allergenNames.length === 0
 
           <div class="sn2-hero">
             <section class="sn2-overview">
-              <p class="sn2-summary">
-                ${escapeResultText(summaryText)}
-              </p>
+              <div class="sn2-summary">
+                <span class="sn2-insight-label">
+                  Ingredient insight
+                </span>
+
+                <span
+                  id="pf-ai-smoothie-insight-text"
+                  aria-live="polite"
+                >${escapeResultText(summaryText)}</span>
+              </div>
 
               <div class="sn2-meta-grid">
                 <div class="sn2-meta-item">
@@ -20941,7 +21627,7 @@ const allergenPanel = allergenNames.length === 0
                   <span class="sn2-meta-value">${safeTiming}</span>
                 </div>
 
-                <div class="sn2-meta-item">
+                <div class="sn2-meta-item sn2-meta-item--goal">
                   <span class="sn2-meta-label">Health Goal</span>
                   <span class="sn2-meta-value">${safeGoal}</span>
                 </div>
@@ -21214,8 +21900,16 @@ const allergenPanel = allergenNames.length === 0
             })
             .join(', ');
 
+          const latestSmoothieDisplayName =
+            (
+              smoothieNameEl &&
+              smoothieNameEl.value
+            )
+              ? smoothieNameEl.value
+              : smoothieDisplayName;
+
           const shareText = [
-            smoothieDisplayName,
+            latestSmoothieDisplayName,
             `Audience: ${audienceLabel || 'General audience'}`,
             `Timing: ${timingLabel}`,
             `Health goal: ${goalLabel}`,
@@ -21233,7 +21927,7 @@ const allergenPanel = allergenNames.length === 0
           try {
             if (navigator.share) {
               await navigator.share({
-                title: smoothieDisplayName,
+                title: latestSmoothieDisplayName,
                 text: shareText,
                 url: shareUrl
               });
