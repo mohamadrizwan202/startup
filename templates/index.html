@@ -6998,7 +6998,15 @@
       'fresh fruits',
       'fresh vegetables',
       'unsalted nuts',
-      'nuts'
+      'nuts',
+      'lemon',
+      'lemons',
+      'lime',
+      'limes',
+      'lemon juice',
+      'lime juice',
+      'lemon juice, raw',
+      'lime juice, raw',
     ]);
     
     // Helper function to check if an ingredient should be hidden from Browse Ingredients panel
@@ -7048,7 +7056,15 @@
       "sugar free gum",
       "fresh fruits",
       "fresh vegetables",
-      "unsalted nuts"
+      "unsalted nuts",
+      "lemon",
+      "lemons",
+      "lime",
+      "limes",
+      "lemon juice",
+      "lime juice",
+      "lemon juice, raw",
+      "lime juice, raw"
     ];
     
     // Helper function to check if an ingredient is blocked (case-insensitive, trimmed)
@@ -13139,7 +13155,120 @@ const allergenPanel = allergenNames.length === 0
       return Number(SMOOTHIE_STAPLE_PORTIONS[key]?.[ageKey] || 0);
     }
 
+    // Smoothie-only citrus juice model.
+    //
+    // Full Recipe display:
+    // FDA ingredient RACC = 5 mL.
+    //
+    // Nutrition:
+    // USDA SR Legacy values are per 100 g.
+    // Lemon household weight: 244 g per 240 mL.
+    // Lime household weight: 242 g per 240 mL.
+    const CITRUS_JUICE_SMOOTHIE_CONFIG = Object.freeze({
+      lemon: Object.freeze({
+        key: 'lemon',
+        displayName: 'Lemon Juice',
+        lookupName: 'lemon juice',
+        defaultMl: 5,
+        gramsPerMl: 244 / 240,
+        fdcId: 167747
+      }),
+      lime: Object.freeze({
+        key: 'lime',
+        displayName: 'Lime Juice',
+        lookupName: 'lime juice',
+        defaultMl: 5,
+        gramsPerMl: 242 / 240,
+        fdcId: 168156
+      })
+    });
+
+    function getCitrusJuiceSmoothieConfig(ingredientName) {
+      let normalized = String(ingredientName || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ');
+
+      if (normalized.endsWith(' juice')) {
+        normalized = normalized.slice(0, -6).trim();
+      }
+
+      if (normalized.endsWith('s')) {
+        normalized = normalized.slice(0, -1);
+      }
+
+      return (
+        CITRUS_JUICE_SMOOTHIE_CONFIG[normalized] ||
+        null
+      );
+    }
+
+    function isCitrusJuiceSmoothieIngredient(
+      ingredientName
+    ) {
+      return Boolean(
+        getCitrusJuiceSmoothieConfig(ingredientName)
+      );
+    }
+
+    function citrusJuiceMlToNutritionGrams(
+      ingredientName,
+      volumeMl
+    ) {
+      const config =
+        getCitrusJuiceSmoothieConfig(ingredientName);
+
+      const ml = Number(volumeMl);
+
+      if (!config || !Number.isFinite(ml) || ml <= 0) {
+        return 0;
+      }
+
+      return ml * config.gramsPerMl;
+    }
+
+    function getSmoothieIngredientDisplayName(
+      ingredientName
+    ) {
+      const config =
+        getCitrusJuiceSmoothieConfig(ingredientName);
+
+      return config
+        ? config.displayName
+        : ingredientName;
+    }
+
+    function formatSmoothieMl(value) {
+      const amount = Number(value);
+
+      if (!Number.isFinite(amount)) {
+        return '0';
+      }
+
+      if (Math.abs(amount - Math.round(amount)) < 0.05) {
+        return String(Math.round(amount));
+      }
+
+      return String(
+        Number(amount.toFixed(1))
+      );
+    }
+
     function getIngredientPortion(ingredientKey, ageGroup) {
+      const citrusJuiceConfig =
+        getCitrusJuiceSmoothieConfig(ingredientKey);
+
+      if (citrusJuiceConfig) {
+        return {
+          amount: citrusJuiceConfig.defaultMl,
+          unit: 'ml',
+          source: 'fdaIngredientJuiceRacc',
+          isMissing: false,
+          displayName: citrusJuiceConfig.displayName
+        };
+      }
+
       const __final = (res) => {
         const amt = Number(res?.amount);
         if (!Number.isFinite(amt) || amt === 0) {
@@ -13390,6 +13519,19 @@ const allergenPanel = allergenNames.length === 0
     // This function is the ONLY way to get portion sizes in the Smoothie tab.
     // All chips rendering and post-build display MUST use this.
     function getSmoothiePortion(ingredientName, ageGroup) {
+      const citrusJuiceConfig =
+        getCitrusJuiceSmoothieConfig(ingredientName);
+
+      if (citrusJuiceConfig) {
+        return {
+          amount: citrusJuiceConfig.defaultMl,
+          unit: 'ml',
+          source: 'fdaIngredientJuiceRacc',
+          isMissing: false,
+          displayName: citrusJuiceConfig.displayName
+        };
+      }
+
       if (!ingredientName) {
         return { amount: 0, unit: 'g', source: 'missingPortion', isMissing: true };
       }
@@ -13695,7 +13837,7 @@ const allergenPanel = allergenNames.length === 0
           // Get portion info to determine if it's a liquid and what unit/step/min/max to use
           const portion = getSmoothiePortion(ingredientName, currentAgeGroup);
           const isVegan = isPlantBasedMilk(ingredientName);
-          const isLiquid = isVegan && (portion.unit === 'ml' || portion.unit === 'cup');
+          const isLiquid = portion.unit === 'ml' || portion.unit === 'cup';
 
           // ── GRAM BUTTON INTERCEPT ──
           if (qtyBtn.classList.contains('ss-gram-btn')) {
@@ -13709,9 +13851,47 @@ const allergenPanel = allergenNames.length === 0
             // For liquids, current value is ing.quantity (ml); for solids use _grams or portionAmount
             let currentVal;
             if (isLiquid) {
-              currentVal = typeof ingObj._grams === 'number' ? ingObj._grams : (Number(ingObj.quantity) || parseFloat(portion.amount) || 150);
-              const newVal = Math.min(720, Math.max(50, currentVal + delta));
+              currentVal =
+                typeof ingObj._amount === 'number'
+                  ? ingObj._amount
+                  : (
+                      typeof ingObj.volumeMl === 'number'
+                        ? ingObj.volumeMl
+                        : (
+                            typeof ingObj._grams === 'number'
+                              ? ingObj._grams
+                              : (
+                                  Number(ingObj.quantity) ||
+                                  parseFloat(portion.amount) ||
+                                  1
+                                )
+                          )
+                    );
+
+              const isCitrusJuice =
+                isCitrusJuiceSmoothieIngredient(
+                  ingredientName
+                );
+
+              const liquidMinimum =
+                isCitrusJuice ? 1 : 50;
+
+              const adjustedDelta =
+                isCitrusJuice && delta !== 0
+                  ? Math.sign(delta)
+                  : delta;
+
+              const newVal = Math.min(
+                720,
+                Math.max(
+                  liquidMinimum,
+                  currentVal + adjustedDelta
+                )
+              );
+
+              ingObj._amount = newVal;
               ingObj._grams = newVal;
+              ingObj.volumeMl = newVal;
               ingObj.quantity = newVal;
               ingObj.unit = 'ml';
             } else {
@@ -13740,8 +13920,13 @@ const allergenPanel = allergenNames.length === 0
           let step, min, max;
           if (isLiquid) {
             if (portion.unit === 'ml') {
-              step = 10;
-              min = 50;
+              const isCitrusJuice =
+                isCitrusJuiceSmoothieIngredient(
+                  ingredientName
+                );
+
+              step = isCitrusJuice ? 1 : 10;
+              min = isCitrusJuice ? 1 : 50;
               max = 720;
             } else if (portion.unit === 'cup') {
               step = 0.5;
@@ -16628,7 +16813,25 @@ const allergenPanel = allergenNames.length === 0
           
           // For liquids (vegan milks), if quantity is 1 or 0, use the portion amount as the quantity
           // This allows users to directly edit the ml value
-          if (isVegan && (quantity === 1 || quantity === 0 || !quantity) && unit === 'ml') {
+          const hasExplicitLiquidAmount =
+            typeof ing === 'object' &&
+            ing !== null &&
+            (
+              typeof ing._amount === 'number' ||
+              typeof ing.volumeMl === 'number' ||
+              typeof ing._grams === 'number'
+            );
+
+          if (
+            portionUnit === 'ml' &&
+            !hasExplicitLiquidAmount &&
+            (
+              unit !== 'ml' ||
+              quantity === 1 ||
+              quantity === 0 ||
+              !quantity
+            )
+          ) {
             // Get the portion amount and use it as the quantity
             try {
               if (portion && portion.unit === 'ml' && portion.amount > 0) {
@@ -16699,7 +16902,7 @@ const allergenPanel = allergenNames.length === 0
           
           // SINGLE SOURCE OF TRUTH: For liquids, quantity IS the total amount (ml)
           // For solids, quantity is a multiplier (portion × quantity = total)
-          const isLiquid = isVegan && portionUnit === 'ml';
+          const isLiquid = portionUnit === 'ml';
           const totalAmount = isLiquid ? quantity : (portionAmount * quantity);
           
           // Debug safeguard: prevent multiplication for liquids
@@ -16745,7 +16948,10 @@ const allergenPanel = allergenNames.length === 0
           
           // Check if this is soy milk and mark as fortified
           // For vegan milks, use the base name (serving size is already in servingDisplay)
-          let displayName = ingredientName;
+          let displayName =
+            getSmoothieIngredientDisplayName(
+              ingredientName
+            );
           if (isVegan) {
             // Normalize the ingredient name for checking
             const normalizedName = ingredientName.toLowerCase().trim();
@@ -17216,9 +17422,23 @@ const allergenPanel = allergenNames.length === 0
           const portion = getSmoothiePortion(ingredientName, currentAgeGroup);
           const portionAmount = portion.amount || 0;
           const isVegan = isPlantBasedMilk(ingredientName);
-          const isLiquid = isVegan && portion.unit === 'ml';
-          const totalAmount = isLiquid ? quantity : (portionAmount * quantity);
-          totalWeightGrams += totalAmount;
+          const isLiquid = portion.unit === 'ml';
+          const totalAmount =
+            isLiquid
+              ? quantity
+              : (portionAmount * quantity);
+
+          const nutritionWeightG =
+            isCitrusJuiceSmoothieIngredient(
+              ingredientName
+            )
+              ? citrusJuiceMlToNutritionGrams(
+                  ingredientName,
+                  totalAmount
+                )
+              : totalAmount;
+
+          totalWeightGrams += nutritionWeightG;
         });
         
         // Format yield display
@@ -17243,7 +17463,7 @@ const allergenPanel = allergenNames.length === 0
           const portion = getSmoothiePortion(ingredientName, currentAgeGroup);
           const portionAmount = portion.amount || 0;
           const isVegan = isPlantBasedMilk(ingredientName);
-          const isLiquid = isVegan && portion.unit === 'ml';
+          const isLiquid = portion.unit === 'ml';
           const totalAmount = isLiquid ? quantity : (portionAmount * quantity);
           const portionUnit = portion.unit || 'g';
           const servingDisplay = isLiquid
@@ -18774,50 +18994,143 @@ const allergenPanel = allergenNames.length === 0
           // Create smoothie ingredient objects using getIngredientPortion for all ingredients
           // This ensures vegetables use age-specific grams dynamically (not stored values)
           const smoothieIngredientData = smoothieIngredients.map(ing => {
-            const ingredientName = extractIngredientNameForAPI(ing);
-            const normalizedName = normalizeIngredientNameForAPI(ingredientName);
-            const quantity = typeof ing === 'object' && ing.quantity ? ing.quantity : 1;
-            
-            // Use getIngredientPortion for ALL ingredients (vegetables, fruits, milks, etc.)
-            // This is the single source of truth that respects age group
-            const portion = getIngredientPortion(ingredientName, selectedAgeGroup);
-            const portionAmount = portion.amount || 0;
-            const portionUnit = portion.unit || 'g';
-            
-            // Use user-edited grams if set via gram buttons, else calculate normally
-            const userEditedGrams = typeof ing === 'object' && typeof ing._grams === 'number' ? ing._grams : null;
-            
-            // Calculate total grams: portionAmount * quantity
-            // For liquids (ml), quantity is already the ml amount, not a multiplier
-            const totalGrams = userEditedGrams !== null ? userEditedGrams : ((portionUnit === 'ml') ? portionAmount : (portionAmount * quantity));
-            
-            // Map to nutrition database lookup key (plural → singular for berries)
-            const nutritionLookupName = getNutritionLookupName(normalizedName);
-            
-            // Log for debugging - especially important for vegetables
-            if (nutritionLookupName) {
-              console.log('[smoothie-nutrition] Payload ingredient:', {
-                name: ing.name || ingredientName,
-                ageGroup: selectedAgeGroup,
-                gramsUsed: portionAmount,
-                quantity: quantity,
-                totalGrams: totalGrams,
-                unit: portionUnit
-              });
+            const ingredientName =
+              extractIngredientNameForAPI(ing);
+
+            const normalizedName =
+              normalizeIngredientNameForAPI(
+                ingredientName
+              );
+
+            const citrusConfig =
+              getCitrusJuiceSmoothieConfig(
+                ingredientName
+              );
+
+            const rawQuantity =
+              typeof ing === 'object' &&
+              ing !== null &&
+              Number(ing.quantity) > 0
+                ? Number(ing.quantity)
+                : 1;
+
+            const portion = getIngredientPortion(
+              ingredientName,
+              selectedAgeGroup
+            );
+
+            const portionAmount =
+              Number(portion.amount) || 0;
+
+            const portionUnit =
+              portion.unit || 'g';
+
+            let editedAmount = null;
+
+            if (
+              typeof ing === 'object' &&
+              ing !== null
+            ) {
+              if (typeof ing._amount === 'number') {
+                editedAmount = ing._amount;
+              } else if (
+                typeof ing.volumeMl === 'number'
+              ) {
+                editedAmount = ing.volumeMl;
+              } else if (
+                typeof ing._grams === 'number'
+              ) {
+                editedAmount = ing._grams;
+              }
             }
-            
+
+            let displayedAmount;
+
+            if (portionUnit === 'ml') {
+              const storedUnit =
+                typeof ing === 'object' && ing
+                  ? String(ing.unit || '')
+                      .toLowerCase()
+                  : '';
+
+              displayedAmount =
+                editedAmount !== null
+                  ? editedAmount
+                  : (
+                      storedUnit === 'ml' &&
+                      rawQuantity > 0
+                        ? rawQuantity
+                        : portionAmount
+                    );
+            } else {
+              displayedAmount =
+                editedAmount !== null
+                  ? editedAmount
+                  : (portionAmount * rawQuantity);
+            }
+
+            const nutritionWeightG =
+              citrusConfig
+                ? citrusJuiceMlToNutritionGrams(
+                    ingredientName,
+                    displayedAmount
+                  )
+                : displayedAmount;
+
+            const nutritionLookupName =
+              citrusConfig
+                ? citrusConfig.lookupName
+                : getNutritionLookupName(
+                    normalizedName
+                  );
+
+            const resultName =
+              citrusConfig
+                ? citrusConfig.displayName
+                : (
+                    typeof ing === 'object' &&
+                    ing &&
+                    ing.name
+                      ? ing.name
+                      : ingredientName
+                  );
+
+            if (nutritionLookupName) {
+              console.log(
+                '[smoothie-nutrition] Payload ingredient:',
+                {
+                  name: resultName,
+                  ageGroup: selectedAgeGroup,
+                  displayedAmount,
+                  unit: portionUnit,
+                  nutritionWeightG,
+                  nutritionLookupName
+                }
+              );
+            }
+
             return {
-              name: ing.name || ingredientName,
-              nutritionLookupName: nutritionLookupName,
-              portionGrams: userEditedGrams !== null ? userEditedGrams : portionAmount,
-              _grams: userEditedGrams,
-              totalGrams: totalGrams,
-              quantity: quantity,
+              name: resultName,
+              sourceName: ingredientName,
+              nutritionLookupName,
+              portionGrams: nutritionWeightG,
+              nutritionWeightG,
+              totalGrams: nutritionWeightG,
+              volumeMl:
+                portionUnit === 'ml'
+                  ? displayedAmount
+                  : null,
+              quantity:
+                portionUnit === 'ml'
+                  ? displayedAmount
+                  : rawQuantity,
               unit: portionUnit,
-              _grams: typeof ing === 'object' && typeof ing._grams === 'number' ? ing._grams : null
+              _amount: editedAmount,
+              // Legacy compatibility for existing controls.
+              _grams: editedAmount
             };
           });
-          
+
           // Convert to format expected by API (just ingredient names)
           const formattedIngredients = smoothieIngredientData
             .map(item => item.nutritionLookupName)
@@ -19487,114 +19800,335 @@ const allergenPanel = allergenNames.length === 0
         // IMPORTANT: Use the ORIGINAL ingredient name (not API response name) to preserve fresh vs dried
         // The original name has the correct fresh/dried distinction from when the user added it
         const ingredientNameForPortion = originalIngredientName;
-        const isVeganMilk = isPlantBasedMilk(ingredientNameForPortion);
-        const isDried = isDriedFruit(ingredientNameForPortion);
-        const isFresh = isFreshFruit(ingredientNameForPortion);
-        const isVeg = isVegetable(ingredientNameForPortion);
+        const isVeganMilk =
+          isPlantBasedMilk(
+            ingredientNameForPortion
+          );
+
+        const isDried =
+          isDriedFruit(
+            ingredientNameForPortion
+          );
+
+        const isFresh =
+          isFreshFruit(
+            ingredientNameForPortion
+          );
+
+        const isVeg =
+          isVegetable(
+            ingredientNameForPortion
+          );
+
+        const citrusConfig =
+          getCitrusJuiceSmoothieConfig(
+            ingredientNameForPortion
+          );
+
         let actualPortionAmount;
         let actualPortionUnit;
-        
-        // For vegetables, use getIngredientPortion to get age-specific grams dynamically
-        if (isVeg) {
-          const portion = getIngredientPortion(ingredientNameForPortion, selectedAgeGroup);
-          actualPortionAmount = portion.amount || 0;
+
+        if (citrusConfig) {
+          actualPortionAmount =
+            citrusConfig.defaultMl;
+          actualPortionUnit = 'ml';
+        } else if (isVeg) {
+          const portion = getIngredientPortion(
+            ingredientNameForPortion,
+            selectedAgeGroup
+          );
+
+          actualPortionAmount =
+            portion.amount || 0;
           actualPortionUnit = 'g';
         } else if (isVeganMilk) {
-          // For vegan milks, use getIngredientPortion (handles ml)
-          const portion = getIngredientPortion(ingredientNameForPortion, selectedAgeGroup);
-          actualPortionAmount = portion.amount || 0;
+          const portion = getIngredientPortion(
+            ingredientNameForPortion,
+            selectedAgeGroup
+          );
+
+          actualPortionAmount =
+            portion.amount || 0;
           actualPortionUnit = 'ml';
         } else if (isDried || isFresh) {
-          // For fruits (fresh or dried), use getPortionGrams
-          // Use the ORIGINAL ingredient name to preserve fresh vs dried distinction
-          let fruitKey = ingredientNameForPortion.toLowerCase().trim();
+          let fruitKey =
+            ingredientNameForPortion
+              .toLowerCase()
+              .trim();
+
           if (fruitKey.startsWith('dried_')) {
-            fruitKey = fruitKey.replace(/^dried_/, '');
-          } else if (fruitKey.startsWith('dried ')) {
-            fruitKey = fruitKey.replace(/^dried /, '');
+            fruitKey = fruitKey.replace(
+              /^dried_/,
+              ''
+            );
+          } else if (
+            fruitKey.startsWith('dried ')
+          ) {
+            fruitKey = fruitKey.replace(
+              /^dried /,
+              ''
+            );
           }
-          
-          // Get default adult grams as fallback
-          let defaultAdultGrams = isDried ? 30 : 150;
+
+          let defaultAdultGrams =
+            isDried ? 30 : 150;
+
           if (isFresh) {
-            const normalizedKey = normalizeIngredientNameForServing(fruitKey);
-            if (normalizedKey && recommendedServingGrams.adult_19_30 && recommendedServingGrams.adult_19_30[normalizedKey]) {
-              defaultAdultGrams = recommendedServingGrams.adult_19_30[normalizedKey];
+            const normalizedKey =
+              normalizeIngredientNameForServing(
+                fruitKey
+              );
+
+            if (
+              normalizedKey &&
+              recommendedServingGrams
+                .adult_19_30 &&
+              recommendedServingGrams
+                .adult_19_30[normalizedKey]
+            ) {
+              defaultAdultGrams =
+                recommendedServingGrams
+                  .adult_19_30[normalizedKey];
             }
           }
-          
-          // Normalize the fruit key to match the structure (e.g., "strawberry" → "strawberries")
-          const normalizedFruitKey = normalizeIngredientNameForServing(fruitKey) || fruitKey;
-          
-          actualPortionAmount = getPortionGrams({
-            ageGroup: selectedAgeGroup,
-            ingredientKey: normalizedFruitKey,
-            isDried: isDried,
-            defaultAdultGrams: defaultAdultGrams
-          });
+
+          const normalizedFruitKey =
+            normalizeIngredientNameForServing(
+              fruitKey
+            ) || fruitKey;
+
+          actualPortionAmount =
+            getPortionGrams({
+              ageGroup: selectedAgeGroup,
+              ingredientKey:
+                normalizedFruitKey,
+              isDried,
+              defaultAdultGrams
+            });
+
           actualPortionUnit = 'g';
         } else {
-          // Unknown ingredient type - use getIngredientPortion as fallback
-          const portion = getIngredientPortion(ingredientNameForPortion, selectedAgeGroup);
-          actualPortionAmount = portion.amount || 0;
-          actualPortionUnit = portion.unit || 'g';
+          const portion = getIngredientPortion(
+            ingredientNameForPortion,
+            selectedAgeGroup
+          );
+
+          actualPortionAmount =
+            portion.amount || 0;
+          actualPortionUnit =
+            portion.unit || 'g';
         }
-        
-        // Calculate actual serving grams based on quantity and portion
-        // Formula: totalGrams = baseServingGrams * quantity
-        // Do NOT multiply grams by ml or by any UI constant
+
+        const originalIngForAmount =
+          originalIngredients.find(orig => {
+            const origName =
+              typeof orig === 'string'
+                ? orig
+                : (
+                    orig.name ||
+                    orig.sourceName ||
+                    ''
+                  );
+
+            const originalCitrus =
+              getCitrusJuiceSmoothieConfig(
+                origName
+              );
+
+            const responseCitrus =
+              getCitrusJuiceSmoothieConfig(
+                ingredientNameForPortion
+              );
+
+            if (
+              originalCitrus &&
+              responseCitrus
+            ) {
+              return (
+                originalCitrus.key ===
+                responseCitrus.key
+              );
+            }
+
+            const normalizedOriginal =
+              String(origName)
+                .toLowerCase()
+                .trim();
+
+            const normalizedResponse =
+              String(
+                ingredientNameForPortion
+              )
+                .toLowerCase()
+                .trim();
+
+            return (
+              normalizedOriginal ===
+                normalizedResponse ||
+              normalizedResponse.includes(
+                normalizedOriginal
+              ) ||
+              normalizedOriginal.includes(
+                normalizedResponse
+              )
+            );
+          });
+
+        let userEditedAmount = null;
+
+        if (
+          originalIngForAmount &&
+          typeof originalIngForAmount === 'object'
+        ) {
+          if (
+            typeof originalIngForAmount._amount ===
+            'number'
+          ) {
+            userEditedAmount =
+              originalIngForAmount._amount;
+          } else if (
+            typeof originalIngForAmount._grams ===
+            'number'
+          ) {
+            userEditedAmount =
+              originalIngForAmount._grams;
+          }
+        }
+
         let actualServingGrams;
+        let actualVolumeMl = null;
 
-        // Check if user edited grams directly via gram buttons
-        const originalIngForGrams = originalIngredients.find(orig => {
-          const origName = (typeof orig === 'string' ? orig : (orig.name || '')).toLowerCase().trim();
-          const apiNameLower = ingredientNameForPortion.toLowerCase().trim();
-          return origName === apiNameLower || apiNameLower.includes(origName) || origName.includes(apiNameLower);
-        });
-        const userEditedGrams = originalIngForGrams && typeof originalIngForGrams === 'object' && typeof originalIngForGrams._grams === 'number'
-          ? originalIngForGrams._grams
-          : null;
+        if (citrusConfig) {
+          if (
+            originalIngForAmount &&
+            typeof originalIngForAmount === 'object' &&
+            typeof originalIngForAmount.volumeMl ===
+              'number'
+          ) {
+            actualVolumeMl =
+              originalIngForAmount.volumeMl;
+          } else if (
+            userEditedAmount !== null
+          ) {
+            actualVolumeMl =
+              userEditedAmount;
+          } else if (
+            originalIngForAmount &&
+            typeof originalIngForAmount === 'object' &&
+            String(
+              originalIngForAmount.unit || ''
+            ).toLowerCase() === 'ml' &&
+            Number(
+              originalIngForAmount.quantity
+            ) > 0
+          ) {
+            actualVolumeMl =
+              Number(
+                originalIngForAmount.quantity
+              );
+          } else {
+            actualVolumeMl =
+              actualPortionAmount;
+          }
 
-        if (userEditedGrams !== null) {
-          // User directly set grams — use exactly that
-          actualServingGrams = userEditedGrams;
-          ing._userGrams = userEditedGrams;
-        } else if (actualPortionUnit === 'ml' || isVeganMilk) {
-          // For liquids (vegan milks), the quantity IS the ml amount (not a multiplier)
-          if (unit === 'ml' && quantity > 0) {
+          actualServingGrams =
+            citrusJuiceMlToNutritionGrams(
+              ingredientNameForPortion,
+              actualVolumeMl
+            );
+
+          ing.volume_ml = actualVolumeMl;
+          ing.unit = 'ml';
+        } else if (
+          userEditedAmount !== null
+        ) {
+          actualServingGrams =
+            userEditedAmount;
+          ing._userGrams =
+            userEditedAmount;
+        } else if (
+          actualPortionUnit === 'ml' ||
+          isVeganMilk
+        ) {
+          if (
+            unit === 'ml' &&
+            quantity > 0
+          ) {
             actualServingGrams = quantity;
           } else {
-            actualServingGrams = actualPortionAmount;
+            actualServingGrams =
+              actualPortionAmount;
           }
         } else {
-          // For solids (grams), quantity is a multiplier
-          actualServingGrams = actualPortionAmount * quantity;
+          actualServingGrams =
+            actualPortionAmount * quantity;
         }
-        
-        // Scale nutrition values from API based on ratio of actual portion to API serving size
-        if (apiServingGrams && apiServingGrams > 0 && actualServingGrams > 0) {
-          const scaleFactor = actualServingGrams / apiServingGrams;
-          
-          // Scale all nutrition values
-          ing.calories = (ing.calories || 0) * scaleFactor;
-          ing.protein = (ing.protein || 0) * scaleFactor;
-          ing.carbs = (ing.carbs || 0) * scaleFactor;
-          ing.fat = (ing.fat || 0) * scaleFactor;
-          ing.fiber = (ing.fiber || 0) * scaleFactor;
-          ing.sugar = (ing.sugar || 0) * scaleFactor;
-          ing.sodium = (ing.sodium || 0) * scaleFactor;
-          
-          // Update serving size display
-          ing.serving_size_g = actualServingGrams;
-          if (actualPortionUnit === 'ml') {
-            ing.serving_size = `${Math.round(actualServingGrams)}ml`;
+
+        if (
+          apiServingGrams &&
+          apiServingGrams > 0 &&
+          actualServingGrams > 0
+        ) {
+          const scaleFactor =
+            actualServingGrams /
+            apiServingGrams;
+
+          ing.calories =
+            (ing.calories || 0) *
+            scaleFactor;
+
+          ing.protein =
+            (ing.protein || 0) *
+            scaleFactor;
+
+          ing.carbs =
+            (ing.carbs || 0) *
+            scaleFactor;
+
+          ing.fat =
+            (ing.fat || 0) *
+            scaleFactor;
+
+          ing.fiber =
+            (ing.fiber || 0) *
+            scaleFactor;
+
+          ing.sugar =
+            (ing.sugar || 0) *
+            scaleFactor;
+
+          ing.sodium =
+            (ing.sodium || 0) *
+            scaleFactor;
+
+          ing.serving_size_g =
+            actualServingGrams;
+
+          ing.nutrition_weight_g =
+            actualServingGrams;
+
+          if (citrusConfig) {
+            ing.serving_size =
+              `${formatSmoothieMl(
+                actualVolumeMl
+              )} mL`;
+          } else if (
+            actualPortionUnit === 'ml'
+          ) {
+            ing.serving_size =
+              `${formatSmoothieMl(
+                actualServingGrams
+              )} mL`;
           } else {
-            ing.serving_size = `${Math.round(actualServingGrams)}g`;
+            ing.serving_size =
+              `${Math.round(
+                actualServingGrams
+              )}g`;
           }
         }
-        
-        // Use actual serving grams for total weight calculation
-        totalSmoothieWeightGrams += actualServingGrams;
+
+        totalSmoothieWeightGrams +=
+          actualServingGrams;
       });
 
       // Recalculate total nutrition from scaled ingredient values
@@ -19770,7 +20304,10 @@ const allergenPanel = allergenNames.length === 0
       // IMPORTANT: Use age-specific serving grams for all age groups
       // Reuse selectedAgeGroup that was already declared above
       const ingredientsList = ingredients.map(ing => {
-        const name = ing.ingredient || 'Unknown';
+        const name =
+          ing.display_name ||
+          ing.ingredient ||
+          'Unknown';
         
         // Get base serving grams from API response
         let baseGrams = null;
@@ -19786,16 +20323,83 @@ const allergenPanel = allergenNames.length === 0
         }
         
         // Get quantity and user-edited grams from original ingredients array
-        let quantity = 1; // Default quantity
+        let quantity = 1;
         let userEditedGramsForDisplay = null;
-        if (originalIngredients && originalIngredients.length > 0) {
-          const originalIng = originalIngredients.find(orig => {
-            const origName = typeof orig === 'string' ? orig : orig.name;
-            return origName && origName.toLowerCase().trim() === name.toLowerCase().trim();
-          });
-          if (originalIng && typeof originalIng === 'object') {
-            if (originalIng.quantity) quantity = originalIng.quantity;
-            if (typeof originalIng._grams === 'number') userEditedGramsForDisplay = originalIng._grams;
+
+        if (
+          originalIngredients &&
+          originalIngredients.length > 0
+        ) {
+          const originalIng =
+            originalIngredients.find(orig => {
+              const origName =
+                typeof orig === 'string'
+                  ? orig
+                  : (
+                      orig.name ||
+                      orig.sourceName ||
+                      ''
+                    );
+
+              const originalCitrus =
+                getCitrusJuiceSmoothieConfig(
+                  origName
+                );
+
+              const resultCitrus =
+                getCitrusJuiceSmoothieConfig(
+                  name
+                );
+
+              if (
+                originalCitrus &&
+                resultCitrus
+              ) {
+                return (
+                  originalCitrus.key ===
+                  resultCitrus.key
+                );
+              }
+
+              return (
+                origName &&
+                origName
+                  .toLowerCase()
+                  .trim() ===
+                  name
+                    .toLowerCase()
+                    .trim()
+              );
+            });
+
+          if (
+            originalIng &&
+            typeof originalIng === 'object'
+          ) {
+            if (originalIng.quantity) {
+              quantity =
+                originalIng.quantity;
+            }
+
+            if (
+              typeof originalIng.volumeMl ===
+              'number'
+            ) {
+              userEditedGramsForDisplay =
+                originalIng.volumeMl;
+            } else if (
+              typeof originalIng._amount ===
+              'number'
+            ) {
+              userEditedGramsForDisplay =
+                originalIng._amount;
+            } else if (
+              typeof originalIng._grams ===
+              'number'
+            ) {
+              userEditedGramsForDisplay =
+                originalIng._grams;
+            }
           }
         }
         
@@ -19816,8 +20420,15 @@ const allergenPanel = allergenNames.length === 0
         
         // SINGLE SOURCE OF TRUTH: For liquids, quantity IS the total amount (ml)
         // For solids, quantity is a multiplier (portion × quantity = total)
-        const isLiquid = isVegan && portionUnit === 'ml';
-        const totalGrams = isLiquid ? quantity : (effectiveGrams * quantity);
+        const isLiquid = portionUnit === 'ml';
+        const totalGrams =
+          userEditedGramsForDisplay !== null
+            ? userEditedGramsForDisplay
+            : (
+                isLiquid
+                  ? quantity
+                  : (effectiveGrams * quantity)
+              );
         
         // Debug safeguard: prevent multiplication for liquids
         if (isLiquid && totalGrams !== quantity) {
@@ -19844,15 +20455,22 @@ const allergenPanel = allergenNames.length === 0
           if (isLiquid) {
             // For liquids: quantity IS the total amount (ml), not a multiplier
             // Show: "160ml" or "160ml (default: 150ml for <ageGroup>)" format
-            const displayMl = quantity;
+            const displayMl =
+              userEditedGramsForDisplay !== null
+                ? userEditedGramsForDisplay
+                : quantity;
             const defaultMl = effectiveGrams > 0 ? effectiveGrams : (selectedAgeGroup === 'child-4-8' ? 120 : 150);
             const ageGroupOption = smoothieForEl ? smoothieForEl.options[smoothieForEl.selectedIndex] : null;
             const ageGroupLabel = ageGroupOption ? ageGroupOption.textContent : selectedAgeGroup;
             
             if (displayMl === defaultMl) {
-              serving = `${Math.round(displayMl)}ml`;
+              serving =
+                `${formatSmoothieMl(displayMl)} mL`;
             } else {
-              serving = `${Math.round(displayMl)}ml (default: ${Math.round(defaultMl)}ml for ${ageGroupLabel})`;
+              serving =
+                `${formatSmoothieMl(displayMl)} mL ` +
+                `(default: ${formatSmoothieMl(defaultMl)} mL ` +
+                `for ${ageGroupLabel})`;
             }
           } else {
             // For solids: use user-edited grams if set, else quantity multiplier
@@ -20695,7 +21313,10 @@ if (batchSel) batchSel.value = 'auto';
             const original = parseFloat(el.getAttribute('data-original-g'));
             const unit = el.getAttribute('data-unit') || 'g';
             if (!isNaN(original)) {
-              el.textContent = original + unit;
+              el.textContent =
+                unit === 'ml'
+                  ? `${formatSmoothieMl(original)} mL`
+                  : `${original}${unit}`;
             }
           });
         }
@@ -20737,8 +21358,32 @@ if (batchSel) batchSel.value = 'auto';
               const original = parseFloat(el.getAttribute('data-original-g'));
               const unit = el.getAttribute('data-unit') || 'g';
               if (!isNaN(original) && original > 0) {
-                const scaled = Math.round(original * ratio);
-                el.textContent = scaled > 0 ? scaled + unit : '< 1' + unit;
+                const scaledRaw =
+                  original * ratio;
+
+                if (unit === 'ml') {
+                  const scaledMl =
+                    original < 10
+                      ? Number(
+                          scaledRaw.toFixed(1)
+                        )
+                      : Math.round(scaledRaw);
+
+                  el.textContent =
+                    scaledMl > 0
+                      ? `${formatSmoothieMl(
+                          scaledMl
+                        )} mL`
+                      : '< 0.1 mL';
+                } else {
+                  const scaled =
+                    Math.round(scaledRaw);
+
+                  el.textContent =
+                    scaled > 0
+                      ? `${scaled}${unit}`
+                      : `< 1${unit}`;
+                }
               }
             });
           }
