@@ -566,6 +566,38 @@ def ensure_smoothie_seed_ingredients():
             "vitamins": "B1, B6, Folate",
             "minerals": "Calcium, Iron, Magnesium, Phosphorus",
         },
+        # USDA FoodData Central SR Legacy:
+        # Lemon juice, raw — FDC 167747
+        # Lime juice, raw — FDC 168156
+        #
+        # Nutrients are stored per 100 g. Smoothie volume-to-weight
+        # conversion is handled separately in the frontend.
+        {
+            "ingredient": "lemon juice",
+            "calories": 22,
+            "protein": 0.35,
+            "carbs": 6.90,
+            "fat": 0.24,
+            "fiber": 0.30,
+            "sugar": 2.52,
+            "sodium": 1,
+            "serving_size": 100,
+            "vitamins": "Vitamin C, B6, Folate",
+            "minerals": "Potassium, Magnesium",
+        },
+        {
+            "ingredient": "lime juice",
+            "calories": 25,
+            "protein": 0.42,
+            "carbs": 8.42,
+            "fat": 0.07,
+            "fiber": 0.40,
+            "sugar": 1.69,
+            "sodium": 2,
+            "serving_size": 100,
+            "vitamins": "Vitamin C, Folate",
+            "minerals": "Potassium, Magnesium",
+        },
         {
             "ingredient": "apple cider vinegar",
             "calories": 22,
@@ -51665,6 +51697,10 @@ def _canonical_smoothie_seed_name_for_response(name):
         "sesame seed": "sesame seeds",
         "sesame seeds": "sesame seeds",
         "tahini": "sesame seeds",
+        "lemon juice": "lemon juice",
+        "lemon juice, raw": "lemon juice",
+        "lime juice": "lime juice",
+        "lime juice, raw": "lime juice",
     }
     return aliases.get(n)
 
@@ -51773,6 +51809,29 @@ def _fetch_seed_nutrition_row(seed_name):
             "sodium": 11,
             "serving_size": 9,
         },
+        "lemon juice": {
+            "ingredient": "lemon juice",
+            "calories_per_100g": 22,
+            "protein": 0.35,
+            "carbs": 6.90,
+            "fat": 0.24,
+            "fiber": 0.30,
+            "sugar": 2.52,
+            "sodium": 1,
+            "serving_size": 100,
+        },
+        "lime juice": {
+            "ingredient": "lime juice",
+            "calories_per_100g": 25,
+            "protein": 0.42,
+            "carbs": 8.42,
+            "fat": 0.07,
+            "fiber": 0.40,
+            "sugar": 1.69,
+            "sodium": 2,
+            "serving_size": 100,
+        },
+
     }
 
     canonical = str(seed_name or "").lower().strip()
@@ -52064,14 +52123,28 @@ def log_smoothie_history():
             }
 
         amount = None
+        unit = normalize_text(ingredient.get("unit"))
 
-        # Prefer the calculated amount actually used in the smoothie.
-        for key in (
-            "portionGrams",
-            "totalGrams",
-            "_grams",
-            "quantity",
-        ):
+        # Liquid history fingerprints must use the displayed volume.
+        # nutritionWeightG / portionGrams remain available for macro math.
+        if unit == "ml":
+            amount_keys = (
+                "volumeMl",
+                "_amount",
+                "quantity",
+                "_grams",
+            )
+        else:
+            amount_keys = (
+                "portionGrams",
+                "nutritionWeightG",
+                "totalGrams",
+                "_amount",
+                "_grams",
+                "quantity",
+            )
+
+        for key in amount_keys:
             if ingredient.get(key) is not None:
                 amount = normalize_number(ingredient.get(key))
                 break
@@ -52083,7 +52156,7 @@ def log_smoothie_history():
                 or ingredient.get("display_name")
             ),
             "amount": amount,
-            "unit": normalize_text(ingredient.get("unit")),
+            "unit": unit,
         }
 
     def history_fingerprint(
