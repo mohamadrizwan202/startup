@@ -9646,11 +9646,45 @@ const allergenPanel = allergenNames.length === 0
     
     // Function to check if an ingredient is a fresh fruit (fruit but not dried)
     function isFreshFruit(ingredientName) {
-      // Exclude sweeteners and vegan milks first - they should not be classified as fruits
-      if (isSweetener(ingredientName) || isPlantBasedMilk(ingredientName)) {
+      if (!ingredientName || typeof ingredientName !== 'string') {
         return false;
       }
-      return isFruit(ingredientName) && !isDriedFruit(ingredientName);
+
+      // In the Smoothie Builder, lemon and lime are modeled as
+      // small-volume juice ingredients, not fresh-fruit servings.
+      const normalizedName = ingredientName
+        .toLowerCase()
+        .trim()
+        .replace(/[_-]+/g, ' ')
+        .replace(/\s+/g, ' ');
+
+      const citrusJuiceNames = new Set([
+        'lemon',
+        'lemons',
+        'lime',
+        'limes',
+        'lemon juice',
+        'lime juice',
+        'lemon juice, raw',
+        'lime juice, raw'
+      ]);
+
+      if (citrusJuiceNames.has(normalizedName)) {
+        return false;
+      }
+
+      // Exclude sweeteners and vegan milks first.
+      if (
+        isSweetener(ingredientName) ||
+        isPlantBasedMilk(ingredientName)
+      ) {
+        return false;
+      }
+
+      return (
+        isFruit(ingredientName) &&
+        !isDriedFruit(ingredientName)
+      );
     }
 
     function isMicroDoseIngredient(name) {
