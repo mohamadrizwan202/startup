@@ -2022,7 +2022,7 @@ def add_security_headers(response):
         "form-action 'self'",
 
         # AdSense / CMP needs external images
-        "img-src 'self' data: https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://www.google-analytics.com https://*.contentsquare.net https://*.contentsquare.com",
+        "img-src 'self' data: blob: https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://www.google-analytics.com https://*.contentsquare.net https://*.contentsquare.com",
 
         "style-src 'self' 'unsafe-inline'",
     ]
