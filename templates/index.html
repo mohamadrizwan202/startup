@@ -15028,15 +15028,173 @@ const allergenPanel = allergenNames.length === 0
           fallbackName || 'Your Smoothie';
       }
 
+      const resolvedFallbackName =
+        fallbackName || 'Your Smoothie';
+
+      const resolvedFallbackInsight =
+        fallbackInsight ||
+        (
+          'This insight is based on the selected ' +
+          'ingredient portions.'
+        );
+
       if (insightElement) {
         insightElement.textContent =
-          fallbackInsight ||
-          (
-            'This insight is based on the selected ' +
-            'ingredient portions.'
-          );
+          resolvedFallbackInsight;
+      }
+
+      if (
+        typeof window.pfRefreshShareCardPayload ===
+        'function'
+      ) {
+        void window.pfRefreshShareCardPayload({
+          name: resolvedFallbackName,
+          insight: resolvedFallbackInsight
+        });
       }
     }
+
+    let pfShareCardPreparationToken = 0;
+
+    function pfSetShareCardButtonState(
+      button,
+      {
+        label,
+        note,
+        disabled
+      } = {}
+    ) {
+      if (!button) {
+        return;
+      }
+
+      const labelElement =
+        button.querySelector('span');
+
+      const noteElement =
+        button
+          .closest('.sn2-action-wrap')
+          ?.querySelector('.sn2-action-note');
+
+      if (
+        labelElement &&
+        typeof label === 'string'
+      ) {
+        labelElement.textContent = label;
+      }
+
+      if (
+        noteElement &&
+        typeof note === 'string'
+      ) {
+        noteElement.textContent = note;
+      }
+
+      if (typeof disabled === 'boolean') {
+        button.disabled = disabled;
+      }
+    }
+
+    async function pfPrepareSmoothieShareCard(
+      payload,
+      button
+    ) {
+      if (
+        !PF_RESULT_PERMISSIONS.isAuthenticated
+      ) {
+        return null;
+      }
+
+      const shareCard =
+        window.PureFyulShareCard;
+
+      if (
+        !shareCard ||
+        typeof shareCard.prepare !== 'function'
+      ) {
+        pfSetShareCardButtonState(
+          button,
+          {
+            label: 'Share Result',
+            note: 'Image sharing is unavailable',
+            disabled: false
+          }
+        );
+
+        return null;
+      }
+
+      const preparationToken =
+        ++pfShareCardPreparationToken;
+
+      pfSetShareCardButtonState(
+        button,
+        {
+          label: 'Preparing Image',
+          note: 'Creating your share card…',
+          disabled: true
+        }
+      );
+
+      try {
+        const result =
+          await shareCard.prepare(payload);
+
+        if (
+          preparationToken !==
+          pfShareCardPreparationToken
+        ) {
+          return result;
+        }
+
+        if (
+          result &&
+          result.mode === 'stale'
+        ) {
+          return result;
+        }
+
+        pfSetShareCardButtonState(
+          button,
+          {
+            label: 'Share Result',
+            note: (
+              result &&
+              result.canShareFile
+            )
+              ? 'Ready to share image'
+              : 'Ready to share or download',
+            disabled: false
+          }
+        );
+
+        return result;
+      } catch (error) {
+        if (
+          preparationToken !==
+          pfShareCardPreparationToken
+        ) {
+          return null;
+        }
+
+        console.warn(
+          '[smoothie-share-prepare]',
+          error
+        );
+
+        pfSetShareCardButtonState(
+          button,
+          {
+            label: 'Share Result',
+            note: 'Image preparation failed',
+            disabled: false
+          }
+        );
+
+        return null;
+      }
+    }
+
 
     function pfApplyAiSmoothieName(
       name,
@@ -15130,6 +15288,16 @@ const allergenPanel = allergenNames.length === 0
 
       window._pfLastSmoothieInsight =
         cleanInsight;
+
+      if (
+        typeof window.pfRefreshShareCardPayload ===
+        'function'
+      ) {
+        void window.pfRefreshShareCardPayload({
+          name: cleanName,
+          insight: cleanInsight
+        });
+      }
 
       return true;
     }
@@ -21887,71 +22055,301 @@ const allergenPanel = allergenNames.length === 0
       const resultShareBtn =
         document.getElementById('pf-result-share-btn');
 
-      if (resultShareBtn) {
-        resultShareBtn.addEventListener('click', async () => {
-          if (!PF_RESULT_PERMISSIONS.isAuthenticated) {
-            window.location.assign('/login?next=/app');
-            return;
-          }
-
-          const ingredientText = ingredientsList
-            .map(ingredient => {
-              return `${ingredient.name}: ${ingredient.serving}`;
-            })
-            .join(', ');
-
-          const latestSmoothieDisplayName =
+      function buildCurrentShareCardPayload(
+        overrides = {}
+      ) {
+        const liveName =
+          String(
+            overrides.name ||
             (
               smoothieNameEl &&
               smoothieNameEl.value
+            ) ||
+            smoothieDisplayName ||
+            'Your Smoothie'
+          ).trim();
+
+        const liveInsightElement =
+          document.getElementById(
+            'pf-ai-smoothie-insight-text'
+          );
+
+        const liveInsight =
+          String(
+            overrides.insight ||
+            (
+              liveInsightElement
+                ? liveInsightElement.textContent
+                : ''
+            ) ||
+            window._pfLastSmoothieInsight ||
+            'This result reflects the selected ingredient portions.'
+          ).trim();
+
+        return {
+          name: liveName,
+          audience:
+            audienceLabel ||
+            'General audience',
+          timing:
+            timingLabel ||
+            'Any time',
+          healthGoal:
+            goalLabel ||
+            'No specific goal',
+          insight: liveInsight,
+          allergen:
+            allergenTitle ||
+            'Review ingredients for allergen details',
+          nutrition: {
+            calories:
+              Number(
+                totalNutrients.calories
+              ) || 0,
+            protein:
+              Number(
+                totalNutrients.protein
+              ) || 0,
+            fiber:
+              Number(
+                totalNutrients.fiber
+              ) || 0,
+            sugar:
+              Number(
+                totalNutrients.sugar
+              ) || 0
+          },
+          ingredients:
+            ingredientsList.map(
+              ingredient => {
+                const amount =
+                  Number(
+                    ingredient.totalGrams
+                  );
+
+                const payloadIngredient = {
+                  name:
+                    ingredient.name,
+                  serving:
+                    ingredient.serving
+                };
+
+                if (
+                  Number.isFinite(amount) &&
+                  amount > 0
+                ) {
+                  payloadIngredient.amount =
+                    amount;
+                }
+
+                return payloadIngredient;
+              }
             )
-              ? smoothieNameEl.value
-              : smoothieDisplayName;
+        };
+      }
 
-          const shareText = [
-            latestSmoothieDisplayName,
-            `Audience: ${audienceLabel || 'General audience'}`,
-            `Timing: ${timingLabel}`,
-            `Health goal: ${goalLabel}`,
-            `${Math.round(totalNutrients.calories || 0)} kcal`,
-            `Protein: ${(totalNutrients.protein || 0).toFixed(1)}g`,
-            `Fiber: ${(totalNutrients.fiber || 0).toFixed(1)}g`,
-            `Sugar: ${(totalNutrients.sugar || 0).toFixed(1)}g`,
-            `Ingredients: ${ingredientText}`,
-            allergenTitle,
-            'Built with PureFyul'
-          ].join('\\n');
-
-          const shareUrl = `${window.location.origin}/app`;
-
-          try {
-            if (navigator.share) {
-              await navigator.share({
-                title: latestSmoothieDisplayName,
-                text: shareText,
-                url: shareUrl
-              });
-              return;
-            }
-
-            await navigator.clipboard.writeText(
-              `${shareText}\\n${shareUrl}`
+      window.pfRefreshShareCardPayload =
+        function (
+          overrides = {}
+        ) {
+          const payload =
+            buildCurrentShareCardPayload(
+              overrides
             );
 
-            const originalText = resultShareBtn.textContent;
-            resultShareBtn.textContent = 'Result Copied';
+          window._pfLastShareCardPayload =
+            payload;
 
-            setTimeout(() => {
-              resultShareBtn.textContent = originalText;
-            }, 1600);
-          } catch (error) {
-            if (error && error.name === 'AbortError') {
+          return pfPrepareSmoothieShareCard(
+            payload,
+            resultShareBtn
+          );
+        };
+
+      if (resultShareBtn) {
+        if (
+          PF_RESULT_PERMISSIONS.isAuthenticated
+        ) {
+          pfSetShareCardButtonState(
+            resultShareBtn,
+            {
+              label: 'Preparing Image',
+              note:
+                'Waiting for final name and insight…',
+              disabled: true
+            }
+          );
+        }
+
+        resultShareBtn.addEventListener(
+          'click',
+          async () => {
+            if (
+              !PF_RESULT_PERMISSIONS.isAuthenticated
+            ) {
+              window.location.assign(
+                '/login?next=/app'
+              );
+
               return;
             }
 
-            console.warn('[smoothie-share]', error);
+            const shareCard =
+              window.PureFyulShareCard;
+
+            const payload =
+              buildCurrentShareCardPayload();
+
+            window._pfLastShareCardPayload =
+              payload;
+
+            if (
+              !shareCard ||
+              typeof shareCard.sharePrepared !==
+                'function' ||
+              typeof shareCard.isPrepared !==
+                'function'
+            ) {
+              pfSetShareCardButtonState(
+                resultShareBtn,
+                {
+                  label: 'Share Result',
+                  note:
+                    'Image sharing is unavailable',
+                  disabled: false
+                }
+              );
+
+              return;
+            }
+
+            if (
+              !shareCard.isPrepared(payload)
+            ) {
+              void pfPrepareSmoothieShareCard(
+                payload,
+                resultShareBtn
+              );
+
+              return;
+            }
+
+            pfSetShareCardButtonState(
+              resultShareBtn,
+              {
+                label: 'Opening Share',
+                note:
+                  'Choose an app or save the image',
+                disabled: false
+              }
+            );
+
+            try {
+              const result =
+                await shareCard.sharePrepared(
+                  payload
+                );
+
+              if (
+                result &&
+                result.mode === 'download'
+              ) {
+                pfSetShareCardButtonState(
+                  resultShareBtn,
+                  {
+                    label: 'Image Downloaded',
+                    note:
+                      'Upload it to any social app',
+                    disabled: false
+                  }
+                );
+              } else {
+                pfSetShareCardButtonState(
+                  resultShareBtn,
+                  {
+                    label: 'Share Result',
+                    note: 'Image shared',
+                    disabled: false
+                  }
+                );
+              }
+
+              window.setTimeout(
+                () => {
+                  if (
+                    shareCard.isPrepared(
+                      payload
+                    )
+                  ) {
+                    pfSetShareCardButtonState(
+                      resultShareBtn,
+                      {
+                        label: 'Share Result',
+                        note:
+                          'Ready to share or download',
+                        disabled: false
+                      }
+                    );
+                  }
+                },
+                1800
+              );
+            } catch (error) {
+              if (
+                error &&
+                error.name === 'AbortError'
+              ) {
+                pfSetShareCardButtonState(
+                  resultShareBtn,
+                  {
+                    label: 'Share Result',
+                    note:
+                      'Ready to share or download',
+                    disabled: false
+                  }
+                );
+
+                return;
+              }
+
+              console.warn(
+                '[smoothie-share]',
+                error
+              );
+
+              try {
+                await shareCard.download(
+                  payload
+                );
+
+                pfSetShareCardButtonState(
+                  resultShareBtn,
+                  {
+                    label: 'Image Downloaded',
+                    note:
+                      'Upload it to any social app',
+                    disabled: false
+                  }
+                );
+              } catch (downloadError) {
+                console.warn(
+                  '[smoothie-share-download]',
+                  downloadError
+                );
+
+                pfSetShareCardButtonState(
+                  resultShareBtn,
+                  {
+                    label: 'Try Again',
+                    note:
+                      'Could not create the share image',
+                    disabled: false
+                  }
+                );
+              }
+            }
           }
-        });
+        );
       }
 
       const batchSel = document.getElementById('smoothie-batch-ml');
@@ -23931,6 +24329,8 @@ const batchG = (smoothieBatchMlOverride != null)
 })();
 </script>
 
+
+  <script src="{{ url_for('static', filename='js/purefyul-share-card.js') }}?v=7.9.8"></script>
 </body>
 </html>
 
