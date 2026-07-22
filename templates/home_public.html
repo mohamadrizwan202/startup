@@ -35,13 +35,251 @@
     .hp-problem-icon { width: 44px; height: 44px; background: #0EA5A4; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 1rem; }
     .hp-problem-card h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
     .hp-problem-card p { font-size: 0.875rem; color: #64748b; line-height: 1.65; }
-    .hp-how { background: #f8fafc; }
-    .hp-how-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; }
-    .hp-how-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.75rem; }
-    .hp-how-num { width: 36px; height: 36px; background: #0EA5A4; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 800; margin-bottom: 1rem; }
-    .hp-how-card h4 { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 0.4rem; }
-    .hp-how-card p { font-size: 0.85rem; color: #64748b; line-height: 1.6; }
-    .hp-pro-tag { display: inline-block; background: #0EA5A4; color: #fff; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.12rem 0.4rem; border-radius: 4px; margin-left: 0.4rem; vertical-align: middle; }
+    /* Real-product walkthrough */
+    .hp-how {
+      overflow: hidden;
+      background: #f8fafc;
+    }
+
+    .hp-walkthrough {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .hp-walkthrough-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .hp-walkthrough-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      min-height: 76px;
+      padding: 0.9rem 1rem;
+      border: 1px solid #dbe4e9;
+      border-radius: 14px;
+      background: #fff;
+      color: #475569;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition:
+        transform 0.15s,
+        border-color 0.15s,
+        background 0.15s,
+        box-shadow 0.15s;
+    }
+
+    .hp-walkthrough-tab:hover {
+      transform: translateY(-1px);
+      border-color: rgba(14, 165, 164, 0.55);
+    }
+
+    .hp-walkthrough-tab[aria-selected="true"] {
+      border-color: #0EA5A4;
+      background: #ecfdfb;
+      color: #0f172a;
+      box-shadow: 0 8px 24px rgba(14, 165, 164, 0.12);
+    }
+
+    .hp-walkthrough-tab-number {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 0.76rem;
+      font-weight: 800;
+    }
+
+    .hp-walkthrough-tab[aria-selected="true"]
+    .hp-walkthrough-tab-number {
+      background: #0EA5A4;
+      color: #fff;
+    }
+
+    .hp-walkthrough-tab-copy {
+      min-width: 0;
+    }
+
+    .hp-walkthrough-tab-title {
+      display: block;
+      margin-bottom: 0.18rem;
+      color: inherit;
+      font-size: 0.9rem;
+      font-weight: 750;
+    }
+
+    .hp-walkthrough-tab-subtitle {
+      display: block;
+      color: #64748b;
+      font-size: 0.72rem;
+      line-height: 1.35;
+    }
+
+    .hp-walkthrough-panel {
+      display: none;
+      grid-template-columns:
+        minmax(230px, 0.36fr)
+        minmax(0, 0.64fr);
+      gap: clamp(2rem, 5vw, 4.5rem);
+      align-items: center;
+      padding: clamp(1.5rem, 4vw, 3rem);
+      border: 1px solid #dfe8ec;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+    }
+
+    .hp-walkthrough-panel.is-active {
+      display: grid;
+    }
+
+    .hp-walkthrough-panel-copy {
+      max-width: 350px;
+    }
+
+    .hp-walkthrough-step-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      margin-bottom: 0.9rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 100px;
+      background: #ecfdfb;
+      color: #0d9488;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hp-walkthrough-panel h3 {
+      margin: 0 0 0.8rem;
+      color: #0f172a;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.12;
+    }
+
+    .hp-walkthrough-panel p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .hp-walkthrough-benefit {
+      margin-top: 1.2rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid #e2e8f0;
+      color: #334155;
+      font-size: 0.86rem;
+      font-weight: 650;
+      line-height: 1.55;
+    }
+
+    .hp-walkthrough-image-frame {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      background: #f8fafc;
+      overflow: hidden;
+    }
+
+    .hp-walkthrough-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 620px;
+      object-fit: contain;
+      object-position: center top;
+      border-radius: 10px;
+    }
+
+    .hp-walkthrough-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 1.75rem;
+    }
+
+    .hp-walkthrough-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0.8rem 1.6rem;
+      border-radius: 100px;
+      background: #0EA5A4;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 750;
+      text-decoration: none;
+      box-shadow: 0 10px 24px rgba(14, 165, 164, 0.2);
+      transition:
+        transform 0.15s,
+        background 0.15s,
+        box-shadow 0.15s;
+    }
+
+    .hp-walkthrough-cta:hover {
+      transform: translateY(-2px);
+      background: #0d9488;
+      box-shadow: 0 14px 30px rgba(14, 165, 164, 0.25);
+    }
+
+    @media (max-width: 800px) {
+      .hp-walkthrough-tabs {
+        grid-template-columns: 1fr;
+      }
+
+      .hp-walkthrough-tab {
+        min-height: 64px;
+      }
+
+      .hp-walkthrough-panel {
+        grid-template-columns: 1fr;
+        gap: 1.75rem;
+      }
+
+      .hp-walkthrough-panel-copy {
+        max-width: 620px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .hp-walkthrough-image {
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hp-walkthrough-panel {
+        padding: 1.1rem;
+        border-radius: 18px;
+      }
+
+      .hp-walkthrough-image-frame {
+        padding: 0.4rem;
+        border-radius: 14px;
+      }
+
+      .hp-walkthrough-tab-subtitle {
+        display: none;
+      }
+    }
     /* Real PureFyul share-result showcase */
     .hp-share-showcase {
       position: relative;
@@ -289,13 +527,12 @@
     .hp-footer-bottom { max-width: 1100px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; font-size: 0.8rem; color: rgba(255,255,255,0.35); }
     @media (max-width: 900px) {
       .hp-problem-grid, .hp-features-grid { grid-template-columns: 1fr 1fr; }
-      .hp-how-grid { grid-template-columns: 1fr 1fr; }
       .hp-gap-inner { grid-template-columns: 1fr; gap: 2rem; }
       .hp-footer-inner { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 600px) {
       .hp-hero { padding: 3.5rem 1.25rem 5rem; }
-      .hp-problem-grid, .hp-features-grid, .hp-how-grid { grid-template-columns: 1fr; }
+      .hp-problem-grid, .hp-features-grid { grid-template-columns: 1fr; }
       .hp-footer-inner { grid-template-columns: 1fr; }
       .hp-footer-bottom { flex-direction: column; gap: 0.5rem; }
     }
@@ -348,29 +585,197 @@
 
   <section class="hp-section hp-how" id="how-it-works">
     <div class="hp-container">
-      <p class="hp-section-label">How It Works</p>
-      <h2 class="hp-section-title">How PureFyul works in four steps</h2>
-      <p class="hp-section-sub">No nutrition degree required. PureFyul runs the math so you focus on blending.</p>
-      <div class="hp-how-grid">
-        <div class="hp-how-card">
-          <div class="hp-how-num">1</div>
-          <h4>Select your audience</h4>
-          <p>Choose from 12 age groups from Child 4-6 to Man or Woman 60+. PureFyul automatically sets the right portion size for each ingredient based on that age group.</p>
+      <p class="hp-section-label">See It in Action</p>
+
+      <h2 class="hp-section-title">
+        From ingredients to a personalized result
+      </h2>
+
+      <p class="hp-section-sub">
+        Three simple steps. PureFyul handles the portion and
+        nutrition calculations for you.
+      </p>
+
+      <div class="hp-walkthrough" data-home-walkthrough>
+        <div
+          class="hp-walkthrough-tabs"
+          role="tablist"
+          aria-label="How PureFyul works"
+        >
+          <button
+            type="button"
+            class="hp-walkthrough-tab"
+            id="hp-walkthrough-tab-1"
+            role="tab"
+            aria-selected="true"
+            aria-controls="hp-walkthrough-panel-1"
+            tabindex="0"
+            data-walkthrough-tab
+          >
+            <span class="hp-walkthrough-tab-number">01</span>
+            <span class="hp-walkthrough-tab-copy">
+              <span class="hp-walkthrough-tab-title">
+                Choose your audience
+              </span>
+              <span class="hp-walkthrough-tab-subtitle">
+                PureFyul adjusts ingredient portions
+              </span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="hp-walkthrough-tab"
+            id="hp-walkthrough-tab-2"
+            role="tab"
+            aria-selected="false"
+            aria-controls="hp-walkthrough-panel-2"
+            tabindex="-1"
+            data-walkthrough-tab
+          >
+            <span class="hp-walkthrough-tab-number">02</span>
+            <span class="hp-walkthrough-tab-copy">
+              <span class="hp-walkthrough-tab-title">
+                Build your smoothie
+              </span>
+              <span class="hp-walkthrough-tab-subtitle">
+                Use a preset or choose ingredients
+              </span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="hp-walkthrough-tab"
+            id="hp-walkthrough-tab-3"
+            role="tab"
+            aria-selected="false"
+            aria-controls="hp-walkthrough-panel-3"
+            tabindex="-1"
+            data-walkthrough-tab
+          >
+            <span class="hp-walkthrough-tab-number">03</span>
+            <span class="hp-walkthrough-tab-copy">
+              <span class="hp-walkthrough-tab-title">
+                Review and share
+              </span>
+              <span class="hp-walkthrough-tab-subtitle">
+                See the finished personalized result
+              </span>
+            </span>
+          </button>
         </div>
-        <div class="hp-how-card">
-          <div class="hp-how-num">2</div>
-          <h4>Pick a preset or build your own</h4>
-          <p>Browse preset smoothies organized by health goal, or search and add ingredients manually. Presets unlock after selecting your audience.</p>
+
+        <div class="hp-walkthrough-panels">
+          <article
+            class="hp-walkthrough-panel is-active"
+            id="hp-walkthrough-panel-1"
+            role="tabpanel"
+            aria-labelledby="hp-walkthrough-tab-1"
+            data-walkthrough-panel
+          >
+            <div class="hp-walkthrough-panel-copy">
+              <span class="hp-walkthrough-step-label">Step 1</span>
+              <h3>Tell PureFyul who it is for</h3>
+              <p>
+                Select the audience first. PureFyul uses the
+                age group to set ingredient portions before
+                you build.
+              </p>
+              <div class="hp-walkthrough-benefit">
+                You choose the person. PureFyul handles the
+                portion calculations.
+              </div>
+            </div>
+
+            <div class="hp-walkthrough-image-frame">
+              <img
+                class="hp-walkthrough-image"
+                src="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-1.png') }}?v=1"
+                width="1095"
+                height="562"
+                loading="lazy"
+                decoding="async"
+                alt="PureFyul builder with an audience selected and smoothie presets unlocked"
+              >
+            </div>
+          </article>
+
+          <article
+            class="hp-walkthrough-panel"
+            id="hp-walkthrough-panel-2"
+            role="tabpanel"
+            aria-labelledby="hp-walkthrough-tab-2"
+            data-walkthrough-panel
+            hidden
+          >
+            <div class="hp-walkthrough-panel-copy">
+              <span class="hp-walkthrough-step-label">Step 2</span>
+              <h3>Choose a preset or build your own</h3>
+              <p>
+                Load a starting recipe or select the timing,
+                health goal, and ingredients yourself. Review
+                the amounts, then build the smoothie.
+              </p>
+              <div class="hp-walkthrough-benefit">
+                Start quickly with a preset or keep control
+                over every ingredient.
+              </div>
+            </div>
+
+            <div class="hp-walkthrough-image-frame">
+              <img
+                class="hp-walkthrough-image"
+                src="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-2.png') }}?v=1"
+                width="1095"
+                height="968"
+                loading="lazy"
+                decoding="async"
+                alt="PureFyul builder with timing, health goal, ingredients, and Build Smoothie button ready"
+              >
+            </div>
+          </article>
+
+          <article
+            class="hp-walkthrough-panel"
+            id="hp-walkthrough-panel-3"
+            role="tabpanel"
+            aria-labelledby="hp-walkthrough-tab-3"
+            data-walkthrough-panel
+            hidden
+          >
+            <div class="hp-walkthrough-panel-copy">
+              <span class="hp-walkthrough-step-label">Step 3</span>
+              <h3>Review your personalized result</h3>
+              <p>
+                See the nutrition summary, portion size,
+                ingredient amounts, insight, and allergen
+                status in one result.
+              </p>
+              <div class="hp-walkthrough-benefit">
+                Create a free account when you are ready to
+                share your completed result.
+              </div>
+            </div>
+
+            <div class="hp-walkthrough-image-frame">
+              <img
+                class="hp-walkthrough-image"
+                src="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-3.png') }}?v=1"
+                width="1800"
+                height="980"
+                loading="lazy"
+                decoding="async"
+                alt="Completed PureFyul smoothie result with nutrition, ingredients, allergen status, and sharing option"
+              >
+            </div>
+          </article>
         </div>
-        <div class="hp-how-card">
-          <div class="hp-how-num">3</div>
-          <h4>See age-adjusted nutrition</h4>
-          <p>Get full macros — calories, protein, carbs, fat, fiber and sugar — calculated for your specific age group. No guesswork, no manual lookups.</p>
-        </div>
-        <div class="hp-how-card">
-          <div class="hp-how-num">4</div>
-          <h4>Save and plan your week <span class="hp-pro-tag">Pro</span></h4>
-          <p>Save custom recipes and build a weekly smoothie meal plan. Assign smoothies to any meal slot and track your week at a glance.</p>
+
+        <div class="hp-walkthrough-actions">
+          <a class="hp-walkthrough-cta" href="/app">
+            Try PureFyul free
+          </a>
         </div>
       </div>
     </div>
@@ -574,6 +979,73 @@
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
   {% include "_legal_footer.html" %}
   {% include "_feedback.html" %}
+
+  <script
+    nonce="{{ csp_nonce }}"
+    id="hp-walkthrough-script"
+  >
+  (function () {
+    var root = document.querySelector(
+      '[data-home-walkthrough]'
+    );
+
+    if (!root) return;
+
+    var tabs = Array.from(
+      root.querySelectorAll('[data-walkthrough-tab]')
+    );
+
+    var panels = Array.from(
+      root.querySelectorAll('[data-walkthrough-panel]')
+    );
+
+    function activate(index, shouldFocus) {
+      tabs.forEach(function (tab, tabIndex) {
+        var active = tabIndex === index;
+        var panel = panels[tabIndex];
+
+        tab.setAttribute(
+          'aria-selected',
+          active ? 'true' : 'false'
+        );
+
+        tab.tabIndex = active ? 0 : -1;
+        panel.hidden = !active;
+        panel.classList.toggle('is-active', active);
+      });
+
+      if (shouldFocus) {
+        tabs[index].focus();
+      }
+    }
+
+    tabs.forEach(function (tab, index) {
+      tab.addEventListener('click', function () {
+        activate(index, false);
+      });
+
+      tab.addEventListener('keydown', function (event) {
+        var nextIndex = index;
+
+        if (event.key === 'ArrowRight') {
+          nextIndex = (index + 1) % tabs.length;
+        } else if (event.key === 'ArrowLeft') {
+          nextIndex =
+            (index - 1 + tabs.length) % tabs.length;
+        } else if (event.key === 'Home') {
+          nextIndex = 0;
+        } else if (event.key === 'End') {
+          nextIndex = tabs.length - 1;
+        } else {
+          return;
+        }
+
+        event.preventDefault();
+        activate(nextIndex, true);
+      });
+    });
+  }());
+  </script>
 
   <script nonce="{{ csp_nonce }}">
   document.querySelectorAll('a[href^="#"]').forEach(function(a) {
