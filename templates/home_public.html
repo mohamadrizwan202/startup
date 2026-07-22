@@ -42,6 +42,197 @@
     .hp-how-card h4 { font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 0.4rem; }
     .hp-how-card p { font-size: 0.85rem; color: #64748b; line-height: 1.6; }
     .hp-pro-tag { display: inline-block; background: #0EA5A4; color: #fff; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.12rem 0.4rem; border-radius: 4px; margin-left: 0.4rem; vertical-align: middle; }
+    /* Real PureFyul share-result showcase */
+    .hp-share-showcase {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(
+          circle at 82% 22%,
+          rgba(14, 165, 164, 0.12),
+          transparent 32%
+        ),
+        #f5faf9;
+    }
+
+    .hp-share-shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns:
+        minmax(0, 0.9fr)
+        minmax(360px, 1.1fr);
+      align-items: center;
+      gap: clamp(3rem, 7vw, 6rem);
+    }
+
+    .hp-share-copy {
+      max-width: 490px;
+    }
+
+    .hp-share-label {
+      margin: 0 0 0.8rem;
+      color: #0d9488;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .hp-share-title {
+      margin: 0 0 1.15rem;
+      color: #0f172a;
+      font-size: clamp(2rem, 4.4vw, 3.15rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.06;
+    }
+
+    .hp-share-description {
+      margin: 0;
+      max-width: 470px;
+      color: #475569;
+      font-size: 1rem;
+      line-height: 1.75;
+    }
+
+    .hp-share-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin: 1.5rem 0 1.8rem;
+    }
+
+    .hp-share-detail {
+      padding: 0.45rem 0.75rem;
+      border: 1px solid rgba(14, 165, 164, 0.2);
+      border-radius: 100px;
+      background: rgba(255, 255, 255, 0.78);
+      color: #0f766e;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .hp-share-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0.8rem 1.55rem;
+      border-radius: 100px;
+      background: #0EA5A4;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 750;
+      text-decoration: none;
+      box-shadow: 0 10px 24px rgba(14, 165, 164, 0.2);
+      transition:
+        transform 0.15s,
+        box-shadow 0.15s,
+        background 0.15s;
+    }
+
+    .hp-share-cta:hover {
+      transform: translateY(-2px);
+      background: #0d9488;
+      box-shadow: 0 14px 30px rgba(14, 165, 164, 0.25);
+    }
+
+    .hp-share-note {
+      margin: 0.75rem 0 0;
+      color: #64748b;
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .hp-share-visual {
+      position: relative;
+      width: min(100%, 430px);
+      margin: 0 auto;
+      isolation: isolate;
+    }
+
+    .hp-share-visual::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: 4% -7% 1%;
+      border: 1px solid rgba(14, 165, 164, 0.14);
+      border-radius: 32px;
+      background: rgba(255, 255, 255, 0.58);
+      transform: rotate(3deg);
+    }
+
+    .hp-share-card-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 24px;
+      box-shadow:
+        0 32px 70px rgba(15, 23, 42, 0.16),
+        0 8px 22px rgba(15, 23, 42, 0.08);
+    }
+
+    @media (max-width: 900px) {
+      .hp-share-shell {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+
+      .hp-share-copy {
+        max-width: 650px;
+        text-align: center;
+        margin: 0 auto;
+      }
+
+      .hp-share-description {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hp-share-details {
+        justify-content: center;
+      }
+
+      .hp-share-visual {
+        width: min(100%, 390px);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hp-share-showcase {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+      }
+
+      .hp-share-shell {
+        padding: 0;
+        gap: 2.4rem;
+      }
+
+      .hp-share-title {
+        font-size: clamp(1.85rem, 10vw, 2.45rem);
+      }
+
+      .hp-share-description {
+        font-size: 0.94rem;
+      }
+
+      .hp-share-detail {
+        font-size: 0.72rem;
+      }
+
+      .hp-share-visual {
+        width: min(100%, 330px);
+      }
+
+      .hp-share-card-image {
+        border-radius: 20px;
+      }
+    }
+
     .hp-features { background: #fff; }
     .hp-features-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; }
     .hp-feature-card { border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.75rem; transition: border-color 0.15s, box-shadow 0.15s; }
@@ -181,6 +372,56 @@
           <h4>Save and plan your week <span class="hp-pro-tag">Pro</span></h4>
           <p>Save custom recipes and build a weekly smoothie meal plan. Assign smoothies to any meal slot and track your week at a glance.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="hp-section hp-share-showcase"
+    aria-labelledby="hp-share-title"
+  >
+    <div class="hp-share-shell">
+      <div class="hp-share-copy">
+        <p class="hp-share-label">New · Shareable smoothie results</p>
+
+        <h2 class="hp-share-title" id="hp-share-title">
+          Build it. See the details. Share the result.
+        </h2>
+
+        <p class="hp-share-description">
+          Turn your completed smoothie into a polished PureFyul card
+          showing its recipe name, audience, timing, health goal,
+          nutrition, ingredient amounts, insight, and allergen notice.
+        </p>
+
+        <div class="hp-share-details" aria-label="Included result details">
+          <span class="hp-share-detail">Nutrition</span>
+          <span class="hp-share-detail">Ingredient amounts</span>
+          <span class="hp-share-detail">Allergen notice</span>
+        </div>
+
+        <a class="hp-share-cta" href="/app">
+          Build &amp; share your result
+        </a>
+
+        <p class="hp-share-note">
+          Sharing becomes available after your smoothie result is generated.
+        </p>
+      </div>
+
+      <div class="hp-share-visual">
+        <img
+          class="hp-share-card-image"
+          src="{{ url_for(
+            'static',
+            filename='images/purefyul-share-result-card.png'
+          ) }}?v=1"
+          width="1080"
+          height="1350"
+          loading="lazy"
+          decoding="async"
+          alt="PureFyul Berry Matcha Glow share card showing nutrition, ingredients, health goal, and allergen notice"
+        >
       </div>
     </div>
   </section>
