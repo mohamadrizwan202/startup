@@ -969,6 +969,136 @@
         title
       );
 
+    const isContains =
+      /^contains\b/i.test(
+        title
+      );
+
+    const allergenNames =
+      title
+        .replace(
+          /^contains\s*:?\s*/i,
+          ''
+        )
+        .trim()
+      || 'Selected allergen';
+
+    /*
+     * Strong contains-allergen state.
+     *
+     * The approved clear/safe state below remains
+     * completely unchanged.
+     */
+    if (isContains) {
+      return `
+        <!-- Premium plum allergen notice -->
+        <rect
+          x="64"
+          y="1123"
+          width="952"
+          height="76"
+          rx="23"
+          fill="#4B2836"
+          stroke="#C7A45F"
+          stroke-width="1.35"
+        />
+
+        <!-- Restrained gold registration line -->
+        <line
+          x1="92"
+          y1="1141"
+          x2="176"
+          y2="1141"
+          stroke="#C7A45F"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          opacity="0.96"
+        />
+
+        <!-- Editorial allergen label -->
+        <text
+          x="92"
+          y="1154"
+          font-family="Arial, sans-serif"
+          font-size="10.5"
+          font-weight="700"
+          letter-spacing="2.15"
+          fill="#D8B96F"
+        >ALLERGEN NOTICE</text>
+
+        <!-- Contains label -->
+        <text
+          x="92"
+          y="1180"
+          font-family="
+            'Bodoni 72',
+            Didot,
+            'Iowan Old Style',
+            'Times New Roman',
+            Georgia,
+            serif
+          "
+          font-size="23"
+          font-weight="400"
+          fill="#FFF8EE"
+        >Contains</text>
+
+        <!-- Dominant allergen name -->
+        <text
+          x="190"
+          y="1180"
+          font-family="
+            'Bodoni 72',
+            Didot,
+            'Iowan Old Style',
+            'Times New Roman',
+            Georgia,
+            serif
+          "
+          font-size="30"
+          font-style="italic"
+          font-weight="400"
+          letter-spacing="-0.3"
+          fill="#FFF8EE"
+        >${escapeXml(
+          truncateShareLabel(
+            allergenNames,
+            32
+          )
+        )}</text>
+
+        <!-- Supporting safety note -->
+        <text
+          x="92"
+          y="1194"
+          font-family="Arial, sans-serif"
+          font-size="12.5"
+          font-weight="400"
+          fill="#D8C8BE"
+        >Always check product labels if you have food allergies.</text>
+
+        <!-- Quiet right-edge signature -->
+        <line
+          x1="936"
+          y1="1142"
+          x2="986"
+          y2="1142"
+          stroke="#C7A45F"
+          stroke-width="1.4"
+          stroke-linecap="round"
+          opacity="0.58"
+        />
+
+        <circle
+          cx="926"
+          cy="1142"
+          r="2.6"
+          fill="#C7A45F"
+          opacity="0.72"
+        />
+      `;
+    }
+
     const surfaceStart =
       isClear
         ? '#F5F8F1'
@@ -2349,6 +2479,6 @@
     prepare,
     share,
     sharePrepared,
-    version: '7.9.8'
+    version: '7.9.11'
   });
 })();
