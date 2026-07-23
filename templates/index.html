@@ -20208,6 +20208,27 @@ const allergenPanel = allergenNames.length === 0
             window._pfLastSmoothieGoal = selectedHealthGoal;
           }
 
+          // GA4 activation event: fires only after a smoothie result is generated.
+          try {
+            if (typeof window.gtag === 'function') {
+              window.gtag('event', 'smoothie_generated', {
+                ingredient_count:
+                  currentSmoothie && Array.isArray(currentSmoothie.ingredients)
+                    ? currentSmoothie.ingredients.length
+                    : 0,
+                generation_source:
+                  window._pfHistoryRebuildPending === true
+                    ? 'history_rebuild'
+                    : 'new_build'
+              });
+            }
+          } catch (analyticsError) {
+            console.warn(
+              'GA4 smoothie_generated event failed:',
+              analyticsError
+            );
+          }
+
           // Auto-log to history (free feature, logged-in users only).
           // Moved here specifically so it runs AFTER window._pfLastSmoothieGoalText
           // is freshly set above — reading it earlier captured stale/previous
