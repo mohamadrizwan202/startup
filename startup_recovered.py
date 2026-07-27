@@ -55348,6 +55348,87 @@ if os.getenv("ENABLE_PUBLIC_CONTACT_API", "") == "1":
         return jsonify({"ok": True, "id": msg_id}), 200
 
 
+
+@app.get('/admin/users')
+def admin_users():
+    """Admin registered-users viewer: read-only, searchable and paginated."""
+    if not session.get('is_admin'):
+        abort(403)
+
+    if not db.USE_POSTGRES:
+        return "Postgres disabled", 503, {"Cache-Control": "no-store"}
+
+    q = (request.args.get('q') or '').strip()[:254]
+
+    try:
+        page = int(request.args.get('page', '1'))
+    except (TypeError, ValueError):
+        page = 1
+
+    page = max(page, 1)
+    per_page = 50
+
+    where_sql = ""
+    search_params = []
+
+    if q:
+        where_sql = "WHERE LOWER(email) LIKE LOWER(?)"
+        search_params.append(f"%{q}%")
+
+    conn = db.get_conn()
+    cur = conn.cursor()
+
+    try:
+        count_sql = db.prepare_query(
+            f"SELECT COUNT(*) AS total FROM users {where_sql}"
+        )
+        cur.execute(count_sql, search_params)
+        count_row = cur.fetchone()
+
+        if isinstance(count_row, dict):
+            total = int(count_row.get("total") or 0)
+        else:
+            total = int(count_row[0] if count_row else 0)
+
+        total_pages = max(1, (total + per_page - 1) // per_page)
+
+        if page > total_pages:
+            page = total_pages
+
+        offset = (page - 1) * per_page
+
+        users_sql = db.prepare_query(f"""
+            SELECT id, email, created_at
+            FROM users
+            {where_sql}
+            ORDER BY created_at DESC, id DESC
+            LIMIT ? OFFSET ?
+        """)
+
+        cur.execute(
+            users_sql,
+            [*search_params, per_page, offset],
+        )
+
+        rows = cur.fetchall()
+        description = cur.description
+    finally:
+        cur.close()
+        conn.close()
+
+    users = [_row_to_dict(row, description) for row in rows]
+
+    return render_template(
+        "admin/users.html",
+        users=users,
+        q=q,
+        page=page,
+        total=total,
+        total_pages=total_pages,
+        per_page=per_page,
+    ), 200, {"Cache-Control": "no-store"}
+
+
 @app.route('/admin/contacts')
 def admin_contacts():
     """Admin contacts inbox - list view"""

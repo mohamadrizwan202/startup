@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="canonical" href="https://purefyul.com{{ request.path }}">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — Registered Users</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 24px;
+      color: #111827;
+      background: #ffffff;
+    }
+
+    h1 { margin: 0 0 6px; }
+
+    .header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .hint {
+      color: #555;
+      margin: 0;
+    }
+
+    .admin-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0;
+    }
+
+    .admin-nav__link {
+      display: inline-block;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .admin-nav__link:hover {
+      border-color: #0EA5A4;
+      color: #0f766e;
+    }
+
+    .admin-nav__link.active {
+      color: #ffffff;
+      background: #0EA5A4;
+      border-color: #0EA5A4;
+    }
+
+    .logout-form { display: inline; }
+
+    .logout-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      min-height: 40px;
+    }
+
+    .logout-btn:hover { background: #dc2626; }
+
+    .search-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 0 0 18px;
+    }
+
+    .search-input {
+      width: min(420px, 100%);
+      min-height: 42px;
+      padding: 9px 11px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    .search-input:focus {
+      outline: 2px solid rgba(14, 165, 164, 0.25);
+      border-color: #0EA5A4;
+    }
+
+    .search-btn,
+    .clear-link,
+    .page-link {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .search-btn {
+      border: 0;
+      color: white;
+      background: #0EA5A4;
+      cursor: pointer;
+    }
+
+    .search-btn:hover { background: #0f8f8e; }
+
+    .clear-link,
+    .page-link {
+      color: #374151;
+      background: white;
+      border: 1px solid #d1d5db;
+    }
+
+    .clear-link:hover,
+    .page-link:hover {
+      border-color: #0EA5A4;
+      color: #0f766e;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 650px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #e6e6e6;
+      padding: 11px 10px;
+      vertical-align: top;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    th {
+      background: #fafafa;
+      position: sticky;
+      top: 0;
+    }
+
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .email-link {
+      color: #0EA5A4;
+      text-decoration: none;
+      word-break: break-word;
+    }
+
+    .email-link:hover { text-decoration: underline; }
+
+    .empty-state {
+      padding: 30px 16px;
+      color: #6b7280;
+      text-align: center;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .page-status {
+      color: #6b7280;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .page-placeholder {
+      min-width: 92px;
+    }
+
+    @media (max-width: 640px) {
+      body { margin: 16px; }
+
+      .header-actions {
+        align-items: stretch;
+      }
+
+      .search-form {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .search-input {
+        width: 100%;
+      }
+
+      .search-btn,
+      .clear-link {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- PUREFYUL_ADMIN_USERS -->
+
+  <div class="header-actions">
+    <div>
+      <h1>Registered Users</h1>
+      <p class="hint">
+        {{ total }} registered user{% if total != 1 %}s{% endif %}
+        {% if q %}matching “{{ q }}”{% endif %}.
+      </p>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin_logout') }}" class="logout-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <button type="submit" class="logout-btn">Logout</button>
+    </form>
+  </div>
+
+  <nav class="admin-nav" aria-label="Admin navigation">
+    <a class="admin-nav__link" href="{{ url_for('admin_contacts') }}">
+      Contacts
+    </a>
+    <a class="admin-nav__link active" href="{{ url_for('admin_users') }}">
+      Registered Users
+    </a>
+  </nav>
+
+  <form method="GET" action="{{ url_for('admin_users') }}" class="search-form">
+    <input
+      class="search-input"
+      type="search"
+      name="q"
+      value="{{ q }}"
+      maxlength="254"
+      placeholder="Search by email"
+      autocomplete="off"
+      aria-label="Search registered users by email"
+    />
+
+    <button type="submit" class="search-btn">Search</button>
+
+    {% if q %}
+      <a href="{{ url_for('admin_users') }}" class="clear-link">Clear search</a>
+    {% endif %}
+  </form>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Email</th>
+          <th scope="col">Signed up</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td class="mono">{{ user.id }}</td>
+            <td>
+              <a class="email-link" href="mailto:{{ user.email }}">
+                {{ user.email }}
+              </a>
+            </td>
+            <td class="mono">{{ user.created_at }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="3" class="empty-state">
+              No registered users found.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <nav class="pagination" aria-label="Registered users pagination">
+    <div class="page-placeholder">
+      {% if page > 1 %}
+        <a
+          class="page-link"
+          href="{{ url_for('admin_users', page=page - 1, q=q) }}"
+        >
+          Previous
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="page-status">
+      Page {{ page }} of {{ total_pages }}
+    </div>
+
+    <div class="page-placeholder">
+      {% if page < total_pages %}
+        <a
+          class="page-link"
+          href="{{ url_for('admin_users', page=page + 1, q=q) }}"
+        >
+          Next
+        </a>
+      {% endif %}
+    </div>
+  </nav>
+</body>
+</html>
