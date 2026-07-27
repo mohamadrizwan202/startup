@@ -28,6 +28,34 @@
     .logout-form { display: inline; }
     .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; }
     .logout-btn:hover { background: #dc2626; }
+
+    .admin-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 20px;
+    }
+
+    .admin-nav__link {
+      display: inline-block;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .admin-nav__link:hover {
+      border-color: #0EA5A4;
+      color: #0f766e;
+    }
+
+    .admin-nav__link.active {
+      color: #ffffff;
+      background: #0EA5A4;
+      border-color: #0EA5A4;
+    }
   </style>
 </head>
 <body>
@@ -39,6 +67,15 @@
     </form>
   </div>
   
+  <nav class="admin-nav" aria-label="Admin navigation">
+    <a class="admin-nav__link active" href="{{ url_for('admin_contacts') }}">
+      Contacts
+    </a>
+    <a class="admin-nav__link" href="{{ url_for('admin_users') }}">
+      Registered Users
+    </a>
+  </nav>
+
   <!-- Flash Messages -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
