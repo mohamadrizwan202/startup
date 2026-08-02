@@ -5420,13 +5420,67 @@
     <!-- Smoothie Builder Tab Content -->
     <div id="smoothie-tab-content" class="main-tab-content{% if initial_app_tab != 'ingredient' %} active{% endif %}">
     <div id="pf-ws" style="display:none;padding:1.5rem;">
-      <div style="background:#fff;border-radius:20px;padding:2rem;max-width:580px;margin:0 auto;box-shadow:0 4px 24px rgba(14,165,164,0.12);border:1px solid #e0f2f1;">
-        <div style="text-align:center;margin-bottom:1.5rem;">
-          <div style="font-size:2.5rem;margin-bottom:0.5rem;">&#x1F964;</div>
-          <h2 style="font-size:1.25rem;font-weight:700;color:#0f172a;margin:0 0 0.35rem;">Who is this smoothie for?</h2>
-          <p style="font-size:0.85rem;color:#64748b;margin:0;">Tap to start. We will pick the right portions automatically.</p>
+
+
+      <div id="pf-builder-guide" class="pf-builder-progress" aria-label="Smoothie builder progress">
+        <div class="pf-builder-step is-active" aria-current="step">
+          <span class="pf-builder-step__number">1</span>
+          <span class="pf-builder-step__title">Choose person</span>
+          <span class="pf-builder-step__text">We set the portion</span>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.65rem;margin-bottom:1.25rem;">
+
+        <div class="pf-builder-step">
+          <span class="pf-builder-step__number">2</span>
+          <span class="pf-builder-step__title">Goal &amp; timing</span>
+          <span class="pf-builder-step__text">Match your moment</span>
+        </div>
+
+        <div class="pf-builder-step">
+          <span class="pf-builder-step__number">3</span>
+          <span class="pf-builder-step__title">Ingredients</span>
+          <span class="pf-builder-step__text">Search and select</span>
+        </div>
+
+        <div class="pf-builder-step">
+          <span class="pf-builder-step__number">4</span>
+          <span class="pf-builder-step__title">Your smoothie</span>
+          <span class="pf-builder-step__text">Portions and nutrition</span>
+        </div>
+      </div>
+      <div class="pf-audience-card" style="background:#fff;border-radius:20px;padding:2rem;max-width:580px;margin:0 auto;box-shadow:0 4px 24px rgba(14,165,164,0.12);border:1px solid #e0f2f1;">
+
+        <div class="pf-audience-intro--mobile"
+             style="text-align:center;margin-bottom:1.5rem;">
+          <div style="font-size:2.5rem;margin-bottom:0.5rem;">
+            &#x1F964;
+          </div>
+          <h2 style="font-size:1.25rem;font-weight:700;color:#0f172a;margin:0 0 0.35rem;">
+            Who is this smoothie for?
+          </h2>
+          <p style="font-size:0.85rem;color:#64748b;margin:0;">
+            Tap to start. We will pick the right portions automatically.
+          </p>
+        </div>
+
+        <div class="pf-audience-intro pf-audience-intro--desktop">
+          <span class="pf-step-badge">STEP 1 OF 4</span>
+
+          <h2 class="pf-start-heading">Start here</h2>
+
+          <p class="pf-audience-question">
+            Who will drink this smoothie?
+          </p>
+
+          <p class="pf-audience-help">
+            Choose one option below. PureFyul will automatically set the right portion.
+          </p>
+
+          <div class="pf-action-cue" aria-hidden="true">
+            <span class="pf-action-cue__arrow">↓</span>
+            <span>Pick one</span>
+          </div>
+        </div>
+        <div class="pf-audience-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.65rem;margin-bottom:1.25rem;">
           <button class="pfwb" data-v="child-4-6">&#x1F476;<br><b>Young Child</b><br><small>4-6 yrs</small></button>
           <button class="pfwb" data-v="child-7-8">&#x1F9D2;<br><b>Child</b><br><small>7-8 yrs</small></button>
           <button class="pfwb" data-v="girl-9-13">&#x1F467;<br><b>Teen Girl</b><br><small>9-13 yrs</small></button>
@@ -5437,10 +5491,284 @@
           <button class="pfwb" data-v="man-31-59">&#x1F468;&#x200D;&#x1F9B1;<br><b>Man</b><br><small>31-59</small></button>
           <button class="pfwb" data-v="woman-60+">&#x1F475;<br><b>Senior</b><br><small>60+</small></button>
         </div>
-        <p style="text-align:center;margin:0;"><button id="pfwskip" style="background:none;border:none;color:#94a3b8;font-size:0.8rem;cursor:pointer;text-decoration:underline;font-family:inherit;">Skip, set it myself</button></p>
+        <p class="pf-custom-portion">
+          <span class="pf-custom-portion__desktop-prefix">Person not listed?</span>
+          <button id="pfwskip" style="background:none;border:none;color:#0f8f8e;font-size:0.82rem;font-weight:700;cursor:pointer;text-decoration:underline;font-family:inherit;"><span class="pf-custom-portion__desktop-label">Set a custom portion</span><span class="pf-custom-portion__mobile-label">Skip, set it myself</span></button>
+        </p>
       </div>
     </div>
-    <style>.pfwb{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:0.85rem 0.25rem;cursor:pointer;font-family:inherit;width:100%;font-size:0.78rem;line-height:1.6;transition:all 0.15s;}.pfwb:hover{border-color:#0EA5A4;background:#f0fdfa;transform:translateY(-2px);}</style>
+    <style>
+  /* PF DESKTOP-ONLY BUILDER GUIDANCE */
+
+  /* Existing mobile audience-button styling */
+  .pfwb{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:0.85rem 0.25rem;cursor:pointer;font-family:inherit;width:100%;font-size:0.78rem;line-height:1.6;transition:all 0.15s;}.pfwb:hover{border-color:#0EA5A4;background:#f0fdfa;transform:translateY(-2px);}
+
+  /* Default and mobile behavior */
+  .pf-builder-progress,
+  .pf-audience-intro--desktop {
+    display: none;
+  }
+
+  .pf-audience-intro--mobile {
+    display: block;
+  }
+
+  .pf-custom-portion {
+    margin: 0;
+    text-align: center;
+  }
+
+  .pf-custom-portion__desktop-prefix,
+  .pf-custom-portion__desktop-label {
+    display: none;
+  }
+
+  .pf-custom-portion__mobile-label {
+    display: inline;
+  }
+
+  .pf-custom-portion button {
+    background: none !important;
+    border: none !important;
+    color: #94a3b8 !important;
+    font-size: 0.8rem !important;
+    font-weight: 400 !important;
+    cursor: pointer;
+    text-decoration: underline;
+    font-family: inherit;
+  }
+
+  /* Approved guidance is desktop-only */
+  @media (min-width: 721px) {
+    #pf-main-tab-switcher {
+      display: none !important;
+    }
+
+    .pf-builder-progress {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1rem;
+            width: min(900px, 100%);
+            margin: 0 auto 1.35rem;
+            padding: 0 1rem;
+            box-sizing: border-box;
+            color: #fff;
+          }
+
+          .pf-builder-progress::before {
+            content: "";
+            position: absolute;
+            top: 23px;
+            left: 13%;
+            right: 13%;
+            border-top: 2px dashed rgba(255, 255, 255, 0.42);
+            z-index: 0;
+          }
+
+          .pf-builder-step {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 0;
+            text-align: center;
+          }
+
+          .pf-builder-step__number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            margin-bottom: 0.48rem;
+            border: 2px solid rgba(255, 255, 255, 0.48);
+            border-radius: 999px;
+            background: #0a9291;
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 1rem;
+            font-weight: 800;
+            box-sizing: border-box;
+          }
+
+          .pf-builder-step.is-active .pf-builder-step__number {
+            background: #fff;
+            color: #0a9291;
+            border-color: #fff;
+            box-shadow:
+              0 0 0 6px rgba(255, 255, 255, 0.17),
+              0 6px 20px rgba(3, 78, 77, 0.24);
+          }
+
+          .pf-builder-step__title {
+            font-size: 0.88rem;
+            line-height: 1.25;
+            font-weight: 800;
+          }
+
+          .pf-builder-step__text {
+            margin-top: 0.16rem;
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 0.74rem;
+            line-height: 1.3;
+          }
+
+          .pf-audience-card {
+            position: relative;
+            box-sizing: border-box;
+          }
+
+          .pf-audience-intro {
+            text-align: center;
+            margin-bottom: 0.9rem;
+          }
+
+          .pf-step-badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 0.85rem;
+            border-radius: 999px;
+            background: #0ea5a4;
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+          }
+
+          .pf-start-heading {
+            margin: 0.7rem 0 0.15rem;
+            color: #0f172a;
+            font-size: 1.65rem;
+            line-height: 1.15;
+            font-weight: 800;
+          }
+
+          .pf-audience-question {
+            margin: 0;
+            color: #0f172a;
+            font-size: 1.08rem;
+            line-height: 1.35;
+            font-weight: 750;
+          }
+
+          .pf-audience-help {
+            max-width: 470px;
+            margin: 0.45rem auto 0;
+            color: #64748b;
+            font-size: 0.84rem;
+            line-height: 1.45;
+          }
+
+          .pf-action-cue {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.75rem;
+            color: #0b8d8c;
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+          }
+
+          .pf-action-cue__arrow {
+            font-size: 1.25rem;
+            line-height: 1;
+            animation: pfGuideBounce 1.4s ease-in-out infinite;
+          }
+
+          .pf-audience-grid {
+            padding: 0.75rem;
+            border: 2px dashed rgba(14, 165, 164, 0.58);
+            border-radius: 16px;
+            background: rgba(240, 253, 250, 0.58);
+            box-sizing: border-box;
+          }
+
+          .pfwb {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.85rem 0.25rem;
+            cursor: pointer;
+            font-family: inherit;
+            width: 100%;
+            font-size: 0.78rem;
+            line-height: 1.6;
+            transition:
+              border-color 0.15s ease,
+              background 0.15s ease,
+              transform 0.15s ease,
+              box-shadow 0.15s ease;
+          }
+
+          .pfwb:hover,
+          .pfwb:focus-visible {
+            border-color: #0ea5a4;
+            background: #f0fdfa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 14px rgba(14, 165, 164, 0.14);
+            outline: none;
+          }
+
+          .pf-custom-portion {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin: 0;
+            color: #64748b;
+            font-size: 0.8rem;
+            text-align: center;
+          }
+
+          @keyframes pfGuideBounce {
+            0%, 100% {
+              transform: translateY(0);
+            }
+
+            50% {
+              transform: translateY(4px);
+            }
+          }
+
+    .pf-builder-progress {
+      display: grid;
+    }
+
+    .pf-audience-intro--desktop {
+      display: block;
+    }
+
+    .pf-audience-intro--mobile {
+      display: none !important;
+    }
+
+    .pf-custom-portion__desktop-prefix,
+    .pf-custom-portion__desktop-label {
+      display: inline;
+    }
+
+    .pf-custom-portion__mobile-label {
+      display: none;
+    }
+
+    .pf-custom-portion button {
+      color: #0f8f8e !important;
+      font-size: 0.82rem !important;
+      font-weight: 700 !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pf-action-cue__arrow {
+      animation: none !important;
+    }
+  }
+</style>
     <script nonce="{{ csp_nonce }}">
       (function() {
         function dismissAudienceWelcome() {
@@ -5704,6 +6032,105 @@
   </div>
 </div>
 
+
+<!-- PF INGREDIENT INSIGHT CARD POLISH -->
+<style nonce="{{ csp_nonce }}">
+  /*
+   * Ingredient Insight card only.
+   * The overview/nutrition column divider remains structural.
+   */
+  #smoothie-results-card .sn2-summary {
+    position: relative;
+    margin: 0 0 22px;
+    padding: 18px 18px 19px 20px;
+    border: 1px solid rgba(15, 118, 110, 0.18);
+    border-left: 4px solid #0f766e;
+    border-radius: 16px;
+    background:
+      linear-gradient(
+        135deg,
+        #f0fdfa 0%,
+        #f8fffe 58%,
+        #ffffff 100%
+      );
+    box-shadow:
+      0 8px 22px rgba(15, 118, 110, 0.07);
+    color: #334155;
+  }
+
+  #smoothie-results-card .sn2-insight-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 11px;
+    color: #0f766e;
+    font-size: 10px;
+    font-weight: 850;
+    line-height: 1.2;
+    letter-spacing: 0.085em;
+    text-transform: uppercase;
+  }
+
+  #smoothie-results-card .sn2-insight-label::before {
+    content: "✦";
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: #ccfbf1;
+    color: #0f766e;
+    box-shadow:
+      inset 0 0 0 1px rgba(15, 118, 110, 0.10);
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  #smoothie-results-card #pf-ai-smoothie-insight-text {
+    display: block;
+    min-height: 0;
+    color: #334155;
+    font-size: clamp(14px, 1.05vw, 16px);
+    font-weight: 500;
+    line-height: 1.62;
+    letter-spacing: -0.008em;
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 700px) {
+    #smoothie-results-card .sn2-summary {
+      margin-bottom: 18px;
+      padding: 15px 15px 16px 16px;
+      border-left-width: 3px;
+      border-radius: 14px;
+      box-shadow:
+        0 6px 18px rgba(15, 118, 110, 0.06);
+    }
+
+    #smoothie-results-card .sn2-insight-label {
+      gap: 8px;
+      margin-bottom: 9px;
+      font-size: 9px;
+    }
+
+    #smoothie-results-card .sn2-insight-label::before {
+      width: 24px;
+      height: 24px;
+      flex-basis: 24px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    #smoothie-results-card #pf-ai-smoothie-insight-text {
+      font-size: 15px;
+      line-height: 1.58;
+    }
+  }
+</style>
+
 <!-- Smoothie Results Modal (mobile/tablet only) -->
 <div id="pf-smoothie-modal" class="pf-results-modal" style="display:none;" aria-hidden="true">
   <div class="pf-results-backdrop" data-close="1" data-modal="smoothie"></div>
@@ -5726,6 +6153,670 @@
       canSaveRecipes: {{ can_save_recipes|default(false)|tojson }},
       userPlan: {{ user_plan|default("guest")|tojson }}
     });
+
+    const PF_PENDING_SAVE_KEY =
+      'purefyul.pending-save.v1';
+
+    const PF_PENDING_SAVE_TTL_MS =
+      60 * 60 * 1000;
+
+    let pfSaveAuthReturnFocus = null;
+    let pfSaveAuthReopenSmoothieModal = false;
+
+    function pfStorePendingSaveSnapshot() {
+      try {
+        const resultData =
+          currentSmoothieData ||
+          window._pfCurrentNutrition ||
+          (
+            currentSmoothie &&
+            currentSmoothie.nutritionData
+          ) ||
+          null;
+
+        if (
+          !hasBuiltSmoothie ||
+          !currentSmoothie ||
+          !resultData
+        ) {
+          return false;
+        }
+
+        const audienceValue =
+          smoothieForEl && smoothieForEl.value
+            ? smoothieForEl.value
+            : (
+                currentSmoothie.ageGroup || ''
+              );
+
+        const resultNameElement =
+          document.getElementById(
+            'pf-ai-smoothie-result-name'
+          );
+
+        const resultInsightElement =
+          document.getElementById(
+            'pf-ai-smoothie-insight-text'
+          );
+
+        const preservedResultName =
+          String(
+            window._pfLastSmoothieName ||
+            currentSmoothie.name ||
+            resultData.name ||
+            (
+              resultNameElement
+                ? resultNameElement.textContent
+                : ''
+            ) ||
+            (
+              smoothieNameEl
+                ? smoothieNameEl.value
+                : ''
+            ) ||
+            'Your Smoothie'
+          ).trim();
+
+        const preservedResultInsight =
+          String(
+            window._pfLastSmoothieInsight ||
+            currentSmoothie.insight ||
+            resultData.insight ||
+            (
+              resultInsightElement
+                ? resultInsightElement.textContent
+                : ''
+            ) ||
+            (
+              'This result reflects the selected ' +
+              'ingredient portions.'
+            )
+          ).trim();
+
+        const snapshot = {
+          version: 1,
+          createdAt: Date.now(),
+
+          currentSmoothie:
+            currentSmoothie,
+
+          currentSmoothieData:
+            resultData,
+
+          lastSmoothieTotals:
+            lastSmoothieTotals || null,
+
+          currentIngredients:
+            window._pfCurrentIngredients ||
+            currentSmoothie.ingredients ||
+            [],
+
+          currentNutrition:
+            window._pfCurrentNutrition ||
+            resultData,
+
+          context: {
+            name:
+              smoothieNameEl
+                ? smoothieNameEl.value
+                : '',
+
+            audienceValue:
+              audienceValue,
+
+            timingValue:
+              smoothieTimingEl
+                ? smoothieTimingEl.value
+                : '',
+
+            goalValue:
+              smoothieHealthGoalsEl
+                ? smoothieHealthGoalsEl.value
+                : '',
+
+            lastTiming:
+              window._pfLastSmoothieTiming || '',
+
+            lastGoal:
+              window._pfLastSmoothieGoal || '',
+
+            lastGoalText:
+              window._pfLastSmoothieGoalText || '',
+
+            resultName:
+              preservedResultName,
+
+            resultInsight:
+              preservedResultInsight
+          }
+        };
+
+        sessionStorage.setItem(
+          PF_PENDING_SAVE_KEY,
+          JSON.stringify(snapshot)
+        );
+
+        return true;
+      } catch (error) {
+        console.error(
+          '[pending-save] Could not preserve result:',
+          error
+        );
+
+        return false;
+      }
+    }
+
+    function pfReadPendingSaveSnapshot() {
+      try {
+        const raw =
+          sessionStorage.getItem(
+            PF_PENDING_SAVE_KEY
+          );
+
+        if (!raw) return null;
+
+        const snapshot =
+          JSON.parse(raw);
+
+        const createdAt =
+          Number(snapshot.createdAt || 0);
+
+        const expired =
+          !createdAt ||
+          (
+            Date.now() - createdAt >
+            PF_PENDING_SAVE_TTL_MS
+          );
+
+        if (
+          snapshot.version !== 1 ||
+          expired
+        ) {
+          sessionStorage.removeItem(
+            PF_PENDING_SAVE_KEY
+          );
+
+          return null;
+        }
+
+        return snapshot;
+      } catch (error) {
+        sessionStorage.removeItem(
+          PF_PENDING_SAVE_KEY
+        );
+
+        return null;
+      }
+    }
+
+    function pfClearPendingSaveSnapshot() {
+      try {
+        sessionStorage.removeItem(
+          PF_PENDING_SAVE_KEY
+        );
+      } catch (error) {
+        console.warn(
+          '[pending-save] Could not clear snapshot:',
+          error
+        );
+      }
+    }
+
+    function pfSetSelectValueIfPresent(
+      selectElement,
+      value
+    ) {
+      if (
+        !selectElement ||
+        value === undefined ||
+        value === null ||
+        value === ''
+      ) {
+        return;
+      }
+
+      const exists =
+        Array.from(
+          selectElement.options || []
+        ).some(
+          option =>
+            String(option.value) ===
+            String(value)
+        );
+
+      if (exists) {
+        selectElement.value = value;
+      }
+    }
+
+    function pfOpenSaveAuthPrompt(
+      triggerElement
+    ) {
+      const overlay =
+        document.getElementById(
+          'pf-save-auth-overlay'
+        );
+
+      const registerLink =
+        document.getElementById(
+          'pf-save-auth-register'
+        );
+
+      const loginLink =
+        document.getElementById(
+          'pf-save-auth-login'
+        );
+
+      if (!overlay) return;
+
+      const smoothieModal =
+        document.getElementById(
+          'pf-smoothie-modal'
+        );
+
+      pfSaveAuthReopenSmoothieModal =
+        Boolean(
+          smoothieModal &&
+          smoothieModal.getAttribute(
+            'aria-hidden'
+          ) === 'false'
+        );
+
+      if (
+        pfSaveAuthReopenSmoothieModal &&
+        typeof pfCloseSmoothieModal ===
+          'function'
+      ) {
+        pfCloseSmoothieModal({
+          hideCard: false
+        });
+      }
+
+      const returnDestination =
+        '/app?resume_save=1';
+
+      const encodedDestination =
+        encodeURIComponent(
+          returnDestination
+        );
+
+      if (registerLink) {
+        registerLink.href =
+          '/register?next=' +
+          encodedDestination;
+      }
+
+      if (loginLink) {
+        loginLink.href =
+          '/login?next=' +
+          encodedDestination;
+      }
+
+      pfSaveAuthReturnFocus =
+        triggerElement || null;
+
+      overlay.classList.add('is-open');
+      overlay.setAttribute(
+        'aria-hidden',
+        'false'
+      );
+
+      document.body.classList.add(
+        'pf-save-auth-open'
+      );
+
+      window.setTimeout(() => {
+        if (registerLink) {
+          registerLink.focus();
+        }
+      }, 30);
+    }
+
+    function pfCloseSaveAuthPrompt(
+      discardSnapshot
+    ) {
+      const overlay =
+        document.getElementById(
+          'pf-save-auth-overlay'
+        );
+
+      if (!overlay) return;
+
+      overlay.classList.remove('is-open');
+      overlay.setAttribute(
+        'aria-hidden',
+        'true'
+      );
+
+      document.body.classList.remove(
+        'pf-save-auth-open'
+      );
+
+      if (discardSnapshot) {
+        pfClearPendingSaveSnapshot();
+      }
+
+      if (
+        pfSaveAuthReturnFocus &&
+        typeof pfSaveAuthReturnFocus.focus ===
+          'function'
+      ) {
+        pfSaveAuthReturnFocus.focus();
+      }
+
+      pfSaveAuthReturnFocus = null;
+
+      const shouldReopenSmoothieModal =
+        pfSaveAuthReopenSmoothieModal;
+
+      pfSaveAuthReopenSmoothieModal =
+        false;
+
+      if (
+        shouldReopenSmoothieModal &&
+        typeof pfOpenSmoothieModal ===
+          'function'
+      ) {
+        window.requestAnimationFrame(
+          function() {
+            pfOpenSmoothieModal();
+          }
+        );
+      }
+    }
+
+    function pfRestorePendingSaveAfterAuth() {
+      const searchParams =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      if (
+        searchParams.get('resume_save') !==
+          '1' ||
+        !PF_RESULT_PERMISSIONS.isAuthenticated
+      ) {
+        return;
+      }
+
+      const snapshot =
+        pfReadPendingSaveSnapshot();
+
+      if (
+        !snapshot ||
+        !snapshot.currentSmoothie
+      ) {
+        return;
+      }
+
+      const resultData =
+        snapshot.currentSmoothieData ||
+        snapshot.currentNutrition ||
+        null;
+
+      if (!resultData) {
+        pfClearPendingSaveSnapshot();
+        return;
+      }
+
+      currentSmoothie =
+        snapshot.currentSmoothie;
+
+      currentSmoothieData =
+        resultData;
+
+      lastSmoothieTotals =
+        snapshot.lastSmoothieTotals ||
+        null;
+
+      window._pfCurrentIngredients =
+        snapshot.currentIngredients ||
+        (
+          snapshot.currentSmoothie
+            .ingredients || []
+        );
+
+      window._pfCurrentNutrition =
+        snapshot.currentNutrition ||
+        resultData;
+
+      hasBuiltSmoothie = true;
+
+      const context =
+        snapshot.context || {};
+
+      pfSetSelectValueIfPresent(
+        smoothieForEl,
+        context.audienceValue
+      );
+
+      pfSetSelectValueIfPresent(
+        smoothieTimingEl,
+        context.timingValue
+      );
+
+      pfSetSelectValueIfPresent(
+        smoothieHealthGoalsEl,
+        context.goalValue
+      );
+
+      const restoredResultName =
+        String(
+          context.resultName ||
+          snapshot.currentSmoothie.name ||
+          resultData.name ||
+          context.name ||
+          'Your Smoothie'
+        ).trim();
+
+      const restoredResultInsight =
+        String(
+          context.resultInsight ||
+          snapshot.currentSmoothie.insight ||
+          resultData.insight ||
+          (
+            'This result reflects the selected ' +
+            'ingredient portions.'
+          )
+        ).trim();
+
+      if (smoothieNameEl) {
+        smoothieNameEl.value =
+          restoredResultName;
+      }
+
+      window._pfLastSmoothieName =
+        restoredResultName;
+
+      window._pfLastSmoothieInsight =
+        restoredResultInsight;
+
+      if (
+        currentSmoothie &&
+        typeof currentSmoothie === 'object'
+      ) {
+        currentSmoothie.name =
+          restoredResultName;
+
+        currentSmoothie.insight =
+          restoredResultInsight;
+      }
+
+      if (
+        currentSmoothieData &&
+        typeof currentSmoothieData === 'object'
+      ) {
+        currentSmoothieData.name =
+          restoredResultName;
+
+        currentSmoothieData.insight =
+          restoredResultInsight;
+      }
+
+      window._pfLastSmoothieTiming =
+        context.lastTiming || '';
+
+      window._pfLastSmoothieGoal =
+        context.lastGoal || '';
+
+      window._pfLastSmoothieGoalText =
+        context.lastGoalText || '';
+
+      const resultCard =
+        document.getElementById(
+          'smoothie-results-card'
+        );
+
+      if (resultCard) {
+        resultCard.classList.remove(
+          'pf-smoothie-hidden'
+        );
+      }
+
+      displaySmoothieResults(
+        resultData
+      );
+
+      window.requestAnimationFrame(() => {
+        const restoredTitle =
+          document.getElementById(
+            'pf-ai-smoothie-result-name'
+          );
+
+        const restoredInsight =
+          document.getElementById(
+            'pf-ai-smoothie-insight-text'
+          );
+
+        if (restoredTitle) {
+          restoredTitle.textContent =
+            restoredResultName;
+        }
+
+        if (restoredInsight) {
+          restoredInsight.textContent =
+            restoredResultInsight;
+        }
+
+        if (
+          typeof window.pfRefreshShareCardPayload ===
+            'function'
+        ) {
+          void window.pfRefreshShareCardPayload({
+            name: restoredResultName,
+            insight: restoredResultInsight
+          });
+        }
+
+        const restoredCard =
+          document.getElementById(
+            'smoothie-results-card'
+          );
+
+        if (
+          typeof pfIsMobileSmoothieMode ===
+            'function' &&
+          pfIsMobileSmoothieMode() &&
+          typeof pfOpenSmoothieModal ===
+            'function'
+        ) {
+          pfOpenSmoothieModal();
+        } else if (
+          restoredCard &&
+          typeof restoredCard.scrollIntoView ===
+            'function'
+        ) {
+          restoredCard.scrollIntoView({
+            behavior: 'auto',
+            block: 'start'
+          });
+        }
+      });
+
+      const cleanUrl =
+        new URL(
+          window.location.href
+        );
+
+      cleanUrl.searchParams.delete(
+        'resume_save'
+      );
+
+      window.history.replaceState(
+        {},
+        document.title,
+        cleanUrl.pathname +
+          cleanUrl.search +
+          cleanUrl.hash
+      );
+    }
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      function() {
+        const overlay =
+          document.getElementById(
+            'pf-save-auth-overlay'
+          );
+
+        const closeButton =
+          document.getElementById(
+            'pf-save-auth-close'
+          );
+
+        const dismissButton =
+          document.getElementById(
+            'pf-save-auth-dismiss'
+          );
+
+        if (closeButton) {
+          closeButton.addEventListener(
+            'click',
+            function() {
+              pfCloseSaveAuthPrompt(false);
+            }
+          );
+        }
+
+        if (dismissButton) {
+          dismissButton.addEventListener(
+            'click',
+            function() {
+              pfCloseSaveAuthPrompt(true);
+            }
+          );
+        }
+
+        if (overlay) {
+          overlay.addEventListener(
+            'click',
+            function(event) {
+              if (event.target === overlay) {
+                pfCloseSaveAuthPrompt(false);
+              }
+            }
+          );
+        }
+
+        document.addEventListener(
+          'keydown',
+          function(event) {
+            if (
+              event.key === 'Escape' &&
+              overlay &&
+              overlay.classList.contains(
+                'is-open'
+              )
+            ) {
+              pfCloseSaveAuthPrompt(false);
+            }
+          }
+        );
+
+        pfRestorePendingSaveAfterAuth();
+      }
+    );
 
     // DOM Elements
     const categoryListEl = document.getElementById('category-list');
@@ -22064,7 +23155,20 @@ const allergenPanel = allergenNames.length === 0
       if (resultSaveBtn) {
         resultSaveBtn.addEventListener('click', () => {
           if (!PF_RESULT_PERMISSIONS.isAuthenticated) {
-            window.location.assign('/login?next=/app');
+            const snapshotStored =
+              pfStorePendingSaveSnapshot();
+
+            if (!snapshotStored) {
+              console.error(
+                '[pending-save] Result snapshot was not available'
+              );
+              return;
+            }
+
+            pfOpenSaveAuthPrompt(
+              resultSaveBtn
+            );
+
             return;
           }
 
@@ -23710,6 +24814,286 @@ const batchG = (smoothieBatchMlOverride != null)
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>  {% include "_feedback.html" %}
   
+
+<!-- ── Save Authentication Choice ──────────────────────────── -->
+<style nonce="{{ csp_nonce }}">
+  .pf-save-auth-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 4100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.58);
+  }
+
+  .pf-save-auth-overlay.is-open {
+    display: flex;
+  }
+
+  body.pf-save-auth-open {
+    overflow: hidden;
+  }
+
+  .pf-save-auth-panel {
+    position: relative;
+    width: min(100%, 430px);
+    box-sizing: border-box;
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    background: #ffffff;
+    padding: 30px;
+    box-shadow:
+      0 24px 60px rgba(15, 23, 42, 0.24),
+      0 4px 14px rgba(15, 23, 42, 0.10);
+  }
+
+  .pf-save-auth-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.25rem;
+  }
+
+  .pf-save-auth-close:hover,
+  .pf-save-auth-close:focus-visible {
+    background: #f1f5f9;
+    color: #0f172a;
+    outline: none;
+  }
+
+  .pf-save-auth-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    background: #ecfdfb;
+    color: #0f766e;
+  }
+
+  .pf-save-auth-icon svg {
+    width: 25px;
+    height: 25px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .pf-save-auth-title {
+    margin: 0;
+    padding-right: 34px;
+    color: #0f172a;
+    font-size: 1.42rem;
+    line-height: 1.25;
+    font-weight: 750;
+  }
+
+  .pf-save-auth-description {
+    margin: 10px 0 22px;
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .pf-save-auth-plan-note {
+    margin: -10px 0 22px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .pf-save-auth-actions {
+    display: grid;
+    gap: 11px;
+  }
+
+  .pf-save-auth-primary,
+  .pf-save-auth-secondary,
+  .pf-save-auth-dismiss {
+    min-height: 48px;
+    width: 100%;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    padding: 11px 16px;
+    font-family: inherit;
+    font-size: 0.94rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .pf-save-auth-primary {
+    border: 1px solid #0f8f8a;
+    background: #0f8f8a;
+    color: #ffffff;
+  }
+
+  .pf-save-auth-primary:hover,
+  .pf-save-auth-primary:focus-visible {
+    background: #0b7773;
+    border-color: #0b7773;
+    outline: none;
+  }
+
+  .pf-save-auth-secondary {
+    border: 1.5px solid #0f8f8a;
+    background: #ffffff;
+    color: #0f766e;
+  }
+
+  .pf-save-auth-secondary:hover,
+  .pf-save-auth-secondary:focus-visible {
+    background: #f0fdfa;
+    outline: none;
+  }
+
+  .pf-save-auth-dismiss {
+    min-height: 44px;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+  }
+
+  .pf-save-auth-dismiss:hover,
+  .pf-save-auth-dismiss:focus-visible {
+    color: #0f172a;
+    text-decoration: underline;
+    outline: none;
+  }
+
+  @media (max-width: 640px) {
+    .pf-save-auth-overlay {
+      align-items: flex-end;
+      padding: 0;
+    }
+
+    .pf-save-auth-panel {
+      width: 100%;
+      max-width: none;
+      border-right: 0;
+      border-bottom: 0;
+      border-left: 0;
+      border-radius: 24px 24px 0 0;
+      padding:
+        27px
+        20px
+        calc(20px + env(safe-area-inset-bottom));
+      box-shadow: 0 -16px 44px rgba(15, 23, 42, 0.22);
+    }
+
+    .pf-save-auth-title {
+      font-size: 1.3rem;
+    }
+
+    .pf-save-auth-description {
+      font-size: 0.93rem;
+    }
+
+    .pf-save-auth-primary,
+    .pf-save-auth-secondary {
+      min-height: 52px;
+      font-size: 0.96rem;
+    }
+  }
+</style>
+
+<div
+  id="pf-save-auth-overlay"
+  class="pf-save-auth-overlay"
+  aria-hidden="true"
+>
+  <section
+    class="pf-save-auth-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pf-save-auth-title"
+    aria-describedby="pf-save-auth-description"
+  >
+    <button
+      type="button"
+      id="pf-save-auth-close"
+      class="pf-save-auth-close"
+      aria-label="Close"
+    >&#10005;</button>
+
+    <div class="pf-save-auth-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M6 4.75h12v15l-6-3.7-6 3.7z"></path>
+      </svg>
+    </div>
+
+    <h2
+      id="pf-save-auth-title"
+      class="pf-save-auth-title"
+    >
+      Save this smoothie
+    </h2>
+
+    <p
+      id="pf-save-auth-description"
+      class="pf-save-auth-description"
+    >
+      Create an account or log in to keep this recipe and
+      return to it later.
+    </p>
+
+    <p class="pf-save-auth-plan-note">
+      Your current smoothie will remain here while you
+      register or log in. Recipe saving requires Premium.
+    </p>
+
+    <div class="pf-save-auth-actions">
+      <a
+        id="pf-save-auth-register"
+        class="pf-save-auth-primary"
+        href="/register"
+      >
+        Create account
+      </a>
+
+      <a
+        id="pf-save-auth-login"
+        class="pf-save-auth-secondary"
+        href="/login"
+      >
+        Already have an account? Log in
+      </a>
+
+      <button
+        type="button"
+        id="pf-save-auth-dismiss"
+        class="pf-save-auth-dismiss"
+      >
+        Continue without saving
+      </button>
+    </div>
+  </section>
+</div>
+
 <!-- ── Save Recipe Modal ────────────────────────────────────────── -->
 <div id="pf-save-recipe-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:3000;align-items:center;justify-content:center;padding:1rem;">
   <div style="background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
