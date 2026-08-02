@@ -2306,10 +2306,43 @@ def app_home():
     return resp
 
 
+def _safe_auth_next(raw_next):
+    """Return a safe same-site post-auth destination or None."""
+    if not raw_next:
+        return None
+
+    from urllib.parse import urlsplit
+
+    try:
+        parsed = urlsplit(raw_next)
+    except (TypeError, ValueError):
+        return None
+
+    if parsed.scheme or parsed.netloc:
+        if parsed.scheme not in ("http", "https"):
+            return None
+        if parsed.netloc.lower() != request.host.lower():
+            return None
+
+        destination = parsed.path or "/"
+        if parsed.query:
+            destination += "?" + parsed.query
+    else:
+        destination = raw_next
+
+    if not destination.startswith("/") or destination.startswith("//"):
+        return None
+
+    return destination
+
+
 @app.route('/register', methods=['GET', 'POST'])
 @limiter.limit("3 per hour", methods=["POST"])
 def register():
     """User registration route"""
+    next_url = _safe_auth_next(
+        request.form.get("next") or request.args.get("next")
+    )
     # Clear stale flash messages from previous redirects (especially "Please log in..." messages)
     if request.method == 'GET':
         # Filter out error flashes that are not relevant to registration
@@ -2327,21 +2360,21 @@ def register():
         # Validation
         if not email:
             flash('Email is required.', 'error')
-            return render_template('register.html')
+            return render_template('register.html', next_url=next_url)
         
         if not password:
             flash('Password is required.', 'error')
-            return render_template('register.html')
+            return render_template('register.html', next_url=next_url)
         
         if password != confirm_password:
             flash('Passwords do not match.', 'error')
-            return render_template('register.html')
+            return render_template('register.html', next_url=next_url)
         
         # Check if user already exists
         existing_user = get_user_by_email(email)
         if existing_user:
             flash('An account with this email already exists.', 'error')
-            return render_template('register.html')
+            return render_template('register.html', next_url=next_url)
         
         # --- Secure Password Hashing ---
         # Hash the plain-text password using a strong algorithm (pbkdf2:sha256)
@@ -2405,19 +2438,22 @@ def register():
             app.logger.info("SESSION user_id after set=%s", session.get("user_id"))
             
             flash('Registration successful!', 'success')
-            return redirect(url_for('index'))
+            return redirect(next_url) if next_url else redirect(url_for('index'))
         except Exception as e:
             app.logger.exception("Error creating user")
             flash('An error occurred during registration. Please try again.', 'error')
-            return render_template('register.html')
+            return render_template('register.html', next_url=next_url)
     
-    return render_template('register.html')
+    return render_template('register.html', next_url=next_url)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute", methods=["POST"])
 def login():
     """User login route"""
+    next_url = _safe_auth_next(
+        request.form.get("next") or request.args.get("next")
+    )
     # Clear stale flash messages from previous redirects
     if request.method == 'GET':
         # Allow "Please log in..." messages on login page (they're relevant here)
@@ -2430,18 +2466,18 @@ def login():
         
         if not email or not password:
             flash('Please provide both email and password.', 'error')
-            return render_template('login.html')
+            return render_template('login.html', next_url=next_url)
         
         # Look up user
         user_dict = get_user_by_email(email)
         if not user_dict:
             flash('Invalid email or password.', 'error')
-            return render_template('login.html')
+            return render_template('login.html', next_url=next_url)
         
         # Check password
         if not check_password_hash(user_dict['password_hash'], password):
             flash('Invalid email or password.', 'error')
-            return render_template('login.html')
+            return render_template('login.html', next_url=next_url)
         
         # Password verified - generate new session token for single-session enforcement
         user_id = user_dict['id']
@@ -2474,10 +2510,9 @@ def login():
         
         flash('Login successful!', 'success')
         
-        next_page = request.args.get('next')
-        return redirect(next_page) if next_page else redirect(url_for('index'))
+        return redirect(next_url) if next_url else redirect(url_for('index'))
     
-    return render_template('login.html')
+    return render_template('login.html', next_url=next_url)
 
 
 @app.route('/about')

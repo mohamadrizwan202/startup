@@ -269,6 +269,7 @@
       <!-- Register Form -->
       <form method="POST" action="{{ url_for('register') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="next" value="{{ next_url or '' }}"/>
         
         <div class="form-group">
           <label for="email">Email Address</label>
@@ -321,7 +322,7 @@
     <!-- Login Link -->
     <div class="login-link">
       <p>Already have an account?</p>
-      <p><a href="{{ url_for('login') }}">Sign in here</a></p>
+      <p><a href="{{ url_for('login', next=next_url) if next_url else url_for('login') }}">Sign in here</a></p>
     </div>
     </div>
   </div>
