@@ -215,6 +215,87 @@ def ensure_schema():
         except Exception:
             pass
 
+        # USER PERSONALIZATION PROFILE
+        # Store raw profile inputs only.
+        # BMI and estimated daily calorie requirement are derived later.
+        #
+        # Canonical measurement storage:
+        #   height_cm
+        #   weight_kg
+        #
+        # preferred_*_unit controls input/display only.
+        if USE_POSTGRES:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_profiles (
+                    user_id INTEGER PRIMARY KEY
+                        REFERENCES users(id) ON DELETE CASCADE,
+                    sex TEXT,
+                    age INTEGER,
+                    height_cm DOUBLE PRECISION,
+                    weight_kg DOUBLE PRECISION,
+                    activity_level TEXT,
+                    preferred_height_unit TEXT NOT NULL DEFAULT 'cm',
+                    preferred_weight_unit TEXT NOT NULL DEFAULT 'kg',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+                    CONSTRAINT user_profiles_sex_valid
+                        CHECK (sex IS NULL OR sex IN ('female', 'male')),
+                    CONSTRAINT user_profiles_activity_level_valid
+                        CHECK (
+                            activity_level IS NULL
+                            OR activity_level IN (
+                                'inactive',
+                                'low_active',
+                                'active',
+                                'very_active'
+                            )
+                        ),
+                    CONSTRAINT user_profiles_age_supported
+                        CHECK (age IS NULL OR age >= 4),
+                    CONSTRAINT user_profiles_height_positive
+                        CHECK (height_cm IS NULL OR height_cm > 0),
+                    CONSTRAINT user_profiles_weight_positive
+                        CHECK (weight_kg IS NULL OR weight_kg > 0),
+                    CONSTRAINT user_profiles_height_unit_valid
+                        CHECK (preferred_height_unit IN ('cm', 'ft_in')),
+                    CONSTRAINT user_profiles_weight_unit_valid
+                        CHECK (preferred_weight_unit IN ('kg', 'lb'))
+                )
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_profiles (
+                    user_id INTEGER PRIMARY KEY
+                        REFERENCES users(id) ON DELETE CASCADE,
+                    sex TEXT,
+                    age INTEGER,
+                    height_cm REAL,
+                    weight_kg REAL,
+                    activity_level TEXT,
+                    preferred_height_unit TEXT NOT NULL DEFAULT 'cm',
+                    preferred_weight_unit TEXT NOT NULL DEFAULT 'kg',
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+
+                    CHECK (sex IS NULL OR sex IN ('female', 'male')),
+                    CHECK (
+                        activity_level IS NULL
+                        OR activity_level IN (
+                            'inactive',
+                            'low_active',
+                            'active',
+                            'very_active'
+                        )
+                    ),
+                    CHECK (age IS NULL OR age >= 4),
+                    CHECK (height_cm IS NULL OR height_cm > 0),
+                    CHECK (weight_kg IS NULL OR weight_kg > 0),
+                    CHECK (preferred_height_unit IN ('cm', 'ft_in')),
+                    CHECK (preferred_weight_unit IN ('kg', 'lb'))
+                )
+            """)
+
         # Create nutrition_facts table for both Postgres and SQLite
         if USE_POSTGRES:
             # PostgreSQL schema
