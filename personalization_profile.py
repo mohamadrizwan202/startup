@@ -18,6 +18,14 @@ from personalization import VALID_ACTIVITY_LEVELS, VALID_SEXES
 
 VALID_HEIGHT_UNITS = frozenset({"cm", "ft_in"})
 VALID_WEIGHT_UNITS = frozenset({"kg", "lb"})
+VALID_PREGNANCY_LACTATION_STATUSES = frozenset(
+    {
+        "neither",
+        "pregnant",
+        "lactating",
+        "prefer_not_to_say",
+    }
+)
 
 CM_PER_INCH = 2.54
 KG_PER_LB = 0.45359237
@@ -145,6 +153,32 @@ def normalize_profile_payload(data) -> dict:
     ):
         raise ProfileInputError("unsupported activity_level")
 
+    pregnancy_lactation_status = data.get(
+        "pregnancy_lactation_status"
+    )
+
+    if pregnancy_lactation_status == "":
+        pregnancy_lactation_status = None
+
+    # This question is relevant only to female profiles age 14+.
+    # Other profiles must not carry a pregnancy/lactation state.
+    if sex != "female" or age < 14:
+        if pregnancy_lactation_status is not None:
+            raise ProfileInputError(
+                "pregnancy_lactation_status is not applicable "
+                "to this profile"
+            )
+        pregnancy_lactation_status = None
+
+    elif (
+        pregnancy_lactation_status is not None
+        and pregnancy_lactation_status
+        not in VALID_PREGNANCY_LACTATION_STATUSES
+    ):
+        raise ProfileInputError(
+            "unsupported pregnancy_lactation_status"
+        )
+
     height_cm, preferred_height_unit = _normalize_height(
         data.get("height")
     )
@@ -159,6 +193,61 @@ def normalize_profile_payload(data) -> dict:
         "height_cm": height_cm,
         "weight_kg": weight_kg,
         "activity_level": activity_level,
+        "pregnancy_lactation_status": pregnancy_lactation_status,
         "preferred_height_unit": preferred_height_unit,
         "preferred_weight_unit": preferred_weight_unit,
+    }
+
+def get_standard_eer_eligibility(profile: dict) -> dict:
+    """Return whether the ordinary non-pregnancy EER may be calculated.
+
+    This does not calculate EER.
+
+    Pregnancy and lactation require separate energy calculations, so
+    PureFyul deliberately withholds the standard EER for those states.
+    """
+
+    if not isinstance(profile, dict):
+        raise ProfileInputError("profile must be a dictionary")
+
+    age = _normalize_age(profile.get("age"))
+
+    sex = profile.get("sex")
+    if sex not in VALID_SEXES:
+        raise ProfileInputError("sex must be 'female' or 'male'")
+
+    activity_level = profile.get("activity_level")
+
+    if activity_level is None:
+        return {
+            "eligible": False,
+            "reason": "activity_level_required",
+        }
+
+    if activity_level not in VALID_ACTIVITY_LEVELS:
+        raise ProfileInputError("unsupported activity_level")
+
+    if sex == "female" and age >= 14:
+        status = profile.get("pregnancy_lactation_status")
+
+        if status is None:
+            return {
+                "eligible": False,
+                "reason": "pregnancy_lactation_status_required",
+            }
+
+        if status not in VALID_PREGNANCY_LACTATION_STATUSES:
+            raise ProfileInputError(
+                "unsupported pregnancy_lactation_status"
+            )
+
+        if status != "neither":
+            return {
+                "eligible": False,
+                "reason": "separate_life_stage_eer_required",
+            }
+
+    return {
+        "eligible": True,
+        "reason": None,
     }

@@ -180,3 +180,191 @@ def test_all_supported_activity_levels_are_accepted(activity_level):
 def test_invalid_profile_inputs_are_rejected(payload):
     with pytest.raises(ProfileInputError):
         normalize_profile_payload(payload)
+
+
+def test_female_profile_can_store_neither_status():
+    profile = normalize_profile_payload(
+        {
+            "age": 31,
+            "sex": "female",
+            "height": {"unit": "cm", "value": 165},
+            "weight": {"unit": "kg", "value": 63},
+            "activity_level": "low_active",
+            "pregnancy_lactation_status": "neither",
+        }
+    )
+
+    assert profile["pregnancy_lactation_status"] == "neither"
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        "pregnant",
+        "lactating",
+        "prefer_not_to_say",
+    ],
+)
+def test_special_life_stage_statuses_are_accepted(status):
+    profile = normalize_profile_payload(
+        {
+            "age": 31,
+            "sex": "female",
+            "height": {"unit": "cm", "value": 165},
+            "weight": {"unit": "kg", "value": 63},
+            "activity_level": "active",
+            "pregnancy_lactation_status": status,
+        }
+    )
+
+    assert profile["pregnancy_lactation_status"] == status
+
+
+def test_male_profile_rejects_life_stage_status():
+    with pytest.raises(ProfileInputError):
+        normalize_profile_payload(
+            {
+                "age": 31,
+                "sex": "male",
+                "height": {"unit": "cm", "value": 180},
+                "weight": {"unit": "kg", "value": 80},
+                "activity_level": "active",
+                "pregnancy_lactation_status": "pregnant",
+            }
+        )
+
+
+def test_female_under_14_rejects_life_stage_status():
+    with pytest.raises(ProfileInputError):
+        normalize_profile_payload(
+            {
+                "age": 13,
+                "sex": "female",
+                "height": {"unit": "cm", "value": 150},
+                "weight": {"unit": "kg", "value": 45},
+                "activity_level": "active",
+                "pregnancy_lactation_status": "pregnant",
+            }
+        )
+
+
+def test_invalid_life_stage_status_is_rejected():
+    with pytest.raises(ProfileInputError):
+        normalize_profile_payload(
+            {
+                "age": 31,
+                "sex": "female",
+                "height": {"unit": "cm", "value": 165},
+                "weight": {"unit": "kg", "value": 63},
+                "activity_level": "active",
+                "pregnancy_lactation_status": "unknown",
+            }
+        )
+
+
+def test_standard_eer_requires_activity():
+    from personalization_profile import (
+        get_standard_eer_eligibility,
+    )
+
+    result = get_standard_eer_eligibility(
+        {
+            "age": 31,
+            "sex": "male",
+            "activity_level": None,
+            "pregnancy_lactation_status": None,
+        }
+    )
+
+    assert result == {
+        "eligible": False,
+        "reason": "activity_level_required",
+    }
+
+
+def test_female_14_plus_requires_life_stage_answer():
+    from personalization_profile import (
+        get_standard_eer_eligibility,
+    )
+
+    result = get_standard_eer_eligibility(
+        {
+            "age": 31,
+            "sex": "female",
+            "activity_level": "active",
+            "pregnancy_lactation_status": None,
+        }
+    )
+
+    assert result == {
+        "eligible": False,
+        "reason": "pregnancy_lactation_status_required",
+    }
+
+
+def test_neither_allows_standard_eer():
+    from personalization_profile import (
+        get_standard_eer_eligibility,
+    )
+
+    result = get_standard_eer_eligibility(
+        {
+            "age": 31,
+            "sex": "female",
+            "activity_level": "active",
+            "pregnancy_lactation_status": "neither",
+        }
+    )
+
+    assert result == {
+        "eligible": True,
+        "reason": None,
+    }
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        "pregnant",
+        "lactating",
+        "prefer_not_to_say",
+    ],
+)
+def test_special_life_stage_blocks_standard_eer(status):
+    from personalization_profile import (
+        get_standard_eer_eligibility,
+    )
+
+    result = get_standard_eer_eligibility(
+        {
+            "age": 31,
+            "sex": "female",
+            "activity_level": "active",
+            "pregnancy_lactation_status": status,
+        }
+    )
+
+    assert result == {
+        "eligible": False,
+        "reason": "separate_life_stage_eer_required",
+    }
+
+
+def test_male_profile_can_use_standard_eer_without_life_stage():
+    from personalization_profile import (
+        get_standard_eer_eligibility,
+    )
+
+    result = get_standard_eer_eligibility(
+        {
+            "age": 31,
+            "sex": "male",
+            "activity_level": "active",
+            "pregnancy_lactation_status": None,
+        }
+    )
+
+    assert result == {
+        "eligible": True,
+        "reason": None,
+    }

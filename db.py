@@ -234,6 +234,15 @@ def ensure_schema():
                     height_cm DOUBLE PRECISION,
                     weight_kg DOUBLE PRECISION,
                     activity_level TEXT,
+                    pregnancy_lactation_status TEXT CHECK (
+                        pregnancy_lactation_status IS NULL
+                        OR pregnancy_lactation_status IN (
+                            'neither',
+                            'pregnant',
+                            'lactating',
+                            'prefer_not_to_say'
+                        )
+                    ),
                     preferred_height_unit TEXT NOT NULL DEFAULT 'cm',
                     preferred_weight_unit TEXT NOT NULL DEFAULT 'kg',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -273,6 +282,15 @@ def ensure_schema():
                     height_cm REAL,
                     weight_kg REAL,
                     activity_level TEXT,
+                    pregnancy_lactation_status TEXT CHECK (
+                        pregnancy_lactation_status IS NULL
+                        OR pregnancy_lactation_status IN (
+                            'neither',
+                            'pregnant',
+                            'lactating',
+                            'prefer_not_to_say'
+                        )
+                    ),
                     preferred_height_unit TEXT NOT NULL DEFAULT 'cm',
                     preferred_weight_unit TEXT NOT NULL DEFAULT 'kg',
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -295,6 +313,44 @@ def ensure_schema():
                     CHECK (preferred_weight_unit IN ('kg', 'lb'))
                 )
             """)
+
+        # Add pregnancy/lactation safety field to existing profiles.
+        # This field only controls standard-EER eligibility.
+        # Pregnancy/lactation EER calculations are intentionally not
+        # implemented here.
+        if USE_POSTGRES:
+            cursor.execute("""
+                ALTER TABLE user_profiles
+                ADD COLUMN IF NOT EXISTS pregnancy_lactation_status TEXT
+                CHECK (
+                    pregnancy_lactation_status IS NULL
+                    OR pregnancy_lactation_status IN (
+                        'neither',
+                        'pregnant',
+                        'lactating',
+                        'prefer_not_to_say'
+                    )
+                )
+            """)
+        else:
+            cursor.execute("PRAGMA table_info(user_profiles)")
+            profile_columns = {
+                row[1] for row in cursor.fetchall()
+            }
+            if "pregnancy_lactation_status" not in profile_columns:
+                cursor.execute("""
+                    ALTER TABLE user_profiles
+                    ADD COLUMN pregnancy_lactation_status TEXT
+                    CHECK (
+                        pregnancy_lactation_status IS NULL
+                        OR pregnancy_lactation_status IN (
+                            'neither',
+                            'pregnant',
+                            'lactating',
+                            'prefer_not_to_say'
+                        )
+                    )
+                """)
 
         # Create nutrition_facts table for both Postgres and SQLite
         if USE_POSTGRES:

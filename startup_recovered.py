@@ -51606,6 +51606,7 @@ def personalization_profile_api():
                         height_cm,
                         weight_kg,
                         activity_level,
+                        pregnancy_lactation_status,
                         preferred_height_unit,
                         preferred_weight_unit,
                         created_at,
@@ -51668,16 +51669,19 @@ def personalization_profile_api():
                     height_cm,
                     weight_kg,
                     activity_level,
+                    pregnancy_lactation_status,
                     preferred_height_unit,
                     preferred_weight_unit
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(user_id) DO UPDATE SET
                     sex = excluded.sex,
                     age = excluded.age,
                     height_cm = excluded.height_cm,
                     weight_kg = excluded.weight_kg,
                     activity_level = excluded.activity_level,
+                    pregnancy_lactation_status =
+                        excluded.pregnancy_lactation_status,
                     preferred_height_unit =
                         excluded.preferred_height_unit,
                     preferred_weight_unit =
@@ -51692,6 +51696,7 @@ def personalization_profile_api():
                 profile["height_cm"],
                 profile["weight_kg"],
                 profile["activity_level"],
+                profile["pregnancy_lactation_status"],
                 profile["preferred_height_unit"],
                 profile["preferred_weight_unit"],
             ),
@@ -51708,6 +51713,7 @@ def personalization_profile_api():
                     height_cm,
                     weight_kg,
                     activity_level,
+                    pregnancy_lactation_status,
                     preferred_height_unit,
                     preferred_weight_unit,
                     created_at,
