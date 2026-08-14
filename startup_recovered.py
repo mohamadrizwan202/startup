@@ -51593,6 +51593,8 @@ def personalization_profile_api():
     if not user_id:
         return jsonify({"error": "auth_required"}), 401
 
+    from personalization_profile import build_energy_estimate
+
     if request.method == "GET":
         conn = db.get_conn()
         try:
@@ -51621,10 +51623,23 @@ def personalization_profile_api():
             row = cursor.fetchone()
 
             if row is None:
-                return jsonify({"profile": None}), 200
+                return jsonify({
+                    "profile": None,
+                    "energy_estimate": {
+                        "available": False,
+                        "reason": "profile_required",
+                        "kcal_per_day": None,
+                        "method": "NASEM_2023_EER",
+                    },
+                }), 200
+
+            profile_data = db.row_to_dict(row)
 
             return jsonify({
-                "profile": db.row_to_dict(row),
+                "profile": profile_data,
+                "energy_estimate": build_energy_estimate(
+                    profile_data
+                ),
             }), 200
 
         except Exception:
@@ -51727,12 +51742,24 @@ def personalization_profile_api():
 
         saved = cursor.fetchone()
 
+        saved_profile = (
+            db.row_to_dict(saved)
+            if saved is not None
+            else None
+        )
+
         return jsonify({
             "success": True,
-            "profile": (
-                db.row_to_dict(saved)
-                if saved is not None
-                else None
+            "profile": saved_profile,
+            "energy_estimate": (
+                build_energy_estimate(saved_profile)
+                if saved_profile is not None
+                else {
+                    "available": False,
+                    "reason": "profile_required",
+                    "kcal_per_day": None,
+                    "method": "NASEM_2023_EER",
+                }
             ),
         }), 200
 

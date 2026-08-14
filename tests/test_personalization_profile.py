@@ -368,3 +368,124 @@ def test_male_profile_can_use_standard_eer_without_life_stage():
         "eligible": True,
         "reason": None,
     }
+
+
+def test_energy_estimate_for_verified_adult_example():
+    from personalization_profile import build_energy_estimate
+
+    result = build_energy_estimate(
+        {
+            "age": 22,
+            "sex": "female",
+            "height_cm": 165,
+            "weight_kg": 63,
+            "activity_level": "low_active",
+            "pregnancy_lactation_status": "neither",
+        }
+    )
+
+    assert result == {
+        "available": True,
+        "reason": None,
+        "kcal_per_day": 2275,
+        "method": "NASEM_2023_EER",
+    }
+
+
+def test_energy_estimate_with_unknown_activity_is_withheld():
+    from personalization_profile import build_energy_estimate
+
+    result = build_energy_estimate(
+        {
+            "age": 31,
+            "sex": "male",
+            "height_cm": 180,
+            "weight_kg": 80,
+            "activity_level": None,
+            "pregnancy_lactation_status": None,
+        }
+    )
+
+    assert result["available"] is False
+    assert result["reason"] == "activity_level_required"
+    assert result["kcal_per_day"] is None
+
+
+def test_energy_estimate_during_pregnancy_is_withheld():
+    from personalization_profile import build_energy_estimate
+
+    result = build_energy_estimate(
+        {
+            "age": 31,
+            "sex": "female",
+            "height_cm": 165,
+            "weight_kg": 63,
+            "activity_level": "low_active",
+            "pregnancy_lactation_status": "pregnant",
+        }
+    )
+
+    assert result["available"] is False
+    assert result["reason"] == "separate_life_stage_eer_required"
+    assert result["kcal_per_day"] is None
+
+
+def test_energy_estimate_during_lactation_is_withheld():
+    from personalization_profile import build_energy_estimate
+
+    result = build_energy_estimate(
+        {
+            "age": 31,
+            "sex": "female",
+            "height_cm": 165,
+            "weight_kg": 63,
+            "activity_level": "active",
+            "pregnancy_lactation_status": "lactating",
+        }
+    )
+
+    assert result["available"] is False
+    assert result["reason"] == "separate_life_stage_eer_required"
+    assert result["kcal_per_day"] is None
+
+
+def test_energy_estimate_with_unresolved_female_status_is_withheld():
+    from personalization_profile import build_energy_estimate
+
+    result = build_energy_estimate(
+        {
+            "age": 31,
+            "sex": "female",
+            "height_cm": 165,
+            "weight_kg": 63,
+            "activity_level": "active",
+            "pregnancy_lactation_status": None,
+        }
+    )
+
+    assert result["available"] is False
+    assert result["reason"] == (
+        "pregnancy_lactation_status_required"
+    )
+
+
+def test_energy_estimate_for_incomplete_profile_is_withheld():
+    from personalization_profile import build_energy_estimate
+
+    result = build_energy_estimate(
+        {
+            "age": 31,
+            "sex": "male",
+            "height_cm": None,
+            "weight_kg": 80,
+            "activity_level": "active",
+            "pregnancy_lactation_status": None,
+        }
+    )
+
+    assert result == {
+        "available": False,
+        "reason": "profile_incomplete",
+        "kcal_per_day": None,
+        "method": "NASEM_2023_EER",
+    }

@@ -13,7 +13,11 @@ Display/input preferences:
 
 from __future__ import annotations
 
-from personalization import VALID_ACTIVITY_LEVELS, VALID_SEXES
+from personalization import (
+    VALID_ACTIVITY_LEVELS,
+    VALID_SEXES,
+    calculate_eer,
+)
 
 
 VALID_HEIGHT_UNITS = frozenset({"cm", "ft_in"})
@@ -250,4 +254,55 @@ def get_standard_eer_eligibility(profile: dict) -> dict:
     return {
         "eligible": True,
         "reason": None,
+    }
+
+def build_energy_estimate(profile: dict) -> dict:
+    """Build a safe standard EER response from a stored profile.
+
+    Returns an unavailable result instead of guessing when the profile
+    is incomplete, activity is unknown, or a separate pregnancy/lactation
+    energy calculation would be required.
+    """
+
+    if not isinstance(profile, dict):
+        raise ProfileInputError("profile must be a dictionary")
+
+    required_fields = (
+        "age",
+        "sex",
+        "height_cm",
+        "weight_kg",
+    )
+
+    if any(profile.get(field) is None for field in required_fields):
+        return {
+            "available": False,
+            "reason": "profile_incomplete",
+            "kcal_per_day": None,
+            "method": "NASEM_2023_EER",
+        }
+
+    eligibility = get_standard_eer_eligibility(profile)
+
+    if not eligibility["eligible"]:
+        return {
+            "available": False,
+            "reason": eligibility["reason"],
+            "kcal_per_day": None,
+            "method": "NASEM_2023_EER",
+        }
+
+    eer = calculate_eer(
+        age=profile["age"],
+        sex=profile["sex"],
+        height_cm=profile["height_cm"],
+        weight_kg=profile["weight_kg"],
+        activity_level=profile["activity_level"],
+    )
+
+    return {
+        "available": True,
+        "reason": None,
+        "kcal_per_day": int(round(eer)),
+        "method": "NASEM_2023_EER",
     }
