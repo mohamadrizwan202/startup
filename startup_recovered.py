@@ -51581,6 +51581,174 @@ def session_check():
 
 
 @csrf.exempt
+@app.route(
+    "/api/personalization-profile",
+    methods=["GET", "PUT"],
+)
+@login_required_single_session
+def personalization_profile_api():
+    """Read or replace the logged-in user's personalization profile."""
+
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "auth_required"}), 401
+
+    if request.method == "GET":
+        conn = db.get_conn()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                db.prepare_query(
+                    """
+                    SELECT
+                        age,
+                        sex,
+                        height_cm,
+                        weight_kg,
+                        activity_level,
+                        preferred_height_unit,
+                        preferred_weight_unit,
+                        created_at,
+                        updated_at
+                    FROM user_profiles
+                    WHERE user_id = ?
+                    """
+                ),
+                (user_id,),
+            )
+
+            row = cursor.fetchone()
+
+            if row is None:
+                return jsonify({"profile": None}), 200
+
+            return jsonify({
+                "profile": db.row_to_dict(row),
+            }), 200
+
+        except Exception:
+            app.logger.exception(
+                "Failed to read personalization profile"
+            )
+            return jsonify({
+                "error": "profile_read_failed",
+            }), 500
+
+        finally:
+            conn.close()
+
+    data = request.get_json(silent=True)
+
+    try:
+        from personalization_profile import (
+            ProfileInputError,
+            normalize_profile_payload,
+        )
+
+        profile = normalize_profile_payload(data)
+
+    except ProfileInputError as exc:
+        return jsonify({
+            "error": "invalid_profile",
+            "message": str(exc),
+        }), 400
+
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        cursor.execute(
+            db.prepare_query(
+                """
+                INSERT INTO user_profiles (
+                    user_id,
+                    sex,
+                    age,
+                    height_cm,
+                    weight_kg,
+                    activity_level,
+                    preferred_height_unit,
+                    preferred_weight_unit
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    sex = excluded.sex,
+                    age = excluded.age,
+                    height_cm = excluded.height_cm,
+                    weight_kg = excluded.weight_kg,
+                    activity_level = excluded.activity_level,
+                    preferred_height_unit =
+                        excluded.preferred_height_unit,
+                    preferred_weight_unit =
+                        excluded.preferred_weight_unit,
+                    updated_at = CURRENT_TIMESTAMP
+                """
+            ),
+            (
+                user_id,
+                profile["sex"],
+                profile["age"],
+                profile["height_cm"],
+                profile["weight_kg"],
+                profile["activity_level"],
+                profile["preferred_height_unit"],
+                profile["preferred_weight_unit"],
+            ),
+        )
+
+        conn.commit()
+
+        cursor.execute(
+            db.prepare_query(
+                """
+                SELECT
+                    age,
+                    sex,
+                    height_cm,
+                    weight_kg,
+                    activity_level,
+                    preferred_height_unit,
+                    preferred_weight_unit,
+                    created_at,
+                    updated_at
+                FROM user_profiles
+                WHERE user_id = ?
+                """
+            ),
+            (user_id,),
+        )
+
+        saved = cursor.fetchone()
+
+        return jsonify({
+            "success": True,
+            "profile": (
+                db.row_to_dict(saved)
+                if saved is not None
+                else None
+            ),
+        }), 200
+
+    except Exception:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+
+        app.logger.exception(
+            "Failed to save personalization profile"
+        )
+
+        return jsonify({
+            "error": "profile_save_failed",
+        }), 500
+
+    finally:
+        conn.close()
+
+
+@csrf.exempt
 @app.get("/api/me")
 @login_required_single_session
 def get_current_user():
