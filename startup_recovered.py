@@ -70,6 +70,7 @@ app = Flask(__name__)
 # Values are supplied through environment variables; never hard-code secrets.
 STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
 STRIPE_PRO_MONTHLY_PRICE_ID = (os.getenv("STRIPE_PRO_MONTHLY_PRICE_ID") or "").strip()
+STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET") or "").strip()
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -2615,6 +2616,44 @@ def create_checkout_session():
         )
         flash("We couldn't start checkout. Please try again.", "error")
         return redirect(url_for("pricing"))
+
+
+@app.route('/billing/stripe-webhook', methods=['POST'])
+@csrf.exempt
+def stripe_webhook():
+    """Receive and verify signed Stripe webhook events."""
+
+    if not STRIPE_WEBHOOK_SECRET:
+        app.logger.error("STRIPE_WEBHOOK_CONFIG_MISSING")
+        return jsonify({"error": "webhook_not_configured"}), 503
+
+    payload = request.get_data(cache=False, as_text=False)
+    signature = request.headers.get("Stripe-Signature", "")
+
+    if not signature:
+        app.logger.warning("STRIPE_WEBHOOK_REJECTED reason=missing_signature")
+        return jsonify({"error": "missing_signature"}), 400
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload,
+            signature,
+            STRIPE_WEBHOOK_SECRET,
+        )
+    except (ValueError, stripe.SignatureVerificationError):
+        app.logger.warning(
+            "STRIPE_WEBHOOK_REJECTED reason=invalid_payload_or_signature"
+        )
+        return jsonify({"error": "invalid_webhook"}), 400
+
+    app.logger.info(
+        "STRIPE_WEBHOOK_VERIFIED event_id=%s event_type=%s",
+        event.id,
+        event.type,
+    )
+
+    # Subscription synchronization is added in the next step.
+    return jsonify({"received": True}), 200
 
 
 @app.route('/privacy')
