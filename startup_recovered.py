@@ -47,6 +47,7 @@ import contextlib
 # Import database helpers
 import db
 import mistune
+import stripe
 from utils.seo_links import compute_related_goals, compute_related_goals_for_ingredient, compute_related_ingredients
 from utils.seo_registry import get_goal_by_slug, get_goals_registry, get_ingredients_registry
 
@@ -64,6 +65,14 @@ logging.basicConfig(
 logger = logging.getLogger("startup_recovered")
 
 app = Flask(__name__)
+
+# Stripe billing configuration.
+# Values are supplied through environment variables; never hard-code secrets.
+STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
+STRIPE_PRO_MONTHLY_PRICE_ID = (os.getenv("STRIPE_PRO_MONTHLY_PRICE_ID") or "").strip()
+
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
 
 # Production environment detection (single source of truth)
 ENV = (os.getenv("ENVIRONMENT") or "").strip().lower()
@@ -2524,6 +2533,90 @@ def about():
 def pricing():
     """Pricing page route"""
     return render_template('pricing.html')
+@app.route('/billing/create-checkout-session', methods=['POST'])
+@login_required
+def create_checkout_session():
+    """Create a Stripe Checkout Session for a PureFyul Pro subscription."""
+
+    if not STRIPE_SECRET_KEY or not STRIPE_PRO_MONTHLY_PRICE_ID:
+        app.logger.error(
+            "STRIPE_CHECKOUT_CONFIG_MISSING secret_key=%s price_id=%s",
+            bool(STRIPE_SECRET_KEY),
+            bool(STRIPE_PRO_MONTHLY_PRICE_ID),
+        )
+        flash(
+            "Pro billing is temporarily unavailable. Please try again later.",
+            "error",
+        )
+        return redirect(url_for("pricing"))
+
+    try:
+        # Existing PureFyul entitlement system remains the source of truth.
+        if get_user_plan(current_user.id) != "free":
+            flash("Your account already has Pro access.", "info")
+            return redirect(url_for("pricing"))
+    except Exception:
+        app.logger.exception(
+            "STRIPE_CHECKOUT_PLAN_LOOKUP_FAILED user_id=%s",
+            current_user.id,
+        )
+        flash(
+            "We couldn't verify your current plan. Please try again.",
+            "error",
+        )
+        return redirect(url_for("pricing"))
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            mode="subscription",
+            line_items=[
+                {
+                    "price": STRIPE_PRO_MONTHLY_PRICE_ID,
+                    "quantity": 1,
+                }
+            ],
+            customer_email=current_user.email,
+            client_reference_id=str(current_user.id),
+            metadata={
+                "purefyul_user_id": str(current_user.id),
+                "purefyul_plan": "pro",
+            },
+            subscription_data={
+                "metadata": {
+                    "purefyul_user_id": str(current_user.id),
+                    "purefyul_plan": "pro",
+                }
+            },
+            success_url=(
+                url_for("pricing", _external=True)
+                + "?checkout=success&session_id={CHECKOUT_SESSION_ID}"
+            ),
+            cancel_url=(
+                url_for("pricing", _external=True)
+                + "?checkout=cancelled"
+            ),
+        )
+
+        if not checkout_session.url:
+            raise RuntimeError("Stripe Checkout Session returned no URL")
+
+        app.logger.info(
+            "STRIPE_CHECKOUT_CREATED user_id=%s session_id=%s",
+            current_user.id,
+            checkout_session.id,
+        )
+
+        return redirect(checkout_session.url, code=303)
+
+    except stripe.StripeError:
+        app.logger.exception(
+            "STRIPE_CHECKOUT_CREATE_FAILED user_id=%s",
+            current_user.id,
+        )
+        flash("We couldn't start checkout. Please try again.", "error")
+        return redirect(url_for("pricing"))
+
+
 @app.route('/privacy')
 def privacy():
     """Privacy Policy page route"""
