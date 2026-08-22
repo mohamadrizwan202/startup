@@ -43,10 +43,10 @@
             <li class="pricing-card__feature pricing-card__feature--yes">Allergen Checks</li>
             <li class="pricing-card__feature pricing-card__feature--yes">Health Goal Guidance</li>
             <li class="pricing-card__feature pricing-card__feature--yes">Shareable Result Cards <span aria-label="Free account required">(free account)</span></li>
-            <li class="pricing-card__feature pricing-card__feature--no">Save Recipes</li>
-            <li class="pricing-card__feature pricing-card__feature--no">Meal Planner</li>
-            <li class="pricing-card__feature pricing-card__feature--no">Export CSV</li>
-            <li class="pricing-card__feature pricing-card__feature--no">Priority Support</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Save Recipes — Pro only</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Meal Planner — Pro only</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Export CSV — Pro only</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Priority Support — Pro only</li>
           </ul>
           {% if current_user.is_authenticated %}
           <a href="{{ url_for('app_home') }}" class="pricing-card__cta pricing-card__cta--ghost">
