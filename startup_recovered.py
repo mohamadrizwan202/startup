@@ -54172,7 +54172,7 @@ def save_recipe():
     if get_user_plan(current_user.id) == "free":
         return jsonify({
             "error": "upgrade_required",
-            "message": "Saving recipes is a Pro feature. Upgrade for $4.99/month."
+            "message": "Saving recipes is a Pro feature. Upgrade for $7.99/month."
         }), 403
 
     data = request.get_json(force=True) or {}
@@ -54278,7 +54278,7 @@ def get_meal_plans():
     if get_user_plan(current_user.id) == "free":
         return jsonify({
             "error": "upgrade_required",
-            "message": "Meal planning is a Pro feature. Upgrade for $4.99/month."
+            "message": "Meal planning is a Pro feature. Upgrade for $7.99/month."
         }), 403
 
     conn = db.get_conn()
@@ -54314,7 +54314,7 @@ def save_meal_plan():
     if get_user_plan(current_user.id) == "free":
         return jsonify({
             "error": "upgrade_required",
-            "message": "Meal planning is a Pro feature. Upgrade for $4.99/month."
+            "message": "Meal planning is a Pro feature. Upgrade for $7.99/month."
         }), 403
 
     data = request.get_json(force=True) or {}
@@ -54411,7 +54411,7 @@ def export_recipes():
     if get_user_plan(current_user.id) == "free":
         return jsonify({
             "error": "upgrade_required",
-            "message": "Export is a Pro feature. Upgrade for $4.99/month."
+            "message": "Export is a Pro feature. Upgrade for $7.99/month."
         }), 403
 
     conn = db.get_conn()
