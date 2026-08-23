@@ -2618,6 +2618,204 @@ def create_checkout_session():
         return redirect(url_for("pricing"))
 
 
+def _stripe_subscription_has_pro_price(subscription):
+    """Return True only when this subscription contains PureFyul's Pro Price."""
+    items = subscription.get("items") or {}
+    for item in items.get("data") or []:
+        price = item.get("price")
+        if isinstance(price, dict):
+            price_id = price.get("id")
+        else:
+            price_id = price
+
+        if price_id == STRIPE_PRO_MONTHLY_PRICE_ID:
+            return True
+
+    return False
+
+
+def _stripe_subscription_period_end(subscription):
+    """Return the Pro item's current_period_end Unix timestamp, if present."""
+    items = subscription.get("items") or {}
+
+    for item in items.get("data") or []:
+        price = item.get("price")
+        if isinstance(price, dict):
+            price_id = price.get("id")
+        else:
+            price_id = price
+
+        if price_id == STRIPE_PRO_MONTHLY_PRICE_ID:
+            return item.get("current_period_end")
+
+    return None
+
+
+def _sync_stripe_subscription(subscription):
+    """
+    Synchronize one verified Stripe subscription into PureFyul.
+
+    Existing Stripe rows are updated by stripe_subscription_id.
+    New rows are created only when Stripe metadata maps the subscription
+    to a PureFyul user and the subscription contains our configured Pro Price.
+
+    Manual Pro rows with stripe_subscription_id IS NULL are never modified.
+    """
+    subscription_id = subscription.get("id")
+    stripe_status = subscription.get("status")
+    customer = subscription.get("customer")
+
+    if isinstance(customer, dict):
+        customer_id = customer.get("id")
+    else:
+        customer_id = customer
+
+    if not subscription_id or not stripe_status:
+        raise ValueError("Stripe subscription missing id or status")
+
+    has_pro_price = _stripe_subscription_has_pro_price(subscription)
+    plan_value = "pro" if has_pro_price else "free"
+
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+        placeholder = "%s" if db.USE_POSTGRES else "?"
+
+        # First look for an already-known Stripe subscription.
+        cursor.execute(
+            f"""
+            SELECT id, user_id
+            FROM subscriptions
+            WHERE stripe_subscription_id = {placeholder}
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (subscription_id,),
+        )
+
+        existing = cursor.fetchone()
+
+        if existing:
+            existing = db.row_to_dict(existing)
+            user_id = existing["user_id"]
+        else:
+            # A brand-new Stripe subscription must prove which PureFyul
+            # account and product it belongs to.
+            metadata = subscription.get("metadata") or {}
+
+            if metadata.get("purefyul_plan") != "pro":
+                app.logger.warning(
+                    "STRIPE_SUBSCRIPTION_IGNORED subscription_id=%s reason=plan_metadata",
+                    subscription_id,
+                )
+                return "ignored"
+
+            if not has_pro_price:
+                app.logger.warning(
+                    "STRIPE_SUBSCRIPTION_IGNORED subscription_id=%s reason=wrong_price",
+                    subscription_id,
+                )
+                return "ignored"
+
+            raw_user_id = metadata.get("purefyul_user_id")
+
+            try:
+                user_id = int(raw_user_id)
+            except (TypeError, ValueError):
+                app.logger.warning(
+                    "STRIPE_SUBSCRIPTION_IGNORED subscription_id=%s reason=invalid_user_id",
+                    subscription_id,
+                )
+                return "ignored"
+
+            if user_id <= 0:
+                app.logger.warning(
+                    "STRIPE_SUBSCRIPTION_IGNORED subscription_id=%s reason=invalid_user_id",
+                    subscription_id,
+                )
+                return "ignored"
+
+        period_end_unix = _stripe_subscription_period_end(subscription)
+
+        if period_end_unix is not None:
+            period_end_dt = datetime.fromtimestamp(
+                int(period_end_unix),
+                tz=timezone.utc,
+            )
+
+            # PostgreSQL column is TIMESTAMP WITHOUT TIME ZONE.
+            # Store UTC as a naive timestamp there; SQLite stores ISO text.
+            if db.USE_POSTGRES:
+                period_end_value = period_end_dt.replace(tzinfo=None)
+            else:
+                period_end_value = period_end_dt.isoformat()
+        else:
+            period_end_value = None
+
+        if existing:
+            cursor.execute(
+                f"""
+                UPDATE subscriptions
+                SET
+                    plan = {placeholder},
+                    status = {placeholder},
+                    stripe_customer_id = {placeholder},
+                    current_period_end = {placeholder}
+                WHERE stripe_subscription_id = {placeholder}
+                """,
+                (
+                    plan_value,
+                    stripe_status,
+                    customer_id,
+                    period_end_value,
+                    subscription_id,
+                ),
+            )
+            result = "updated"
+
+        else:
+            cursor.execute(
+                f"""
+                INSERT INTO subscriptions (
+                    user_id,
+                    plan,
+                    status,
+                    stripe_customer_id,
+                    stripe_subscription_id,
+                    current_period_end
+                )
+                VALUES (
+                    {placeholder},
+                    {placeholder},
+                    {placeholder},
+                    {placeholder},
+                    {placeholder},
+                    {placeholder}
+                )
+                """,
+                (
+                    user_id,
+                    "pro",
+                    stripe_status,
+                    customer_id,
+                    subscription_id,
+                    period_end_value,
+                ),
+            )
+            result = "inserted"
+
+        conn.commit()
+        return result
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
 @app.route('/billing/stripe-webhook', methods=['POST'])
 @csrf.exempt
 def stripe_webhook():
@@ -2652,7 +2850,57 @@ def stripe_webhook():
         event.type,
     )
 
-    # Subscription synchronization is added in the next step.
+    subscription_events = {
+        "customer.subscription.created",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+    }
+
+    if event.type in subscription_events:
+        try:
+            # Verified against Stripe Python SDK 15.5.0:
+            # event.data.object is StripeObject and to_dict() recursively
+            # returns normal Python dictionaries.
+            event_subscription = event.data.object.to_dict()
+            subscription_id = event_subscription.get("id")
+
+            if not subscription_id:
+                raise ValueError("Stripe subscription event missing subscription id")
+
+            if event.type == "customer.subscription.deleted":
+                # The signed deletion event is authoritative for this
+                # subscription ID.
+                subscription = event_subscription
+                subscription["status"] = "canceled"
+            else:
+                # Stripe does not guarantee webhook delivery order.
+                # Retrieve the subscription's CURRENT state so a delayed
+                # older event cannot overwrite newer billing state.
+                current_subscription = stripe.Subscription.retrieve(
+                    subscription_id
+                )
+                subscription = current_subscription.to_dict()
+
+            sync_result = _sync_stripe_subscription(subscription)
+
+            app.logger.info(
+                "STRIPE_SUBSCRIPTION_SYNCED event_id=%s subscription_id=%s result=%s status=%s",
+                event.id,
+                subscription.get("id"),
+                sync_result,
+                subscription.get("status"),
+            )
+
+        except Exception:
+            # Returning 500 tells Stripe delivery did not complete, so the
+            # event can be retried instead of silently losing billing state.
+            app.logger.exception(
+                "STRIPE_SUBSCRIPTION_SYNC_FAILED event_id=%s event_type=%s",
+                event.id,
+                event.type,
+            )
+            return jsonify({"error": "subscription_sync_failed"}), 500
+
     return jsonify({"received": True}), 200
 
 
@@ -54245,12 +54493,12 @@ def get_user_plan(user_id):
         cursor = conn.cursor()
         if db.USE_POSTGRES:
             cursor.execute(
-                "SELECT plan FROM subscriptions WHERE user_id = %s AND status = 'active' ORDER BY created_at DESC LIMIT 1",
+                "SELECT plan FROM subscriptions WHERE user_id = %s AND plan = 'pro' AND status IN ('active', 'trialing', 'past_due') ORDER BY created_at DESC LIMIT 1",
                 (user_id,)
             )
         else:
             cursor.execute(
-                "SELECT plan FROM subscriptions WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1",
+                "SELECT plan FROM subscriptions WHERE user_id = ? AND plan = 'pro' AND status IN ('active', 'trialing', 'past_due') ORDER BY created_at DESC LIMIT 1",
                 (user_id,)
             )
         row = cursor.fetchone()
