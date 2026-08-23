@@ -2029,7 +2029,7 @@ def add_security_headers(response):
         "base-uri 'self'",
         "object-src 'none'",
         "frame-ancestors 'none'",
-        "form-action 'self'",
+        "form-action 'self' https://checkout.stripe.com https://billing.stripe.com",
 
         # AdSense / CMP needs external images
         "img-src 'self' data: blob: https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://www.google-analytics.com https://*.clarity.ms https://c.bing.com",
@@ -2537,15 +2537,24 @@ def pricing():
     pricing_user_plan = "free"
     has_stripe_billing = False
     pricing_plan_available = True
+    pricing_cancel_at = None
+    pricing_period_end_label = None
 
     if current_user.is_authenticated:
         try:
             pricing_user_plan = get_user_plan(current_user.id)
 
             if pricing_user_plan == "pro":
-                has_stripe_billing = bool(
-                    _get_active_stripe_customer_id(current_user.id)
+                stripe_billing_state = _get_active_stripe_subscription_state(
+                    current_user.id
                 )
+                has_stripe_billing = bool(stripe_billing_state)
+
+                if stripe_billing_state:
+                    pricing_cancel_at = stripe_billing_state.get("cancel_at")
+                    pricing_period_end_label = _format_billing_period_end(
+                        pricing_cancel_at
+                    )
 
         except Exception:
             app.logger.exception(
@@ -2561,12 +2570,14 @@ def pricing():
         pricing_user_plan=pricing_user_plan,
         has_stripe_billing=has_stripe_billing,
         pricing_plan_available=pricing_plan_available,
+        pricing_cancel_at=pricing_cancel_at,
+        pricing_period_end_label=pricing_period_end_label,
     )
-def _get_active_stripe_customer_id(user_id):
+def _get_active_stripe_subscription_state(user_id):
     """
-    Return the Stripe customer ID for an eligible Stripe-backed Pro subscription.
+    Return billing state for an eligible Stripe-backed Pro subscription.
 
-    Manual Pro rows have no stripe_customer_id and are intentionally ignored.
+    Manual Pro rows have no Stripe subscription ID and are ignored.
     """
     conn = db.get_conn()
 
@@ -2576,7 +2587,10 @@ def _get_active_stripe_customer_id(user_id):
         if db.USE_POSTGRES:
             cursor.execute(
                 """
-                SELECT stripe_customer_id
+                SELECT
+                    stripe_customer_id,
+                    current_period_end,
+                    cancel_at
                 FROM subscriptions
                 WHERE user_id = %s
                   AND plan = 'pro'
@@ -2593,7 +2607,10 @@ def _get_active_stripe_customer_id(user_id):
         else:
             cursor.execute(
                 """
-                SELECT stripe_customer_id
+                SELECT
+                    stripe_customer_id,
+                    current_period_end,
+                    cancel_at
                 FROM subscriptions
                 WHERE user_id = ?
                   AND plan = 'pro'
@@ -2613,10 +2630,42 @@ def _get_active_stripe_customer_id(user_id):
         if not row:
             return None
 
-        return db.row_to_dict(row)["stripe_customer_id"]
+        return db.row_to_dict(row)
 
     finally:
         conn.close()
+
+
+def _get_active_stripe_customer_id(user_id):
+    """Return Stripe customer ID for an eligible Stripe-backed Pro user."""
+    state = _get_active_stripe_subscription_state(user_id)
+
+    if not state:
+        return None
+
+    return state["stripe_customer_id"]
+
+
+def _format_billing_period_end(value):
+    """Format a stored Stripe billing-period end for customer-facing text."""
+    if not value:
+        return None
+
+    try:
+        if isinstance(value, datetime):
+            period_end = value
+        else:
+            period_end = datetime.fromisoformat(
+                str(value).replace("Z", "+00:00")
+            )
+    except (TypeError, ValueError):
+        return None
+
+    return (
+        f"{period_end.strftime('%B')} "
+        f"{period_end.day}, "
+        f"{period_end.year}"
+    )
 
 
 @app.route('/billing/create-portal-session', methods=['POST'])
@@ -2827,6 +2876,26 @@ def _sync_stripe_subscription(subscription):
     has_pro_price = _stripe_subscription_has_pro_price(subscription)
     plan_value = "pro" if has_pro_price else "free"
 
+    cancel_at_unix = subscription.get("cancel_at")
+
+    # Compatibility fallback for Stripe flows that represent scheduled
+    # end-of-period cancellation with cancel_at_period_end=True.
+    if cancel_at_unix is None and subscription.get("cancel_at_period_end"):
+        cancel_at_unix = _stripe_subscription_period_end(subscription)
+
+    if cancel_at_unix is not None:
+        cancel_at_dt = datetime.fromtimestamp(
+            int(cancel_at_unix),
+            tz=timezone.utc,
+        )
+
+        if db.USE_POSTGRES:
+            cancel_at_value = cancel_at_dt.replace(tzinfo=None)
+        else:
+            cancel_at_value = cancel_at_dt.isoformat()
+    else:
+        cancel_at_value = None
+
     conn = db.get_conn()
 
     try:
@@ -2912,7 +2981,8 @@ def _sync_stripe_subscription(subscription):
                     plan = {placeholder},
                     status = {placeholder},
                     stripe_customer_id = {placeholder},
-                    current_period_end = {placeholder}
+                    current_period_end = {placeholder},
+                    cancel_at = {placeholder}
                 WHERE stripe_subscription_id = {placeholder}
                 """,
                 (
@@ -2920,6 +2990,7 @@ def _sync_stripe_subscription(subscription):
                     stripe_status,
                     customer_id,
                     period_end_value,
+                    cancel_at_value,
                     subscription_id,
                 ),
             )
@@ -2934,9 +3005,11 @@ def _sync_stripe_subscription(subscription):
                     status,
                     stripe_customer_id,
                     stripe_subscription_id,
-                    current_period_end
+                    current_period_end,
+                    cancel_at
                 )
                 VALUES (
+                    {placeholder},
                     {placeholder},
                     {placeholder},
                     {placeholder},
@@ -2952,6 +3025,7 @@ def _sync_stripe_subscription(subscription):
                     customer_id,
                     subscription_id,
                     period_end_value,
+                    cancel_at_value,
                 ),
             )
             result = "inserted"

@@ -2,8 +2,9 @@
 Stripe subscription integrity migration for PureFyul.
 
 Purpose:
+- Store Stripe's scheduled cancellation timestamp when present.
 - Prevent the same Stripe subscription from being stored more than once.
-- Preserve existing manual/beta Pro rows where stripe_subscription_id IS NULL.
+- Preserve existing manual Pro rows where stripe_subscription_id IS NULL.
 
 Run once on production Postgres via Render Shell:
 
@@ -31,6 +32,13 @@ def run_migration():
 
     try:
         cur = conn.cursor()
+
+        # Store Stripe's scheduled cancellation timestamp.
+        # NULL means there is no scheduled cancellation.
+        cur.execute("""
+            ALTER TABLE public.subscriptions
+            ADD COLUMN IF NOT EXISTS cancel_at TIMESTAMP
+        """)
 
         # Safety check: do not create the unique index if bad historical
         # Stripe data already exists.
@@ -64,8 +72,8 @@ def run_migration():
         conn.commit()
 
         print(
-            "SUCCESS: Stripe subscription integrity index created "
-            "without modifying existing subscription rows"
+            "SUCCESS: Stripe subscription cancellation timestamp and "
+            "integrity index are ready"
         )
 
     except Exception:

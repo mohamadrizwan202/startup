@@ -109,9 +109,26 @@
             Log in to upgrade
           </a>
           {% endif %}
+          {% if current_user.is_authenticated
+                and pricing_user_plan == 'pro'
+                and has_stripe_billing
+                and pricing_cancel_at %}
+          <p class="pricing-card__note">
+            <strong>
+              Pro active until
+              {{ pricing_period_end_label or 'the end of your billing period' }}
+            </strong><br>
+            Cancellation scheduled — no further renewal charges.
+          </p>
+          {% elif not (
+                current_user.is_authenticated
+                and pricing_user_plan == 'pro'
+                and not has_stripe_billing
+              ) %}
           <p class="pricing-card__note">
             Cancel anytime. Pro stays active through the billing period you've already paid for.
           </p>
+          {% endif %}
         </div>
 
       </div>

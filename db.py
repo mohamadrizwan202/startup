@@ -351,6 +351,7 @@ def ensure_schema():
                     stripe_customer_id TEXT,
                     stripe_subscription_id TEXT,
                     current_period_end TIMESTAMP,
+                    cancel_at TIMESTAMP,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -364,9 +365,21 @@ def ensure_schema():
                     stripe_customer_id TEXT,
                     stripe_subscription_id TEXT,
                     current_period_end TEXT,
+                    cancel_at TEXT,
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+
+        # Upgrade an existing local SQLite subscriptions table if needed.
+        if not USE_POSTGRES:
+            try:
+                cursor.execute(
+                    "ALTER TABLE subscriptions "
+                    "ADD COLUMN cancel_at TEXT"
+                )
+            except sqlite3.OperationalError:
+                # Column already exists.
+                pass
 
         # Always commit schema changes for both Postgres and SQLite
         conn.commit()
