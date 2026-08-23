@@ -78,12 +78,29 @@
             <li class="pricing-card__feature pricing-card__feature--yes">Early access to new features</li>
           </ul>
           {% if current_user.is_authenticated %}
-          <form method="post" action="{{ url_for('create_checkout_session') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="pricing-card__cta pricing-card__cta--pro">
-              Upgrade to Pro — $7.99/month
-            </button>
-          </form>
+            {% if not pricing_plan_available %}
+              <p class="pricing-card__note">
+                We couldn't verify your plan right now. Please try again shortly.
+              </p>
+            {% elif pricing_user_plan == 'pro' and has_stripe_billing %}
+              <form method="post" action="{{ url_for('create_portal_session') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="pricing-card__cta pricing-card__cta--pro">
+                  Manage billing
+                </button>
+              </form>
+            {% elif pricing_user_plan == 'pro' %}
+              <p class="pricing-card__note">
+                <strong>Pro active</strong>
+              </p>
+            {% else %}
+              <form method="post" action="{{ url_for('create_checkout_session') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="pricing-card__cta pricing-card__cta--pro">
+                  Upgrade to Pro — $7.99/month
+                </button>
+              </form>
+            {% endif %}
           {% else %}
           <a
             href="{{ url_for('login', next=url_for('pricing')) }}"

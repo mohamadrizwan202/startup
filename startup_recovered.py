@@ -2532,8 +2532,36 @@ def about():
 
 @app.route('/pricing')
 def pricing():
-    """Pricing page route"""
-    return render_template('pricing.html')
+    """Pricing page route."""
+
+    pricing_user_plan = "free"
+    has_stripe_billing = False
+    pricing_plan_available = True
+
+    if current_user.is_authenticated:
+        try:
+            pricing_user_plan = get_user_plan(current_user.id)
+
+            if pricing_user_plan == "pro":
+                has_stripe_billing = bool(
+                    _get_active_stripe_customer_id(current_user.id)
+                )
+
+        except Exception:
+            app.logger.exception(
+                "PRICING_PLAN_STATE_FAILED user_id=%s",
+                current_user.id,
+            )
+            pricing_user_plan = None
+            has_stripe_billing = False
+            pricing_plan_available = False
+
+    return render_template(
+        'pricing.html',
+        pricing_user_plan=pricing_user_plan,
+        has_stripe_billing=has_stripe_billing,
+        pricing_plan_available=pricing_plan_available,
+    )
 def _get_active_stripe_customer_id(user_id):
     """
     Return the Stripe customer ID for an eligible Stripe-backed Pro subscription.
