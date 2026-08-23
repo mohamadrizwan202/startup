@@ -2534,6 +2534,129 @@ def about():
 def pricing():
     """Pricing page route"""
     return render_template('pricing.html')
+def _get_active_stripe_customer_id(user_id):
+    """
+    Return the Stripe customer ID for an eligible Stripe-backed Pro subscription.
+
+    Manual Pro rows have no stripe_customer_id and are intentionally ignored.
+    """
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT stripe_customer_id
+                FROM subscriptions
+                WHERE user_id = %s
+                  AND plan = 'pro'
+                  AND status IN ('active', 'trialing', 'past_due')
+                  AND stripe_customer_id IS NOT NULL
+                  AND stripe_customer_id <> ''
+                  AND stripe_subscription_id IS NOT NULL
+                  AND stripe_subscription_id <> ''
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                (user_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT stripe_customer_id
+                FROM subscriptions
+                WHERE user_id = ?
+                  AND plan = 'pro'
+                  AND status IN ('active', 'trialing', 'past_due')
+                  AND stripe_customer_id IS NOT NULL
+                  AND stripe_customer_id <> ''
+                  AND stripe_subscription_id IS NOT NULL
+                  AND stripe_subscription_id <> ''
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                (user_id,),
+            )
+
+        row = cursor.fetchone()
+
+        if not row:
+            return None
+
+        return db.row_to_dict(row)["stripe_customer_id"]
+
+    finally:
+        conn.close()
+
+
+@app.route('/billing/create-portal-session', methods=['POST'])
+@login_required
+def create_portal_session():
+    """Open Stripe Customer Portal for a Stripe-backed PureFyul Pro user."""
+
+    if not STRIPE_SECRET_KEY:
+        app.logger.error("STRIPE_PORTAL_CONFIG_MISSING")
+        flash(
+            "Billing management is temporarily unavailable. Please try again later.",
+            "error",
+        )
+        return redirect(url_for("pricing"))
+
+    try:
+        customer_id = _get_active_stripe_customer_id(current_user.id)
+    except Exception:
+        app.logger.exception(
+            "STRIPE_PORTAL_CUSTOMER_LOOKUP_FAILED user_id=%s",
+            current_user.id,
+        )
+        flash(
+            "We couldn't verify your billing account. Please try again.",
+            "error",
+        )
+        return redirect(url_for("pricing"))
+
+    if not customer_id:
+        app.logger.warning(
+            "STRIPE_PORTAL_NO_CUSTOMER user_id=%s",
+            current_user.id,
+        )
+        flash(
+            "No Stripe billing account is associated with your Pro access.",
+            "info",
+        )
+        return redirect(url_for("pricing"))
+
+    try:
+        portal_session = stripe.billing_portal.Session.create(
+            customer=customer_id,
+            return_url=url_for("pricing", _external=True),
+        )
+
+        if not portal_session.url:
+            raise RuntimeError("Stripe Customer Portal Session returned no URL")
+
+        app.logger.info(
+            "STRIPE_PORTAL_CREATED user_id=%s customer_id=%s",
+            current_user.id,
+            customer_id,
+        )
+
+        return redirect(portal_session.url, code=303)
+
+    except (stripe.StripeError, RuntimeError):
+        app.logger.exception(
+            "STRIPE_PORTAL_CREATE_FAILED user_id=%s",
+            current_user.id,
+        )
+        flash(
+            "We couldn't open billing management. Please try again.",
+            "error",
+        )
+        return redirect(url_for("pricing"))
+
+
 @app.route('/billing/create-checkout-session', methods=['POST'])
 @login_required
 def create_checkout_session():
