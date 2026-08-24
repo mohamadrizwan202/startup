@@ -21,3 +21,4 @@ stripe>=7.0.0
 reportlab>=4.0.0
 idna==3.15
 anthropic
+scipy==1.18.0
