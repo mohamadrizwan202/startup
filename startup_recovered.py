@@ -69,6 +69,8 @@ app = Flask(__name__)
 # Stripe billing configuration.
 # Values are supplied through environment variables; never hard-code secrets.
 STRIPE_SECRET_KEY = (os.getenv("STRIPE_SECRET_KEY") or "").strip()
+
+STRIPE_PUBLISHABLE_KEY = (os.getenv("STRIPE_PUBLISHABLE_KEY") or "").strip()
 STRIPE_PRO_MONTHLY_PRICE_ID = (os.getenv("STRIPE_PRO_MONTHLY_PRICE_ID") or "").strip()
 STRIPE_WEBHOOK_SECRET = (os.getenv("STRIPE_WEBHOOK_SECRET") or "").strip()
 
@@ -2077,6 +2079,49 @@ def add_security_headers(response):
         ]
     )
 
+    # Stripe Payment Element is allowed only on the custom billing checkout page.
+    if request.path == "/billing/checkout":
+        csp_directives = [
+            (
+                directive
+                + " https://js.stripe.com https://*.js.stripe.com"
+                + " https://checkout.stripe.com"
+                if directive.startswith("script-src ")
+                else directive
+            )
+            for directive in csp_directives
+        ]
+
+        csp_directives = [
+            (
+                directive
+                + " https://api.stripe.com https://checkout.stripe.com"
+                if directive.startswith("connect-src ")
+                else directive
+            )
+            for directive in csp_directives
+        ]
+
+        csp_directives = [
+            (
+                directive
+                + " https://js.stripe.com https://*.js.stripe.com"
+                + " https://hooks.stripe.com https://checkout.stripe.com"
+                if directive.startswith("frame-src ")
+                else directive
+            )
+            for directive in csp_directives
+        ]
+
+        csp_directives = [
+            (
+                directive + " https://*.stripe.com"
+                if directive.startswith("img-src ")
+                else directive
+            )
+            for directive in csp_directives
+        ]
+
     csp_value = "; ".join(csp_directives)
     csp_report_only = os.getenv("CSP_REPORT_ONLY") == "1"
     # Only set CSP headers if none are already present
@@ -2553,7 +2598,7 @@ def pricing():
                 if stripe_billing_state:
                     pricing_cancel_at = stripe_billing_state.get("cancel_at")
                     pricing_period_end_label = _format_billing_period_end(
-                        pricing_cancel_at
+                        stripe_billing_state.get("current_period_end")
                     )
 
         except Exception:
@@ -2589,6 +2634,8 @@ def _get_active_stripe_subscription_state(user_id):
                 """
                 SELECT
                     stripe_customer_id,
+                    stripe_subscription_id,
+                    status,
                     current_period_end,
                     cancel_at
                 FROM subscriptions
@@ -2609,6 +2656,8 @@ def _get_active_stripe_subscription_state(user_id):
                 """
                 SELECT
                     stripe_customer_id,
+                    stripe_subscription_id,
+                    status,
                     current_period_end,
                     cancel_at
                 FROM subscriptions
@@ -2636,14 +2685,6 @@ def _get_active_stripe_subscription_state(user_id):
         conn.close()
 
 
-def _get_active_stripe_customer_id(user_id):
-    """Return Stripe customer ID for an eligible Stripe-backed Pro user."""
-    state = _get_active_stripe_subscription_state(user_id)
-
-    if not state:
-        return None
-
-    return state["stripe_customer_id"]
 
 
 def _format_billing_period_end(value):
@@ -2668,70 +2709,434 @@ def _format_billing_period_end(value):
     )
 
 
-@app.route('/billing/create-portal-session', methods=['POST'])
+@app.route('/billing/manage', methods=['GET'])
 @login_required
-def create_portal_session():
-    """Open Stripe Customer Portal for a Stripe-backed PureFyul Pro user."""
-
-    if not STRIPE_SECRET_KEY:
-        app.logger.error("STRIPE_PORTAL_CONFIG_MISSING")
-        flash(
-            "Billing management is temporarily unavailable. Please try again later.",
-            "error",
-        )
-        return redirect(url_for("pricing"))
+def manage_pro():
+    """PureFyul-owned subscription management for Stripe-backed Pro users."""
 
     try:
-        customer_id = _get_active_stripe_customer_id(current_user.id)
+        user_plan = get_user_plan(current_user.id)
     except Exception:
         app.logger.exception(
-            "STRIPE_PORTAL_CUSTOMER_LOOKUP_FAILED user_id=%s",
+            "MANAGE_PRO_PLAN_LOOKUP_FAILED user_id=%s",
             current_user.id,
         )
         flash(
-            "We couldn't verify your billing account. Please try again.",
+            "We couldn't verify your current plan. Please try again.",
             "error",
         )
         return redirect(url_for("pricing"))
 
-    if not customer_id:
-        app.logger.warning(
-            "STRIPE_PORTAL_NO_CUSTOMER user_id=%s",
-            current_user.id,
-        )
+    if user_plan != "pro":
         flash(
-            "No Stripe billing account is associated with your Pro access.",
+            "PureFyul Pro subscription management is available to Pro members.",
             "info",
         )
         return redirect(url_for("pricing"))
 
     try:
-        portal_session = stripe.billing_portal.Session.create(
-            customer=customer_id,
-            return_url=url_for("pricing", _external=True),
+        billing_state = _get_active_stripe_subscription_state(
+            current_user.id
         )
-
-        if not portal_session.url:
-            raise RuntimeError("Stripe Customer Portal Session returned no URL")
-
-        app.logger.info(
-            "STRIPE_PORTAL_CREATED user_id=%s customer_id=%s",
-            current_user.id,
-            customer_id,
-        )
-
-        return redirect(portal_session.url, code=303)
-
-    except (stripe.StripeError, RuntimeError):
+    except Exception:
         app.logger.exception(
-            "STRIPE_PORTAL_CREATE_FAILED user_id=%s",
+            "MANAGE_PRO_BILLING_LOOKUP_FAILED user_id=%s",
             current_user.id,
         )
         flash(
-            "We couldn't open billing management. Please try again.",
+            "We couldn't load your subscription details. Please try again.",
             "error",
         )
         return redirect(url_for("pricing"))
+
+    # Manual/admin Pro access is intentionally not treated as a Stripe
+    # subscription and therefore has nothing to cancel or resume here.
+    if not billing_state:
+        flash(
+            "Your Pro access is active, but no Stripe subscription "
+            "is attached to this account.",
+            "info",
+        )
+        return redirect(url_for("pricing"))
+
+    raw_status = billing_state.get("status") or "active"
+
+    status_labels = {
+        "active": "Active",
+        "trialing": "Trial",
+        "past_due": "Payment issue",
+    }
+
+    status_label = status_labels.get(
+        raw_status,
+        raw_status.replace("_", " ").title(),
+    )
+
+    current_period_end = billing_state.get("current_period_end")
+    cancel_at = billing_state.get("cancel_at")
+
+    period_end_label = _format_billing_period_end(
+        current_period_end
+    )
+
+    cancel_at_label = _format_billing_period_end(
+        cancel_at
+    )
+
+    cancellation_scheduled = bool(cancel_at)
+
+    show_cancel_confirmation = (
+        request.args.get("confirm_cancel") == "1"
+        and not cancellation_scheduled
+    )
+
+    return render_template(
+        "manage_pro.html",
+        subscription_status=status_label,
+        cancellation_scheduled=cancellation_scheduled,
+        period_end_label=period_end_label,
+        cancel_at_label=cancel_at_label,
+        show_cancel_confirmation=show_cancel_confirmation,
+    )
+
+
+@app.route('/billing/cancel-subscription', methods=['POST'])
+@login_required
+def cancel_pro_subscription():
+    """Schedule the current Stripe-backed Pro subscription to cancel at period end."""
+
+    wants_json = request.accept_mimetypes.best == "application/json"
+
+    def fail(message, status_code):
+        if wants_json:
+            return jsonify({"error": message}), status_code
+
+        flash(message, "error")
+        return redirect(url_for("manage_pro"))
+
+    def succeed(message):
+        if wants_json:
+            return jsonify(
+                {
+                    "scheduled": True,
+                    "message": message,
+                }
+            )
+
+        flash(message, "success")
+        return redirect(url_for("manage_pro"))
+
+    if not STRIPE_SECRET_KEY:
+        app.logger.error("STRIPE_CANCEL_CONFIG_MISSING")
+        return fail(
+            "Billing is temporarily unavailable. Please try again later.",
+            503,
+        )
+
+    try:
+        billing_state = _get_active_stripe_subscription_state(
+            current_user.id
+        )
+    except Exception:
+        app.logger.exception(
+            "STRIPE_CANCEL_SUBSCRIPTION_LOOKUP_FAILED user_id=%s",
+            current_user.id,
+        )
+        return fail(
+            "We couldn't verify your subscription. Please try again.",
+            503,
+        )
+
+    if not billing_state:
+        return fail(
+            "No active Stripe subscription was found for this account.",
+            404,
+        )
+
+    subscription_id = billing_state.get("stripe_subscription_id")
+
+    if not subscription_id:
+        return fail(
+            "No Stripe subscription was found for this account.",
+            404,
+        )
+
+    try:
+        subscription = stripe.Subscription.modify(
+            subscription_id,
+            cancel_at_period_end=True,
+        )
+
+        # Update PureFyul immediately. The signed Stripe webhook will
+        # independently confirm the same state and remains authoritative.
+        sync_result = _sync_stripe_subscription(
+            subscription.to_dict()
+        )
+
+        app.logger.info(
+            "STRIPE_CANCELLATION_SCHEDULED "
+            "user_id=%s subscription_id=%s sync_result=%s",
+            current_user.id,
+            subscription_id,
+            sync_result,
+        )
+
+    except stripe.StripeError:
+        app.logger.exception(
+            "STRIPE_CANCEL_REQUEST_FAILED "
+            "user_id=%s subscription_id=%s",
+            current_user.id,
+            subscription_id,
+        )
+        return fail(
+            "We couldn't schedule cancellation. Please try again.",
+            502,
+        )
+    except Exception:
+        app.logger.exception(
+            "STRIPE_CANCEL_SYNC_FAILED "
+            "user_id=%s subscription_id=%s",
+            current_user.id,
+            subscription_id,
+        )
+        return fail(
+            (
+                "Stripe received the cancellation request, "
+                "but PureFyul could not refresh the billing state."
+            ),
+            500,
+        )
+
+    return succeed(
+        "Your PureFyul Pro subscription will cancel "
+        "at the end of the current billing period."
+    )
+
+
+@app.route('/billing/resume-subscription', methods=['POST'])
+@login_required
+def resume_pro_subscription():
+    """Remove a scheduled end-of-period cancellation for PureFyul Pro."""
+
+    wants_json = request.accept_mimetypes.best == "application/json"
+
+    def fail(message, status_code):
+        if wants_json:
+            return jsonify({"error": message}), status_code
+
+        flash(message, "error")
+        return redirect(url_for("manage_pro"))
+
+    def succeed(message):
+        if wants_json:
+            return jsonify(
+                {
+                    "resumed": True,
+                    "message": message,
+                }
+            )
+
+        flash(message, "success")
+        return redirect(url_for("manage_pro"))
+
+    if not STRIPE_SECRET_KEY:
+        app.logger.error("STRIPE_RESUME_CONFIG_MISSING")
+        return fail(
+            "Billing is temporarily unavailable. Please try again later.",
+            503,
+        )
+
+    try:
+        billing_state = _get_active_stripe_subscription_state(
+            current_user.id
+        )
+    except Exception:
+        app.logger.exception(
+            "STRIPE_RESUME_SUBSCRIPTION_LOOKUP_FAILED user_id=%s",
+            current_user.id,
+        )
+        return fail(
+            "We couldn't verify your subscription. Please try again.",
+            503,
+        )
+
+    if not billing_state:
+        return fail(
+            "No active Stripe subscription was found for this account.",
+            404,
+        )
+
+    subscription_id = billing_state.get("stripe_subscription_id")
+
+    if not subscription_id:
+        return fail(
+            "No Stripe subscription was found for this account.",
+            404,
+        )
+
+    try:
+        subscription = stripe.Subscription.modify(
+            subscription_id,
+            cancel_at_period_end=False,
+        )
+
+        # Update PureFyul immediately. The signed Stripe webhook will
+        # independently confirm the same state and remains authoritative.
+        sync_result = _sync_stripe_subscription(
+            subscription.to_dict()
+        )
+
+        app.logger.info(
+            "STRIPE_CANCELLATION_REMOVED "
+            "user_id=%s subscription_id=%s sync_result=%s",
+            current_user.id,
+            subscription_id,
+            sync_result,
+        )
+
+    except stripe.StripeError:
+        app.logger.exception(
+            "STRIPE_RESUME_REQUEST_FAILED "
+            "user_id=%s subscription_id=%s",
+            current_user.id,
+            subscription_id,
+        )
+        return fail(
+            "We couldn't resume your subscription. Please try again.",
+            502,
+        )
+    except Exception:
+        app.logger.exception(
+            "STRIPE_RESUME_SYNC_FAILED "
+            "user_id=%s subscription_id=%s",
+            current_user.id,
+            subscription_id,
+        )
+        return fail(
+            (
+                "Stripe received the resume request, "
+                "but PureFyul could not refresh the billing state."
+            ),
+            500,
+        )
+
+    return succeed(
+        "Your PureFyul Pro subscription will continue renewing."
+    )
+
+
+
+
+@app.route('/billing/checkout', methods=['GET'])
+@login_required
+def pro_checkout():
+    """Render the PureFyul Pro custom checkout page."""
+
+    try:
+        if get_user_plan(current_user.id) != "free":
+            flash("Your account already has Pro access.", "info")
+            return redirect(url_for("pricing"))
+    except Exception:
+        app.logger.exception(
+            "STRIPE_CUSTOM_CHECKOUT_PLAN_LOOKUP_FAILED user_id=%s",
+            current_user.id,
+        )
+        flash(
+            "We couldn't verify your current plan. Please try again.",
+            "error",
+        )
+        return redirect(url_for("pricing"))
+
+    return render_template(
+        "pro_checkout.html",
+        checkout_email=current_user.email,
+        stripe_publishable_key=STRIPE_PUBLISHABLE_KEY,
+    )
+
+
+@app.route('/billing/create-custom-checkout-session', methods=['POST'])
+@login_required
+def create_custom_checkout_session():
+    """Create a Stripe custom-ui Checkout Session for PureFyul Pro."""
+
+    try:
+        if get_user_plan(current_user.id) != "free":
+            return jsonify(
+                {"error": "Your account already has Pro access."}
+            ), 409
+    except Exception:
+        app.logger.exception(
+            "STRIPE_CUSTOM_CHECKOUT_PLAN_LOOKUP_FAILED user_id=%s",
+            current_user.id,
+        )
+        return jsonify(
+            {"error": "We couldn't verify your current plan. Please try again."}
+        ), 503
+
+    if not STRIPE_SECRET_KEY or not STRIPE_PRO_MONTHLY_PRICE_ID:
+        app.logger.error(
+            "STRIPE_CUSTOM_CHECKOUT_CONFIG_MISSING secret_key=%s price_id=%s",
+            bool(STRIPE_SECRET_KEY),
+            bool(STRIPE_PRO_MONTHLY_PRICE_ID),
+        )
+        return jsonify(
+            {
+                "error": (
+                    "Pro billing is temporarily unavailable. "
+                    "Please try again later."
+                )
+            }
+        ), 503
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            ui_mode="elements",
+            mode="subscription",
+            payment_method_types=["card"],
+            line_items=[
+                {
+                    "price": STRIPE_PRO_MONTHLY_PRICE_ID,
+                    "quantity": 1,
+                }
+            ],
+            customer_email=current_user.email,
+            client_reference_id=str(current_user.id),
+            metadata={
+                "purefyul_user_id": str(current_user.id),
+                "purefyul_plan": "pro",
+            },
+            subscription_data={
+                "metadata": {
+                    "purefyul_user_id": str(current_user.id),
+                    "purefyul_plan": "pro",
+                }
+            },
+            return_url=(
+                url_for("pricing", _external=True)
+                + "?checkout=success&session_id={CHECKOUT_SESSION_ID}"
+            ),
+        )
+    except Exception:
+        app.logger.exception(
+            "STRIPE_CUSTOM_CHECKOUT_CREATE_FAILED user_id=%s",
+            current_user.id,
+        )
+        return jsonify(
+            {"error": "We couldn't start checkout. Please try again."}
+        ), 502
+
+    if not checkout_session.client_secret:
+        app.logger.error(
+            "STRIPE_CUSTOM_CHECKOUT_CLIENT_SECRET_MISSING "
+            "session_id=%s user_id=%s",
+            getattr(checkout_session, "id", None),
+            current_user.id,
+        )
+        return jsonify(
+            {"error": "We couldn't start checkout. Please try again."}
+        ), 502
+
+    return jsonify({"clientSecret": checkout_session.client_secret})
 
 
 @app.route('/billing/create-checkout-session', methods=['POST'])
