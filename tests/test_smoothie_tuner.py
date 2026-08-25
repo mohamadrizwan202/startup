@@ -475,3 +475,154 @@ def test_feasible_range_preserve_weight_must_be_boolean():
             nutrient="protein",
             preserve_total_weight="yes",
         )
+
+
+def test_exact_target_tuner_returns_required_ingredient_grams():
+    from smoothie_tuner import tune_recipe_to_exact_targets
+
+    result = tune_recipe_to_exact_targets(
+        recipe_result=_recipe(),
+        adjustable_indices=[0, 1],
+        targets={
+            "protein": 15.0,
+        },
+        preserve_total_weight=True,
+    )
+
+    yogurt = result["ingredients"][0]
+    apple = result["ingredients"][1]
+
+    assert result["before"]["weight_g"] == pytest.approx(200.0)
+    assert result["after"]["weight_g"] == pytest.approx(200.0)
+
+    assert yogurt["before_weight_g"] == pytest.approx(100.0)
+    assert yogurt["after_weight_g"] == pytest.approx(150.0)
+
+    assert apple["before_weight_g"] == pytest.approx(100.0)
+    assert apple["after_weight_g"] == pytest.approx(50.0)
+
+    assert result["after"]["nutrition"]["protein"] == pytest.approx(
+        15.0
+    )
+
+    assert result["requested_targets"] == {
+        "protein": 15.0,
+    }
+
+    assert (
+        result["feasible_ranges"]["protein"]["minimum"]
+        <= 15.0
+        <= result["feasible_ranges"]["protein"]["maximum"]
+    )
+
+
+def test_exact_target_tuner_leaves_recipe_unchanged_at_current_value():
+    from smoothie_tuner import tune_recipe_to_exact_targets
+
+    result = tune_recipe_to_exact_targets(
+        recipe_result=_recipe(),
+        adjustable_indices=[0, 1],
+        targets={
+            "protein": 10.0,
+        },
+        preserve_total_weight=True,
+    )
+
+    assert result["ingredients"][0]["after_weight_g"] == pytest.approx(
+        100.0
+    )
+    assert result["ingredients"][1]["after_weight_g"] == pytest.approx(
+        100.0
+    )
+
+
+def test_exact_target_tuner_supports_multiple_compatible_targets():
+    from smoothie_tuner import tune_recipe_to_exact_targets
+
+    result = tune_recipe_to_exact_targets(
+        recipe_result=_recipe(),
+        adjustable_indices=[0, 1],
+        targets={
+            "protein": 15.0,
+            "sugar": 11.0,
+        },
+        preserve_total_weight=True,
+    )
+
+    assert result["after"]["nutrition"]["protein"] == pytest.approx(
+        15.0
+    )
+    assert result["after"]["nutrition"]["sugar"] == pytest.approx(
+        11.0
+    )
+    assert result["after"]["weight_g"] == pytest.approx(200.0)
+
+
+def test_exact_target_tuner_rejects_target_above_feasible_range():
+    from smoothie_tuner import (
+        SmoothieTuningInfeasibleError,
+        tune_recipe_to_exact_targets,
+    )
+
+    with pytest.raises(
+        SmoothieTuningInfeasibleError,
+        match="above the feasible maximum",
+    ):
+        tune_recipe_to_exact_targets(
+            recipe_result=_recipe(),
+            adjustable_indices=[0, 1],
+            targets={
+                "protein": 30.0,
+            },
+            preserve_total_weight=True,
+        )
+
+
+def test_exact_target_tuner_rejects_target_below_feasible_range():
+    from smoothie_tuner import (
+        SmoothieTuningInfeasibleError,
+        tune_recipe_to_exact_targets,
+    )
+
+    with pytest.raises(
+        SmoothieTuningInfeasibleError,
+        match="below the feasible minimum",
+    ):
+        tune_recipe_to_exact_targets(
+            recipe_result=_recipe(),
+            adjustable_indices=[0],
+            targets={
+                "protein": 5.0,
+            },
+            preserve_total_weight=True,
+        )
+
+
+def test_exact_target_tuner_requires_target():
+    from smoothie_tuner import tune_recipe_to_exact_targets
+
+    with pytest.raises(
+        SmoothieTuningInputError,
+        match="at least one exact nutrient target",
+    ):
+        tune_recipe_to_exact_targets(
+            recipe_result=_recipe(),
+            adjustable_indices=[0, 1],
+            targets={},
+        )
+
+
+def test_exact_target_tuner_rejects_unverified_nutrient_contract():
+    from smoothie_tuner import tune_recipe_to_exact_targets
+
+    with pytest.raises(
+        SmoothieTuningInputError,
+        match="unsupported nutrient",
+    ):
+        tune_recipe_to_exact_targets(
+            recipe_result=_recipe(),
+            adjustable_indices=[0, 1],
+            targets={
+                "potassium": 1000.0,
+            },
+        )

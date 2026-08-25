@@ -747,3 +747,91 @@ def calculate_feasible_nutrient_range(
         "maximum": maximum_value,
         "preserve_total_weight": preserve_total_weight,
     }
+
+
+def tune_recipe_to_exact_targets(
+    *,
+    recipe_result,
+    adjustable_indices,
+    targets,
+    preserve_total_weight=True,
+) -> dict:
+    """Tune a recipe to exact user-selected nutrient values.
+
+    This is the high-level deterministic boundary intended for a future
+    Tune My Smoothie API.
+
+    The caller supplies:
+    - an already-calculated recipe,
+    - the ingredient indices that may change,
+    - exact nutrient targets selected by the user.
+
+    Before solving, each requested target is checked against its actual
+    feasible range for this recipe.
+
+    No target is invented or interpreted here.
+    """
+
+    if not isinstance(preserve_total_weight, bool):
+        raise SmoothieTuningInputError(
+            "preserve_total_weight must be a boolean"
+        )
+
+    normalized_targets = _normalize_targets(
+        targets,
+        "targets",
+    )
+
+    if not normalized_targets:
+        raise SmoothieTuningInputError(
+            "at least one exact nutrient target is required"
+        )
+
+    bounds = build_tuning_bounds(
+        recipe_result=recipe_result,
+        adjustable_indices=adjustable_indices,
+    )
+
+    feasible_ranges = {}
+
+    for nutrient, target in normalized_targets.items():
+        nutrient_range = calculate_feasible_nutrient_range(
+            recipe_result=recipe_result,
+            ingredient_bounds=bounds,
+            nutrient=nutrient,
+            preserve_total_weight=preserve_total_weight,
+        )
+
+        feasible_ranges[nutrient] = nutrient_range
+
+        tolerance = 1e-7 * max(
+            1.0,
+            abs(target),
+            abs(nutrient_range["minimum"]),
+            abs(nutrient_range["maximum"]),
+        )
+
+        if target < nutrient_range["minimum"] - tolerance:
+            raise SmoothieTuningInfeasibleError(
+                f"target '{nutrient}'={target} is below "
+                f"the feasible minimum {nutrient_range['minimum']}"
+            )
+
+        if target > nutrient_range["maximum"] + tolerance:
+            raise SmoothieTuningInfeasibleError(
+                f"target '{nutrient}'={target} is above "
+                f"the feasible maximum {nutrient_range['maximum']}"
+            )
+
+    result = tune_calculated_recipe(
+        recipe_result=recipe_result,
+        ingredient_bounds=bounds,
+        minimums=normalized_targets,
+        maximums=normalized_targets,
+        preserve_total_weight=preserve_total_weight,
+    )
+
+    result["requested_targets"] = normalized_targets
+    result["feasible_ranges"] = feasible_ranges
+
+    return result
