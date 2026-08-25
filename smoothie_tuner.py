@@ -553,3 +553,197 @@ def tune_calculated_recipe(
             ),
         },
     }
+
+
+def calculate_feasible_nutrient_range(
+    *,
+    recipe_result,
+    ingredient_bounds,
+    nutrient,
+    preserve_total_weight=True,
+) -> dict:
+    """Return the technically achievable range for one nutrient.
+
+    The range is determined only by:
+    - the recipe's actual per-100g nutrition,
+    - supplied ingredient editing bounds,
+    - whether total recipe weight must stay fixed.
+
+    This is NOT a recommended intake range and does not use EER, DRI,
+    health goals, AI, or serving-size assumptions.
+    """
+
+    if not isinstance(preserve_total_weight, bool):
+        raise SmoothieTuningInputError(
+            "preserve_total_weight must be a boolean"
+        )
+
+    if not isinstance(nutrient, str) or nutrient not in NUTRIENT_KEYS:
+        raise SmoothieTuningInputError(
+            f"unsupported nutrient '{nutrient}'"
+        )
+
+    if not isinstance(recipe_result, dict):
+        raise SmoothieTuningInputError(
+            "recipe_result must be a dictionary"
+        )
+
+    ingredients = recipe_result.get("ingredients")
+
+    if not isinstance(ingredients, list) or not ingredients:
+        raise SmoothieTuningInputError(
+            "recipe_result.ingredients must be a non-empty list"
+        )
+
+    if not isinstance(ingredient_bounds, (list, tuple)):
+        raise SmoothieTuningInputError(
+            "ingredient_bounds must be a list or tuple"
+        )
+
+    if len(ingredient_bounds) != len(ingredients):
+        raise SmoothieTuningInputError(
+            "ingredient_bounds must contain one entry per ingredient"
+        )
+
+    original_weights = []
+    nutrient_coefficients = []
+    solver_bounds = []
+
+    for index, ingredient in enumerate(ingredients):
+        if not isinstance(ingredient, dict):
+            raise SmoothieTuningInputError(
+                f"recipe_result.ingredients[{index}] "
+                "must be a dictionary"
+            )
+
+        original_weight = _require_number(
+            ingredient.get("weight_g"),
+            f"recipe_result.ingredients[{index}].weight_g",
+            positive=True,
+        )
+
+        nutrition = ingredient.get("nutrition_per_100g")
+
+        if not isinstance(nutrition, dict):
+            raise SmoothieTuningInputError(
+                f"recipe_result.ingredients[{index}]"
+                ".nutrition_per_100g must be a dictionary"
+            )
+
+        if nutrient not in nutrition:
+            raise SmoothieTuningInputError(
+                f"recipe_result.ingredients[{index}]"
+                f".nutrition_per_100g missing '{nutrient}'"
+            )
+
+        nutrient_per_100g = _require_number(
+            nutrition[nutrient],
+            f"recipe_result.ingredients[{index}]"
+            f".nutrition_per_100g.{nutrient}",
+        )
+
+        bound = ingredient_bounds[index]
+
+        if not isinstance(bound, dict):
+            raise SmoothieTuningInputError(
+                f"ingredient_bounds[{index}] must be a dictionary"
+            )
+
+        min_weight = _require_number(
+            bound.get("min_weight_g"),
+            f"ingredient_bounds[{index}].min_weight_g",
+            positive=True,
+        )
+
+        max_weight = _require_number(
+            bound.get("max_weight_g"),
+            f"ingredient_bounds[{index}].max_weight_g",
+            positive=True,
+        )
+
+        if min_weight > max_weight:
+            raise SmoothieTuningInputError(
+                f"ingredient_bounds[{index}].min_weight_g "
+                "cannot exceed max_weight_g"
+            )
+
+        if not (
+            min_weight <= original_weight <= max_weight
+        ):
+            raise SmoothieTuningInputError(
+                f"ingredient_bounds[{index}] must include "
+                "the original ingredient weight"
+            )
+
+        original_weights.append(original_weight)
+        nutrient_coefficients.append(
+            nutrient_per_100g / 100.0
+        )
+        solver_bounds.append(
+            (min_weight, max_weight)
+        )
+
+    a_eq = None
+    b_eq = None
+
+    if preserve_total_weight:
+        a_eq = [
+            [1.0] * len(ingredients)
+        ]
+        b_eq = [
+            sum(original_weights)
+        ]
+
+    minimum_solution = linprog(
+        c=nutrient_coefficients,
+        A_eq=a_eq,
+        b_eq=b_eq,
+        bounds=solver_bounds,
+        method="highs",
+    )
+
+    maximum_solution = linprog(
+        c=[
+            -coefficient
+            for coefficient in nutrient_coefficients
+        ],
+        A_eq=a_eq,
+        b_eq=b_eq,
+        bounds=solver_bounds,
+        method="highs",
+    )
+
+    for label, solution in (
+        ("minimum", minimum_solution),
+        ("maximum", maximum_solution),
+    ):
+        if solution.status == 2:
+            raise SmoothieTuningInfeasibleError(
+                "ingredient bounds cannot satisfy "
+                "the supplied recipe constraints"
+            )
+
+        if not solution.success:
+            raise SmoothieTuningSolverError(
+                f"{label} nutrient-range solver failed: "
+                f"{solution.message}"
+            )
+
+    current_value = sum(
+        weight * coefficient
+        for weight, coefficient in zip(
+            original_weights,
+            nutrient_coefficients,
+        )
+    )
+
+    minimum_value = float(minimum_solution.fun)
+    maximum_value = float(-maximum_solution.fun)
+
+    return {
+        "nutrient": nutrient,
+        "current": current_value,
+        "minimum": minimum_value,
+        "maximum": maximum_value,
+        "preserve_total_weight": preserve_total_weight,
+    }

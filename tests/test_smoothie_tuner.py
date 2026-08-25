@@ -373,3 +373,105 @@ def test_generated_bounds_work_with_fixed_weight_tuner():
 
     assert result["after"]["nutrition"]["protein"] >= 15.0 - 1e-7
     assert result["after"]["nutrition"]["sugar"] <= 12.0 + 1e-7
+
+
+def test_feasible_protein_range_respects_fixed_total_weight():
+    from smoothie_tuner import calculate_feasible_nutrient_range
+
+    result = calculate_feasible_nutrient_range(
+        recipe_result=_recipe(),
+        ingredient_bounds=BOUNDS,
+        nutrient="protein",
+        preserve_total_weight=True,
+    )
+
+    assert result["current"] == pytest.approx(10.0)
+    assert result["minimum"] == pytest.approx(5.0)
+    assert result["maximum"] == pytest.approx(18.0)
+    assert result["preserve_total_weight"] is True
+
+
+def test_feasible_sugar_range_respects_fixed_total_weight():
+    from smoothie_tuner import calculate_feasible_nutrient_range
+
+    result = calculate_feasible_nutrient_range(
+        recipe_result=_recipe(),
+        ingredient_bounds=BOUNDS,
+        nutrient="sugar",
+        preserve_total_weight=True,
+    )
+
+    assert result["current"] == pytest.approx(14.0)
+    assert result["minimum"] == pytest.approx(9.2)
+    assert result["maximum"] == pytest.approx(17.0)
+
+
+def test_locked_ingredient_can_collapse_feasible_range():
+    from smoothie_tuner import (
+        build_tuning_bounds,
+        calculate_feasible_nutrient_range,
+    )
+
+    recipe = _recipe()
+
+    bounds = build_tuning_bounds(
+        recipe_result=recipe,
+        adjustable_indices=[0],
+    )
+
+    result = calculate_feasible_nutrient_range(
+        recipe_result=recipe,
+        ingredient_bounds=bounds,
+        nutrient="protein",
+        preserve_total_weight=True,
+    )
+
+    # Apple is locked at 100g. With a 200g fixed recipe,
+    # yogurt must therefore also remain at 100g.
+    assert result["current"] == pytest.approx(10.0)
+    assert result["minimum"] == pytest.approx(10.0)
+    assert result["maximum"] == pytest.approx(10.0)
+
+
+def test_range_changes_when_total_weight_is_not_preserved():
+    from smoothie_tuner import calculate_feasible_nutrient_range
+
+    result = calculate_feasible_nutrient_range(
+        recipe_result=_recipe(),
+        ingredient_bounds=BOUNDS,
+        nutrient="protein",
+        preserve_total_weight=False,
+    )
+
+    assert result["current"] == pytest.approx(10.0)
+    assert result["minimum"] == pytest.approx(5.0)
+    assert result["maximum"] == pytest.approx(25.0)
+
+
+def test_feasible_range_rejects_unsupported_nutrient():
+    from smoothie_tuner import calculate_feasible_nutrient_range
+
+    with pytest.raises(
+        SmoothieTuningInputError,
+        match="unsupported nutrient",
+    ):
+        calculate_feasible_nutrient_range(
+            recipe_result=_recipe(),
+            ingredient_bounds=BOUNDS,
+            nutrient="potassium",
+        )
+
+
+def test_feasible_range_preserve_weight_must_be_boolean():
+    from smoothie_tuner import calculate_feasible_nutrient_range
+
+    with pytest.raises(
+        SmoothieTuningInputError,
+        match="must be a boolean",
+    ):
+        calculate_feasible_nutrient_range(
+            recipe_result=_recipe(),
+            ingredient_bounds=BOUNDS,
+            nutrient="protein",
+            preserve_total_weight="yes",
+        )
