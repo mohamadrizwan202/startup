@@ -99,6 +99,7 @@ def tune_calculated_recipe(
     ingredient_bounds,
     minimums=None,
     maximums=None,
+    preserve_total_weight=False,
 ) -> dict:
     """Return the feasible recipe closest to the original recipe.
 
@@ -142,6 +143,11 @@ def tune_calculated_recipe(
     if len(ingredient_bounds) != len(ingredients):
         raise SmoothieTuningInputError(
             "ingredient_bounds must contain one entry per ingredient"
+        )
+
+    if not isinstance(preserve_total_weight, bool):
+        raise SmoothieTuningInputError(
+            "preserve_total_weight must be a boolean"
         )
 
     normalized_minimums = _normalize_targets(
@@ -305,10 +311,25 @@ def tune_calculated_recipe(
         + [(0.0, None)] * ingredient_count
     )
 
+    a_eq = None
+    b_eq = None
+
+    if preserve_total_weight:
+        original_total_weight = sum(original_weights)
+
+        total_weight_row = [0.0] * variable_count
+        for index in range(ingredient_count):
+            total_weight_row[index] = 1.0
+
+        a_eq = [total_weight_row]
+        b_eq = [original_total_weight]
+
     solution = linprog(
         c=objective,
         A_ub=a_ub,
         b_ub=b_ub,
+        A_eq=a_eq,
+        b_eq=b_eq,
         bounds=variable_bounds,
         method="highs",
     )
@@ -396,6 +417,9 @@ def tune_calculated_recipe(
         "targets": {
             "minimums": normalized_minimums,
             "maximums": normalized_maximums,
+        },
+        "constraints": {
+            "preserve_total_weight": preserve_total_weight,
         },
         "before": {
             "weight_g": before_batch["batch_weight_g"],

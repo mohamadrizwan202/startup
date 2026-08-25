@@ -186,3 +186,63 @@ def test_tuner_supports_existing_seven_nutrient_contract():
     assert nutrition["carbs"] <= 20.0 + 1e-7
     assert nutrition["fat"] <= 5.0 + 1e-7
     assert nutrition["calories"] <= 200.0 + 1e-7
+
+
+def test_tuner_can_preserve_total_recipe_weight():
+    result = tune_calculated_recipe(
+        recipe_result=_recipe(),
+        ingredient_bounds=BOUNDS,
+        minimums={
+            "protein": 15.0,
+        },
+        maximums={
+            "sugar": 12.0,
+        },
+        preserve_total_weight=True,
+    )
+
+    yogurt = result["ingredients"][0]
+    apple = result["ingredients"][1]
+
+    assert result["before"]["weight_g"] == pytest.approx(200.0)
+    assert result["after"]["weight_g"] == pytest.approx(200.0)
+
+    assert yogurt["after_weight_g"] == pytest.approx(150.0)
+    assert apple["after_weight_g"] == pytest.approx(50.0)
+
+    assert result["after"]["nutrition"]["protein"] == pytest.approx(
+        15.0
+    )
+    assert result["after"]["nutrition"]["sugar"] <= 12.0 + 1e-7
+
+    assert result["constraints"]["preserve_total_weight"] is True
+
+
+def test_fixed_total_weight_can_make_otherwise_possible_target_infeasible():
+    with pytest.raises(
+        SmoothieTuningInfeasibleError,
+        match="no recipe",
+    ):
+        tune_calculated_recipe(
+            recipe_result=_recipe(),
+            ingredient_bounds=BOUNDS,
+            minimums={
+                "protein": 22.0,
+            },
+            preserve_total_weight=True,
+        )
+
+
+def test_preserve_total_weight_must_be_boolean():
+    with pytest.raises(
+        SmoothieTuningInputError,
+        match="must be a boolean",
+    ):
+        tune_calculated_recipe(
+            recipe_result=_recipe(),
+            ingredient_bounds=BOUNDS,
+            minimums={
+                "protein": 15.0,
+            },
+            preserve_total_weight="yes",
+        )
