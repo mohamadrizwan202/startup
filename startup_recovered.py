@@ -54330,6 +54330,142 @@ def get_user_plan(user_id):
         conn.close()
 
 
+
+# ── TUNE MY SMOOTHIE ──────────────────────────────────────────────────────────
+
+def _tune_smoothie_pro_gate():
+    """Return an API response when Tune My Smoothie access must be denied."""
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "auth_required"}), 401
+
+    try:
+        plan = get_user_plan(user_id)
+    except Exception:
+        app.logger.exception(
+            "Tune My Smoothie entitlement lookup failed user_id=%s",
+            user_id,
+        )
+        return jsonify({
+            "error": "entitlement_unavailable",
+            "message": "Premium access could not be verified.",
+        }), 503
+
+    if plan == "free":
+        return jsonify({
+            "error": "upgrade_required",
+            "feature": "tune_my_smoothie",
+            "message": "Tune My Smoothie is a Pro feature.",
+        }), 403
+
+    return None
+
+
+def _handle_tune_smoothie_request(mode):
+    denied = _tune_smoothie_pro_gate()
+    if denied is not None:
+        return denied
+
+    payload = request.get_json(silent=True)
+
+    if payload is None:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "Request body must be valid JSON.",
+        }), 400
+
+    from recipe_calculator import RecipeCalculationError
+    from recipe_mass import RecipeMassResolutionError
+    from smoothie_tuner import (
+        SmoothieTuningInfeasibleError,
+        SmoothieTuningInputError,
+        SmoothieTuningSolverError,
+    )
+    from tune_smoothie_api_service import (
+        TuneSmoothieRequestError,
+        build_tune_ranges_response,
+        build_tune_response,
+    )
+
+    try:
+        if mode == "ranges":
+            result = build_tune_ranges_response(payload)
+        elif mode == "tune":
+            result = build_tune_response(payload)
+        else:
+            raise RuntimeError("invalid Tune My Smoothie API mode")
+
+        return jsonify(result), 200
+
+    except TuneSmoothieRequestError as exc:
+        return jsonify({
+            "error": "invalid_request",
+            "message": str(exc),
+        }), 400
+
+    except RecipeMassResolutionError as exc:
+        return jsonify({
+            "error": "tune_unavailable",
+            "reason": "mass_unresolved",
+            "message": str(exc),
+        }), 422
+
+    except RecipeCalculationError as exc:
+        return jsonify({
+            "error": "tune_unavailable",
+            "reason": "nutrition_unavailable",
+            "message": str(exc),
+        }), 422
+
+    except SmoothieTuningInputError as exc:
+        return jsonify({
+            "error": "invalid_tuning_request",
+            "message": str(exc),
+        }), 400
+
+    except SmoothieTuningInfeasibleError as exc:
+        return jsonify({
+            "error": "tune_unavailable",
+            "reason": "target_infeasible",
+            "message": str(exc),
+        }), 422
+
+    except SmoothieTuningSolverError:
+        app.logger.exception(
+            "Tune My Smoothie solver failure user_id=%s",
+            session.get("user_id"),
+        )
+        return jsonify({
+            "error": "tuning_failed",
+        }), 500
+
+    except Exception:
+        app.logger.exception(
+            "Tune My Smoothie unexpected failure user_id=%s",
+            session.get("user_id"),
+        )
+        return jsonify({
+            "error": "tuning_failed",
+        }), 500
+
+
+@csrf.exempt
+@app.post("/api/tune-smoothie/ranges")
+@login_required_single_session
+def tune_smoothie_ranges_api():
+    """Return feasible nutrient ranges for a Pro user's smoothie."""
+    return _handle_tune_smoothie_request("ranges")
+
+
+@csrf.exempt
+@app.post("/api/tune-smoothie")
+@login_required_single_session
+def tune_smoothie_api():
+    """Tune a Pro user's smoothie to exact selected nutrient targets."""
+    return _handle_tune_smoothie_request("tune")
+
+
 # ── SAVED RECIPES ─────────────────────────────────────────────────────────────
 
 @app.route("/api/recipes", methods=["GET"])
