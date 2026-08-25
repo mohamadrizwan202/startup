@@ -246,3 +246,130 @@ def test_preserve_total_weight_must_be_boolean():
             },
             preserve_total_weight="yes",
         )
+
+
+def test_build_tuning_bounds_locks_unselected_ingredients():
+    from smoothie_tuner import build_tuning_bounds
+
+    bounds = build_tuning_bounds(
+        recipe_result=_recipe(),
+        adjustable_indices=[0],
+    )
+
+    assert bounds == [
+        {
+            "min_weight_g": 1.0,
+            "max_weight_g": 200.0,
+        },
+        {
+            "min_weight_g": 100.0,
+            "max_weight_g": 100.0,
+        },
+    ]
+
+
+def test_build_tuning_bounds_allows_multiple_adjustable_ingredients():
+    from smoothie_tuner import build_tuning_bounds
+
+    bounds = build_tuning_bounds(
+        recipe_result=_recipe(),
+        adjustable_indices=[0, 1],
+    )
+
+    assert bounds == [
+        {
+            "min_weight_g": 1.0,
+            "max_weight_g": 200.0,
+        },
+        {
+            "min_weight_g": 1.0,
+            "max_weight_g": 200.0,
+        },
+    ]
+
+
+def test_build_tuning_bounds_requires_adjustable_ingredient():
+    from smoothie_tuner import build_tuning_bounds
+
+    with pytest.raises(
+        SmoothieTuningInputError,
+        match="at least one adjustable ingredient",
+    ):
+        build_tuning_bounds(
+            recipe_result=_recipe(),
+            adjustable_indices=[],
+        )
+
+
+def test_build_tuning_bounds_rejects_invalid_index():
+    from smoothie_tuner import build_tuning_bounds
+
+    with pytest.raises(
+        SmoothieTuningInputError,
+        match="out of range",
+    ):
+        build_tuning_bounds(
+            recipe_result=_recipe(),
+            adjustable_indices=[2],
+        )
+
+
+def test_build_tuning_bounds_rejects_duplicate_indices():
+    from smoothie_tuner import build_tuning_bounds
+
+    with pytest.raises(
+        SmoothieTuningInputError,
+        match="cannot contain duplicates",
+    ):
+        build_tuning_bounds(
+            recipe_result=_recipe(),
+            adjustable_indices=[0, 0],
+        )
+
+
+def test_build_tuning_bounds_preserves_existing_sub_one_gram_weight():
+    from smoothie_tuner import build_tuning_bounds
+
+    recipe = _recipe()
+    recipe["ingredients"][0]["weight_g"] = 0.5
+
+    bounds = build_tuning_bounds(
+        recipe_result=recipe,
+        adjustable_indices=[0],
+    )
+
+    assert bounds[0]["min_weight_g"] == pytest.approx(0.5)
+    assert bounds[0]["max_weight_g"] == pytest.approx(100.5)
+    assert bounds[1] == {
+        "min_weight_g": 100.0,
+        "max_weight_g": 100.0,
+    }
+
+
+def test_generated_bounds_work_with_fixed_weight_tuner():
+    from smoothie_tuner import build_tuning_bounds
+
+    recipe = _recipe()
+
+    bounds = build_tuning_bounds(
+        recipe_result=recipe,
+        adjustable_indices=[0, 1],
+    )
+
+    result = tune_calculated_recipe(
+        recipe_result=recipe,
+        ingredient_bounds=bounds,
+        minimums={
+            "protein": 15.0,
+        },
+        maximums={
+            "sugar": 12.0,
+        },
+        preserve_total_weight=True,
+    )
+
+    assert result["before"]["weight_g"] == pytest.approx(200.0)
+    assert result["after"]["weight_g"] == pytest.approx(200.0)
+
+    assert result["after"]["nutrition"]["protein"] >= 15.0 - 1e-7
+    assert result["after"]["nutrition"]["sugar"] <= 12.0 + 1e-7

@@ -41,6 +41,121 @@ class SmoothieTuningSolverError(RuntimeError):
     """Raised when the numerical solver fails unexpectedly."""
 
 
+TECHNICAL_MIN_EDIT_WEIGHT_G = 1.0
+
+
+def build_tuning_bounds(
+    *,
+    recipe_result,
+    adjustable_indices,
+) -> list[dict]:
+    """Build technical editing bounds for a calculated recipe.
+
+    This helper does NOT define healthy, recommended, or age-based serving
+    ranges.
+
+    Ingredients explicitly listed in ``adjustable_indices`` may be
+    redistributed between the existing PureFyul technical editing floor
+    and the total recipe weight.
+
+    All other ingredients are locked exactly at their original weight.
+
+    The total-weight preservation constraint, when enabled in
+    ``tune_calculated_recipe``, prevents the recipe from becoming larger
+    or smaller overall.
+    """
+
+    if not isinstance(recipe_result, dict):
+        raise SmoothieTuningInputError(
+            "recipe_result must be a dictionary"
+        )
+
+    ingredients = recipe_result.get("ingredients")
+
+    if not isinstance(ingredients, list) or not ingredients:
+        raise SmoothieTuningInputError(
+            "recipe_result.ingredients must be a non-empty list"
+        )
+
+    if not isinstance(adjustable_indices, (list, tuple, set)):
+        raise SmoothieTuningInputError(
+            "adjustable_indices must be a list, tuple, or set"
+        )
+
+    normalized_indices = []
+
+    for value in adjustable_indices:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise SmoothieTuningInputError(
+                "adjustable_indices must contain integer indices"
+            )
+
+        if value < 0 or value >= len(ingredients):
+            raise SmoothieTuningInputError(
+                f"adjustable ingredient index out of range: {value}"
+            )
+
+        normalized_indices.append(value)
+
+    if not normalized_indices:
+        raise SmoothieTuningInputError(
+            "at least one adjustable ingredient is required"
+        )
+
+    if len(set(normalized_indices)) != len(normalized_indices):
+        raise SmoothieTuningInputError(
+            "adjustable_indices cannot contain duplicates"
+        )
+
+    adjustable = set(normalized_indices)
+
+    original_weights = []
+
+    for index, ingredient in enumerate(ingredients):
+        if not isinstance(ingredient, dict):
+            raise SmoothieTuningInputError(
+                f"recipe_result.ingredients[{index}] "
+                "must be a dictionary"
+            )
+
+        original_weights.append(
+            _require_number(
+                ingredient.get("weight_g"),
+                f"recipe_result.ingredients[{index}].weight_g",
+                positive=True,
+            )
+        )
+
+    total_weight = sum(original_weights)
+    bounds = []
+
+    for index, original_weight in enumerate(original_weights):
+        if index not in adjustable:
+            bounds.append(
+                {
+                    "min_weight_g": original_weight,
+                    "max_weight_g": original_weight,
+                }
+            )
+            continue
+
+        # Preserve an existing sub-1g amount if one ever reaches this
+        # boundary rather than forcing the ingredient upward.
+        technical_floor = min(
+            TECHNICAL_MIN_EDIT_WEIGHT_G,
+            original_weight,
+        )
+
+        bounds.append(
+            {
+                "min_weight_g": technical_floor,
+                "max_weight_g": total_weight,
+            }
+        )
+
+    return bounds
+
+
 def _require_number(value, field_name: str, *, positive=False) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise SmoothieTuningInputError(
