@@ -2515,6 +2515,84 @@ def login():
     return render_template('login.html', next_url=next_url)
 
 
+@csrf.exempt
+@app.post("/api/auth/login")
+@limiter.limit("5 per minute")
+def api_login():
+    """Establish the existing PureFyul session from a JSON login request."""
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "invalid_request",
+        }), 400
+
+    raw_email = data.get("email")
+    raw_password = data.get("password")
+
+    if not isinstance(raw_email, str) or not isinstance(raw_password, str):
+        return jsonify({
+            "error": "invalid_request",
+        }), 400
+
+    email = raw_email.strip()
+    password = raw_password
+
+    if not email or not password:
+        return jsonify({
+            "error": "invalid_request",
+        }), 400
+
+    user_dict = get_user_by_email(email)
+
+    if (
+        not user_dict
+        or not check_password_hash(
+            user_dict["password_hash"],
+            password,
+        )
+    ):
+        return jsonify({
+            "error": "invalid_credentials",
+        }), 401
+
+    try:
+        user_id = user_dict["id"]
+
+        # Reuse the existing single-session contract.
+        token = set_user_session_token(user_id)
+
+        # Avoid session fixation exactly as the web login does.
+        session.clear()
+        session["user_id"] = user_id
+        session["active_session_token"] = token
+        session.permanent = True
+
+        user = User(user_dict)
+        login_user(user, remember=False)
+
+        app.logger.info(
+            "API LOGIN success user_id=%s",
+            user_id,
+        )
+
+        return jsonify({
+            "authenticated": True,
+            "user": {
+                "id": user_id,
+                "email": user_dict["email"],
+            },
+        }), 200
+
+    except Exception:
+        app.logger.exception("API LOGIN failed")
+
+        return jsonify({
+            "error": "login_failed",
+        }), 500
+
+
 @app.route('/about')
 def about():
     """About page route"""
