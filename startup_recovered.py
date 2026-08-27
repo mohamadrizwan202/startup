@@ -54305,6 +54305,87 @@ def row_to_nutrition_dict(row) -> dict:
     }
 
 @csrf.exempt
+@app.post("/api/build-smoothie")
+def build_smoothie_api():
+    """Build deterministic starter nutrition for mobile ingredient IDs.
+
+    This is intentionally a public/basic-build endpoint.
+
+    It does not use personalization, EER, timing, health goals,
+    subscriptions, AI, fuzzy ingredient matching, or serving recommendations.
+    """
+    from recipe_calculator import RecipeCalculationError
+    from recipe_mass import RecipeMassResolutionError
+    from starter_recipe import (
+        StarterRecipeInputError,
+        StarterRecipeUnavailableError,
+        build_starter_recipe,
+    )
+
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify({
+            "error": "invalid_request",
+            "message": "JSON object required",
+        }), 400
+
+    allowed_fields = {"ingredient_ids"}
+    unexpected_fields = sorted(set(payload) - allowed_fields)
+
+    if unexpected_fields:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "unsupported request fields",
+            "fields": unexpected_fields,
+        }), 400
+
+    try:
+        result = build_starter_recipe(
+            payload.get("ingredient_ids")
+        )
+
+        return jsonify({
+            "success": True,
+            "recipe": result,
+        }), 200
+
+    except StarterRecipeInputError as exc:
+        return jsonify({
+            "error": "invalid_request",
+            "message": str(exc),
+        }), 400
+
+    except StarterRecipeUnavailableError as exc:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": exc.reason,
+            "ingredient_id": exc.ingredient_id,
+            "message": str(exc),
+        }), 422
+
+    except RecipeMassResolutionError:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": "mass_unresolved",
+        }), 422
+
+    except RecipeCalculationError:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": "nutrition_unavailable",
+        }), 422
+
+    except Exception:
+        app.logger.exception(
+            "Build Smoothie unexpected failure"
+        )
+        return jsonify({
+            "error": "build_failed",
+        }), 500
+
+
+@csrf.exempt
 # ── PLAN CHECK HELPER ────────────────────────────────────────────────────────
 
 def get_user_plan(user_id):
