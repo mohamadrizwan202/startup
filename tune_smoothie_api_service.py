@@ -8,6 +8,8 @@ It contains no Flask, authentication, subscription, AI, EER, or UI logic.
 
 from __future__ import annotations
 
+import math
+
 from batch_nutrition import NUTRIENT_KEYS
 from recipe_calculator import calculate_recipe
 from smoothie_tuner import (
@@ -124,6 +126,48 @@ def _normalize_range_nutrients(value) -> list[str]:
     return normalized
 
 
+def _normalize_range_targets(value) -> dict[str, float]:
+    if value is None:
+        return {}
+
+    if not isinstance(value, dict):
+        raise TuneSmoothieRequestError(
+            "targets must be a dictionary"
+        )
+
+    normalized = {}
+
+    for nutrient, value in value.items():
+        if nutrient not in NUTRIENT_KEYS:
+            raise TuneSmoothieRequestError(
+                f"unsupported nutrient '{nutrient}'"
+            )
+
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+        ):
+            raise TuneSmoothieRequestError(
+                f"targets.{nutrient} must be a finite number"
+            )
+
+        numeric = float(value)
+
+        if not math.isfinite(numeric):
+            raise TuneSmoothieRequestError(
+                f"targets.{nutrient} must be a finite number"
+            )
+
+        if numeric < 0:
+            raise TuneSmoothieRequestError(
+                f"targets.{nutrient} cannot be negative"
+            )
+
+        normalized[nutrient] = numeric
+
+    return normalized
+
+
 def _build_recipe_ingredient_response(
     recipe_result,
     *,
@@ -170,6 +214,10 @@ def build_tune_ranges_response(payload) -> dict:
         payload.get("nutrients")
     )
 
+    targets = _normalize_range_targets(
+        payload.get("targets")
+    )
+
     recipe_result = calculate_recipe(ingredients)
 
     bounds = build_tuning_bounds(
@@ -180,11 +228,18 @@ def build_tune_ranges_response(payload) -> dict:
     ranges = {}
 
     for nutrient in nutrients:
+        conditional_targets = {
+            target_nutrient: target
+            for target_nutrient, target in targets.items()
+            if target_nutrient != nutrient
+        }
+
         ranges[nutrient] = calculate_feasible_nutrient_range(
             recipe_result=recipe_result,
             ingredient_bounds=bounds,
             nutrient=nutrient,
             preserve_total_weight=preserve_total_weight,
+            exact_targets=conditional_targets,
         )
 
     return {

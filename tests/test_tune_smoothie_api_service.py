@@ -266,3 +266,90 @@ def test_preserve_total_weight_must_be_boolean():
                 "preserve_total_weight": "yes",
             }
         )
+
+
+def test_ranges_condition_each_nutrient_on_other_selected_targets():
+    result = build_tune_ranges_response(
+        {
+            "ingredients": _api_ingredients(),
+            "adjustable_indices": [0, 1],
+            "nutrients": [
+                "protein",
+                "sugar",
+            ],
+            "targets": {
+                "protein": 15.0,
+                "sugar": 11.0,
+            },
+        }
+    )
+
+    # Protein remains free while Sugar=11 is held exact.
+    assert result["ranges"]["protein"]["minimum"] == pytest.approx(
+        15.0
+    )
+    assert result["ranges"]["protein"]["maximum"] == pytest.approx(
+        15.0
+    )
+
+    # Sugar remains free while Protein=15 is held exact.
+    assert result["ranges"]["sugar"]["minimum"] == pytest.approx(
+        11.0
+    )
+    assert result["ranges"]["sugar"]["maximum"] == pytest.approx(
+        11.0
+    )
+
+
+def test_ranges_do_not_pin_nutrient_to_its_own_selected_target():
+    result = build_tune_ranges_response(
+        {
+            "ingredients": _api_ingredients(),
+            "adjustable_indices": [0, 1],
+            "nutrients": ["protein"],
+            "targets": {
+                "protein": 15.0,
+            },
+        }
+    )
+
+    # With no OTHER selected targets, Protein keeps its ordinary
+    # feasible range rather than collapsing to its selected value.
+    assert result["ranges"]["protein"]["minimum"] == pytest.approx(
+        0.1
+    )
+    assert result["ranges"]["protein"]["maximum"] == pytest.approx(
+        19.9
+    )
+
+
+def test_ranges_reject_non_dictionary_targets():
+    with pytest.raises(
+        TuneSmoothieRequestError,
+        match="targets must be a dictionary",
+    ):
+        build_tune_ranges_response(
+            {
+                "ingredients": _api_ingredients(),
+                "adjustable_indices": [0, 1],
+                "nutrients": ["protein"],
+                "targets": [],
+            }
+        )
+
+
+def test_ranges_reject_unsupported_target_nutrient():
+    with pytest.raises(
+        TuneSmoothieRequestError,
+        match="unsupported nutrient",
+    ):
+        build_tune_ranges_response(
+            {
+                "ingredients": _api_ingredients(),
+                "adjustable_indices": [0, 1],
+                "nutrients": ["protein"],
+                "targets": {
+                    "potassium": 1000.0,
+                },
+            }
+        )
