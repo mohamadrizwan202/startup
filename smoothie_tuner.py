@@ -561,6 +561,7 @@ def calculate_feasible_nutrient_range(
     ingredient_bounds,
     nutrient,
     preserve_total_weight=True,
+    exact_targets=None,
 ) -> dict:
     """Return the technically achievable range for one nutrient.
 
@@ -577,6 +578,11 @@ def calculate_feasible_nutrient_range(
         raise SmoothieTuningInputError(
             "preserve_total_weight must be a boolean"
         )
+
+    normalized_exact_targets = _normalize_targets(
+        exact_targets,
+        "exact_targets",
+    )
 
     if not isinstance(nutrient, str) or nutrient not in NUTRIENT_KEYS:
         raise SmoothieTuningInputError(
@@ -683,16 +689,33 @@ def calculate_feasible_nutrient_range(
             (min_weight, max_weight)
         )
 
-    a_eq = None
-    b_eq = None
+    a_eq = []
+    b_eq = []
 
     if preserve_total_weight:
-        a_eq = [
-            [1.0] * len(ingredients)
-        ]
-        b_eq = [
-            sum(original_weights)
-        ]
+        a_eq.append([1.0] * len(ingredients))
+        b_eq.append(sum(original_weights))
+
+    for target_nutrient, target in normalized_exact_targets.items():
+        target_row = []
+
+        for ingredient in ingredients:
+            nutrition = ingredient["nutrition_per_100g"]
+            target_row.append(
+                _require_number(
+                    nutrition[target_nutrient],
+                    "recipe_result ingredient nutrition "
+                    f"'{target_nutrient}'",
+                )
+                / 100.0
+            )
+
+        a_eq.append(target_row)
+        b_eq.append(target)
+
+    if not a_eq:
+        a_eq = None
+        b_eq = None
 
     minimum_solution = linprog(
         c=nutrient_coefficients,
@@ -718,6 +741,12 @@ def calculate_feasible_nutrient_range(
         ("maximum", maximum_solution),
     ):
         if solution.status == 2:
+            if normalized_exact_targets:
+                raise SmoothieTuningInfeasibleError(
+                    "selected nutrient targets cannot be satisfied "
+                    "together within the supplied ingredient bounds"
+                )
+
             raise SmoothieTuningInfeasibleError(
                 "ingredient bounds cannot satisfy "
                 "the supplied recipe constraints"

@@ -626,3 +626,59 @@ def test_exact_target_tuner_rejects_unverified_nutrient_contract():
                 "potassium": 1000.0,
             },
         )
+
+
+def test_feasible_range_can_be_conditioned_on_another_exact_target():
+    from smoothie_tuner import calculate_feasible_nutrient_range
+
+    result = calculate_feasible_nutrient_range(
+        recipe_result=_recipe(),
+        ingredient_bounds=BOUNDS,
+        nutrient="sugar",
+        preserve_total_weight=True,
+        exact_targets={
+            "protein": 15.0,
+        },
+    )
+
+    assert result["minimum"] == pytest.approx(11.0)
+    assert result["maximum"] == pytest.approx(11.0)
+
+
+def test_conditional_range_keeps_ranged_nutrient_free():
+    from smoothie_tuner import calculate_feasible_nutrient_range
+
+    result = calculate_feasible_nutrient_range(
+        recipe_result=_recipe(),
+        ingredient_bounds=BOUNDS,
+        nutrient="protein",
+        preserve_total_weight=True,
+        exact_targets={
+            "sugar": 11.0,
+        },
+    )
+
+    assert result["minimum"] == pytest.approx(15.0)
+    assert result["maximum"] == pytest.approx(15.0)
+
+
+def test_conditional_range_rejects_jointly_impossible_targets():
+    from smoothie_tuner import (
+        SmoothieTuningInfeasibleError,
+        calculate_feasible_nutrient_range,
+    )
+
+    with pytest.raises(
+        SmoothieTuningInfeasibleError,
+        match="selected nutrient targets cannot be satisfied together",
+    ):
+        calculate_feasible_nutrient_range(
+            recipe_result=_recipe(),
+            ingredient_bounds=BOUNDS,
+            nutrient="fiber",
+            preserve_total_weight=True,
+            exact_targets={
+                "protein": 15.0,
+                "sugar": 14.0,
+            },
+        )
