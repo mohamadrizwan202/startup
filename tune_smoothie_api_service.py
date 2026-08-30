@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import math
 
+import ingredient_tuning_rules_repository
 from batch_nutrition import NUTRIENT_KEYS
+from ingredient_tuning_policy import build_policy_tuning_bounds
 from recipe_calculator import calculate_recipe
 from smoothie_tuner import (
-    build_tuning_bounds,
     calculate_feasible_nutrient_range,
     tune_recipe_to_exact_targets,
 )
@@ -195,6 +196,43 @@ def _build_recipe_ingredient_response(
     return response
 
 
+def _build_reviewed_policy_bounds(
+    *,
+    recipe_result,
+    adjustable_indices,
+) -> list[dict]:
+    """Load exact Tune rules and build fail-closed solver bounds."""
+
+    tuning_rules = {}
+    looked_up_names = set()
+
+    for index in adjustable_indices:
+        ingredient = recipe_result["ingredients"][index]
+        lookup_name = ingredient.get("nutrition_lookup_name")
+
+        if not isinstance(lookup_name, str) or not lookup_name:
+            continue
+
+        if lookup_name in looked_up_names:
+            continue
+
+        looked_up_names.add(lookup_name)
+
+        rule = (
+            ingredient_tuning_rules_repository
+            .get_ingredient_tuning_rule_exact(lookup_name)
+        )
+
+        if rule is not None:
+            tuning_rules[lookup_name] = rule
+
+    return build_policy_tuning_bounds(
+        recipe_result=recipe_result,
+        adjustable_indices=adjustable_indices,
+        tuning_rules=tuning_rules,
+    )
+
+
 def build_tune_ranges_response(payload) -> dict:
     """Calculate feasible tuning ranges for an existing recipe."""
 
@@ -220,7 +258,7 @@ def build_tune_ranges_response(payload) -> dict:
 
     recipe_result = calculate_recipe(ingredients)
 
-    bounds = build_tuning_bounds(
+    bounds = _build_reviewed_policy_bounds(
         recipe_result=recipe_result,
         adjustable_indices=adjustable_indices,
     )
@@ -279,11 +317,17 @@ def build_tune_response(payload) -> dict:
 
     recipe_result = calculate_recipe(ingredients)
 
+    bounds = _build_reviewed_policy_bounds(
+        recipe_result=recipe_result,
+        adjustable_indices=adjustable_indices,
+    )
+
     tuned = tune_recipe_to_exact_targets(
         recipe_result=recipe_result,
         adjustable_indices=adjustable_indices,
         targets=targets,
         preserve_total_weight=preserve_total_weight,
+        ingredient_bounds=bounds,
     )
 
     return {

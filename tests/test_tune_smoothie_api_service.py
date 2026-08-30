@@ -84,6 +84,36 @@ def fake_recipe_calculation(monkeypatch):
         lambda _ingredients: _calculated_recipe(),
     )
 
+    rules = {
+        "greek yogurt": {
+            "nutrition_lookup_name": "greek yogurt",
+            "min_weight_g": 1.0,
+            "max_weight_g": 200.0,
+            "source_type": "test_fixture",
+            "source_reference": "fixture:greek-yogurt",
+            "rationale": "Service integration fixture only.",
+            "review_status": "approved",
+            "enabled": True,
+        },
+        "apple": {
+            "nutrition_lookup_name": "apple",
+            "min_weight_g": 1.0,
+            "max_weight_g": 200.0,
+            "source_type": "test_fixture",
+            "source_reference": "fixture:apple",
+            "rationale": "Service integration fixture only.",
+            "review_status": "approved",
+            "enabled": True,
+        },
+    }
+
+    monkeypatch.setattr(
+        tune_smoothie_api_service
+        .ingredient_tuning_rules_repository,
+        "get_ingredient_tuning_rule_exact",
+        lambda lookup_name: rules.get(lookup_name),
+    )
+
 
 def test_ranges_response_returns_real_feasible_ranges():
     result = build_tune_ranges_response(
@@ -353,3 +383,110 @@ def test_ranges_reject_unsupported_target_nutrient():
                 },
             }
         )
+
+
+
+def test_ranges_and_apply_share_reviewed_policy_bounds(monkeypatch):
+    rules = {
+        "greek yogurt": {
+            "nutrition_lookup_name": "greek yogurt",
+            "min_weight_g": 80.0,
+            "max_weight_g": 120.0,
+            "source_type": "test_fixture",
+            "source_reference": "fixture:greek-yogurt",
+            "rationale": "Service integration fixture only.",
+            "review_status": "approved",
+            "enabled": True,
+        },
+        "apple": {
+            "nutrition_lookup_name": "apple",
+            "min_weight_g": 80.0,
+            "max_weight_g": 120.0,
+            "source_type": "test_fixture",
+            "source_reference": "fixture:apple",
+            "rationale": "Service integration fixture only.",
+            "review_status": "approved",
+            "enabled": True,
+        },
+    }
+
+    monkeypatch.setattr(
+        tune_smoothie_api_service
+        .ingredient_tuning_rules_repository,
+        "get_ingredient_tuning_rule_exact",
+        lambda lookup_name: rules.get(lookup_name),
+    )
+
+    ranges = build_tune_ranges_response(
+        {
+            "ingredients": _api_ingredients(),
+            "adjustable_indices": [0, 1],
+            "nutrients": ["protein"],
+        }
+    )
+
+    assert ranges["ranges"]["protein"]["minimum"] == pytest.approx(
+        8.0
+    )
+    assert ranges["ranges"]["protein"]["maximum"] == pytest.approx(
+        12.0
+    )
+
+    tuned = build_tune_response(
+        {
+            "ingredients": _api_ingredients(),
+            "adjustable_indices": [0, 1],
+            "targets": {
+                "protein": 12.0,
+            },
+        }
+    )
+
+    assert tuned["ingredients"][0]["after_weight_g"] == pytest.approx(
+        120.0
+    )
+    assert tuned["ingredients"][1]["after_weight_g"] == pytest.approx(
+        80.0
+    )
+    assert tuned["after"]["nutrition"]["protein"] == pytest.approx(
+        12.0
+    )
+
+
+def test_missing_reviewed_rule_locks_adjustable_ingredient(
+    monkeypatch,
+):
+    rules = {
+        "apple": {
+            "nutrition_lookup_name": "apple",
+            "min_weight_g": 1.0,
+            "max_weight_g": 200.0,
+            "source_type": "test_fixture",
+            "source_reference": "fixture:apple",
+            "rationale": "Service integration fixture only.",
+            "review_status": "approved",
+            "enabled": True,
+        },
+    }
+
+    monkeypatch.setattr(
+        tune_smoothie_api_service
+        .ingredient_tuning_rules_repository,
+        "get_ingredient_tuning_rule_exact",
+        lambda lookup_name: rules.get(lookup_name),
+    )
+
+    result = build_tune_ranges_response(
+        {
+            "ingredients": _api_ingredients(),
+            "adjustable_indices": [0, 1],
+            "nutrients": ["protein"],
+        }
+    )
+
+    assert result["ranges"]["protein"]["minimum"] == pytest.approx(
+        10.0
+    )
+    assert result["ranges"]["protein"]["maximum"] == pytest.approx(
+        10.0
+    )
