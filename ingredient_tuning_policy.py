@@ -87,7 +87,7 @@ def build_policy_tuning_bounds(
                 "must be a dictionary"
             )
 
-        original_weight = _require_nonnegative_number(
+        original_weight = _require_positive_number(
             ingredient.get("weight_g"),
             f"recipe_result.ingredients[{index}].weight_g",
         )
@@ -121,10 +121,10 @@ def build_policy_tuning_bounds(
             bounds.append(locked)
             continue
 
-        minimum = _optional_nonnegative_number(
+        minimum = _optional_positive_number(
             rule.get("min_weight_g")
         )
-        maximum = _optional_nonnegative_number(
+        maximum = _optional_positive_number(
             rule.get("max_weight_g")
         )
 
@@ -150,24 +150,24 @@ def build_policy_tuning_bounds(
     return bounds
 
 
-def _require_nonnegative_number(value, field_name: str) -> float:
-    numeric = _optional_nonnegative_number(value)
+def _require_positive_number(value, field_name: str) -> float:
+    numeric = _optional_positive_number(value)
 
     if numeric is None:
         raise IngredientTuningPolicyError(
-            f"{field_name} must be a finite non-negative number"
+            f"{field_name} must be a finite positive number"
         )
 
     return numeric
 
 
-def _optional_nonnegative_number(value):
+def _optional_positive_number(value):
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
 
     numeric = float(value)
 
-    if not math.isfinite(numeric) or numeric < 0:
+    if not math.isfinite(numeric) or numeric <= 0:
         return None
 
     return numeric

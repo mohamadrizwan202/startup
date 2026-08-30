@@ -22,16 +22,16 @@ CREATE TABLE public.ingredient_tuning_rules (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT ingredient_tuning_rules_min_nonnegative
+    CONSTRAINT ingredient_tuning_rules_min_positive
         CHECK (
             min_weight_g IS NULL
-            OR min_weight_g >= 0
+            OR min_weight_g > 0
         ),
 
-    CONSTRAINT ingredient_tuning_rules_max_nonnegative
+    CONSTRAINT ingredient_tuning_rules_max_positive
         CHECK (
             max_weight_g IS NULL
-            OR max_weight_g >= 0
+            OR max_weight_g > 0
         ),
 
     CONSTRAINT ingredient_tuning_rules_range_order

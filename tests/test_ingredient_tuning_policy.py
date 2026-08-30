@@ -168,3 +168,35 @@ def test_rejects_duplicate_adjustable_indices():
             adjustable_indices=[0, 0],
             tuning_rules={},
         )
+
+
+@pytest.mark.parametrize(
+    "rule",
+    [
+        {
+            "min_weight_g": 0.0,
+            "max_weight_g": 120.0,
+            "review_status": "approved",
+            "enabled": True,
+        },
+        {
+            "min_weight_g": 80.0,
+            "max_weight_g": 0.0,
+            "review_status": "approved",
+            "enabled": True,
+        },
+    ],
+)
+def test_zero_approved_bound_fails_closed(rule):
+    bounds = build_policy_tuning_bounds(
+        recipe_result=_recipe(),
+        adjustable_indices=[0],
+        tuning_rules={
+            "mango": rule,
+        },
+    )
+
+    assert bounds[0] == {
+        "min_weight_g": 100.0,
+        "max_weight_g": 100.0,
+    }
