@@ -784,6 +784,7 @@ def tune_recipe_to_exact_targets(
     adjustable_indices,
     targets,
     preserve_total_weight=True,
+    ingredient_bounds=None,
 ) -> dict:
     """Tune a recipe to exact user-selected nutrient values.
 
@@ -793,7 +794,18 @@ def tune_recipe_to_exact_targets(
     The caller supplies:
     - an already-calculated recipe,
     - the ingredient indices that may change,
-    - exact nutrient targets selected by the user.
+    - exact nutrient targets selected by the user,
+    - optionally, explicit allowed ingredient gram bounds.
+
+    When ``ingredient_bounds`` is omitted, the existing PureFyul
+    technical editing bounds are used.
+
+    When ``ingredient_bounds`` is supplied, those bounds are authoritative
+    for ingredients listed in ``adjustable_indices``. Ingredients not listed
+    there remain locked exactly at their original weights.
+
+    This prevents explicit bounds from bypassing the caller's adjustable-
+    ingredient contract.
 
     Before solving, each requested target is checked against its actual
     feasible range for this recipe.
@@ -816,10 +828,34 @@ def tune_recipe_to_exact_targets(
             "at least one exact nutrient target is required"
         )
 
-    bounds = build_tuning_bounds(
+    technical_bounds = build_tuning_bounds(
         recipe_result=recipe_result,
         adjustable_indices=adjustable_indices,
     )
+
+    if ingredient_bounds is None:
+        bounds = technical_bounds
+    else:
+        if not isinstance(ingredient_bounds, (list, tuple)):
+            raise SmoothieTuningInputError(
+                "ingredient_bounds must be a list or tuple"
+            )
+
+        if len(ingredient_bounds) != len(technical_bounds):
+            raise SmoothieTuningInputError(
+                "ingredient_bounds must contain one entry per ingredient"
+            )
+
+        adjustable = set(adjustable_indices)
+
+        bounds = [
+            (
+                ingredient_bounds[index]
+                if index in adjustable
+                else technical_bounds[index]
+            )
+            for index in range(len(technical_bounds))
+        ]
 
     feasible_ranges = {}
 

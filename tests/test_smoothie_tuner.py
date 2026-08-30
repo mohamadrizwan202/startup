@@ -682,3 +682,99 @@ def test_conditional_range_rejects_jointly_impossible_targets():
                 "sugar": 14.0,
             },
         )
+
+
+def test_exact_target_tuner_can_use_explicit_ingredient_bounds():
+    from smoothie_tuner import tune_recipe_to_exact_targets
+
+    result = tune_recipe_to_exact_targets(
+        recipe_result=_recipe(),
+        adjustable_indices=[0, 1],
+        targets={
+            "protein": 12.0,
+        },
+        preserve_total_weight=True,
+        ingredient_bounds=[
+            {
+                "min_weight_g": 80.0,
+                "max_weight_g": 120.0,
+            },
+            {
+                "min_weight_g": 80.0,
+                "max_weight_g": 120.0,
+            },
+        ],
+    )
+
+    assert result["ingredients"][0]["after_weight_g"] == pytest.approx(
+        120.0
+    )
+    assert result["ingredients"][1]["after_weight_g"] == pytest.approx(
+        80.0
+    )
+    assert result["after"]["nutrition"]["protein"] == pytest.approx(
+        12.0
+    )
+
+
+def test_exact_target_tuner_rejects_target_outside_explicit_bounds():
+    from smoothie_tuner import (
+        SmoothieTuningInfeasibleError,
+        tune_recipe_to_exact_targets,
+    )
+
+    with pytest.raises(
+        SmoothieTuningInfeasibleError,
+        match="above the feasible maximum",
+    ):
+        tune_recipe_to_exact_targets(
+            recipe_result=_recipe(),
+            adjustable_indices=[0, 1],
+            targets={
+                "protein": 15.0,
+            },
+            preserve_total_weight=True,
+            ingredient_bounds=[
+                {
+                    "min_weight_g": 80.0,
+                    "max_weight_g": 120.0,
+                },
+                {
+                    "min_weight_g": 80.0,
+                    "max_weight_g": 120.0,
+                },
+            ],
+        )
+
+
+def test_exact_target_tuner_explicit_bounds_cannot_unlock_nonadjustable_ingredient():
+    from smoothie_tuner import (
+        SmoothieTuningInfeasibleError,
+        tune_recipe_to_exact_targets,
+    )
+
+    with pytest.raises(
+        SmoothieTuningInfeasibleError,
+        match="above the feasible maximum",
+    ):
+        tune_recipe_to_exact_targets(
+            recipe_result=_recipe(),
+            adjustable_indices=[0],
+            targets={
+                "protein": 12.0,
+            },
+            preserve_total_weight=True,
+            ingredient_bounds=[
+                {
+                    "min_weight_g": 80.0,
+                    "max_weight_g": 120.0,
+                },
+                {
+                    # Deliberately wide. Because ingredient index 1 is
+                    # not adjustable, these supplied bounds must not
+                    # unlock it.
+                    "min_weight_g": 80.0,
+                    "max_weight_g": 120.0,
+                },
+            ],
+        )
