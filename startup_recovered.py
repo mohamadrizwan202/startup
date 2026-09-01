@@ -51659,6 +51659,41 @@ def session_check():
 
 
 @csrf.exempt
+@app.post("/api/personalization/calculate")
+def public_personalization_calculate_api():
+    """Calculate personalization results without saving a profile."""
+
+    from personalization_profile import (
+        ProfileInputError,
+        build_energy_estimate,
+        normalize_profile_payload,
+    )
+
+    data = request.get_json(silent=True)
+
+    try:
+        profile = normalize_profile_payload(data)
+        energy_estimate = build_energy_estimate(profile)
+    except ProfileInputError as exc:
+        return jsonify({
+            "error": "invalid_profile",
+            "message": str(exc),
+        }), 400
+    except Exception:
+        app.logger.exception(
+            "Failed to calculate public personalization"
+        )
+        return jsonify({
+            "error": "personalization_failed",
+        }), 500
+
+    return jsonify({
+        "profile": profile,
+        "energy_estimate": energy_estimate,
+    }), 200
+
+
+@csrf.exempt
 @app.route(
     "/api/personalization-profile",
     methods=["GET", "PUT"],
