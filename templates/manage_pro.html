@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="{{ url_for('static', filename='favicon.svg') }}?v=1"
+  >
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/manage_pro.css') }}"
+  >
+
+  <title>Manage PureFyul Pro</title>
+</head>
+
+
+<body>
+
+<main class="manage-pro">
+
+
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
+
+  <header class="manage-header">
+
+    <a
+      href="{{ url_for('index') }}"
+      class="manage-brand"
+    >
+      PureFyul
+    </a>
+
+
+    <a
+      href="{{ url_for('pricing') }}"
+      class="manage-back"
+    >
+      <span aria-hidden="true">←</span>
+      Back to Pricing
+    </a>
+
+  </header>
+
+
+  <!-- =====================================================
+       PAGE
+       ===================================================== -->
+
+  <section class="manage-shell">
+
+
+    <div class="manage-heading">
+
+      <span class="manage-eyebrow">
+        PUREFYUL PRO
+      </span>
+
+
+      <h1>
+        Manage Pro
+      </h1>
+
+
+      <p>
+        Review your subscription and control what happens next.
+      </p>
+
+    </div>
+
+
+    <div class="manage-grid">
+
+
+      <!-- =================================================
+           CURRENT PLAN
+           ================================================= -->
+
+      <article class="manage-card manage-card--plan">
+
+        <h2 class="manage-card__title">
+          Current plan
+        </h2>
+
+
+        <div class="plan-summary">
+
+
+          <div class="plan-summary__name">
+
+            <strong>
+              PureFyul Pro
+            </strong>
+
+
+            <div class="plan-summary__price">
+              <b>$7.99</b>
+              <span>/ month</span>
+            </div>
+
+          </div>
+
+
+          {% if cancellation_scheduled %}
+
+            <span class="status-badge status-badge--scheduled">
+              Ending
+            </span>
+
+          {% elif subscription_status == 'Payment issue' %}
+
+            <span class="status-badge status-badge--warning">
+              {{ subscription_status }}
+            </span>
+
+          {% else %}
+
+            <span class="status-badge status-badge--active">
+              <i></i>
+              {{ subscription_status }}
+            </span>
+
+          {% endif %}
+
+
+        </div>
+
+
+        <div class="manage-divider"></div>
+
+
+        <div class="plan-details">
+
+
+          <div class="plan-detail">
+
+            <div
+              class="plan-detail__icon"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M7 3v4M17 3v4M3 10h18"/>
+              </svg>
+            </div>
+
+
+            <span>
+              {% if cancellation_scheduled %}
+                Pro access ends
+              {% else %}
+                Next billing date
+              {% endif %}
+            </span>
+
+
+            <strong>
+              {% if cancellation_scheduled %}
+                {{ cancel_at_label or period_end_label or 'End of billing period' }}
+              {% else %}
+                {{ period_end_label or 'Pending Stripe confirmation' }}
+              {% endif %}
+            </strong>
+
+          </div>
+
+
+          <div class="plan-detail">
+
+            <div
+              class="plan-detail__icon"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 24 24">
+                <path d="M20 7h-5V2"/>
+                <path d="M20 7a8 8 0 1 0 1 8"/>
+                <path d="M4 17h5v5"/>
+              </svg>
+            </div>
+
+
+            <span>
+              Billing cycle
+            </span>
+
+
+            <strong>
+              Monthly
+            </strong>
+
+          </div>
+
+
+          <div class="plan-detail">
+
+            <div
+              class="plan-detail__icon"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="7" r="4"/>
+                <path d="M5 21v-2a7 7 0 0 1 14 0v2"/>
+              </svg>
+            </div>
+
+
+            <span>
+              Account email
+            </span>
+
+
+            <strong class="plan-detail__email">
+              {{ current_user.email }}
+            </strong>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="manage-divider"></div>
+
+
+        <a
+          href="{{ url_for('index') }}"
+          class="manage-primary"
+        >
+          <svg
+            class="manage-primary__icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M19 12H5"/>
+            <path d="M11 6l-6 6 6 6"/>
+          </svg>
+
+          Back to PureFyul
+        </a>
+
+
+      </article>
+
+
+      <!-- =================================================
+           SUBSCRIPTION SETTINGS
+           ================================================= -->
+
+      <article class="manage-card manage-card--settings">
+
+
+        <h2 class="manage-card__title">
+          Subscription settings
+        </h2>
+
+
+        <p class="settings-security">
+
+          <span aria-hidden="true">
+            🔒
+          </span>
+
+          Billing changes are processed securely through Stripe.
+
+        </p>
+
+
+        <div class="manage-divider"></div>
+
+
+        {% if cancellation_scheduled %}
+
+
+          <!-- =============================================
+               ALREADY SCHEDULED
+               ============================================= -->
+
+          <section class="settings-section">
+
+            <h3>
+              Cancellation scheduled
+            </h3>
+
+
+            <p>
+              Your PureFyul Pro access will remain active until
+              <strong>
+                {{ cancel_at_label or period_end_label or 'the end of your billing period' }}
+              </strong>.
+            </p>
+
+
+            <form
+              method="post"
+              action="{{ url_for('resume_pro_subscription') }}"
+            >
+              <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+              >
+
+              <button
+                type="submit"
+                class="keep-pro-button"
+              >
+                Keep PureFyul Pro
+              </button>
+            </form>
+
+          </section>
+
+
+          <div class="cancel-info">
+
+            <div
+              class="cancel-info__icon"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M7 3v4M17 3v4M3 10h18"/>
+              </svg>
+            </div>
+
+
+            <div>
+
+              <strong>
+                Your current access
+              </strong>
+
+              <p>
+                Your Pro features remain available until
+                {{ cancel_at_label or period_end_label or 'the current billing period ends' }}.
+              </p>
+
+            </div>
+
+          </div>
+
+
+        {% elif show_cancel_confirmation %}
+
+
+          <!-- =============================================
+               CONFIRMATION
+               ============================================= -->
+
+          <section class="settings-section">
+
+            <span class="confirmation-label">
+              CONFIRM CANCELLATION
+            </span>
+
+
+            <h3>
+              Cancel PureFyul Pro?
+            </h3>
+
+
+            <p>
+              Your Pro access stays active until the end of the
+              current billing period.
+            </p>
+
+
+            <div class="confirmation-actions">
+
+
+              <a
+                href="{{ url_for('manage_pro') }}"
+                class="keep-pro-button"
+              >
+                Keep PureFyul Pro
+              </a>
+
+
+              <form
+                method="post"
+                action="{{ url_for('cancel_pro_subscription') }}"
+              >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                >
+
+                <button
+                  type="submit"
+                  class="confirm-cancel-button"
+                >
+                  Confirm cancellation
+                </button>
+              </form>
+
+
+            </div>
+
+          </section>
+
+
+          <div class="cancel-info">
+
+            <div
+              class="cancel-info__icon"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M7 3v4M17 3v4M3 10h18"/>
+              </svg>
+            </div>
+
+
+            <div>
+
+              <strong>
+                If you cancel
+              </strong>
+
+              <p>
+                Your subscription will remain active until
+                {% if period_end_label %}
+                  <b>{{ period_end_label }}</b>.
+                {% else %}
+                  the end of your current billing period.
+                {% endif %}
+                <br>
+                You won't be charged again after that date.
+              </p>
+
+            </div>
+
+          </div>
+
+
+        {% else %}
+
+
+          <!-- =============================================
+               ACTIVE
+               ============================================= -->
+
+          <section class="settings-section">
+
+            <h3>
+              Cancel subscription
+            </h3>
+
+
+            <p>
+              Your Pro access stays active until the end of the
+              current billing period.
+            </p>
+
+
+            <a
+              href="{{ url_for('manage_pro', confirm_cancel=1) }}"
+              class="cancel-button"
+            >
+              <span aria-hidden="true">⊗</span>
+              Cancel subscription
+            </a>
+
+          </section>
+
+
+          <div class="cancel-info">
+
+            <div
+              class="cancel-info__icon"
+              aria-hidden="true"
+            >
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M7 3v4M17 3v4M3 10h18"/>
+              </svg>
+            </div>
+
+
+            <div>
+
+              <strong>
+                If you cancel
+              </strong>
+
+              <p>
+                Your subscription will remain active until
+                {% if period_end_label %}
+                  <b>{{ period_end_label }}</b>.
+                {% else %}
+                  the end of your current billing period.
+                {% endif %}
+                <br>
+                You won't be charged again after that date.
+              </p>
+
+            </div>
+
+          </div>
+
+
+        {% endif %}
+
+
+        <div class="manage-divider"></div>
+
+
+        <section class="support-section">
+
+
+          <div
+            class="support-section__icon"
+            aria-hidden="true"
+          >
+            ?
+          </div>
+
+
+          <div>
+
+            <strong>
+              Need help?
+            </strong>
+
+
+            <p>
+              Contact our support team and we'll be happy to assist.
+            </p>
+
+
+            <a href="/contact">
+              Contact support
+              <span aria-hidden="true">↗</span>
+            </a>
+
+          </div>
+
+
+        </section>
+
+
+      </article>
+
+
+    </div>
+
+
+    <div class="billing-security">
+
+      <span aria-hidden="true">
+        ♢
+      </span>
+
+      <span>
+        Payments are securely processed by Stripe.
+        Your payment details are never stored by PureFyul.
+      </span>
+
+    </div>
+
+
+  </section>
+
+
+  <div
+    class="manage-background-wave"
+    aria-hidden="true"
+  ></div>
+
+
+  <div
+    class="manage-background-dots"
+    aria-hidden="true"
+  ></div>
+
+
+</main>
+
+</body>
+</html>

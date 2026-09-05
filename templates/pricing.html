@@ -17,9 +17,9 @@
 
     <!-- Hero -->
     <section class="pricing-hero">
-      <h1 class="pricing-hero-title">Simple, honest pricing</h1>
+      <h1 class="pricing-hero-title">Analyze for free. Plan with Pro.</h1>
       <p class="pricing-hero-subtitle">
-        Build smoothies with age-adjusted portions for ages 4 to 60+. Start free, no credit card needed.
+        Build and analyze your smoothies for free. Pro adds unlimited saved recipes, weekly meal planning, CSV exports, and priority support.
       </p>
     </section>
 
@@ -43,10 +43,10 @@
             <li class="pricing-card__feature pricing-card__feature--yes">Allergen Checks</li>
             <li class="pricing-card__feature pricing-card__feature--yes">Health Goal Guidance</li>
             <li class="pricing-card__feature pricing-card__feature--yes">Shareable Result Cards <span aria-label="Free account required">(free account)</span></li>
-            <li class="pricing-card__feature pricing-card__feature--no">Save Recipes</li>
-            <li class="pricing-card__feature pricing-card__feature--no">Meal Planner</li>
-            <li class="pricing-card__feature pricing-card__feature--no">Export CSV</li>
-            <li class="pricing-card__feature pricing-card__feature--no">Priority Support</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Save Recipes — Pro only</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Meal Planner — Pro only</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Export CSV — Pro only</li>
+            <li class="pricing-card__feature pricing-card__feature--no">Priority Support — Pro only</li>
           </ul>
           {% if current_user.is_authenticated %}
           <a href="{{ url_for('app_home') }}" class="pricing-card__cta pricing-card__cta--ghost">
@@ -61,11 +61,10 @@
 
         <!-- Pro Card -->
         <div class="pricing-card pricing-card--pro">
-          <div class="pricing-card__badge">Coming Soon</div>
           <div class="pricing-card__header">
             <h2 class="pricing-card__name">Pro</h2>
             <div class="pricing-card__price">
-              <span class="pricing-card__amount">$4.99</span>
+              <span class="pricing-card__amount">$7.99</span>
               <span class="pricing-card__period">/ month</span>
             </div>
             <p class="pricing-card__desc">For people serious about their nutrition goals.</p>
@@ -77,29 +76,60 @@
             <li class="pricing-card__feature pricing-card__feature--yes">Export Recipes as CSV</li>
             <li class="pricing-card__feature pricing-card__feature--yes">Priority Support</li>
             <li class="pricing-card__feature pricing-card__feature--yes">Early access to new features</li>
-            <li class="pricing-card__feature pricing-card__feature--yes">Beta user grandfathered rate</li>
           </ul>
-          <button class="pricing-card__cta pricing-card__cta--pro" id="notifyBtn">
-            Notify Me When Available
-          </button>
-          <p class="pricing-card__note">No payment required now. We'll email you when Pro launches.</p>
+          {% if current_user.is_authenticated %}
+            {% if not pricing_plan_available %}
+              <p class="pricing-card__note">
+                We couldn't verify your plan right now. Please try again shortly.
+              </p>
+            {% elif pricing_user_plan == 'pro' and has_stripe_billing %}
+    <form method="get" action="{{ url_for('manage_pro') }}">
+      <button type="submit" class="pricing-card__cta pricing-card__cta--pro">Manage Pro</button>
+    </form>
+{% elif pricing_user_plan == 'pro' %}
+              <p class="pricing-card__note">
+                <strong>Pro active</strong>
+              </p>
+            {% else %}
+              <form method="get" action="{{ url_for('pro_checkout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="pricing-card__cta pricing-card__cta--pro">
+                  Upgrade to Pro — $7.99/month
+                </button>
+              </form>
+            {% endif %}
+          {% else %}
+          <a
+            href="{{ url_for('login', next=url_for('pricing')) }}"
+            class="pricing-card__cta pricing-card__cta--pro"
+          >
+            Log in to upgrade
+          </a>
+          {% endif %}
+          {% if current_user.is_authenticated
+                and pricing_user_plan == 'pro'
+                and has_stripe_billing
+                and pricing_cancel_at %}
+          <p class="pricing-card__note">
+            <strong>
+              Pro active until
+              {{ pricing_period_end_label or 'the end of your billing period' }}
+            </strong><br>
+            Cancellation scheduled — no further renewal charges.
+          </p>
+          {% elif not (
+                current_user.is_authenticated
+                and pricing_user_plan == 'pro'
+                and not has_stripe_billing
+              ) %}
+          <p class="pricing-card__note">
+            Cancel anytime. Pro stays active through the billing period you've already paid for.
+          </p>
+          {% endif %}
         </div>
 
       </div>
     </section>
-
-    <!-- Notify form (shown after clicking) -->
-    <div class="notify-section" id="notifySection" style="display:none;">
-      <div class="notify-card">
-        <h3 class="notify-card__title">🎉 Get early access to Pro</h3>
-        <p class="notify-card__text">Leave your email and we'll notify you the moment Pro launches. Beta users get a special rate.</p>
-        <div class="notify-card__form">
-          <input type="email" id="notifyEmail" class="notify-card__input" placeholder="your@email.com">
-          <button class="pf-btn pf-btn--primary" id="notifySubmit">Notify Me</button>
-        </div>
-        <p class="notify-card__success" id="notifySuccess" style="display:none;">✅ You're on the list! We'll be in touch.</p>
-      </div>
-    </div>
 
     <!-- Feature Comparison -->
     <section class="pricing-section">
@@ -167,12 +197,12 @@
           <p class="pricing-faq-answer">Yes. The free plan stays free with no time limit. You get the smoothie builder, ingredient analysis, allergen checks, and health-goal guidance without a credit card. Sharing a completed smoothie result requires a free account, but no payment is required.</p>
         </div>
         <div class="pricing-faq-item">
-          <h3 class="pricing-faq-question">When does Pro launch?</h3>
-          <p class="pricing-faq-answer">We're finalizing Pro features now. Leave your email above and you'll be the first to know. Beta users who sign up early will be grandfathered into a special rate.</p>
+          <h3 class="pricing-faq-question">Can I cancel Pro anytime?</h3>
+          <p class="pricing-faq-answer">Yes. You can cancel your Pro subscription at any time. You won't be charged for the next billing period.</p>
         </div>
         <div class="pricing-faq-item">
-          <h3 class="pricing-faq-question">Can I try Pro features before paying?</h3>
-          <p class="pricing-faq-answer">Early waitlist users get priority access and a special grandfathered rate when Pro launches.</p>
+          <h3 class="pricing-faq-question">What happens to Pro access after I cancel?</h3>
+          <p class="pricing-faq-answer">Your Pro access continues until the end of the billing period you've already paid for. Canceling does not automatically refund unused days.</p>
         </div>
         <div class="pricing-faq-item">
           <h3 class="pricing-faq-question">Is my data private and secure?</h3>
@@ -201,44 +231,6 @@
     </div>
 
   </main>
-
-  <!-- Notify button logic -->
-  <script nonce="{{ csp_nonce }}">
-    document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('notifyBtn').addEventListener('click', function() {
-      document.getElementById('notifySection').style.display = 'block';
-      document.getElementById('notifySection').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-
-    document.getElementById('notifySubmit').addEventListener('click', async function() {
-      const btn = document.getElementById('notifySubmit');
-      const emailVal = document.getElementById('notifyEmail').value.trim();
-      if (!emailVal || !emailVal.includes('@')) {
-        alert('Please enter a valid email.');
-        return;
-      }
-      btn.disabled = true;
-      btn.textContent = 'Sending...';
-      btn.style.opacity = '0.7';
-      try {
-        await fetch('/api/contact', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            name: 'Waitlist Signup',
-            email: emailVal,
-            subject: 'Pro Waitlist',
-            message: 'Pro waitlist signup from: ' + emailVal,
-            category: 'Feature Request'
-          })
-        });
-      } catch(e) {}
-      document.getElementById('notifySuccess').style.display = 'block';
-      document.getElementById('notifyEmail').style.display = 'none';
-      btn.style.display = 'none';
-    });
-    }); // end DOMContentLoaded
-  </script>
 
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
   {% include "_legal_footer.html" %}
