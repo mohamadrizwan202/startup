@@ -155,15 +155,14 @@ def test_spinach_uses_usda_household_measure_starter(monkeypatch):
     assert definition["available"] is True
 
 
-def test_oat_milk_fails_before_any_one_ml_equals_one_g_assumption(
+def test_oat_milk_builds_after_explicit_mass_conversion(
     monkeypatch,
 ):
-    calculator_called = False
+    captured = {}
 
-    def fake_calculate_recipe(_inputs):
-        nonlocal calculator_called
-        calculator_called = True
-        raise AssertionError("calculator must not be called")
+    def fake_calculate_recipe(inputs):
+        captured["inputs"] = inputs
+        return _fake_calculated_recipe(inputs)
 
     monkeypatch.setattr(
         starter_recipe.recipe_calculator,
@@ -171,12 +170,22 @@ def test_oat_milk_fails_before_any_one_ml_equals_one_g_assumption(
         fake_calculate_recipe,
     )
 
-    with pytest.raises(StarterRecipeUnavailableError) as exc_info:
-        build_starter_recipe(["oat-milk"])
+    result = build_starter_recipe(["oat-milk"])
 
-    assert exc_info.value.reason == "mass_unresolved"
-    assert exc_info.value.ingredient_id == "oat-milk"
-    assert calculator_called is False
+    assert captured["inputs"] == [
+        {
+            "ingredient": "Oat Milk",
+            "nutrition_lookup_name": "oat milk",
+            "amount": 240.0,
+            "unit": "ml",
+        }
+    ]
+
+    definition = get_mobile_starter_definition("oat-milk")
+
+    assert definition["available"] is True
+    assert "unavailable_reason" not in definition
+    assert result["ingredients"][0]["id"] == "oat-milk"
 
 
 @pytest.mark.parametrize(

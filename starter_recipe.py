@@ -77,8 +77,7 @@ _STARTER_INGREDIENTS = {
         "amount": 240.0,
         "unit": "ml",
         "starter_source": "existing_no_age_plant_milk_default",
-        "available": False,
-        "unavailable_reason": "mass_unresolved",
+        "available": True,
     },
     "chia-seeds": {
         "display_name": "Chia Seeds",

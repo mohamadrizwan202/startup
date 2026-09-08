@@ -83,7 +83,6 @@ def test_citrus_lookup_matching_is_case_insensitive():
     [
         "almond milk",
         "soy milk",
-        "oat milk",
         "pea milk",
         "coconut milk",
         "coconut water",
@@ -239,3 +238,62 @@ def test_invalid_recipe_collections_are_rejected(
 ):
     with pytest.raises(RecipeMassResolutionError):
         normalize_recipe_mass(ingredients)
+
+
+
+def test_oat_milk_uses_explicit_density_conversion():
+    import math
+
+    result = normalize_recipe_ingredient_mass(
+        ingredient="Oat Milk",
+        nutrition_lookup_name="oat milk",
+        amount=240.0,
+        unit="ml",
+    )
+
+    assert math.isclose(
+        result["weight_g"],
+        246.096,
+        rel_tol=0.0,
+        abs_tol=1e-9,
+    )
+    assert result["mass_source"] == "explicit_density_conversion"
+
+
+def test_oat_milk_volume_mass_round_trip():
+    import math
+
+    from recipe_mass import convert_liquid_grams_to_ml
+
+    cases = (
+        (70.0, 71.778),
+        (240.0, 246.096),
+        (260.0, 266.604),
+    )
+
+    for volume_ml, expected_weight_g in cases:
+        result = normalize_recipe_ingredient_mass(
+            ingredient="Oat Milk",
+            nutrition_lookup_name="oat milk",
+            amount=volume_ml,
+            unit="ml",
+        )
+
+        assert math.isclose(
+            result["weight_g"],
+            expected_weight_g,
+            rel_tol=0.0,
+            abs_tol=1e-9,
+        )
+
+        restored_ml = convert_liquid_grams_to_ml(
+            nutrition_lookup_name="oat milk",
+            weight_g=result["weight_g"],
+        )
+
+        assert math.isclose(
+            restored_ml,
+            volume_ml,
+            rel_tol=0.0,
+            abs_tol=1e-9,
+        )
