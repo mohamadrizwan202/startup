@@ -2570,6 +2570,84 @@ def login():
     return render_template('login.html', next_url=next_url)
 
 
+@csrf.exempt
+@app.post("/api/auth/login")
+@limiter.limit("5 per minute")
+def api_login():
+    """Establish the existing PureFyul session from a JSON login request."""
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "invalid_request",
+        }), 400
+
+    raw_email = data.get("email")
+    raw_password = data.get("password")
+
+    if not isinstance(raw_email, str) or not isinstance(raw_password, str):
+        return jsonify({
+            "error": "invalid_request",
+        }), 400
+
+    email = raw_email.strip()
+    password = raw_password
+
+    if not email or not password:
+        return jsonify({
+            "error": "invalid_request",
+        }), 400
+
+    user_dict = get_user_by_email(email)
+
+    if (
+        not user_dict
+        or not check_password_hash(
+            user_dict["password_hash"],
+            password,
+        )
+    ):
+        return jsonify({
+            "error": "invalid_credentials",
+        }), 401
+
+    try:
+        user_id = user_dict["id"]
+
+        # Reuse the existing single-session contract.
+        token = set_user_session_token(user_id)
+
+        # Avoid session fixation exactly as the web login does.
+        session.clear()
+        session["user_id"] = user_id
+        session["active_session_token"] = token
+        session.permanent = True
+
+        user = User(user_dict)
+        login_user(user, remember=False)
+
+        app.logger.info(
+            "API LOGIN success user_id=%s",
+            user_id,
+        )
+
+        return jsonify({
+            "authenticated": True,
+            "user": {
+                "id": user_id,
+                "email": user_dict["email"],
+            },
+        }), 200
+
+    except Exception:
+        app.logger.exception("API LOGIN failed")
+
+        return jsonify({
+            "error": "login_failed",
+        }), 500
+
+
 @app.route('/about')
 def about():
     """About page route"""
@@ -52591,6 +52669,242 @@ def session_check():
 
 
 @csrf.exempt
+@app.post("/api/personalization/calculate")
+def public_personalization_calculate_api():
+    """Calculate personalization results without saving a profile."""
+
+    from personalization_profile import (
+        ProfileInputError,
+        build_energy_estimate,
+        normalize_profile_payload,
+    )
+
+    data = request.get_json(silent=True)
+
+    try:
+        profile = normalize_profile_payload(data)
+        energy_estimate = build_energy_estimate(profile)
+    except ProfileInputError as exc:
+        return jsonify({
+            "error": "invalid_profile",
+            "message": str(exc),
+        }), 400
+    except Exception:
+        app.logger.exception(
+            "Failed to calculate public personalization"
+        )
+        return jsonify({
+            "error": "personalization_failed",
+        }), 500
+
+    return jsonify({
+        "profile": profile,
+        "energy_estimate": energy_estimate,
+    }), 200
+
+
+@csrf.exempt
+@app.route(
+    "/api/personalization-profile",
+    methods=["GET", "PUT"],
+)
+@login_required_single_session
+def personalization_profile_api():
+    """Read or replace the logged-in user's personalization profile."""
+
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "auth_required"}), 401
+
+    from personalization_profile import build_energy_estimate
+
+    if request.method == "GET":
+        conn = db.get_conn()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                db.prepare_query(
+                    """
+                    SELECT
+                        age,
+                        sex,
+                        height_cm,
+                        weight_kg,
+                        activity_level,
+                        pregnancy_lactation_status,
+                        preferred_height_unit,
+                        preferred_weight_unit,
+                        created_at,
+                        updated_at
+                    FROM user_profiles
+                    WHERE user_id = ?
+                    """
+                ),
+                (user_id,),
+            )
+
+            row = cursor.fetchone()
+
+            if row is None:
+                return jsonify({
+                    "profile": None,
+                    "energy_estimate": {
+                        "available": False,
+                        "reason": "profile_required",
+                        "kcal_per_day": None,
+                        "method": "NASEM_2023_EER",
+                    },
+                }), 200
+
+            profile_data = db.row_to_dict(row)
+
+            return jsonify({
+                "profile": profile_data,
+                "energy_estimate": build_energy_estimate(
+                    profile_data
+                ),
+            }), 200
+
+        except Exception:
+            app.logger.exception(
+                "Failed to read personalization profile"
+            )
+            return jsonify({
+                "error": "profile_read_failed",
+            }), 500
+
+        finally:
+            conn.close()
+
+    data = request.get_json(silent=True)
+
+    try:
+        from personalization_profile import (
+            ProfileInputError,
+            normalize_profile_payload,
+        )
+
+        profile = normalize_profile_payload(data)
+
+    except ProfileInputError as exc:
+        return jsonify({
+            "error": "invalid_profile",
+            "message": str(exc),
+        }), 400
+
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        cursor.execute(
+            db.prepare_query(
+                """
+                INSERT INTO user_profiles (
+                    user_id,
+                    sex,
+                    age,
+                    height_cm,
+                    weight_kg,
+                    activity_level,
+                    pregnancy_lactation_status,
+                    preferred_height_unit,
+                    preferred_weight_unit
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    sex = excluded.sex,
+                    age = excluded.age,
+                    height_cm = excluded.height_cm,
+                    weight_kg = excluded.weight_kg,
+                    activity_level = excluded.activity_level,
+                    pregnancy_lactation_status =
+                        excluded.pregnancy_lactation_status,
+                    preferred_height_unit =
+                        excluded.preferred_height_unit,
+                    preferred_weight_unit =
+                        excluded.preferred_weight_unit,
+                    updated_at = CURRENT_TIMESTAMP
+                """
+            ),
+            (
+                user_id,
+                profile["sex"],
+                profile["age"],
+                profile["height_cm"],
+                profile["weight_kg"],
+                profile["activity_level"],
+                profile["pregnancy_lactation_status"],
+                profile["preferred_height_unit"],
+                profile["preferred_weight_unit"],
+            ),
+        )
+
+        conn.commit()
+
+        cursor.execute(
+            db.prepare_query(
+                """
+                SELECT
+                    age,
+                    sex,
+                    height_cm,
+                    weight_kg,
+                    activity_level,
+                    pregnancy_lactation_status,
+                    preferred_height_unit,
+                    preferred_weight_unit,
+                    created_at,
+                    updated_at
+                FROM user_profiles
+                WHERE user_id = ?
+                """
+            ),
+            (user_id,),
+        )
+
+        saved = cursor.fetchone()
+
+        saved_profile = (
+            db.row_to_dict(saved)
+            if saved is not None
+            else None
+        )
+
+        return jsonify({
+            "success": True,
+            "profile": saved_profile,
+            "energy_estimate": (
+                build_energy_estimate(saved_profile)
+                if saved_profile is not None
+                else {
+                    "available": False,
+                    "reason": "profile_required",
+                    "kcal_per_day": None,
+                    "method": "NASEM_2023_EER",
+                }
+            ),
+        }), 200
+
+    except Exception:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+
+        app.logger.exception(
+            "Failed to save personalization profile"
+        )
+
+        return jsonify({
+            "error": "profile_save_failed",
+        }), 500
+
+    finally:
+        conn.close()
+
+
+@csrf.exempt
 @app.get("/api/me")
 @login_required_single_session
 def get_current_user():
@@ -55114,6 +55428,87 @@ def row_to_nutrition_dict(row) -> dict:
     }
 
 @csrf.exempt
+@app.post("/api/build-smoothie")
+def build_smoothie_api():
+    """Build deterministic starter nutrition for mobile ingredient IDs.
+
+    This is intentionally a public/basic-build endpoint.
+
+    It does not use personalization, EER, timing, health goals,
+    subscriptions, AI, fuzzy ingredient matching, or serving recommendations.
+    """
+    from recipe_calculator import RecipeCalculationError
+    from recipe_mass import RecipeMassResolutionError
+    from starter_recipe import (
+        StarterRecipeInputError,
+        StarterRecipeUnavailableError,
+        build_starter_recipe,
+    )
+
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify({
+            "error": "invalid_request",
+            "message": "JSON object required",
+        }), 400
+
+    allowed_fields = {"ingredient_ids"}
+    unexpected_fields = sorted(set(payload) - allowed_fields)
+
+    if unexpected_fields:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "unsupported request fields",
+            "fields": unexpected_fields,
+        }), 400
+
+    try:
+        result = build_starter_recipe(
+            payload.get("ingredient_ids")
+        )
+
+        return jsonify({
+            "success": True,
+            "recipe": result,
+        }), 200
+
+    except StarterRecipeInputError as exc:
+        return jsonify({
+            "error": "invalid_request",
+            "message": str(exc),
+        }), 400
+
+    except StarterRecipeUnavailableError as exc:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": exc.reason,
+            "ingredient_id": exc.ingredient_id,
+            "message": str(exc),
+        }), 422
+
+    except RecipeMassResolutionError:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": "mass_unresolved",
+        }), 422
+
+    except RecipeCalculationError:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": "nutrition_unavailable",
+        }), 422
+
+    except Exception:
+        app.logger.exception(
+            "Build Smoothie unexpected failure"
+        )
+        return jsonify({
+            "error": "build_failed",
+        }), 500
+
+
+@csrf.exempt
 # ── PLAN CHECK HELPER ────────────────────────────────────────────────────────
 
 def get_user_plan(user_id):
@@ -55137,6 +55532,142 @@ def get_user_plan(user_id):
         return "free"
     finally:
         conn.close()
+
+
+
+# ── TUNE MY SMOOTHIE ──────────────────────────────────────────────────────────
+
+def _tune_smoothie_pro_gate():
+    """Return an API response when Tune My Smoothie access must be denied."""
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "auth_required"}), 401
+
+    try:
+        plan = get_user_plan(user_id)
+    except Exception:
+        app.logger.exception(
+            "Tune My Smoothie entitlement lookup failed user_id=%s",
+            user_id,
+        )
+        return jsonify({
+            "error": "entitlement_unavailable",
+            "message": "Premium access could not be verified.",
+        }), 503
+
+    if plan == "free":
+        return jsonify({
+            "error": "upgrade_required",
+            "feature": "tune_my_smoothie",
+            "message": "Tune My Smoothie is a Pro feature.",
+        }), 403
+
+    return None
+
+
+def _handle_tune_smoothie_request(mode):
+    denied = _tune_smoothie_pro_gate()
+    if denied is not None:
+        return denied
+
+    payload = request.get_json(silent=True)
+
+    if payload is None:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "Request body must be valid JSON.",
+        }), 400
+
+    from recipe_calculator import RecipeCalculationError
+    from recipe_mass import RecipeMassResolutionError
+    from smoothie_tuner import (
+        SmoothieTuningInfeasibleError,
+        SmoothieTuningInputError,
+        SmoothieTuningSolverError,
+    )
+    from tune_smoothie_api_service import (
+        TuneSmoothieRequestError,
+        build_tune_ranges_response,
+        build_tune_response,
+    )
+
+    try:
+        if mode == "ranges":
+            result = build_tune_ranges_response(payload)
+        elif mode == "tune":
+            result = build_tune_response(payload)
+        else:
+            raise RuntimeError("invalid Tune My Smoothie API mode")
+
+        return jsonify(result), 200
+
+    except TuneSmoothieRequestError as exc:
+        return jsonify({
+            "error": "invalid_request",
+            "message": str(exc),
+        }), 400
+
+    except RecipeMassResolutionError as exc:
+        return jsonify({
+            "error": "tune_unavailable",
+            "reason": "mass_unresolved",
+            "message": str(exc),
+        }), 422
+
+    except RecipeCalculationError as exc:
+        return jsonify({
+            "error": "tune_unavailable",
+            "reason": "nutrition_unavailable",
+            "message": str(exc),
+        }), 422
+
+    except SmoothieTuningInputError as exc:
+        return jsonify({
+            "error": "invalid_tuning_request",
+            "message": str(exc),
+        }), 400
+
+    except SmoothieTuningInfeasibleError as exc:
+        return jsonify({
+            "error": "tune_unavailable",
+            "reason": "target_infeasible",
+            "message": str(exc),
+        }), 422
+
+    except SmoothieTuningSolverError:
+        app.logger.exception(
+            "Tune My Smoothie solver failure user_id=%s",
+            session.get("user_id"),
+        )
+        return jsonify({
+            "error": "tuning_failed",
+        }), 500
+
+    except Exception:
+        app.logger.exception(
+            "Tune My Smoothie unexpected failure user_id=%s",
+            session.get("user_id"),
+        )
+        return jsonify({
+            "error": "tuning_failed",
+        }), 500
+
+
+@csrf.exempt
+@app.post("/api/tune-smoothie/ranges")
+@login_required_single_session
+def tune_smoothie_ranges_api():
+    """Return feasible nutrient ranges for a Pro user's smoothie."""
+    return _handle_tune_smoothie_request("ranges")
+
+
+@csrf.exempt
+@app.post("/api/tune-smoothie")
+@login_required_single_session
+def tune_smoothie_api():
+    """Tune a Pro user's smoothie to exact selected nutrient targets."""
+    return _handle_tune_smoothie_request("tune")
 
 
 # ── SAVED RECIPES ─────────────────────────────────────────────────────────────
