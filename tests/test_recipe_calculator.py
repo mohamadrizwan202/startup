@@ -180,8 +180,8 @@ def test_unresolved_ml_mass_fails_before_nutrition_lookup(monkeypatch):
         calculate_recipe(
             [
                 {
-                    "ingredient": "Oat Milk",
-                    "nutrition_lookup_name": "oat milk",
+                    "ingredient": "Almond Milk",
+                    "nutrition_lookup_name": "almond milk",
                     "amount": 150,
                     "unit": "ml",
                 }

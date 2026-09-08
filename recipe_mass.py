@@ -10,7 +10,7 @@ Accepted input units:
 This module deliberately does NOT:
 - treat 1 mL as 1 g;
 - trust legacy browser ``nutritionWeightG`` fields;
-- infer density for plant milks or other liquids;
+- infer density for unregistered liquids;
 - calculate nutrition;
 - look up nutrition database rows;
 - calculate or recommend portion sizes;
@@ -31,9 +31,26 @@ class RecipeMassResolutionError(ValueError):
     """Raised when an ingredient cannot be resolved to defensible gram mass."""
 
 
-_CITRUS_GRAMS_PER_ML = {
-    "lemon juice": 244.0 / 240.0,
-    "lime juice": 242.0 / 240.0,
+# Explicit ingredient-specific liquid mass conversions.
+#
+# Oat milk density:
+# Daszkiewicz et al., Journal of Dairy Science, Table 3.
+# Mean measured density across 10 oat-drink samples: 1.0254 g/mL.
+# This is a product conversion value, not a claim that every formulation
+# has exactly the same physical density.
+_LIQUID_MASS_CONVERSIONS = {
+    "lemon juice": {
+        "grams_per_ml": 244.0 / 240.0,
+        "mass_source": "explicit_household_weight_conversion",
+    },
+    "lime juice": {
+        "grams_per_ml": 242.0 / 240.0,
+        "mass_source": "explicit_household_weight_conversion",
+    },
+    "oat milk": {
+        "grams_per_ml": 1.0254,
+        "mass_source": "explicit_density_conversion",
+    },
 }
 
 
@@ -75,6 +92,64 @@ def _require_positive_number(value, field_name: str) -> float:
         )
 
     return number
+
+
+
+def _get_liquid_mass_conversion(nutrition_lookup_name: str) -> dict:
+    """Return an explicitly registered liquid mass conversion."""
+
+    conversion = _LIQUID_MASS_CONVERSIONS.get(
+        nutrition_lookup_name.lower()
+    )
+
+    if conversion is None:
+        raise RecipeMassResolutionError(
+            f"mass conversion is unresolved for '{nutrition_lookup_name}'"
+        )
+
+    return conversion
+
+
+def convert_liquid_ml_to_grams(
+    *,
+    nutrition_lookup_name,
+    volume_ml,
+) -> float:
+    """Convert a registered liquid volume to gram mass."""
+
+    lookup_name = _require_nonempty_string(
+        nutrition_lookup_name,
+        "nutrition_lookup_name",
+    )
+    numeric_volume_ml = _require_positive_number(
+        volume_ml,
+        "volume_ml",
+    )
+
+    conversion = _get_liquid_mass_conversion(lookup_name)
+
+    return numeric_volume_ml * conversion["grams_per_ml"]
+
+
+def convert_liquid_grams_to_ml(
+    *,
+    nutrition_lookup_name,
+    weight_g,
+) -> float:
+    """Convert gram mass to volume for a registered liquid."""
+
+    lookup_name = _require_nonempty_string(
+        nutrition_lookup_name,
+        "nutrition_lookup_name",
+    )
+    numeric_weight_g = _require_positive_number(
+        weight_g,
+        "weight_g",
+    )
+
+    conversion = _get_liquid_mass_conversion(lookup_name)
+
+    return numeric_weight_g / conversion["grams_per_ml"]
 
 
 def normalize_recipe_ingredient_mass(
@@ -129,20 +204,13 @@ def normalize_recipe_ingredient_mass(
             "unit must be 'g' or 'ml'"
         )
 
-    grams_per_ml = _CITRUS_GRAMS_PER_ML.get(
-        lookup_name.lower()
-    )
-
-    if grams_per_ml is None:
-        raise RecipeMassResolutionError(
-            f"mass conversion is unresolved for '{lookup_name}'"
-        )
+    conversion = _get_liquid_mass_conversion(lookup_name)
 
     return {
         "ingredient": ingredient_name,
         "nutrition_lookup_name": lookup_name,
-        "weight_g": numeric_amount * grams_per_ml,
-        "mass_source": "explicit_household_weight_conversion",
+        "weight_g": numeric_amount * conversion["grams_per_ml"],
+        "mass_source": conversion["mass_source"],
     }
 
 
