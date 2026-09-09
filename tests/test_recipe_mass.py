@@ -85,7 +85,6 @@ def test_citrus_lookup_matching_is_case_insensitive():
         "hemp milk",
         "flax milk",
         "coconut milk",
-        "coconut water",
         "water",
     ],
 )
@@ -360,3 +359,36 @@ def test_coconut_milk_does_not_alias_coconut_beverage():
             amount=240.0,
             unit="ml",
         )
+
+
+
+def test_coconut_water_specific_gravity_conversion():
+    from recipe_mass import convert_liquid_grams_to_ml
+
+    cases = (
+        (100.0, 102.0),
+        (240.0, 244.8),
+    )
+
+    for volume_ml, expected_weight_g in cases:
+        result = normalize_recipe_ingredient_mass(
+            ingredient="Coconut Water",
+            nutrition_lookup_name="coconut water",
+            amount=volume_ml,
+            unit="ml",
+        )
+
+        assert result["weight_g"] == pytest.approx(
+            expected_weight_g
+        )
+        assert (
+            result["mass_source"]
+            == "explicit_specific_gravity_conversion"
+        )
+
+        restored_ml = convert_liquid_grams_to_ml(
+            nutrition_lookup_name="coconut water",
+            weight_g=result["weight_g"],
+        )
+
+        assert restored_ml == pytest.approx(volume_ml)

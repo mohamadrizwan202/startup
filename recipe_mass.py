@@ -87,6 +87,15 @@ _LIQUID_MASS_CONVERSIONS = {
             "DOI 10.3168/jds.2024-25098, Table 3"
         ),
     },
+    "coconut water": {
+        "grams_per_ml": 1.0200,
+        "mass_source": "explicit_specific_gravity_conversion",
+        "source_reference": (
+            "Pummer et al., American Journal of Emergency Medicine "
+            "2001;19(4):287-289, DOI 10.1053/ajem.2001.24477; "
+            "specific gravity approximately 1.020"
+        ),
+    },
     "macadamia milk": {
         "grams_per_ml": 0.9910,
         "mass_source": "explicit_density_conversion",
