@@ -50,6 +50,60 @@ _LIQUID_MASS_CONVERSIONS = {
     "oat milk": {
         "grams_per_ml": 1.0254,
         "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "Journal of Dairy Science "
+            "DOI 10.3168/jds.2024-25098, Table 3"
+        ),
+    },
+    "soy milk": {
+        "grams_per_ml": 1.0133,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "Journal of Dairy Science "
+            "DOI 10.3168/jds.2024-25098, Table 3"
+        ),
+    },
+    "almond milk": {
+        "grams_per_ml": 1.0002,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "Journal of Dairy Science "
+            "DOI 10.3168/jds.2024-25098, Table 3"
+        ),
+    },
+    "rice milk": {
+        "grams_per_ml": 1.0496,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "Journal of Dairy Science "
+            "DOI 10.3168/jds.2024-25098, Table 3"
+        ),
+    },
+    "coconut beverage": {
+        "grams_per_ml": 1.0294,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "Journal of Dairy Science "
+            "DOI 10.3168/jds.2024-25098, Table 3"
+        ),
+    },
+    "macadamia milk": {
+        "grams_per_ml": 0.9910,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "Beverages 2024 "
+            "DOI 10.3390/beverages10030058, "
+            "thermally treated beverage mean"
+        ),
+    },
+    "cashew milk": {
+        "grams_per_ml": 1.0300,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "International Journal of Food Science "
+            "and Biotechnology 2019;4(1):1-6, "
+            "plain cashew milk"
+        ),
     },
 }
 

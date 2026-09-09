@@ -81,9 +81,9 @@ def test_citrus_lookup_matching_is_case_insensitive():
 @pytest.mark.parametrize(
     "lookup_name",
     [
-        "almond milk",
-        "soy milk",
         "pea milk",
+        "hemp milk",
+        "flax milk",
         "coconut milk",
         "coconut water",
         "water",
@@ -214,8 +214,8 @@ def test_recipe_normalization_rejects_one_unresolved_liquid():
                     "unit": "g",
                 },
                 {
-                    "ingredient": "pea milk",
-                    "nutrition_lookup_name": "pea milk",
+                    "ingredient": "coconut milk",
+                    "nutrition_lookup_name": "coconut milk",
                     "amount": 150,
                     "unit": "ml",
                 },
@@ -296,4 +296,67 @@ def test_oat_milk_volume_mass_round_trip():
             volume_ml,
             rel_tol=0.0,
             abs_tol=1e-9,
+        )
+
+
+
+@pytest.mark.parametrize(
+    "lookup_name,grams_per_ml,mass_source",
+    [
+        ("soy milk", 1.0133, "explicit_density_conversion"),
+        ("almond milk", 1.0002, "explicit_density_conversion"),
+        ("rice milk", 1.0496, "explicit_density_conversion"),
+        (
+            "coconut beverage",
+            1.0294,
+            "explicit_density_conversion",
+        ),
+        (
+            "macadamia milk",
+            0.9910,
+            "explicit_density_conversion",
+        ),
+        ("cashew milk", 1.0300, "explicit_density_conversion"),
+    ],
+)
+def test_v1_plant_milk_mass_conversions(
+    lookup_name,
+    grams_per_ml,
+    mass_source,
+):
+    from recipe_mass import convert_liquid_grams_to_ml
+
+    for volume_ml in (70.0, 260.0):
+        result = normalize_recipe_ingredient_mass(
+            ingredient=lookup_name.title(),
+            nutrition_lookup_name=lookup_name,
+            amount=volume_ml,
+            unit="ml",
+        )
+
+        expected_weight = volume_ml * grams_per_ml
+
+        assert result["weight_g"] == pytest.approx(
+            expected_weight
+        )
+        assert result["mass_source"] == mass_source
+
+        restored_ml = convert_liquid_grams_to_ml(
+            nutrition_lookup_name=lookup_name,
+            weight_g=result["weight_g"],
+        )
+
+        assert restored_ml == pytest.approx(volume_ml)
+
+
+def test_coconut_milk_does_not_alias_coconut_beverage():
+    with pytest.raises(
+        RecipeMassResolutionError,
+        match="mass conversion is unresolved",
+    ):
+        normalize_recipe_ingredient_mass(
+            ingredient="Coconut Milk",
+            nutrition_lookup_name="coconut milk",
+            amount=240.0,
+            unit="ml",
         )
