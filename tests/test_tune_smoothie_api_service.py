@@ -219,6 +219,27 @@ def test_tune_response_returns_before_after_ingredient_grams():
     )
 
 
+def test_tune_response_supports_multiple_compatible_targets():
+    result = build_tune_response(
+        {
+            "ingredients": _api_ingredients(),
+            "adjustable_indices": [0, 1],
+            "targets": {
+                "protein": 15.0,
+                "sugar": 11.0,
+            },
+        }
+    )
+
+    assert result["after"]["weight_g"] == pytest.approx(200.0)
+    assert result["after"]["nutrition"]["protein"] == pytest.approx(
+        15.0
+    )
+    assert result["after"]["nutrition"]["sugar"] == pytest.approx(
+        11.0
+    )
+
+
 def test_request_requires_ingredients():
     with pytest.raises(
         TuneSmoothieRequestError,
