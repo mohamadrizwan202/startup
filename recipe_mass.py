@@ -79,14 +79,6 @@ _LIQUID_MASS_CONVERSIONS = {
             "DOI 10.3168/jds.2024-25098, Table 3"
         ),
     },
-    "coconut beverage": {
-        "grams_per_ml": 1.0294,
-        "mass_source": "explicit_density_conversion",
-        "source_reference": (
-            "Journal of Dairy Science "
-            "DOI 10.3168/jds.2024-25098, Table 3"
-        ),
-    },
     "coconut water": {
         "grams_per_ml": 1.0200,
         "mass_source": "explicit_specific_gravity_conversion",
@@ -94,6 +86,15 @@ _LIQUID_MASS_CONVERSIONS = {
             "Pummer et al., American Journal of Emergency Medicine "
             "2001;19(4):287-289, DOI 10.1053/ajem.2001.24477; "
             "specific gravity approximately 1.020"
+        ),
+    },
+    "hemp milk": {
+        "grams_per_ml": 1.0286,
+        "mass_source": "explicit_specific_gravity_conversion",
+        "source_reference": (
+            "Journal of Food Processing and Preservation 2024; "
+            "DOI 10.1155/jfpp/6015666; "
+            "measured specific gravity 1.0286 g/mL"
         ),
     },
     "macadamia milk": {

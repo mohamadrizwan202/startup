@@ -82,7 +82,6 @@ def test_citrus_lookup_matching_is_case_insensitive():
     "lookup_name",
     [
         "pea milk",
-        "hemp milk",
         "flax milk",
         "coconut milk",
         "water",
@@ -306,9 +305,9 @@ def test_oat_milk_volume_mass_round_trip():
         ("almond milk", 1.0002, "explicit_density_conversion"),
         ("rice milk", 1.0496, "explicit_density_conversion"),
         (
-            "coconut beverage",
-            1.0294,
-            "explicit_density_conversion",
+            "hemp milk",
+            1.0286,
+            "explicit_specific_gravity_conversion",
         ),
         (
             "macadamia milk",
@@ -392,3 +391,17 @@ def test_coconut_water_specific_gravity_conversion():
         )
 
         assert restored_ml == pytest.approx(volume_ml)
+
+
+
+def test_coconut_beverage_is_not_in_v1():
+    with pytest.raises(
+        RecipeMassResolutionError,
+        match="mass conversion is unresolved",
+    ):
+        normalize_recipe_ingredient_mass(
+            ingredient="Coconut Beverage",
+            nutrition_lookup_name="coconut beverage",
+            amount=240.0,
+            unit="ml",
+        )
