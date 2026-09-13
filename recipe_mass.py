@@ -115,6 +115,15 @@ _LIQUID_MASS_CONVERSIONS = {
             "plain cashew milk"
         ),
     },
+    "kefir": {
+        "grams_per_ml": 1.0300,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "Milk kefir density study, MFE Vol. 3 Issue 3 (2019), "
+            "Table 2; starter-culture cow-milk kefir measured "
+            "at 1.030 g/mL on day 1"
+        ),
+    },
 }
 
 

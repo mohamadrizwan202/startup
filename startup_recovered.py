@@ -11234,6 +11234,14 @@ def populate_health_specific_serving_sizes():
             "Tuna provides lean protein with omega-3 fatty acids for muscle health and recovery.",
         ),
         (
+            "skyr",
+            "Muscle Health",
+            "Protein-Rich Foods",
+            "High-protein cultured dairy option",
+            "Protein",
+            "Reviewed V1 Skyr nutrition provides 11 g protein per 100 g.",
+        ),
+        (
             "greek yogurt",
             "Muscle Health",
             "Protein-Rich Foods",
@@ -29044,7 +29052,13 @@ def populate_db():
             "A, B12, B2, D",
             "Calcium, Phosphorus, Potassium",
         ),  # Skim milk alias
-        ("yogurt", 59, 10, 3.6, 0.4, 0, 3.6, 36, "B12, B2", "Calcium, Phosphorus"),
+        # Cultured-dairy V1 canonical nutrition, per 100 g.
+        # Yogurt: USDA FoodData Central FDC 171284.
+        # Skyr: Danish Frida Food ID 1693.
+        # Kefir: Danish Frida Food ID 1153.
+        ("skyr", 70, 11.0, 6.05, 0.20, 0, 4.00, 45, "", ""),
+        ("kefir", 48, 3.5, 4.8, 1.6, 0, 3.78, 43, "", ""),
+        ("yogurt", 61, 3.47, 4.66, 3.25, 0, 4.66, 46, "B12, B2", "Calcium, Phosphorus"),
         (
             "greek yogurt",
             59,

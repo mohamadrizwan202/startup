@@ -405,3 +405,56 @@ def test_coconut_beverage_is_not_in_v1():
             amount=240.0,
             unit="ml",
         )
+
+
+def test_kefir_uses_explicit_density_conversion():
+    result = normalize_recipe_ingredient_mass(
+        ingredient="Kefir",
+        nutrition_lookup_name="kefir",
+        amount=90.0,
+        unit="ml",
+    )
+
+    assert result["weight_g"] == pytest.approx(92.700)
+    assert result["mass_source"] == "explicit_density_conversion"
+
+
+def test_kefir_volume_mass_round_trip():
+    from recipe_mass import convert_liquid_grams_to_ml
+
+    cases = (
+        (90.0, 92.700),
+        (250.0, 257.500),
+    )
+
+    for volume_ml, expected_weight_g in cases:
+        result = normalize_recipe_ingredient_mass(
+            ingredient="Kefir",
+            nutrition_lookup_name="kefir",
+            amount=volume_ml,
+            unit="ml",
+        )
+
+        assert result["weight_g"] == pytest.approx(
+            expected_weight_g
+        )
+
+        restored_ml = convert_liquid_grams_to_ml(
+            nutrition_lookup_name="kefir",
+            weight_g=result["weight_g"],
+        )
+
+        assert restored_ml == pytest.approx(volume_ml)
+
+
+def test_other_kefir_identity_does_not_inherit_kefir_conversion():
+    with pytest.raises(
+        RecipeMassResolutionError,
+        match="mass conversion is unresolved",
+    ):
+        normalize_recipe_ingredient_mass(
+            ingredient="Water Kefir",
+            nutrition_lookup_name="water kefir",
+            amount=100.0,
+            unit="ml",
+        )
