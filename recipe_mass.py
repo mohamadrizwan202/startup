@@ -115,6 +115,51 @@ _LIQUID_MASS_CONVERSIONS = {
             "plain cashew milk"
         ),
     },
+    "whole milk": {
+        "grams_per_ml": 1.0305,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "USDA Agricultural Marketing Service, Factors for Converting "
+            "Volumes Sold into Number of Container Units; whole milk "
+            "8.60 lb per US gallon"
+        ),
+    },
+    "2% milk": {
+        "grams_per_ml": 1.0329,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "USDA Agricultural Marketing Service, Factors for Converting "
+            "Volumes Sold into Number of Container Units; 2% milk "
+            "8.62 lb per US gallon"
+        ),
+    },
+    "1% milk": {
+        "grams_per_ml": 1.0329,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "USDA Agricultural Marketing Service, Factors for Converting "
+            "Volumes Sold into Number of Container Units; 1% milk "
+            "8.62 lb per US gallon"
+        ),
+    },
+    "skim milk": {
+        "grams_per_ml": 1.0341,
+        "mass_source": "explicit_density_conversion",
+        "source_reference": (
+            "USDA Agricultural Marketing Service, Factors for Converting "
+            "Volumes Sold into Number of Container Units; skim milk "
+            "8.63 lb per US gallon"
+        ),
+    },
+    "lactose-free milk": {
+        "grams_per_ml": 1.0313,
+        "mass_source": "explicit_household_weight_conversion",
+        "source_reference": (
+            "USDA FoodData Central FNDDS FDC 2705391, "
+            "Milk, lactose free, reduced fat (2%); "
+            "household weight 244 g per US customary cup"
+        ),
+    },
     "kefir": {
         "grams_per_ml": 1.0300,
         "mass_source": "explicit_density_conversion",

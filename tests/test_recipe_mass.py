@@ -407,6 +407,73 @@ def test_coconut_beverage_is_not_in_v1():
         )
 
 
+@pytest.mark.parametrize(
+    "lookup_name,grams_per_ml,mass_source",
+    [
+        ("whole milk", 1.0305, "explicit_density_conversion"),
+        ("2% milk", 1.0329, "explicit_density_conversion"),
+        ("1% milk", 1.0329, "explicit_density_conversion"),
+        ("skim milk", 1.0341, "explicit_density_conversion"),
+        (
+            "lactose-free milk",
+            1.0313,
+            "explicit_household_weight_conversion",
+        ),
+    ],
+)
+def test_v1_dairy_milk_mass_conversions(
+    lookup_name,
+    grams_per_ml,
+    mass_source,
+):
+    from recipe_mass import convert_liquid_grams_to_ml
+
+    for volume_ml in (120.0, 240.0, 300.0):
+        result = normalize_recipe_ingredient_mass(
+            ingredient=lookup_name.title(),
+            nutrition_lookup_name=lookup_name,
+            amount=volume_ml,
+            unit="ml",
+        )
+
+        assert result["weight_g"] == pytest.approx(
+            volume_ml * grams_per_ml
+        )
+        assert result["mass_source"] == mass_source
+
+        restored_ml = convert_liquid_grams_to_ml(
+            nutrition_lookup_name=lookup_name,
+            weight_g=result["weight_g"],
+        )
+
+        assert restored_ml == pytest.approx(volume_ml)
+
+
+@pytest.mark.parametrize(
+    "lookup_name",
+    [
+        "milk",
+        "reduced fat milk",
+        "low fat milk",
+        "fat free milk",
+        "lactose free milk",
+    ],
+)
+def test_noncanonical_dairy_milk_identities_do_not_inherit_v1_conversion(
+    lookup_name,
+):
+    with pytest.raises(
+        RecipeMassResolutionError,
+        match="mass conversion is unresolved",
+    ):
+        normalize_recipe_ingredient_mass(
+            ingredient=lookup_name.title(),
+            nutrition_lookup_name=lookup_name,
+            amount=240.0,
+            unit="ml",
+        )
+
+
 def test_kefir_uses_explicit_density_conversion():
     result = normalize_recipe_ingredient_mass(
         ingredient="Kefir",
