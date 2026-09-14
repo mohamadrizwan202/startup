@@ -28302,7 +28302,7 @@ def populate_db():
             "C, E, K",
             "Manganese, Fiber",
         ),
-        ("avocado", 160, 2, 9, 15, 7, 0.7, 7, 150, "K, C, E", "Potassium, Folate"),
+        ("avocado", 160, 2.00, 8.53, 14.66, 6.70, 0.66, 7, 150, "K, C, E", "Potassium, Folate"),
         (
             "pomegranate",
             83,
