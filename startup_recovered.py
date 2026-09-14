@@ -56010,9 +56010,38 @@ def export_recipes():
     writer = csv.writer(output)
     writer.writerow(["Name", "Health Goal", "Ingredients", "Calories", "Protein(g)", "Carbs(g)", "Fat(g)", "Fiber(g)", "Sugar(g)", "Notes", "Saved On"])
     for r in rows:
-        nutrition = json.loads(r.get("nutrition_summary") or "{}")
-        ingredients = json.loads(r.get("ingredients") or "[]")
-        ingredient_names = ", ".join([i.get("name", str(i)) if isinstance(i, dict) else str(i) for i in ingredients])
+        nutrition_raw = r.get("nutrition_summary")
+        ingredients_raw = r.get("ingredients")
+
+        # PostgreSQL JSONB is already decoded to Python objects.
+        # SQLite stores these values as JSON strings.
+        nutrition = (
+            json.loads(nutrition_raw or "{}")
+            if isinstance(nutrition_raw, str)
+            else (nutrition_raw or {})
+        )
+        ingredients = (
+            json.loads(ingredients_raw or "[]")
+            if isinstance(ingredients_raw, str)
+            else (ingredients_raw or [])
+        )
+
+        ingredient_parts = []
+        for ingredient in ingredients:
+            if not isinstance(ingredient, dict):
+                ingredient_parts.append(str(ingredient))
+                continue
+
+            name = str(ingredient.get("name") or "").strip()
+            quantity = ingredient.get("quantity")
+            unit = str(ingredient.get("unit") or "g").strip()
+
+            if quantity not in (None, "", 0, 0.0):
+                ingredient_parts.append(f"{name} {quantity}{unit}".strip())
+            elif name:
+                ingredient_parts.append(name)
+
+        ingredient_names = ", ".join(ingredient_parts)
         writer.writerow([
             r.get("name", ""),
             r.get("health_goal", ""),

@@ -202,13 +202,45 @@
       return '<div class="rc__nut"><span class="rc__nut-val">' + v + '</span><span class="rc__nut-label">' + label + '</span></div>';
     }
     document.getElementById('exportBtn').addEventListener('click', async () => {
-      const res = await fetch('/api/recipes/export');
-      if (res.status === 403) { showUpgradeBanner(); return; }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'purefyul_recipes.csv'; a.click();
-      URL.revokeObjectURL(url);
+      try {
+        const res = await fetch('/api/recipes/export');
+
+        if (res.status === 401 || res.redirected) {
+          window.location.href = '/login?next=/recipes';
+          return;
+        }
+
+        if (res.status === 403) {
+          showUpgradeBanner();
+          return;
+        }
+
+        const contentType = res.headers.get('content-type') || '';
+
+        if (!res.ok || !contentType.includes('text/csv')) {
+          let message = 'Export failed. Please try again.';
+
+          try {
+            const data = await res.json();
+            if (data && data.message) message = data.message;
+          } catch (_) {
+            // Keep the generic message for non-JSON error responses.
+          }
+
+          alert(message);
+          return;
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'purefyul_recipes.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('Export failed. Please try again.');
+      }
     });
     function openDeleteModal(id) { recipeToDelete = id; document.getElementById('deleteModal').style.display = 'flex'; }
     document.getElementById('cancelDelete').addEventListener('click', () => { document.getElementById('deleteModal').style.display = 'none'; recipeToDelete = null; });
