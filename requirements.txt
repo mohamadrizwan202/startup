@@ -22,3 +22,5 @@ reportlab>=4.0.0
 idna==3.15
 anthropic
 scipy==1.18.0
+
+XlsxWriter>=3.2.0

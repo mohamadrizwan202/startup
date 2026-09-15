@@ -92,7 +92,7 @@
         <p class="rp-hero__sub">Your personal smoothie library. Every build, saved for later.</p>
         <div class="rp-hero__actions">
           <a href="{{ url_for('index') }}" class="rp-btn-primary">+ Build a Smoothie</a>
-          <button class="rp-btn-ghost" id="exportBtn">↓ Export CSV</button>
+          <button class="rp-btn-ghost" id="exportBtn">↓ Export Excel</button>
         </div>
       </div>
     </section>
@@ -217,7 +217,7 @@
 
         const contentType = res.headers.get('content-type') || '';
 
-        if (!res.ok || !contentType.includes('text/csv')) {
+        if (!res.ok || !contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
           let message = 'Export failed. Please try again.';
 
           try {
@@ -235,7 +235,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'purefyul_recipes.csv';
+        a.download = 'purefyul_recipes.xlsx';
         a.click();
         URL.revokeObjectURL(url);
       } catch (err) {

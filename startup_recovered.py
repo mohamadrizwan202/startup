@@ -55977,10 +55977,12 @@ def delete_meal_plan(plan_id):
 @app.route("/api/recipes/export")
 @login_required
 def export_recipes():
-    """Export all saved recipes as CSV (Pro only)."""
-    import json
-    import csv
+    """Export all saved recipes as a formatted Excel workbook (Pro only)."""
     import io
+    import json
+    from datetime import date, datetime
+
+    import xlsxwriter
     from flask import Response
 
     if get_user_plan(current_user.id) == "free":
@@ -56006,27 +56008,175 @@ def export_recipes():
     finally:
         conn.close()
 
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["Name", "Health Goal", "Ingredients", "Calories", "Protein(g)", "Carbs(g)", "Fat(g)", "Fiber(g)", "Sugar(g)", "Notes", "Saved On"])
-    for r in rows:
-        nutrition_raw = r.get("nutrition_summary")
-        ingredients_raw = r.get("ingredients")
+    def parse_json(value, default):
+        if isinstance(value, str):
+            try:
+                return json.loads(value or json.dumps(default))
+            except (json.JSONDecodeError, TypeError):
+                return default
+        return value if value is not None else default
 
-        # PostgreSQL JSONB is already decoded to Python objects.
-        # SQLite stores these values as JSON strings.
-        nutrition = (
-            json.loads(nutrition_raw or "{}")
-            if isinstance(nutrition_raw, str)
-            else (nutrition_raw or {})
-        )
-        ingredients = (
-            json.loads(ingredients_raw or "[]")
-            if isinstance(ingredients_raw, str)
-            else (ingredients_raw or [])
-        )
+    def display_label(value):
+        value = str(value or "").strip()
+        if not value:
+            return ""
+        return value.replace("-", " ").replace("_", " ").title()
+
+    def parse_context(notes):
+        audience = ""
+        timing = ""
+
+        for part in str(notes or "").split("|"):
+            part = part.strip()
+
+            if part.lower().startswith("for:"):
+                audience = part.split(":", 1)[1].strip()
+            elif part.lower().startswith("timing:"):
+                timing = part.split(":", 1)[1].strip()
+
+        return audience, timing
+
+    def numeric_value(value):
+        if value in (None, ""):
+            return None
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def saved_date(value):
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, date):
+            return datetime.combine(value, datetime.min.time())
+        if isinstance(value, str) and value.strip():
+            try:
+                return datetime.fromisoformat(value.strip())
+            except ValueError:
+                return value.strip()
+        return ""
+
+    output = io.BytesIO()
+
+    workbook = xlsxwriter.Workbook(output, {"in_memory": True})
+    worksheet = workbook.add_worksheet("Saved Smoothies")
+
+    teal = "#0EA5A4"
+    dark_text = "#0F172A"
+    muted_text = "#475569"
+    soft_teal = "#E6FFFB"
+    alternate = "#F8FAFC"
+    border = "#E2E8F0"
+
+    header_format = workbook.add_format({
+        "bold": True,
+        "font_color": "#FFFFFF",
+        "bg_color": teal,
+        "border": 1,
+        "border_color": teal,
+        "align": "center",
+        "valign": "vcenter",
+    })
+
+    text_format = workbook.add_format({
+        "font_color": dark_text,
+        "border": 1,
+        "border_color": border,
+        "valign": "vcenter",
+    })
+
+    text_alt_format = workbook.add_format({
+        "font_color": dark_text,
+        "bg_color": alternate,
+        "border": 1,
+        "border_color": border,
+        "valign": "vcenter",
+    })
+
+    wrap_format = workbook.add_format({
+        "font_color": dark_text,
+        "border": 1,
+        "border_color": border,
+        "text_wrap": True,
+        "valign": "vcenter",
+    })
+
+    wrap_alt_format = workbook.add_format({
+        "font_color": dark_text,
+        "bg_color": alternate,
+        "border": 1,
+        "border_color": border,
+        "text_wrap": True,
+        "valign": "vcenter",
+    })
+
+    goal_format = workbook.add_format({
+        "font_color": muted_text,
+        "bg_color": soft_teal,
+        "border": 1,
+        "border_color": border,
+        "valign": "vcenter",
+    })
+
+    number_format = workbook.add_format({
+        "font_color": dark_text,
+        "border": 1,
+        "border_color": border,
+        "num_format": "0.0",
+        "align": "right",
+        "valign": "vcenter",
+    })
+
+    number_alt_format = workbook.add_format({
+        "font_color": dark_text,
+        "bg_color": alternate,
+        "border": 1,
+        "border_color": border,
+        "num_format": "0.0",
+        "align": "right",
+        "valign": "vcenter",
+    })
+
+    date_format = workbook.add_format({
+        "font_color": dark_text,
+        "border": 1,
+        "border_color": border,
+        "num_format": "mmm d, yyyy",
+        "valign": "vcenter",
+    })
+
+    date_alt_format = workbook.add_format({
+        "font_color": dark_text,
+        "bg_color": alternate,
+        "border": 1,
+        "border_color": border,
+        "num_format": "mmm d, yyyy",
+        "valign": "vcenter",
+    })
+
+    headers = [
+        "Name",
+        "Health Goal",
+        "Audience",
+        "Timing",
+        "Ingredients",
+        "Calories (kcal)",
+        "Protein (g)",
+        "Carbs (g)",
+        "Fat (g)",
+        "Fiber (g)",
+        "Sugar (g)",
+        "Saved On",
+    ]
+
+    worksheet.write_row(0, 0, headers, header_format)
+
+    for row_index, recipe in enumerate(rows, start=1):
+        nutrition = parse_json(recipe.get("nutrition_summary"), {})
+        ingredients = parse_json(recipe.get("ingredients"), [])
 
         ingredient_parts = []
+
         for ingredient in ingredients:
             if not isinstance(ingredient, dict):
                 ingredient_parts.append(str(ingredient))
@@ -56037,29 +56187,118 @@ def export_recipes():
             unit = str(ingredient.get("unit") or "g").strip()
 
             if quantity not in (None, "", 0, 0.0):
-                ingredient_parts.append(f"{name} {quantity}{unit}".strip())
+                ingredient_parts.append(
+                    f"{name} {quantity}{unit}".strip()
+                )
             elif name:
                 ingredient_parts.append(name)
 
-        ingredient_names = ", ".join(ingredient_parts)
-        writer.writerow([
-            r.get("name", ""),
-            r.get("health_goal", ""),
-            ingredient_names,
-            nutrition.get("calories", ""),
-            nutrition.get("protein", ""),
-            nutrition.get("carbs", ""),
-            nutrition.get("fat", ""),
-            nutrition.get("fiber", ""),
-            nutrition.get("sugar", ""),
-            r.get("notes", ""),
-            r.get("created_at", "")
-        ])
+        audience, timing = parse_context(recipe.get("notes"))
+
+        is_alt = row_index % 2 == 0
+
+        normal = text_alt_format if is_alt else text_format
+        wrapped = wrap_alt_format if is_alt else wrap_format
+        number = number_alt_format if is_alt else number_format
+        date_cell = date_alt_format if is_alt else date_format
+
+        worksheet.write(row_index, 0, recipe.get("name", ""), normal)
+        worksheet.write(
+            row_index,
+            1,
+            display_label(recipe.get("health_goal")),
+            goal_format,
+        )
+        worksheet.write(row_index, 2, audience, normal)
+        worksheet.write(row_index, 3, timing, normal)
+        ingredient_display = "\n".join(
+            f"• {item}" for item in ingredient_parts
+        )
+
+        worksheet.write(
+            row_index,
+            4,
+            ingredient_display,
+            wrapped,
+        )
+
+        nutrition_keys = [
+            "calories",
+            "protein",
+            "carbs",
+            "fat",
+            "fiber",
+            "sugar",
+        ]
+
+        for offset, key in enumerate(nutrition_keys, start=5):
+            value = numeric_value(nutrition.get(key))
+
+            if value is None:
+                worksheet.write_blank(
+                    row_index,
+                    offset,
+                    None,
+                    number,
+                )
+            else:
+                worksheet.write_number(
+                    row_index,
+                    offset,
+                    value,
+                    number,
+                )
+
+        date_value = saved_date(recipe.get("created_at"))
+
+        if isinstance(date_value, datetime):
+            worksheet.write_datetime(
+                row_index,
+                11,
+                date_value,
+                date_cell,
+            )
+        else:
+            worksheet.write(
+                row_index,
+                11,
+                date_value,
+                normal,
+            )
+
+        ingredient_lines = max(len(ingredient_parts), 1)
+        row_height = max(32, min(18 * ingredient_lines, 108))
+        worksheet.set_row(row_index, row_height)
+
+    last_row = max(len(rows), 1)
+
+    worksheet.autofilter(0, 0, last_row, len(headers) - 1)
+    worksheet.freeze_panes(1, 0)
+    worksheet.hide_gridlines(2)
+    worksheet.set_tab_color(teal)
+    worksheet.set_row(0, 26)
+
+    worksheet.set_column("A:A", 28)
+    worksheet.set_column("B:B", 24)
+    worksheet.set_column("C:C", 18)
+    worksheet.set_column("D:D", 20)
+    worksheet.set_column("E:E", 52)
+    worksheet.set_column("F:K", 15)
+    worksheet.set_column("L:L", 16)
+
+    workbook.close()
     output.seek(0)
+
     return Response(
         output.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment; filename=purefyul_recipes.csv"}
+        mimetype=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+        headers={
+            "Content-Disposition":
+                "attachment; filename=purefyul_recipes.xlsx"
+        },
     )
 
 
