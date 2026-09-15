@@ -229,17 +229,17 @@ def test_recipe_export_excel_preserves_values_and_user_isolation(
                 "Morning Smoothie",
                 json.dumps([
                     {
-                        "name": "Papaya",
-                        "quantity": 110,
+                        "name": "peppermint",
+                        "quantity": 1,
                         "unit": "g",
                     },
                     {
-                        "name": "Oat milk",
+                        "name": "oat milk",
                         "quantity": 150,
-                        "unit": "mL",
+                        "unit": "ml",
                     },
                     {
-                        "name": "Chia seeds",
+                        "name": "chia seeds",
                         "quantity": 10,
                         "unit": "g",
                     },
@@ -321,7 +321,7 @@ def test_recipe_export_excel_preserves_values_and_user_isolation(
     assert row[2] == "Woman 19–30"
     assert row[3] == "Breakfast"
     assert row[4] == (
-        "• Papaya 110g\n"
+        "• Peppermint 1g\n"
         "• Oat milk 150mL\n"
         "• Chia seeds 10g"
     )

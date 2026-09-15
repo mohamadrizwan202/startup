@@ -56183,8 +56183,14 @@ def export_recipes():
                 continue
 
             name = str(ingredient.get("name") or "").strip()
+            if name:
+                name = name[0].upper() + name[1:]
+
             quantity = ingredient.get("quantity")
+
             unit = str(ingredient.get("unit") or "g").strip()
+            if unit.lower() == "ml":
+                unit = "mL"
 
             if quantity not in (None, "", 0, 0.0):
                 ingredient_parts.append(
