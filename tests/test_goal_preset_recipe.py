@@ -15,6 +15,12 @@ SUPPORTED_LOOKUPS = {
     "hemp seeds",
     "flax seeds",
     "lime juice",
+    "kiwi",
+    "strawberry",
+    "spinach",
+    "greek yogurt",
+    "oat milk",
+    "chia seed",
 }
 
 
@@ -153,3 +159,63 @@ def test_skin_glow_a_uses_locked_timing_targets():
             sum(item["amount"] for item in result["ingredients"]),
             3,
         ) == target_weight_g
+
+
+def test_skin_glow_b_breakfast_uses_mixed_display_units():
+    result = build_goal_preset_recipe(
+        goal="skin-glow",
+        timing="breakfast",
+        variant="b",
+    )
+
+    assert result["display_name"] == "Skin Glow B"
+    assert result["target_weight_g"] == 400.0
+    assert result["batch"]["weight_g"] == 400.0
+
+    by_id = {
+        item["id"]: item
+        for item in result["ingredients"]
+    }
+
+    assert by_id["kiwi"]["unit"] == "g"
+    assert by_id["strawberry"]["unit"] == "g"
+    assert by_id["spinach"]["unit"] == "g"
+    assert by_id["greek-yogurt"]["unit"] == "g"
+    assert by_id["chia-seeds"]["unit"] == "g"
+
+    oat_milk = by_id["oat-milk"]
+
+    assert oat_milk["unit"] == "ml"
+    assert round(oat_milk["amount"]) == 120
+    assert round(oat_milk["weight_g"], 3) == 123.033
+
+
+def test_skin_glow_b_scales_across_locked_timings():
+    expected = {
+        "breakfast": 400.0,
+        "morning-snack": 220.0,
+        "lunch": 450.0,
+        "afternoon-snack": 220.0,
+        "dinner": 300.0,
+        "bedtime": 180.0,
+    }
+
+    for timing, target_weight_g in expected.items():
+        result = build_goal_preset_recipe(
+            goal="skin-glow",
+            timing=timing,
+            variant="b",
+        )
+
+        assert result["target_weight_g"] == target_weight_g
+        assert result["batch"]["weight_g"] == target_weight_g
+
+        internal_mass = round(
+            sum(
+                item["weight_g"]
+                for item in result["ingredients"]
+            ),
+            3,
+        )
+
+        assert internal_mass == target_weight_g

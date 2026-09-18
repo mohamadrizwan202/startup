@@ -19,6 +19,7 @@ from __future__ import annotations
 from copy import deepcopy
 
 import recipe_calculator
+import recipe_mass
 
 
 class GoalPresetRecipeInputError(ValueError):
@@ -81,6 +82,52 @@ _PRESET_RECIPES = {
                 "display_name": "Lime Juice",
                 "nutrition_lookup_name": "lime juice",
                 "proportion": 4.5,
+            },
+        ),
+    },
+    ("skin-glow", "b"): {
+        "display_name": "Skin Glow B",
+        "proportion_source": "reviewed_skin_glow_b_recipe_composition",
+        "ingredients": (
+            {
+                "id": "kiwi",
+                "display_name": "Kiwi",
+                "nutrition_lookup_name": "kiwi",
+                "proportion": 70.0,
+            },
+            {
+                "id": "strawberry",
+                "display_name": "Strawberry",
+                "nutrition_lookup_name": "strawberry",
+                "proportion": 70.0,
+            },
+            {
+                "id": "spinach",
+                "display_name": "Spinach",
+                "nutrition_lookup_name": "spinach",
+                "proportion": 25.0,
+            },
+            {
+                "id": "greek-yogurt",
+                "display_name": "Greek Yogurt",
+                "nutrition_lookup_name": "greek yogurt",
+                "proportion": 100.0,
+            },
+            {
+                "id": "oat-milk",
+                "display_name": "Unsweetened Oat Milk",
+                "nutrition_lookup_name": "oat milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="oat milk",
+                    volume_ml=120.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "chia-seeds",
+                "display_name": "Chia Seeds",
+                "nutrition_lookup_name": "chia seed",
+                "proportion": 12.0,
             },
         ),
     },
@@ -219,6 +266,16 @@ def build_goal_preset_recipe(
         calculated["ingredients"],
         strict=True,
     ):
+        display_unit = definition.get("display_unit", "g")
+
+        if display_unit == "ml":
+            display_amount = recipe_mass.convert_liquid_grams_to_ml(
+                nutrition_lookup_name=definition["nutrition_lookup_name"],
+                weight_g=weight_g,
+            )
+        else:
+            display_amount = weight_g
+
         result_ingredients.append(
             {
                 "id": definition["id"],
@@ -229,8 +286,8 @@ def build_goal_preset_recipe(
                 "nutrition_record_name": calculated_ingredient[
                     "nutrition_record_name"
                 ],
-                "amount": weight_g,
-                "unit": "g",
+                "amount": round(display_amount, 3),
+                "unit": display_unit,
                 "weight_g": calculated_ingredient["weight_g"],
                 "mass_source": calculated_ingredient["mass_source"],
                 "nutrition": calculated_ingredient["nutrition"],
