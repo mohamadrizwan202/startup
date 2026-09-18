@@ -181,6 +181,123 @@ _PRESET_RECIPES = {
             },
         ),
     },
+
+    ("gut-health", "a"): {
+        "display_name": "Gut Health A",
+        "proportion_source": "reviewed_gut_health_a_recipe_composition",
+        "ingredients": (
+            {
+                "id": "kefir",
+                "display_name": "Kefir",
+                "nutrition_lookup_name": "kefir",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="kefir",
+                    volume_ml=150.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "kiwi",
+                "display_name": "Kiwi",
+                "nutrition_lookup_name": "kiwi",
+                "proportion": 90.0,
+            },
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 35.0,
+            },
+            {
+                "id": "banana",
+                "display_name": "Banana",
+                "nutrition_lookup_name": "banana",
+                "proportion": 100.0,
+            },
+            {
+                "id": "flax-seeds",
+                "display_name": "Flax Seeds",
+                "nutrition_lookup_name": "flax seeds",
+                "proportion": 20.0,
+            },
+        ),
+    },
+    ("gut-health", "b"): {
+        "display_name": "Gut Health B",
+        "proportion_source": "reviewed_gut_health_b_recipe_composition",
+        "ingredients": (
+            {
+                "id": "yogurt",
+                "display_name": "Yogurt",
+                "nutrition_lookup_name": "yogurt",
+                "proportion": 120.0,
+            },
+            {
+                "id": "prune",
+                "display_name": "Prune",
+                "nutrition_lookup_name": "prune",
+                "proportion": 50.0,
+            },
+            {
+                "id": "kiwi",
+                "display_name": "Kiwi",
+                "nutrition_lookup_name": "kiwi",
+                "proportion": 90.0,
+            },
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 35.0,
+            },
+            {
+                "id": "raspberry",
+                "display_name": "Raspberry",
+                "nutrition_lookup_name": "raspberry",
+                "proportion": 105.0,
+            },
+        ),
+    },
+    ("gut-health", "c"): {
+        "display_name": "Gut Health C",
+        "proportion_source": "reviewed_gut_health_c_recipe_composition",
+        "ingredients": (
+            {
+                "id": "kefir",
+                "display_name": "Kefir",
+                "nutrition_lookup_name": "kefir",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="kefir",
+                    volume_ml=190.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "prune",
+                "display_name": "Prune",
+                "nutrition_lookup_name": "prune",
+                "proportion": 45.0,
+            },
+            {
+                "id": "apple",
+                "display_name": "Apple",
+                "nutrition_lookup_name": "apple",
+                "proportion": 110.0,
+            },
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 35.0,
+            },
+            {
+                "id": "chia-seeds",
+                "display_name": "Chia Seeds",
+                "nutrition_lookup_name": "chia seed",
+                "proportion": 15.0,
+            },
+        ),
+    },
 }
 
 

@@ -27,6 +27,12 @@ SUPPORTED_LOOKUPS = {
     "kefir",
     "coconut water",
     "pumpkin seeds",
+    "oats",
+    "banana",
+    "yogurt",
+    "prune",
+    "raspberry",
+    "apple",
 }
 
 
@@ -138,7 +144,7 @@ def test_unsupported_goal_fails_closed():
         match="unsupported preset recipe",
     ):
         build_goal_preset_recipe(
-            goal="gut-health",
+            goal="not-a-real-goal",
             timing="breakfast",
         )
 
@@ -289,3 +295,104 @@ def test_skin_glow_c_scales_across_locked_timings():
         )
 
         assert internal_mass == target_weight_g
+
+
+def test_gut_health_variants_use_locked_ingredient_combinations():
+
+    expected = {
+        "a": [
+            "kefir",
+            "kiwi",
+            "oats",
+            "banana",
+            "flax seeds",
+        ],
+        "b": [
+            "yogurt",
+            "prune",
+            "kiwi",
+            "oats",
+            "raspberry",
+        ],
+        "c": [
+            "kefir",
+            "prune",
+            "apple",
+            "oats",
+            "chia seed",
+        ],
+    }
+
+    for variant, expected_lookups in expected.items():
+
+        result = build_goal_preset_recipe(
+            goal="gut-health",
+            timing="breakfast",
+            variant=variant,
+        )
+
+        assert result["goal"] == "gut-health"
+        assert result["variant"] == variant
+
+        assert [
+            item["nutrition_lookup_name"]
+            for item in result["ingredients"]
+        ] == expected_lookups
+
+
+def test_gut_health_variants_scale_across_all_locked_timings():
+
+    expected_timings = {
+        "breakfast": 400.0,
+        "morning-snack": 220.0,
+        "lunch": 450.0,
+        "afternoon-snack": 220.0,
+        "dinner": 300.0,
+        "bedtime": 180.0,
+    }
+
+    for variant in ("a", "b", "c"):
+
+        for timing, target_weight_g in expected_timings.items():
+
+            result = build_goal_preset_recipe(
+                goal="gut-health",
+                timing=timing,
+                variant=variant,
+            )
+
+            assert result["target_weight_g"] == target_weight_g
+            assert result["batch"]["weight_g"] == target_weight_g
+
+            internal_mass = round(
+                sum(
+                    item["weight_g"]
+                    for item in result["ingredients"]
+                ),
+                3,
+            )
+
+            assert internal_mass == target_weight_g
+
+
+def test_gut_health_kefir_variants_use_ml_display_units():
+
+    for variant, expected_ml in (
+        ("a", 150),
+        ("c", 190),
+    ):
+
+        result = build_goal_preset_recipe(
+            goal="gut-health",
+            timing="breakfast",
+            variant=variant,
+        )
+
+        kefir = next(
+            item
+            for item in result["ingredients"]
+            if item["id"] == "kefir"
+        )
+
+        assert kefir["unit"] == "ml"
+        assert round(kefir["amount"]) == expected_ml
