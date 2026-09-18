@@ -7063,6 +7063,10 @@
               <div id="pf-result-ingredients"></div>
 
               <div id="pf-result-nutrition"></div>
+
+              <button type="button" id="pf-build-another" class="pf-build-my-smoothie">
+                Build another <span aria-hidden="true">→</span>
+              </button>
             </section>
           </main>
 
@@ -7079,6 +7083,7 @@
             var timeButtons = entry.querySelectorAll('.pf-time-choice');
             var buildButton = document.getElementById('pf-build-my-smoothie');
             var buildStatus = document.getElementById('pf-build-status');
+            var buildAnotherButton = document.getElementById('pf-build-another');
             var resultSection = document.getElementById('pf-result-section');
             var resultTitle = document.getElementById('pf-result-title');
             var resultSummary = document.getElementById('pf-result-summary');
@@ -7090,6 +7095,7 @@
             var selectedGoal = '';
             var selectedTime = '';
             var isBuilding = false;
+            var currentVariant = 'a';
 
             function updateBuildState() {
               if (!buildButton) return;
@@ -7213,62 +7219,99 @@
               button.setAttribute('aria-pressed', 'false');
             });
 
-            if (buildButton) {
-              buildButton.addEventListener('click', async function() {
-                if (!selectedGoal || !selectedTime || isBuilding) return;
+            async function buildPresetVariant(variant, triggerButton) {
+              if (!selectedGoal || !selectedTime || isBuilding) return;
 
-                isBuilding = true;
-                buildButton.textContent = 'Building...';
-                updateBuildState();
+              isBuilding = true;
+              updateBuildState();
 
+              if (buildAnotherButton) {
+                buildAnotherButton.disabled = true;
+              }
+
+              if (triggerButton) {
+                triggerButton.textContent = 'Building...';
+              }
+
+              if (buildStatus && triggerButton === buildButton) {
+                buildStatus.hidden = false;
+                buildStatus.textContent = 'Building your smoothie...';
+              }
+
+              try {
+                var response = await fetch('/api/build-goal-preset', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    goal: selectedGoal,
+                    timing: selectedTime,
+                    variant: variant
+                  })
+                });
+
+                var payload = await response.json();
+
+                if (!response.ok || !payload.success || !payload.recipe) {
+                  throw new Error(
+                    payload.message ||
+                    payload.reason ||
+                    'This smoothie preset is not ready yet.'
+                  );
+                }
+
+                window.pfGoalPresetRecipe = payload.recipe;
+                currentVariant = payload.recipe.variant || variant;
+                renderPresetResult(payload.recipe);
+              } catch (error) {
                 if (buildStatus) {
                   buildStatus.hidden = false;
-                  buildStatus.textContent = 'Building your smoothie...';
+                  buildStatus.textContent =
+                    error && error.message
+                      ? error.message
+                      : 'Could not build smoothie.';
                 }
+              } finally {
+                isBuilding = false;
 
-                try {
-                  var response = await fetch('/api/build-goal-preset', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                      goal: selectedGoal,
-                      timing: selectedTime,
-                      variant: 'a'
-                    })
-                  });
-
-                  var payload = await response.json();
-
-                  if (!response.ok || !payload.success || !payload.recipe) {
-                    throw new Error(
-                      payload.message ||
-                      payload.reason ||
-                      'This smoothie preset is not ready yet.'
-                    );
-                  }
-
-                  window.pfGoalPresetRecipe = payload.recipe;
-                  renderPresetResult(payload.recipe);
-
-                } catch (error) {
-                  if (buildStatus) {
-                    buildStatus.hidden = false;
-                    buildStatus.textContent =
-                      error && error.message
-                        ? error.message
-                        : 'Could not build smoothie.';
-                  }
-                } finally {
-                  isBuilding = false;
+                if (buildButton) {
                   buildButton.textContent = 'Build my smoothie →';
-                  updateBuildState();
                 }
+
+                if (buildAnotherButton) {
+                  buildAnotherButton.textContent = 'Build another →';
+                  buildAnotherButton.disabled = false;
+                }
+
+                updateBuildState();
+              }
+            }
+
+            if (buildButton) {
+              buildButton.addEventListener('click', function() {
+                buildPresetVariant('a', buildButton);
+              });
+            }
+
+            if (buildAnotherButton) {
+              buildAnotherButton.addEventListener('click', function() {
+                var nextVariant =
+                  currentVariant === 'a'
+                    ? 'b'
+                    : currentVariant === 'b'
+                      ? 'c'
+                      : 'a';
+
+                buildPresetVariant(
+                  nextVariant,
+                  buildAnotherButton
+                );
               });
             }
 
             updateBuildState();
+
           });
         })();
       </script>
