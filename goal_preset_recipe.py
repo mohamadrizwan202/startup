@@ -131,6 +131,56 @@ _PRESET_RECIPES = {
             },
         ),
     },
+    ("skin-glow", "c"): {
+        "display_name": "Skin Glow C",
+        "proportion_source": "reviewed_skin_glow_c_recipe_composition",
+        "ingredients": (
+            {
+                "id": "papaya",
+                "display_name": "Papaya",
+                "nutrition_lookup_name": "papaya",
+                "proportion": 90.0,
+            },
+            {
+                "id": "mango",
+                "display_name": "Mango",
+                "nutrition_lookup_name": "mango",
+                "proportion": 40.0,
+            },
+            {
+                "id": "carrot",
+                "display_name": "Carrot",
+                "nutrition_lookup_name": "carrots",
+                "proportion": 45.0,
+            },
+            {
+                "id": "kefir",
+                "display_name": "Kefir",
+                "nutrition_lookup_name": "kefir",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="kefir",
+                    volume_ml=100.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "coconut-water",
+                "display_name": "Coconut Water",
+                "nutrition_lookup_name": "coconut water",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="coconut water",
+                    volume_ml=100.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "pumpkin-seeds",
+                "display_name": "Pumpkin Seeds",
+                "nutrition_lookup_name": "pumpkin seeds",
+                "proportion": 20.0,
+            },
+        ),
+    },
 }
 
 

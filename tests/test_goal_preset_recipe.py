@@ -21,6 +21,12 @@ SUPPORTED_LOOKUPS = {
     "greek yogurt",
     "oat milk",
     "chia seed",
+    "papaya",
+    "mango",
+    "carrots",
+    "kefir",
+    "coconut water",
+    "pumpkin seeds",
 }
 
 
@@ -205,6 +211,70 @@ def test_skin_glow_b_scales_across_locked_timings():
             goal="skin-glow",
             timing=timing,
             variant="b",
+        )
+
+        assert result["target_weight_g"] == target_weight_g
+        assert result["batch"]["weight_g"] == target_weight_g
+
+        internal_mass = round(
+            sum(
+                item["weight_g"]
+                for item in result["ingredients"]
+            ),
+            3,
+        )
+
+        assert internal_mass == target_weight_g
+
+
+def test_skin_glow_c_breakfast_uses_mixed_display_units():
+    result = build_goal_preset_recipe(
+        goal="skin-glow",
+        timing="breakfast",
+        variant="c",
+    )
+
+    assert result["display_name"] == "Skin Glow C"
+    assert result["target_weight_g"] == 400.0
+    assert result["batch"]["weight_g"] == 400.0
+
+    by_id = {
+        item["id"]: item
+        for item in result["ingredients"]
+    }
+
+    assert by_id["papaya"]["unit"] == "g"
+    assert by_id["mango"]["unit"] == "g"
+    assert by_id["carrot"]["unit"] == "g"
+    assert by_id["pumpkin-seeds"]["unit"] == "g"
+
+    kefir = by_id["kefir"]
+    coconut_water = by_id["coconut-water"]
+
+    assert kefir["unit"] == "ml"
+    assert round(kefir["amount"]) == 100
+    assert round(kefir["weight_g"], 3) == 103.0
+
+    assert coconut_water["unit"] == "ml"
+    assert round(coconut_water["amount"]) == 100
+    assert round(coconut_water["weight_g"], 3) == 102.0
+
+
+def test_skin_glow_c_scales_across_locked_timings():
+    expected = {
+        "breakfast": 400.0,
+        "morning-snack": 220.0,
+        "lunch": 450.0,
+        "afternoon-snack": 220.0,
+        "dinner": 300.0,
+        "bedtime": 180.0,
+    }
+
+    for timing, target_weight_g in expected.items():
+        result = build_goal_preset_recipe(
+            goal="skin-glow",
+            timing=timing,
+            variant="c",
         )
 
         assert result["target_weight_g"] == target_weight_g
