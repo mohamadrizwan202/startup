@@ -55543,6 +55543,74 @@ def build_smoothie_api():
 
 
 @csrf.exempt
+@app.post("/api/build-goal-preset")
+def build_goal_preset_api():
+    """Build one deterministic reviewed health-goal preset."""
+    from goal_preset_recipe import (
+        GoalPresetRecipeInputError,
+        build_goal_preset_recipe,
+    )
+    from recipe_calculator import RecipeCalculationError
+    from recipe_mass import RecipeMassResolutionError
+
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify({
+            "error": "invalid_request",
+            "message": "JSON object required",
+        }), 400
+
+    allowed_fields = {"goal", "timing", "variant"}
+    unexpected_fields = sorted(set(payload) - allowed_fields)
+
+    if unexpected_fields:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "unsupported request fields",
+            "fields": unexpected_fields,
+        }), 400
+
+    try:
+        result = build_goal_preset_recipe(
+            goal=payload.get("goal"),
+            timing=payload.get("timing"),
+            variant=payload.get("variant", "a"),
+        )
+
+        return jsonify({
+            "success": True,
+            "recipe": result,
+        }), 200
+
+    except GoalPresetRecipeInputError as exc:
+        return jsonify({
+            "error": "invalid_request",
+            "message": str(exc),
+        }), 400
+
+    except RecipeMassResolutionError:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": "mass_unresolved",
+        }), 422
+
+    except RecipeCalculationError:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": "nutrition_unavailable",
+        }), 422
+
+    except Exception:
+        app.logger.exception(
+            "Build Goal Preset unexpected failure"
+        )
+        return jsonify({
+            "error": "build_failed",
+        }), 500
+
+
+@csrf.exempt
 # ── PLAN CHECK HELPER ────────────────────────────────────────────────────────
 
 def get_user_plan(user_id):
