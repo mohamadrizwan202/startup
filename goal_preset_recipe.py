@@ -433,6 +433,145 @@ _PRESET_RECIPES = {
             },
         ),
     },
+
+    ("heart-support", "a"): {
+        "display_name": "Heart Support A",
+        "proportion_source": "reviewed_heart_support_a_recipe_composition",
+        "ingredients": (
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 45.0,
+            },
+            {
+                "id": "blueberry",
+                "display_name": "Blueberry",
+                "nutrition_lookup_name": "blueberry",
+                "proportion": 90.0,
+            },
+            {
+                "id": "apple",
+                "display_name": "Apple",
+                "nutrition_lookup_name": "apple",
+                "proportion": 90.0,
+            },
+            {
+                "id": "walnuts",
+                "display_name": "Walnuts",
+                "nutrition_lookup_name": "walnuts",
+                "proportion": 20.0,
+            },
+            {
+                "id": "flax-seeds",
+                "display_name": "Flax Seeds",
+                "nutrition_lookup_name": "flax seeds",
+                "proportion": 15.0,
+            },
+            {
+                "id": "almond-milk",
+                "display_name": "Almond Milk",
+                "nutrition_lookup_name": "almond milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="almond milk",
+                    volume_ml=140.0,
+                ),
+                "display_unit": "ml",
+            },
+        ),
+    },
+    ("heart-support", "b"): {
+        "display_name": "Heart Support B",
+        "proportion_source": "reviewed_heart_support_b_recipe_composition",
+        "ingredients": (
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 40.0,
+            },
+            {
+                "id": "strawberry",
+                "display_name": "Strawberry",
+                "nutrition_lookup_name": "strawberry",
+                "proportion": 90.0,
+            },
+            {
+                "id": "raspberry",
+                "display_name": "Raspberry",
+                "nutrition_lookup_name": "raspberry",
+                "proportion": 75.0,
+            },
+            {
+                "id": "walnuts",
+                "display_name": "Walnuts",
+                "nutrition_lookup_name": "walnuts",
+                "proportion": 20.0,
+            },
+            {
+                "id": "chia-seeds",
+                "display_name": "Chia Seeds",
+                "nutrition_lookup_name": "chia seed",
+                "proportion": 15.0,
+            },
+            {
+                "id": "oat-milk",
+                "display_name": "Oat Milk",
+                "nutrition_lookup_name": "oat milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="oat milk",
+                    volume_ml=156.0,
+                ),
+                "display_unit": "ml",
+            },
+        ),
+    },
+    ("heart-support", "c"): {
+        "display_name": "Heart Support C",
+        "proportion_source": "reviewed_heart_support_c_recipe_composition",
+        "ingredients": (
+            {
+                "id": "blackberry",
+                "display_name": "Blackberry",
+                "nutrition_lookup_name": "blackberry",
+                "proportion": 90.0,
+            },
+            {
+                "id": "apple",
+                "display_name": "Apple",
+                "nutrition_lookup_name": "apple",
+                "proportion": 110.0,
+            },
+            {
+                "id": "spinach",
+                "display_name": "Spinach",
+                "nutrition_lookup_name": "spinach",
+                "proportion": 25.0,
+            },
+            {
+                "id": "walnuts",
+                "display_name": "Walnuts",
+                "nutrition_lookup_name": "walnuts",
+                "proportion": 20.0,
+            },
+            {
+                "id": "flax-seeds",
+                "display_name": "Flax Seeds",
+                "nutrition_lookup_name": "flax seeds",
+                "proportion": 15.0,
+            },
+            {
+                "id": "almond-milk",
+                "display_name": "Almond Milk",
+                "nutrition_lookup_name": "almond milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="almond milk",
+                    volume_ml=140.0,
+                ),
+                "display_unit": "ml",
+            },
+        ),
+    },
 }
 
 

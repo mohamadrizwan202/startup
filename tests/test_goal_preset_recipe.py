@@ -506,3 +506,110 @@ def test_brain_focus_liquid_variants_use_ml_display_units():
 
         assert liquid["unit"] == "ml"
         assert round(liquid["amount"]) == expected_ml
+
+
+def test_heart_support_variants_use_locked_ingredient_combinations():
+
+    expected = {
+        "a": [
+            "oats",
+            "blueberry",
+            "apple",
+            "walnuts",
+            "flax seeds",
+            "almond milk",
+        ],
+        "b": [
+            "oats",
+            "strawberry",
+            "raspberry",
+            "walnuts",
+            "chia seed",
+            "oat milk",
+        ],
+        "c": [
+            "blackberry",
+            "apple",
+            "spinach",
+            "walnuts",
+            "flax seeds",
+            "almond milk",
+        ],
+    }
+
+    for variant, expected_lookups in expected.items():
+
+        result = build_goal_preset_recipe(
+            goal="heart-support",
+            timing="breakfast",
+            variant=variant,
+        )
+
+        assert result["goal"] == "heart-support"
+        assert result["variant"] == variant
+
+        assert [
+            item["nutrition_lookup_name"]
+            for item in result["ingredients"]
+        ] == expected_lookups
+
+
+def test_heart_support_variants_scale_across_all_locked_timings():
+
+    expected_timings = {
+        "breakfast": 400.0,
+        "morning-snack": 220.0,
+        "lunch": 450.0,
+        "afternoon-snack": 220.0,
+        "dinner": 300.0,
+        "bedtime": 180.0,
+    }
+
+    for variant in ("a", "b", "c"):
+
+        for timing, target_weight_g in expected_timings.items():
+
+            result = build_goal_preset_recipe(
+                goal="heart-support",
+                timing=timing,
+                variant=variant,
+            )
+
+            assert result["target_weight_g"] == target_weight_g
+            assert result["batch"]["weight_g"] == target_weight_g
+
+            internal_mass = round(
+                sum(
+                    item["weight_g"]
+                    for item in result["ingredients"]
+                ),
+                3,
+            )
+
+            assert internal_mass == target_weight_g
+
+
+def test_heart_support_liquid_variants_use_ml_display_units():
+
+    cases = (
+        ("a", "almond-milk", 140),
+        ("b", "oat-milk", 156),
+        ("c", "almond-milk", 140),
+    )
+
+    for variant, ingredient_id, expected_ml in cases:
+
+        result = build_goal_preset_recipe(
+            goal="heart-support",
+            timing="breakfast",
+            variant=variant,
+        )
+
+        liquid = next(
+            item
+            for item in result["ingredients"]
+            if item["id"] == ingredient_id
+        )
+
+        assert liquid["unit"] == "ml"
+        assert round(liquid["amount"]) == expected_ml
