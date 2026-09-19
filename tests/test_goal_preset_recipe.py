@@ -36,7 +36,14 @@ SUPPORTED_LOOKUPS = {
     "blueberry",
     "blackberry",
     "walnuts",
-    "almond milk",
+    "almond milk",    "beets",
+    "date",
+    "pineapple",
+    "orange",
+    "soy milk",
+    "skyr",
+    "2% milk",
+
 }
 
 
@@ -613,3 +620,153 @@ def test_heart_support_liquid_variants_use_ml_display_units():
 
         assert liquid["unit"] == "ml"
         assert round(liquid["amount"]) == expected_ml
+
+
+def test_final_goals_use_locked_ingredient_combinations():
+
+    expected = {
+        ("energy-stamina", "a"): [
+            "banana",
+            "oats",
+            "beets",
+            "mango",
+            "coconut water",
+        ],
+        ("energy-stamina", "b"): [
+            "banana",
+            "date",
+            "pineapple",
+            "greek yogurt",
+            "oat milk",
+        ],
+        ("energy-stamina", "c"): [
+            "beets",
+            "orange",
+            "mango",
+            "banana",
+            "coconut water",
+            "oats",
+        ],
+        ("muscle-health", "a"): [
+            "greek yogurt",
+            "banana",
+            "oats",
+            "soy milk",
+            "hemp seeds",
+        ],
+        ("muscle-health", "b"): [
+            "skyr",
+            "strawberry",
+            "oats",
+            "2% milk",
+            "chia seed",
+        ],
+        ("muscle-health", "c"): [
+            "kefir",
+            "blueberry",
+            "greek yogurt",
+            "oat milk",
+            "hemp seeds",
+        ],
+    }
+
+    for (goal, variant), expected_lookups in expected.items():
+
+        result = build_goal_preset_recipe(
+            goal=goal,
+            timing="breakfast",
+            variant=variant,
+        )
+
+        assert result["goal"] == goal
+        assert result["variant"] == variant
+
+        assert [
+            item["nutrition_lookup_name"]
+            for item in result["ingredients"]
+        ] == expected_lookups
+
+
+def test_final_goals_scale_across_all_locked_timings():
+
+    expected_timings = {
+        "breakfast": 400.0,
+        "morning-snack": 220.0,
+        "lunch": 450.0,
+        "afternoon-snack": 220.0,
+        "dinner": 300.0,
+        "bedtime": 180.0,
+    }
+
+    for goal in ("energy-stamina", "muscle-health"):
+
+        for variant in ("a", "b", "c"):
+
+            for timing, target_weight_g in expected_timings.items():
+
+                result = build_goal_preset_recipe(
+                    goal=goal,
+                    timing=timing,
+                    variant=variant,
+                )
+
+                assert result["target_weight_g"] == target_weight_g
+                assert result["batch"]["weight_g"] == target_weight_g
+
+                internal_mass = round(
+                    sum(
+                        item["weight_g"]
+                        for item in result["ingredients"]
+                    ),
+                    3,
+                )
+
+                assert internal_mass == target_weight_g
+
+
+def test_final_goals_use_expected_liquid_display_units():
+
+    cases = (
+        ("energy-stamina", "a", "coconut-water", 124.224),
+        ("energy-stamina", "b", "oat-milk", 105.616),
+        ("energy-stamina", "c", "coconut-water", 90.045),
+        ("muscle-health", "a", "soy-milk", 136.090),
+        ("muscle-health", "b", "2-percent-milk", 135.188),
+    )
+
+    for goal, variant, ingredient_id, expected_ml in cases:
+
+        result = build_goal_preset_recipe(
+            goal=goal,
+            timing="breakfast",
+            variant=variant,
+        )
+
+        liquid = next(
+            item
+            for item in result["ingredients"]
+            if item["id"] == ingredient_id
+        )
+
+        assert liquid["unit"] == "ml"
+        assert liquid["amount"] == pytest.approx(expected_ml, abs=0.001)
+
+
+def test_muscle_health_c_uses_two_liquid_display_units():
+
+    result = build_goal_preset_recipe(
+        goal="muscle-health",
+        timing="breakfast",
+        variant="c",
+    )
+
+    by_id = {
+        item["id"]: item
+        for item in result["ingredients"]
+    }
+
+    assert by_id["kefir"]["unit"] == "ml"
+    assert round(by_id["kefir"]["amount"]) == 100
+
+    assert by_id["oat-milk"]["unit"] == "ml"
+    assert round(by_id["oat-milk"]["amount"]) == 95

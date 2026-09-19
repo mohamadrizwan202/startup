@@ -572,6 +572,257 @@ _PRESET_RECIPES = {
             },
         ),
     },
+
+    ("energy-stamina", "a"): {
+        "display_name": "Energy & Stamina A",
+        "proportion_source": "reviewed_energy_stamina_a_recipe_composition",
+        "ingredients": (
+            {
+                "id": "banana",
+                "display_name": "Banana",
+                "nutrition_lookup_name": "banana",
+                "proportion": 100.0,
+            },
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 35.0,
+            },
+            {
+                "id": "beets",
+                "display_name": "Beets",
+                "nutrition_lookup_name": "beets",
+                "proportion": 60.0,
+            },
+            {
+                "id": "mango",
+                "display_name": "Mango",
+                "nutrition_lookup_name": "mango",
+                "proportion": 80.0,
+            },
+            {
+                "id": "coconut-water",
+                "display_name": "Coconut Water",
+                "nutrition_lookup_name": "coconut water",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="coconut water",
+                    volume_ml=125.0,
+                ),
+                "display_unit": "ml",
+            },
+        ),
+    },
+    ("energy-stamina", "b"): {
+        "display_name": "Energy & Stamina B",
+        "proportion_source": "reviewed_energy_stamina_b_recipe_composition",
+        "ingredients": (
+            {
+                "id": "banana",
+                "display_name": "Banana",
+                "nutrition_lookup_name": "banana",
+                "proportion": 90.0,
+            },
+            {
+                "id": "date",
+                "display_name": "Date",
+                "nutrition_lookup_name": "date",
+                "proportion": 30.0,
+            },
+            {
+                "id": "pineapple",
+                "display_name": "Pineapple",
+                "nutrition_lookup_name": "pineapple",
+                "proportion": 80.0,
+            },
+            {
+                "id": "greek-yogurt",
+                "display_name": "Greek Yogurt",
+                "nutrition_lookup_name": "greek yogurt",
+                "proportion": 90.0,
+            },
+            {
+                "id": "oat-milk",
+                "display_name": "Oat Milk",
+                "nutrition_lookup_name": "oat milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="oat milk",
+                    volume_ml=105.0,
+                ),
+                "display_unit": "ml",
+            },
+        ),
+    },
+    ("energy-stamina", "c"): {
+        "display_name": "Energy & Stamina C",
+        "proportion_source": "reviewed_energy_stamina_c_recipe_composition",
+        "ingredients": (
+            {
+                "id": "beets",
+                "display_name": "Beets",
+                "nutrition_lookup_name": "beets",
+                "proportion": 70.0,
+            },
+            {
+                "id": "orange",
+                "display_name": "Orange",
+                "nutrition_lookup_name": "orange",
+                "proportion": 70.0,
+            },
+            {
+                "id": "mango",
+                "display_name": "Mango",
+                "nutrition_lookup_name": "mango",
+                "proportion": 70.0,
+            },
+            {
+                "id": "banana",
+                "display_name": "Banana",
+                "nutrition_lookup_name": "banana",
+                "proportion": 70.0,
+            },
+            {
+                "id": "coconut-water",
+                "display_name": "Coconut Water",
+                "nutrition_lookup_name": "coconut water",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="coconut water",
+                    volume_ml=90.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 28.0,
+            },
+        ),
+    },
+    ("muscle-health", "a"): {
+        "display_name": "Muscle Health A",
+        "proportion_source": "reviewed_muscle_health_a_recipe_composition",
+        "ingredients": (
+            {
+                "id": "greek-yogurt",
+                "display_name": "Greek Yogurt",
+                "nutrition_lookup_name": "greek yogurt",
+                "proportion": 120.0,
+            },
+            {
+                "id": "banana",
+                "display_name": "Banana",
+                "nutrition_lookup_name": "banana",
+                "proportion": 80.0,
+            },
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 40.0,
+            },
+            {
+                "id": "soy-milk",
+                "display_name": "Soy Milk",
+                "nutrition_lookup_name": "soy milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="soy milk",
+                    volume_ml=135.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "hemp-seeds",
+                "display_name": "Hemp Seeds",
+                "nutrition_lookup_name": "hemp seeds",
+                "proportion": 20.0,
+            },
+        ),
+    },
+    ("muscle-health", "b"): {
+        "display_name": "Muscle Health B",
+        "proportion_source": "reviewed_muscle_health_b_recipe_composition",
+        "ingredients": (
+            {
+                "id": "skyr",
+                "display_name": "Skyr",
+                "nutrition_lookup_name": "skyr",
+                "proportion": 120.0,
+            },
+            {
+                "id": "strawberry",
+                "display_name": "Strawberry",
+                "nutrition_lookup_name": "strawberry",
+                "proportion": 90.0,
+            },
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 35.0,
+            },
+            {
+                "id": "2-percent-milk",
+                "display_name": "2% Milk",
+                "nutrition_lookup_name": "2% milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="2% milk",
+                    volume_ml=135.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "chia-seeds",
+                "display_name": "Chia Seeds",
+                "nutrition_lookup_name": "chia seed",
+                "proportion": 15.0,
+            },
+        ),
+    },
+    ("muscle-health", "c"): {
+        "display_name": "Muscle Health C",
+        "proportion_source": "reviewed_muscle_health_c_recipe_composition",
+        "ingredients": (
+            {
+                "id": "kefir",
+                "display_name": "Kefir",
+                "nutrition_lookup_name": "kefir",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="kefir",
+                    volume_ml=100.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "blueberry",
+                "display_name": "Blueberry",
+                "nutrition_lookup_name": "blueberry",
+                "proportion": 80.0,
+            },
+            {
+                "id": "greek-yogurt",
+                "display_name": "Greek Yogurt",
+                "nutrition_lookup_name": "greek yogurt",
+                "proportion": 100.0,
+            },
+            {
+                "id": "oat-milk",
+                "display_name": "Oat Milk",
+                "nutrition_lookup_name": "oat milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="oat milk",
+                    volume_ml=95.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "hemp-seeds",
+                "display_name": "Hemp Seeds",
+                "nutrition_lookup_name": "hemp seeds",
+                "proportion": 20.0,
+            },
+        ),
+    },
 }
 
 
