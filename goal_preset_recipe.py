@@ -298,6 +298,141 @@ _PRESET_RECIPES = {
             },
         ),
     },
+
+    ("brain-focus", "a"): {
+        "display_name": "Brain Focus A",
+        "proportion_source": "reviewed_brain_focus_a_recipe_composition",
+        "ingredients": (
+            {
+                "id": "blueberry",
+                "display_name": "Blueberry",
+                "nutrition_lookup_name": "blueberry",
+                "proportion": 90.0,
+            },
+            {
+                "id": "raspberry",
+                "display_name": "Raspberry",
+                "nutrition_lookup_name": "raspberry",
+                "proportion": 70.0,
+            },
+            {
+                "id": "blackberry",
+                "display_name": "Blackberry",
+                "nutrition_lookup_name": "blackberry",
+                "proportion": 60.0,
+            },
+            {
+                "id": "walnuts",
+                "display_name": "Walnuts",
+                "nutrition_lookup_name": "walnuts",
+                "proportion": 20.0,
+            },
+            {
+                "id": "greek-yogurt",
+                "display_name": "Greek Yogurt",
+                "nutrition_lookup_name": "greek yogurt",
+                "proportion": 120.0,
+            },
+            {
+                "id": "oats",
+                "display_name": "Oats",
+                "nutrition_lookup_name": "oats",
+                "proportion": 40.0,
+            },
+        ),
+    },
+    ("brain-focus", "b"): {
+        "display_name": "Brain Focus B",
+        "proportion_source": "reviewed_brain_focus_b_recipe_composition",
+        "ingredients": (
+            {
+                "id": "blueberry",
+                "display_name": "Blueberry",
+                "nutrition_lookup_name": "blueberry",
+                "proportion": 100.0,
+            },
+            {
+                "id": "strawberry",
+                "display_name": "Strawberry",
+                "nutrition_lookup_name": "strawberry",
+                "proportion": 80.0,
+            },
+            {
+                "id": "banana",
+                "display_name": "Banana",
+                "nutrition_lookup_name": "banana",
+                "proportion": 80.0,
+            },
+            {
+                "id": "walnuts",
+                "display_name": "Walnuts",
+                "nutrition_lookup_name": "walnuts",
+                "proportion": 20.0,
+            },
+            {
+                "id": "oat-milk",
+                "display_name": "Oat Milk",
+                "nutrition_lookup_name": "oat milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="oat milk",
+                    volume_ml=105.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "chia-seeds",
+                "display_name": "Chia Seeds",
+                "nutrition_lookup_name": "chia seed",
+                "proportion": 12.0,
+            },
+        ),
+    },
+    ("brain-focus", "c"): {
+        "display_name": "Brain Focus C",
+        "proportion_source": "reviewed_brain_focus_c_recipe_composition",
+        "ingredients": (
+            {
+                "id": "blueberry",
+                "display_name": "Blueberry",
+                "nutrition_lookup_name": "blueberry",
+                "proportion": 90.0,
+            },
+            {
+                "id": "spinach",
+                "display_name": "Spinach",
+                "nutrition_lookup_name": "spinach",
+                "proportion": 25.0,
+            },
+            {
+                "id": "raspberry",
+                "display_name": "Raspberry",
+                "nutrition_lookup_name": "raspberry",
+                "proportion": 70.0,
+            },
+            {
+                "id": "walnuts",
+                "display_name": "Walnuts",
+                "nutrition_lookup_name": "walnuts",
+                "proportion": 20.0,
+            },
+            {
+                "id": "almond-milk",
+                "display_name": "Almond Milk",
+                "nutrition_lookup_name": "almond milk",
+                "proportion": recipe_mass.convert_liquid_ml_to_grams(
+                    nutrition_lookup_name="almond milk",
+                    volume_ml=180.0,
+                ),
+                "display_unit": "ml",
+            },
+            {
+                "id": "flax-seeds",
+                "display_name": "Flax Seeds",
+                "nutrition_lookup_name": "flax seeds",
+                "proportion": 15.0,
+            },
+        ),
+    },
 }
 
 

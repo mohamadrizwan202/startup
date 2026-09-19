@@ -33,6 +33,10 @@ SUPPORTED_LOOKUPS = {
     "prune",
     "raspberry",
     "apple",
+    "blueberry",
+    "blackberry",
+    "walnuts",
+    "almond milk",
 }
 
 
@@ -396,3 +400,109 @@ def test_gut_health_kefir_variants_use_ml_display_units():
 
         assert kefir["unit"] == "ml"
         assert round(kefir["amount"]) == expected_ml
+
+
+def test_brain_focus_variants_use_locked_ingredient_combinations():
+
+    expected = {
+        "a": [
+            "blueberry",
+            "raspberry",
+            "blackberry",
+            "walnuts",
+            "greek yogurt",
+            "oats",
+        ],
+        "b": [
+            "blueberry",
+            "strawberry",
+            "banana",
+            "walnuts",
+            "oat milk",
+            "chia seed",
+        ],
+        "c": [
+            "blueberry",
+            "spinach",
+            "raspberry",
+            "walnuts",
+            "almond milk",
+            "flax seeds",
+        ],
+    }
+
+    for variant, expected_lookups in expected.items():
+
+        result = build_goal_preset_recipe(
+            goal="brain-focus",
+            timing="breakfast",
+            variant=variant,
+        )
+
+        assert result["goal"] == "brain-focus"
+        assert result["variant"] == variant
+
+        assert [
+            item["nutrition_lookup_name"]
+            for item in result["ingredients"]
+        ] == expected_lookups
+
+
+def test_brain_focus_variants_scale_across_all_locked_timings():
+
+    expected_timings = {
+        "breakfast": 400.0,
+        "morning-snack": 220.0,
+        "lunch": 450.0,
+        "afternoon-snack": 220.0,
+        "dinner": 300.0,
+        "bedtime": 180.0,
+    }
+
+    for variant in ("a", "b", "c"):
+
+        for timing, target_weight_g in expected_timings.items():
+
+            result = build_goal_preset_recipe(
+                goal="brain-focus",
+                timing=timing,
+                variant=variant,
+            )
+
+            assert result["target_weight_g"] == target_weight_g
+            assert result["batch"]["weight_g"] == target_weight_g
+
+            internal_mass = round(
+                sum(
+                    item["weight_g"]
+                    for item in result["ingredients"]
+                ),
+                3,
+            )
+
+            assert internal_mass == target_weight_g
+
+
+def test_brain_focus_liquid_variants_use_ml_display_units():
+
+    cases = (
+        ("b", "oat-milk", 105),
+        ("c", "almond-milk", 180),
+    )
+
+    for variant, ingredient_id, expected_ml in cases:
+
+        result = build_goal_preset_recipe(
+            goal="brain-focus",
+            timing="breakfast",
+            variant=variant,
+        )
+
+        liquid = next(
+            item
+            for item in result["ingredients"]
+            if item["id"] == ingredient_id
+        )
+
+        assert liquid["unit"] == "ml"
+        assert round(liquid["amount"]) == expected_ml
