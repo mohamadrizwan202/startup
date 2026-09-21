@@ -56270,7 +56270,11 @@ def export_recipes():
             elif name:
                 ingredient_parts.append(name)
 
-        audience, timing = parse_context(recipe.get("notes"))
+        audience, legacy_timing = parse_context(recipe.get("notes"))
+        timing = (
+            str(recipe.get("timing") or "").strip()
+            or legacy_timing
+        )
 
         is_alt = row_index % 2 == 0
 

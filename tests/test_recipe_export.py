@@ -404,6 +404,7 @@ def test_recipe_export_accepts_postgres_jsonb_objects(
                 "sugar": 14,
             },
             "health_goal": "high-protein",
+            "timing": "Dinner",
             "notes": "For: Man 19–30 | Timing: Post Workout",
             "created_at": "2026-09-14 16:31:00",
         }
@@ -428,7 +429,9 @@ def test_recipe_export_accepts_postgres_jsonb_objects(
     assert row[0] == "Postgres Smoothie"
     assert row[1] == "High Protein"
     assert row[2] == "Man 19–30"
-    assert row[3] == "Post Workout"
+    # Structured timing is authoritative for new Save Meal rows.
+    # The legacy notes value remains only as a fallback for older rows.
+    assert row[3] == "Dinner"
     assert row[4] == (
         "• Blueberry 80g\n"
         "• Greek yogurt 120g"
