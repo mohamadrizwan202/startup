@@ -55823,6 +55823,7 @@ def save_recipe():
     ingredients = data.get("ingredients", [])
     nutrition_summary = data.get("nutrition_summary", {})
     health_goal = data.get("health_goal", "")
+    timing = data.get("timing", "")
     notes = data.get("notes", "")
 
     if not name:
@@ -55852,8 +55853,8 @@ def save_recipe():
         if db.USE_POSTGRES:
             cursor.execute(
                 """INSERT INTO saved_recipes
-                   (user_id, name, ingredients, nutrition_summary, health_goal, notes)
-                   VALUES (%s, %s, %s, %s, %s, %s)
+                   (user_id, name, ingredients, nutrition_summary, health_goal, timing, notes)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s)
                    RETURNING id""",
                 (
                     current_user.id,
@@ -55861,6 +55862,7 @@ def save_recipe():
                     json.dumps(ingredients),
                     json.dumps(nutrition_summary),
                     health_goal,
+                    timing,
                     notes,
                 )
             )
@@ -55869,14 +55871,15 @@ def save_recipe():
         else:
             cursor.execute(
                 """INSERT INTO saved_recipes
-                   (user_id, name, ingredients, nutrition_summary, health_goal, notes)
-                   VALUES (?, ?, ?, ?, ?, ?)""",
+                   (user_id, name, ingredients, nutrition_summary, health_goal, timing, notes)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
                 (
                     current_user.id,
                     name,
                     json.dumps(ingredients),
                     json.dumps(nutrition_summary),
                     health_goal,
+                    timing,
                     notes,
                 )
             )
