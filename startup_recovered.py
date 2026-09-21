@@ -56132,15 +56132,16 @@ def export_recipes():
     workbook = xlsxwriter.Workbook(output, {"in_memory": True})
     worksheet = workbook.add_worksheet("Saved Smoothies")
 
-    teal = "#0EA5A4"
-    dark_text = "#0F172A"
-    muted_text = "#475569"
-    soft_teal = "#E6FFFB"
-    alternate = "#F8FAFC"
-    border = "#E2E8F0"
+    teal = "#0F6B4A"
+    dark_text = "#17233B"
+    muted_text = "#66758A"
+    soft_teal = "#EEF8F2"
+    alternate = "#FAFCFB"
+    border = "#DCE5E0"
 
     header_format = workbook.add_format({
         "bold": True,
+        "font_size": 11,
         "font_color": "#FFFFFF",
         "bg_color": teal,
         "border": 1,
@@ -56150,6 +56151,7 @@ def export_recipes():
     })
 
     text_format = workbook.add_format({
+        "font_size": 10,
         "font_color": dark_text,
         "border": 1,
         "border_color": border,
@@ -56157,6 +56159,7 @@ def export_recipes():
     })
 
     text_alt_format = workbook.add_format({
+        "font_size": 10,
         "font_color": dark_text,
         "bg_color": alternate,
         "border": 1,
@@ -56165,6 +56168,7 @@ def export_recipes():
     })
 
     wrap_format = workbook.add_format({
+        "font_size": 10,
         "font_color": dark_text,
         "border": 1,
         "border_color": border,
@@ -56173,6 +56177,7 @@ def export_recipes():
     })
 
     wrap_alt_format = workbook.add_format({
+        "font_size": 10,
         "font_color": dark_text,
         "bg_color": alternate,
         "border": 1,
@@ -56182,10 +56187,13 @@ def export_recipes():
     })
 
     goal_format = workbook.add_format({
-        "font_color": muted_text,
+        "bold": True,
+        "font_size": 10,
+        "font_color": teal,
         "bg_color": soft_teal,
         "border": 1,
         "border_color": border,
+        "align": "center",
         "valign": "vcenter",
     })
 
@@ -56270,7 +56278,11 @@ def export_recipes():
             elif name:
                 ingredient_parts.append(name)
 
-        audience, timing = parse_context(recipe.get("notes"))
+        audience, legacy_timing = parse_context(recipe.get("notes"))
+        timing = (
+            str(recipe.get("timing") or "").strip()
+            or legacy_timing
+        )
 
         is_alt = row_index % 2 == 0
 
@@ -56344,7 +56356,7 @@ def export_recipes():
             )
 
         ingredient_lines = max(len(ingredient_parts), 1)
-        row_height = max(32, min(18 * ingredient_lines, 108))
+        row_height = max(36, min(19 * ingredient_lines, 108))
         worksheet.set_row(row_index, row_height)
 
     last_row = max(len(rows), 1)
@@ -56353,15 +56365,26 @@ def export_recipes():
     worksheet.freeze_panes(1, 0)
     worksheet.hide_gridlines(2)
     worksheet.set_tab_color(teal)
-    worksheet.set_row(0, 26)
+    worksheet.set_row(0, 30)
 
-    worksheet.set_column("A:A", 28)
-    worksheet.set_column("B:B", 24)
-    worksheet.set_column("C:C", 18)
-    worksheet.set_column("D:D", 20)
-    worksheet.set_column("E:E", 52)
-    worksheet.set_column("F:K", 15)
+    worksheet.set_column("A:A", 30)
+    worksheet.set_column("B:B", 22)
+    worksheet.set_column("C:C", 20)
+    worksheet.set_column("D:D", 18)
+    worksheet.set_column("E:E", 46)
+    worksheet.set_column("F:K", 14)
     worksheet.set_column("L:L", 16)
+
+    worksheet.set_zoom(90)
+    worksheet.set_landscape()
+    worksheet.fit_to_pages(1, 0)
+    worksheet.repeat_rows(0)
+    worksheet.set_margins(
+        left=0.3,
+        right=0.3,
+        top=0.5,
+        bottom=0.5,
+    )
 
     workbook.close()
     output.seek(0)
