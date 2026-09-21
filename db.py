@@ -401,6 +401,7 @@ def ensure_schema():
                     ingredients JSONB NOT NULL,
                     nutrition_summary JSONB,
                     health_goal VARCHAR(100),
+                    timing VARCHAR(100),
                     notes TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -415,6 +416,7 @@ def ensure_schema():
                     ingredients TEXT NOT NULL,
                     nutrition_summary TEXT,
                     health_goal TEXT,
+                    timing TEXT,
                     notes TEXT,
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                     updated_at TEXT DEFAULT CURRENT_TIMESTAMP

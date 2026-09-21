@@ -5842,7 +5842,2582 @@
       })();
     </script>
      
-      <div class="main-content-grid">
+      <style nonce="{{ csp_nonce }}">
+        #pf-ws,
+        #pf-main-tab-switcher,
+        #smoothie-tab-content #pf-legacy-smoothie-builder {
+          display: none !important;
+        }
+
+        #pf-goal-time-entry {
+          width: 100%;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        #pf-goal-time-entry .pf-flow-shell {
+          display: grid;
+          grid-template-columns: 240px minmax(0, 1fr);
+          width: 100%;
+          min-height: calc(100vh - 72px);
+          background: #fff;
+        }
+
+        #pf-goal-time-entry .pf-flow-rail {
+          position: relative;
+          padding: 40px 28px;
+          border-right: 1px solid #e5e7eb;
+          box-sizing: border-box;
+        }
+
+        #pf-goal-time-entry .pf-flow-rail-label {
+          margin-bottom: 34px;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.22em;
+        }
+
+        #pf-goal-time-entry .pf-flow-step {
+          position: relative;
+          display: grid;
+          grid-template-columns: 46px 1fr;
+          gap: 14px;
+          min-height: 150px;
+        }
+
+        #pf-goal-time-entry .pf-flow-step:not(:last-child)::after {
+          content: "";
+          position: absolute;
+          left: 22px;
+          top: 46px;
+          bottom: 0;
+          width: 1px;
+          background: #d9dee5;
+        }
+
+        #pf-goal-time-entry .pf-flow-step-marker {
+          position: relative;
+          z-index: 1;
+          width: 46px;
+          height: 46px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          background: #f1f3f5;
+          font-size: 13px;
+          font-weight: 800;
+        }
+
+        #pf-goal-time-entry .pf-flow-step.is-active .pf-flow-step-marker {
+          background: #0f5132;
+          color: #fff;
+        }
+
+        #pf-goal-time-entry .pf-flow-step-copy {
+          padding-top: 5px;
+        }
+
+        #pf-goal-time-entry .pf-flow-step-copy strong {
+          display: block;
+          margin-bottom: 5px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 20px;
+          line-height: 1.15;
+        }
+
+        #pf-goal-time-entry .pf-flow-step-copy span {
+          display: block;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 14px;
+          line-height: 1.35;
+          color: #64748b;
+        }
+
+        #pf-goal-time-entry .pf-flow-main {
+          width: min(860px, calc(100% - 64px));
+          margin: 0 auto;
+          padding: 0 0 34px;
+          box-sizing: border-box;
+        }
+
+        #pf-goal-time-entry .pf-flow-subnav {
+          display: flex;
+          gap: 44px;
+          min-height: 58px;
+          align-items: end;
+          border-bottom: 1px solid #dfe3e8;
+        }
+
+        #pf-goal-time-entry .pf-flow-subnav span {
+          position: relative;
+          padding: 0 2px 14px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 15px;
+          white-space: nowrap;
+        }
+
+        #pf-goal-time-entry .pf-flow-subnav span.is-active {
+          font-weight: 700;
+        }
+
+        #pf-goal-time-entry .pf-flow-subnav span.is-active::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: -1px;
+          height: 3px;
+          border-radius: 999px;
+          background: currentColor;
+        }
+
+        #pf-goal-time-entry .pf-flow-hero {
+          padding: 28px 0 20px;
+          border-bottom: 1px solid #dfe3e8;
+        }
+
+        #pf-goal-time-entry .pf-flow-eyebrow,
+        #pf-goal-time-entry .pf-flow-section-kicker {
+          margin-bottom: 8px;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.22em;
+        }
+
+        #pf-goal-time-entry .pf-flow-hero h1 {
+          margin: 0 0 6px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: clamp(40px, 4vw, 58px);
+          line-height: 0.98;
+          font-weight: 700;
+          letter-spacing: -0.035em;
+        }
+
+        #pf-goal-time-entry .pf-flow-hero p {
+          max-width: 720px;
+          margin: 0;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 18px;
+          line-height: 1.28;
+          color: #52627a;
+        }
+
+        #pf-goal-time-entry .pf-flow-section {
+          padding: 18px 0 24px;
+          border-bottom: 1px solid #dfe3e8;
+        }
+
+        #pf-goal-time-entry .pf-flow-section h2 {
+          margin: 0 0 3px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 28px;
+          line-height: 1.1;
+          font-weight: 700;
+        }
+
+        #pf-goal-time-entry .pf-flow-section-copy {
+          margin: 0 0 14px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 16px;
+          line-height: 1.3;
+          color: #64748b;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice {
+          position: relative;
+          display: grid;
+          grid-template-columns: 54px minmax(0, 1fr);
+          gap: 12px;
+          align-items: center;
+          min-height: 94px;
+          padding: 15px 16px;
+          border: 1px solid #d8dee6;
+          border-radius: 7px;
+          background: #fff;
+          text-align: left;
+          font-family: inherit;
+          cursor: pointer;
+          box-sizing: border-box;
+        }
+
+        #pf-goal-time-entry .pf-choice-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 54px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 36px;
+          line-height: 1;
+        }
+
+        #pf-goal-time-entry .pf-choice-copy {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+
+        #pf-goal-time-entry .pf-choice-copy strong {
+          margin-bottom: 4px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 16px;
+          line-height: 1.15;
+        }
+
+        #pf-goal-time-entry .pf-choice-copy > span {
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 13px;
+          line-height: 1.25;
+          color: #64748b;
+        }
+
+        #pf-goal-time-entry .pf-choice-check {
+          display: none;
+          position: absolute;
+          top: 9px;
+          right: 9px;
+          width: 20px;
+          height: 20px;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice.is-selected .pf-choice-check {
+          display: flex;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice.is-selected,
+        #pf-goal-time-entry .pf-time-choice.is-selected {
+          border-width: 1.5px;
+        }
+
+        #pf-goal-time-entry .pf-time-choice-grid {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 10px;
+        }
+
+        #pf-goal-time-entry .pf-time-choice {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          min-height: 100px;
+          padding: 12px 7px 10px;
+          border: 1px solid #d8dee6;
+          border-radius: 7px;
+          background: #fff;
+          text-align: center;
+          font-family: inherit;
+          cursor: pointer;
+          box-sizing: border-box;
+        }
+
+        #pf-goal-time-entry .pf-time-icon {
+          display: block;
+          margin-bottom: 6px;
+          font-size: 27px;
+          line-height: 1;
+        }
+
+        #pf-goal-time-entry .pf-time-choice strong {
+          margin-bottom: 4px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 13px;
+          line-height: 1.1;
+        }
+
+        #pf-goal-time-entry .pf-time-choice > span:last-child {
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 11px;
+          line-height: 1.2;
+          color: #64748b;
+        }
+
+        #pf-goal-time-entry .pf-build-my-smoothie {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 14px;
+          width: 100%;
+          min-height: 48px;
+          margin-top: 12px;
+          border: 0;
+          border-radius: 6px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 17px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        #pf-goal-time-entry .pf-build-my-smoothie:disabled {
+          cursor: not-allowed;
+          opacity: 0.55;
+        }
+
+        #pf-goal-time-entry .pf-flow-trust-row {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0;
+          padding-top: 14px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 13px;
+          color: #64748b;
+        }
+
+        #pf-goal-time-entry .pf-flow-trust-row span {
+          padding: 0 28px;
+        }
+
+        #pf-goal-time-entry .pf-flow-trust-row span + span {
+          border-left: 1px solid #d8dee6;
+        }
+
+        #pf-goal-time-entry button:focus-visible {
+          outline: 2px solid currentColor;
+          outline-offset: 2px;
+        }
+
+        @media (max-width: 1050px) {
+          #pf-goal-time-entry .pf-flow-shell {
+            grid-template-columns: 190px minmax(0, 1fr);
+          }
+
+          #pf-goal-time-entry .pf-flow-main {
+            width: min(760px, calc(100% - 40px));
+          }
+
+          #pf-goal-time-entry .pf-goal-choice-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          #pf-goal-time-entry .pf-time-choice-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 760px) {
+          #pf-goal-time-entry .pf-flow-shell {
+            display: block;
+            min-height: 0;
+          }
+
+          #pf-goal-time-entry .pf-flow-rail {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-flow-main {
+            width: 100%;
+            padding: 0 16px 28px;
+          }
+
+          #pf-goal-time-entry .pf-flow-subnav {
+            gap: 24px;
+            overflow-x: auto;
+          }
+
+          #pf-goal-time-entry .pf-flow-hero h1 {
+            font-size: 40px;
+          }
+
+          #pf-goal-time-entry .pf-goal-choice-grid {
+            grid-template-columns: 1fr;
+          }
+
+          #pf-goal-time-entry .pf-time-choice-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          #pf-goal-time-entry .pf-flow-trust-row {
+            flex-wrap: wrap;
+            row-gap: 8px;
+          }
+
+          #pf-goal-time-entry .pf-flow-trust-row span {
+            padding: 0 12px;
+          }
+        }
+
+        /* PF compact single-screen layout */
+        .container {
+          min-height: calc(100dvh - 80px);
+          height: calc(100dvh - 80px);
+          padding-top: 0;
+          padding-bottom: 0;
+          gap: 0;
+          overflow: hidden;
+        }
+
+        #smoothie-tab-content {
+          min-height: 0;
+          height: 100%;
+          overflow: hidden;
+        }
+
+        #pf-goal-time-entry {
+          height: 100%;
+          min-height: 0;
+        }
+
+        #pf-goal-time-entry .pf-flow-shell {
+          height: 100%;
+          min-height: 0;
+          overflow: hidden;
+        }
+
+        #pf-goal-time-entry .pf-flow-main {
+          height: 100%;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          padding-bottom: 10px;
+        }
+
+        #pf-goal-time-entry .pf-flow-rail {
+          padding-top: 26px;
+          padding-bottom: 20px;
+        }
+
+        #pf-goal-time-entry .pf-flow-rail-label {
+          margin-bottom: 24px;
+        }
+
+        #pf-goal-time-entry .pf-flow-step {
+          min-height: 128px;
+        }
+
+        #pf-goal-time-entry .pf-flow-subnav {
+          min-height: 44px;
+        }
+
+        #pf-goal-time-entry .pf-flow-subnav span {
+          padding-bottom: 10px;
+        }
+
+        #pf-goal-time-entry .pf-flow-hero {
+          padding: 16px 0 14px;
+        }
+
+        #pf-goal-time-entry .pf-flow-eyebrow {
+          margin-bottom: 6px;
+        }
+
+        #pf-goal-time-entry .pf-flow-hero h1 {
+          margin-bottom: 5px;
+          font-size: clamp(40px, 3.4vw, 50px);
+        }
+
+        #pf-goal-time-entry .pf-flow-hero p {
+          max-width: 760px;
+          font-size: 16px;
+          line-height: 1.25;
+        }
+
+        #pf-goal-time-entry .pf-flow-section {
+          padding: 12px 0 14px;
+        }
+
+        #pf-goal-time-entry .pf-flow-section-kicker {
+          margin-bottom: 5px;
+        }
+
+        #pf-goal-time-entry .pf-flow-section h2 {
+          font-size: 25px;
+        }
+
+        #pf-goal-time-entry .pf-flow-section-copy {
+          margin-bottom: 9px;
+          font-size: 14px;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice-grid {
+          gap: 9px 12px;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice {
+          min-height: 72px;
+          padding: 10px 13px;
+          grid-template-columns: 48px minmax(0, 1fr);
+          gap: 9px;
+        }
+
+        #pf-goal-time-entry .pf-choice-icon {
+          min-height: 42px;
+          font-size: 30px;
+        }
+
+        #pf-goal-time-entry .pf-choice-copy strong {
+          margin-bottom: 2px;
+          font-size: 15px;
+        }
+
+        #pf-goal-time-entry .pf-choice-copy > span {
+          font-size: 12px;
+          line-height: 1.18;
+        }
+
+        #pf-goal-time-entry .pf-time-choice-grid {
+          gap: 8px;
+        }
+
+        #pf-goal-time-entry .pf-time-choice {
+          min-height: 74px;
+          padding: 8px 5px 7px;
+        }
+
+        #pf-goal-time-entry .pf-time-icon {
+          margin-bottom: 4px;
+          font-size: 21px;
+        }
+
+        #pf-goal-time-entry .pf-time-choice strong {
+          margin-bottom: 2px;
+          font-size: 12px;
+        }
+
+        #pf-goal-time-entry .pf-time-choice > span:last-child {
+          font-size: 10px;
+        }
+
+        #pf-goal-time-entry .pf-build-my-smoothie {
+          min-height: 42px;
+          margin-top: 9px;
+          font-size: 16px;
+        }
+
+        #pf-goal-time-entry .pf-flow-trust-row {
+          padding-top: 9px;
+          font-size: 12px;
+        }
+
+        @media (max-height: 760px) and (min-width: 761px) {
+          #pf-goal-time-entry .pf-flow-subnav {
+            min-height: 38px;
+          }
+
+          #pf-goal-time-entry .pf-flow-hero {
+            padding: 10px 0;
+          }
+
+          #pf-goal-time-entry .pf-flow-eyebrow {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-flow-hero h1 {
+            font-size: 40px;
+          }
+
+          #pf-goal-time-entry .pf-flow-section {
+            padding: 9px 0 10px;
+          }
+
+          #pf-goal-time-entry .pf-flow-section-copy {
+            margin-bottom: 6px;
+          }
+
+          #pf-goal-time-entry .pf-goal-choice {
+            min-height: 62px;
+          }
+
+          #pf-goal-time-entry .pf-choice-copy > span {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-time-choice {
+            min-height: 62px;
+          }
+
+          #pf-goal-time-entry .pf-time-choice > span:last-child {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-flow-trust-row {
+            padding-top: 6px;
+          }
+        }
+
+        @media (max-width: 760px) {
+          .container {
+            min-height: calc(100dvh - 64px);
+            height: calc(100dvh - 64px);
+            padding: 0;
+          }
+
+          #pf-goal-time-entry .pf-flow-main {
+            padding: 0 12px 8px;
+          }
+
+          #pf-goal-time-entry .pf-flow-subnav {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-flow-hero {
+            padding: 10px 0 9px;
+          }
+
+          #pf-goal-time-entry .pf-flow-eyebrow {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-flow-hero h1 {
+            font-size: clamp(30px, 9vw, 38px);
+          }
+
+          #pf-goal-time-entry .pf-flow-hero p {
+            font-size: 13px;
+            line-height: 1.2;
+          }
+
+          #pf-goal-time-entry .pf-flow-section {
+            padding: 8px 0 9px;
+          }
+
+          #pf-goal-time-entry .pf-flow-section-kicker {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-flow-section h2 {
+            font-size: 20px;
+          }
+
+          #pf-goal-time-entry .pf-flow-section-copy {
+            margin-bottom: 6px;
+            font-size: 12px;
+          }
+
+          #pf-goal-time-entry .pf-goal-choice-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+          }
+
+          #pf-goal-time-entry .pf-goal-choice {
+            min-height: 58px;
+            padding: 7px 8px;
+            grid-template-columns: 30px minmax(0, 1fr);
+            gap: 6px;
+          }
+
+          #pf-goal-time-entry .pf-choice-icon {
+            min-height: 28px;
+            font-size: 23px;
+          }
+
+          #pf-goal-time-entry .pf-choice-copy strong {
+            font-size: 12px;
+          }
+
+          #pf-goal-time-entry .pf-choice-copy > span {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-time-choice-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+          }
+
+          #pf-goal-time-entry .pf-time-choice {
+            min-height: 56px;
+            padding: 6px 3px;
+          }
+
+          #pf-goal-time-entry .pf-time-icon {
+            margin-bottom: 3px;
+            font-size: 18px;
+          }
+
+          #pf-goal-time-entry .pf-time-choice strong {
+            font-size: 10px;
+          }
+
+          #pf-goal-time-entry .pf-time-choice > span:last-child {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-build-my-smoothie {
+            min-height: 40px;
+            margin-top: 7px;
+            font-size: 14px;
+          }
+
+          #pf-goal-time-entry .pf-flow-trust-row {
+            padding-top: 6px;
+            font-size: 10px;
+          }
+
+          #pf-goal-time-entry .pf-flow-trust-row span {
+            padding: 0 8px;
+          }
+        }
+
+        @media (max-height: 650px) {
+          #pf-goal-time-entry .pf-flow-section-copy,
+          #pf-goal-time-entry .pf-flow-trust-row {
+            display: none;
+          }
+
+          #pf-goal-time-entry .pf-flow-hero p {
+            font-size: 12px;
+          }
+
+          #pf-goal-time-entry .pf-flow-section {
+            padding-top: 6px;
+            padding-bottom: 6px;
+          }
+        }
+
+        /* PF sample-aligned polish pass */
+
+        #pf-goal-time-entry .pf-flow-main {
+          width: min(800px, calc(100% - 56px));
+        }
+
+        #pf-goal-time-entry .pf-flow-rail {
+          padding: 28px 24px 18px;
+        }
+
+        #pf-goal-time-entry .pf-flow-rail-label {
+          margin-bottom: 26px;
+          font-size: 10px;
+          letter-spacing: 0.24em;
+        }
+
+        #pf-goal-time-entry .pf-flow-step {
+          grid-template-columns: 42px 1fr;
+          gap: 12px;
+          min-height: 128px;
+        }
+
+        #pf-goal-time-entry .pf-flow-step:not(:last-child)::after {
+          left: 20px;
+          top: 42px;
+        }
+
+        #pf-goal-time-entry .pf-flow-step-marker {
+          width: 42px;
+          height: 42px;
+          font-size: 12px;
+        }
+
+        #pf-goal-time-entry .pf-flow-step-copy {
+          padding-top: 4px;
+        }
+
+        #pf-goal-time-entry .pf-flow-step-copy strong {
+          margin-bottom: 4px;
+          font-size: 18px;
+        }
+
+        #pf-goal-time-entry .pf-flow-step-copy span {
+          font-size: 13px;
+          line-height: 1.3;
+        }
+
+        #pf-goal-time-entry .pf-flow-hero {
+          padding: 13px 0 12px;
+        }
+
+        #pf-goal-time-entry .pf-flow-eyebrow {
+          margin-bottom: 5px;
+          font-size: 9px;
+          letter-spacing: 0.24em;
+        }
+
+        #pf-goal-time-entry .pf-flow-hero h1 {
+          margin-bottom: 4px;
+          font-size: clamp(38px, 3vw, 46px);
+          line-height: 1;
+          letter-spacing: -0.025em;
+        }
+
+        #pf-goal-time-entry .pf-flow-hero p {
+          max-width: 700px;
+          font-size: 15px;
+          line-height: 1.24;
+        }
+
+        #pf-goal-time-entry .pf-flow-section {
+          padding: 16px 0 18px;
+        }
+
+        #pf-goal-time-entry .pf-flow-section-kicker {
+          margin-bottom: 4px;
+          font-size: 9px;
+          letter-spacing: 0.24em;
+        }
+
+        #pf-goal-time-entry .pf-flow-section h2 {
+          margin-bottom: 4px;
+          font-size: 23px;
+          line-height: 1.08;
+        }
+
+        #pf-goal-time-entry .pf-flow-section-copy {
+          margin-bottom: 12px;
+          font-size: 13px;
+          line-height: 1.25;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice-grid {
+          gap: 12px 14px;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice {
+          grid-template-columns: 42px minmax(0, 1fr);
+          gap: 12px;
+          min-height: 76px;
+          padding: 11px 14px;
+          border-radius: 5px;
+        }
+
+        #pf-goal-time-entry .pf-choice-icon {
+          min-height: 38px;
+        }
+
+        #pf-goal-time-entry .pf-choice-icon svg {
+          width: 29px;
+          height: 29px;
+          stroke-width: 1.5;
+        }
+
+        #pf-goal-time-entry .pf-choice-copy strong {
+          margin-bottom: 2px;
+          font-size: 14px;
+          line-height: 1.1;
+        }
+
+        #pf-goal-time-entry .pf-choice-copy > span {
+          font-size: 11.5px;
+          line-height: 1.18;
+        }
+
+        #pf-goal-time-entry .pf-choice-check,
+        #pf-goal-time-entry .pf-time-check {
+          position: absolute;
+          top: 7px;
+          right: 7px;
+          width: 18px;
+          height: 18px;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          font-family: Arial, sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          line-height: 1;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice.is-selected .pf-choice-check,
+        #pf-goal-time-entry .pf-time-choice.is-selected .pf-time-check {
+          display: flex;
+          background: #0f6b4a;
+          color: #fff;
+          box-shadow: 0 1px 3px rgba(15, 107, 74, 0.18);
+        }
+
+        #pf-goal-time-entry .pf-goal-choice.is-selected,
+        #pf-goal-time-entry .pf-time-choice.is-selected {
+          border-color: #0f6b4a;
+          background: linear-gradient(
+            135deg,
+            #fbfefc 0%,
+            #eef8f2 100%
+          );
+          box-shadow:
+            inset 0 0 0 1px rgba(15, 107, 74, 0.05),
+            0 2px 8px rgba(15, 107, 74, 0.06);
+        }
+
+        #pf-goal-time-entry .pf-goal-choice.is-selected .pf-choice-icon,
+        #pf-goal-time-entry .pf-time-choice.is-selected .pf-time-icon {
+          color: #0f6b4a;
+        }
+
+        #pf-goal-time-entry .pf-flow-time-section {
+          padding-top: 22px;
+          padding-bottom: 12px;
+        }
+
+        #pf-goal-time-entry .pf-time-choice-grid {
+          gap: 10px;
+        }
+
+        #pf-goal-time-entry .pf-time-choice {
+          position: relative;
+          min-height: 84px;
+          padding: 10px 6px 9px;
+          border-radius: 5px;
+        }
+
+        #pf-goal-time-entry .pf-time-icon {
+          margin-bottom: 3px;
+        }
+
+        #pf-goal-time-entry .pf-time-icon svg {
+          width: 28px;
+          height: 28px;
+          stroke-width: 1.75;
+        }
+
+        #pf-goal-time-entry .pf-time-choice strong {
+          margin-bottom: 2px;
+          font-size: 11.5px;
+          line-height: 1.08;
+          white-space: nowrap;
+        }
+
+        #pf-goal-time-entry .pf-time-choice > span:not(.pf-time-icon):not(.pf-time-check) {
+          font-size: 10px;
+          line-height: 1.15;
+        }
+
+        #pf-goal-time-entry .pf-build-my-smoothie {
+          width: 100%;
+          min-height: 44px;
+          margin-top: 14px;
+          padding: 0 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          border: 1px solid #0b5d40;
+          border-radius: 5px;
+          background: linear-gradient(90deg, #0f6b4a 0%, #0b6042 100%);
+          color: #fff;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 15px;
+          font-weight: 700;
+          line-height: 1;
+          box-shadow: 0 2px 5px rgba(15, 81, 50, 0.12);
+          cursor: pointer;
+        }
+
+        #pf-goal-time-entry .pf-build-my-smoothie span {
+          font-family: Arial, sans-serif;
+          font-size: 18px;
+          font-weight: 400;
+          line-height: 1;
+        }
+
+        #pf-goal-time-entry .pf-build-my-smoothie:not(:disabled):hover {
+          background: linear-gradient(90deg, #0d6244 0%, #09583c 100%);
+          box-shadow: 0 3px 8px rgba(15, 81, 50, 0.16);
+          transform: translateY(-1px);
+        }
+
+        #pf-goal-time-entry .pf-build-my-smoothie:not(:disabled):active {
+          transform: translateY(0);
+          box-shadow: 0 1px 3px rgba(15, 81, 50, 0.12);
+        }
+
+        #pf-goal-time-entry .pf-build-my-smoothie:disabled {
+          border-color: #eef1ef;
+          background: #f7f8f7;
+          color: #cdd2cf;
+          box-shadow: none;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        #pf-goal-time-entry .pf-flow-trust-row {
+          min-height: 34px;
+          padding-top: 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          color: #66758a;
+          font-size: 11px;
+          line-height: 1;
+          white-space: nowrap;
+        }
+
+        #pf-goal-time-entry .pf-flow-trust-row > span:not(.pf-trust-separator) {
+          padding: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+        }
+
+        #pf-goal-time-entry .pf-trust-check {
+          width: 15px;
+          height: 15px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 15px;
+          border-radius: 50%;
+          background: #eaf5ef;
+          color: #0f6b4a;
+          font-family: Arial, sans-serif;
+          font-size: 10px;
+          font-weight: 700;
+        }
+
+        #pf-goal-time-entry .pf-trust-separator {
+          padding: 0;
+          color: #c5cec9;
+          font-size: 13px;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice,
+        #pf-goal-time-entry .pf-time-choice,
+        #pf-goal-time-entry .pf-build-my-smoothie {
+          transition:
+            border-color 120ms ease,
+            background-color 120ms ease,
+            box-shadow 120ms ease,
+            transform 120ms ease;
+        }
+
+        #pf-goal-time-entry .pf-goal-choice:hover,
+        #pf-goal-time-entry .pf-time-choice:hover {
+          border-color: #9bb9aa;
+          background-color: #fcfefd;
+          transform: translateY(-1px);
+        }
+
+        #pf-goal-time-entry .pf-goal-choice.is-selected:hover,
+        #pf-goal-time-entry .pf-time-choice.is-selected:hover {
+          border-color: #0f6b4a;
+          background: linear-gradient(
+            135deg,
+            #fbfefc 0%,
+            #eef8f2 100%
+          );
+        }
+
+        @media (max-height: 780px) and (min-width: 761px) {
+          #pf-goal-time-entry .pf-flow-hero {
+            padding: 9px 0 8px;
+          }
+
+          #pf-goal-time-entry .pf-flow-hero h1 {
+            font-size: 38px;
+          }
+
+          #pf-goal-time-entry .pf-flow-section {
+            padding: 8px 0 9px;
+          }
+
+          #pf-goal-time-entry .pf-goal-choice {
+            min-height: 62px;
+          }
+
+          #pf-goal-time-entry .pf-time-choice {
+            min-height: 66px;
+          }
+
+          #pf-goal-time-entry .pf-build-my-smoothie {
+            min-height: 38px;
+          }
+        }
+
+        @media (max-width: 1050px) and (min-width: 761px) {
+          #pf-goal-time-entry .pf-flow-main {
+            width: min(720px, calc(100% - 36px));
+          }
+
+          #pf-goal-time-entry .pf-choice-copy strong {
+            font-size: 13px;
+          }
+
+          #pf-goal-time-entry .pf-choice-copy > span {
+            font-size: 11px;
+          }
+        }
+
+        /* Locked preset Result View — isolated from Goal / Time screens */
+        #pf-goal-time-entry.is-result-view .pf-flow-shell {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-flow-rail {
+          display: none;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-flow-main {
+          width: min(1180px, calc(100% - 48px));
+          margin: 0 auto;
+          padding-bottom: 24px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-flow-hero {
+          display: none;
+        }
+
+        #pf-goal-time-entry.is-result-view #pf-result-section {
+          width: 100%;
+        }
+
+        @media (max-width: 760px) {
+          #pf-goal-time-entry.is-result-view .pf-flow-main {
+            width: 100%;
+            padding: 0 12px 16px;
+          }
+        }
+
+
+        /* Locked Result visual design */
+        #pf-goal-time-entry.is-result-view #pf-result-section {
+          padding: 22px 0 18px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-topline {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
+          min-height: 30px;
+          margin-bottom: 16px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-back {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          color: #475569;
+          font: inherit;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-back:hover {
+          color: #0f5132;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-generated {
+          font-size: 12px;
+          font-weight: 700;
+          color: #64748b;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 11px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-tag {
+          display: inline-flex;
+          align-items: center;
+          min-height: 26px;
+          padding: 4px 11px;
+          border: 1px solid #cfe3d8;
+          border-radius: 999px;
+          background: #f2f8f4;
+          color: #1f6a45;
+          font-size: 11px;
+          font-weight: 800;
+          line-height: 1;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-heading {
+          margin-bottom: 19px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-heading h2 {
+          margin: 0 0 6px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: clamp(34px, 3.6vw, 48px);
+          font-weight: 700;
+          line-height: 1;
+          letter-spacing: -0.025em;
+          color: #17211b;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-heading p {
+          margin: 0;
+          color: #64748b;
+          font-size: 14px;
+          line-height: 1.4;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.06fr) minmax(360px, 0.94fr);
+          gap: 18px;
+          align-items: stretch;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-card {
+          min-width: 0;
+          border: 1px solid #dde4df;
+          border-radius: 12px;
+          background: #fff;
+          box-shadow: 0 8px 24px rgba(15, 81, 50, 0.045);
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-nutrition-card {
+          padding: 22px 23px 20px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-ingredients-card {
+          padding: 22px 20px 18px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-card-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 19px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-card-head h3 {
+          margin: 0;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 20px;
+          line-height: 1.1;
+          color: #18231d;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-card-head > span {
+          color: #718096;
+          font-size: 11px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-calorie-block {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 19px;
+        }
+
+        #pf-goal-time-entry.is-result-view #pf-result-calories {
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: 58px;
+          font-weight: 700;
+          line-height: 0.9;
+          letter-spacing: -0.04em;
+          color: #17211b;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-calorie-unit {
+          margin-left: 6px;
+          color: #475569;
+          font-size: 15px;
+          font-weight: 700;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-per-serving {
+          padding-bottom: 4px;
+          color: #94a3b8;
+          font-size: 11px;
+          font-weight: 700;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-macro-bar {
+          display: flex;
+          width: 100%;
+          height: 34px;
+          margin-bottom: 15px;
+          overflow: hidden;
+          border-radius: 7px;
+          background: #edf2ef;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-macro-segment {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 0;
+          transition: width 180ms ease;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-macro-segment span {
+          color: #fff;
+          font-size: 10px;
+          font-weight: 800;
+          line-height: 1;
+          text-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-macro-protein {
+          background: #285f43;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-macro-carbs {
+          background: #71977f;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-macro-fat {
+          background: #b49a63;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-primary-nutrients {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 10px;
+          margin-bottom: 18px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-primary-nutrient {
+          display: grid;
+          grid-template-columns: 9px 1fr;
+          gap: 3px 7px;
+          min-width: 0;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-primary-nutrient > span:not(.pf-result-nutrient-dot) {
+          color: #64748b;
+          font-size: 11px;
+          font-weight: 700;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-primary-nutrient strong {
+          grid-column: 2;
+          color: #17211b;
+          font-size: 17px;
+          line-height: 1.1;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-nutrient-dot {
+          width: 8px;
+          height: 8px;
+          margin-top: 3px;
+          border-radius: 999px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-nutrient-dot-protein {
+          background: #285f43;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-nutrient-dot-carbs {
+          background: #71977f;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-nutrient-dot-fat {
+          background: #b49a63;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-secondary-nutrients {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          padding-top: 17px;
+          border-top: 1px solid #e5e9e6;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-secondary-nutrients > div {
+          min-width: 0;
+          padding: 0 14px;
+          border-right: 1px solid #e5e9e6;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-secondary-nutrients > div:first-child {
+          padding-left: 0;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-secondary-nutrients > div:last-child {
+          padding-right: 0;
+          border-right: 0;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-secondary-nutrients span {
+          display: block;
+          margin-bottom: 4px;
+          color: #7b8794;
+          font-size: 10px;
+          font-weight: 700;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-secondary-nutrients strong {
+          display: block;
+          color: #17211b;
+          font-size: 15px;
+          line-height: 1.1;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-ingredient-list {
+          display: grid;
+          gap: 6px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-ingredient {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          gap: 16px;
+          min-height: 43px;
+          padding: 4px 0;
+          border-bottom: 1px solid #eef1ef;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-ingredient:last-child {
+          border-bottom: 0;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-ingredient-name {
+          min-width: 0;
+          color: #253129;
+          font-size: 13px;
+          font-weight: 700;
+          line-height: 1.2;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-ingredient-amount {
+          display: inline-flex;
+          align-items: baseline;
+          justify-content: center;
+          min-width: 84px;
+          min-height: 35px;
+          padding: 7px 11px;
+          border-radius: 7px;
+          background: #edf7f1;
+          color: #14613b;
+          font-size: 17px;
+          font-weight: 800;
+          line-height: 1;
+          white-space: nowrap;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-why {
+          display: grid;
+          grid-template-columns: 26px minmax(0, 1fr);
+          gap: 9px;
+          margin-top: 14px;
+          padding: 12px 13px;
+          border: 1px solid #d9eadf;
+          border-radius: 8px;
+          background: #f4faf6;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-why-mark {
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          background: #dfeee4;
+          color: #17603c;
+          font-size: 16px;
+          font-weight: 800;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-why strong {
+          display: block;
+          margin-bottom: 2px;
+          color: #174d32;
+          font-size: 11px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-why p {
+          margin: 0;
+          color: #52645a;
+          font-size: 10.5px;
+          line-height: 1.35;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-top: 17px;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-action {
+          min-height: 41px;
+          padding: 9px 18px;
+          border-radius: 6px;
+          font: inherit;
+          font-size: 12px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-action-secondary {
+          border: 1px solid #bdc8c1;
+          background: #fff;
+          color: #294237;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-action-primary {
+          border: 1px solid #0f5132;
+          background: #0f5132;
+          color: #fff;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-action-secondary:hover {
+          border-color: #7f9689;
+          background: #fafcfb;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-action-primary:hover {
+          background: #0b442a;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-build-another {
+          min-height: 41px;
+          padding: 9px 4px 9px 12px;
+          border: 0;
+          background: transparent;
+          color: #0f5132;
+          font: inherit;
+          font-size: 12px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        #pf-goal-time-entry.is-result-view .pf-result-build-another:hover {
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
+        @media (max-height: 780px) and (min-width: 761px) {
+          #pf-goal-time-entry.is-result-view #pf-result-section {
+            padding-top: 13px;
+            padding-bottom: 10px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-topline {
+            margin-bottom: 10px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-tags {
+            margin-bottom: 7px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-heading {
+            margin-bottom: 12px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-heading h2 {
+            font-size: 34px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-nutrition-card,
+          #pf-goal-time-entry.is-result-view .pf-result-ingredients-card {
+            padding-top: 16px;
+            padding-bottom: 14px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-card-head {
+            margin-bottom: 12px;
+          }
+
+          #pf-goal-time-entry.is-result-view #pf-result-calories {
+            font-size: 48px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-calorie-block,
+          #pf-goal-time-entry.is-result-view .pf-result-primary-nutrients {
+            margin-bottom: 12px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-ingredient {
+            min-height: 36px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-ingredient-amount {
+            min-height: 31px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            font-size: 15px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-why {
+            margin-top: 9px;
+            padding-top: 9px;
+            padding-bottom: 9px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-actions {
+            margin-top: 11px;
+          }
+        }
+
+        @media (max-width: 900px) {
+          #pf-goal-time-entry.is-result-view .pf-result-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 760px) {
+          #pf-goal-time-entry.is-result-view #pf-result-section {
+            padding: 12px 0 14px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-topline {
+            margin-bottom: 12px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-generated {
+            font-size: 10px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-heading {
+            margin-bottom: 14px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-heading h2 {
+            font-size: 31px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-heading p {
+            font-size: 12px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-grid {
+            gap: 12px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-nutrition-card,
+          #pf-goal-time-entry.is-result-view .pf-result-ingredients-card {
+            padding: 16px 14px;
+          }
+
+          #pf-goal-time-entry.is-result-view #pf-result-calories {
+            font-size: 48px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-primary-nutrient strong {
+            font-size: 14px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-secondary-nutrients > div {
+            padding: 0 8px;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-action {
+            width: 100%;
+          }
+
+          #pf-goal-time-entry.is-result-view .pf-result-build-another {
+            grid-column: 1 / -1;
+            justify-self: center;
+          }
+        }
+
+</style>
+
+      <section id="pf-goal-time-entry" class="pf-goal-time-entry" style="display:block" aria-labelledby="pf-goal-time-title">
+        <div class="pf-flow-shell">
+
+          <aside class="pf-flow-rail" aria-label="Smoothie build progress">
+            <div class="pf-flow-rail-label">BUILD A SMOOTHIE</div>
+
+            <div class="pf-flow-step is-active">
+              <div class="pf-flow-step-marker">01</div>
+              <div class="pf-flow-step-copy">
+                <strong>Goal</strong>
+                <span>What do you want<br>to support?</span>
+              </div>
+            </div>
+
+            <div class="pf-flow-step">
+              <div class="pf-flow-step-marker">02</div>
+              <div class="pf-flow-step-copy">
+                <strong>Time</strong>
+                <span>When will you<br>have it?</span>
+              </div>
+            </div>
+
+            <div class="pf-flow-step">
+              <div class="pf-flow-step-marker">03</div>
+              <div class="pf-flow-step-copy">
+                <strong>Result</strong>
+                <span>Your ready-to-make<br>smoothie</span>
+              </div>
+            </div>
+          </aside>
+
+          <main class="pf-flow-main">
+            <header class="pf-flow-hero">
+              <div class="pf-flow-eyebrow">NUTRITION MADE PERSONAL</div>
+              <h1 id="pf-goal-time-title">Build your smoothie</h1>
+              <p>
+                Pick a goal and time. Get a ready-to-make smoothie with exact ingredients,
+                portions, and nutrition.
+              </p>
+            </header>
+
+            <section class="pf-flow-section">
+              <div class="pf-flow-section-kicker">STEP 1 OF 3</div>
+              <h2>What should this smoothie support?</h2>
+              <p class="pf-flow-section-copy">Choose one goal to get started.</p>
+
+              <div class="pf-goal-choice-grid" id="pf-goal-choice-grid">
+                <button type="button" class="pf-goal-choice" data-goal="skin-glow">
+                  <span class="pf-choice-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg></span>
+                  <span class="pf-choice-copy">
+                    <strong>Skin Glow</strong>
+                    <span>Support healthy,<br>radiant skin</span>
+                  </span>
+                  <span class="pf-choice-check" aria-hidden="true">✓</span>
+                </button>
+
+                <button type="button" class="pf-goal-choice" data-goal="gut-health">
+                  <span class="pf-choice-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M120-80v-240q0-46 32.08-78 32.09-32 77.92-32h80q75 0 102.5-33t27.5-77q0-32-17.25-51T380-610q-24.75 0-42.37-17.63Q320-645.25 320-670v-210h60v210q52 0 86 36.5t34 93.5q0 69-45 119.5T310-370h-80q-21.25 0-35.62 14.37Q180-341.25 180-320v240h-60Zm240 0h-60v-80q0-46 32.08-78 32.09-32 77.92-32h160q88 0 149-61t61-149v-40q0-88-66-149t-154-61q-24.75 0-42.37-17.63Q500-765.25 500-790v-90h60v90q112 0 196 79t84 191v40q0 112-79 191t-191 79H410q-21.25 0-35.62 14.37Q360-181.25 360-160v80Zm-180 0v-240q0-21.25 14.38-35.63Q208.75-370 230-370h80q100 0 145-50.5T500-540q0-57-33.5-93.5T380-670v-210 210q53 0 86.5 36.5T500-540q0 69-45 119.5T310-370h-80q-21.25 0-35.62 14.37Q180-341.25 180-320v240Z"/></svg></span>
+                  <span class="pf-choice-copy">
+                    <strong>Gut Health</strong>
+                    <span>A happier,<br>more balanced gut</span>
+                  </span>
+                  <span class="pf-choice-check" aria-hidden="true">✓</span>
+                </button>
+
+                <button type="button" class="pf-goal-choice" data-goal="brain-focus">
+                  <span class="pf-choice-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M385-120q-51 0-86.5-38T258-244q-59-5-98.5-49.5T120-402q0-22 5.5-42.5T142-484q-11-18-16.5-38t-5.5-43q0-60 41.5-103t98.5-50q2-51 38.5-86.5T386-840q29 0 51.5 10.5T480-799q20-20 42-30.5t51-10.5q50 0 86 35.5t39 86.5q58 5 100 48.5T840-565q0 23-6 43.5T817-483q11 20 17 42t6 43q0 64-39.5 106.5T702-244q-5 48-41 86t-86 38q-30 0-52-10t-43-30q-21 20-43 30t-52 10Zm125-600v480q0 25 19.5 42.5T576-180q26 0 45-23t21-47q-23-8-43-21.5T565-305q-8-11-6-22.5t13-19.5q11-8 22.5-6t19.5 13q13 18 32 27.5t42 9.5q38 0 65-26t27-69q0-9-2-18.5t-4-19.5q-18 13-39.5 19.5T690-410q-13 0-21.5-8.5T660-440q0-13 8.5-21.5T690-470q38 0 64-28t26-67q0-38-28-65t-64-29q-10 24-28.5 42.5T617-589q-12 5-23-.5T579-607q-4-12 1-23.5t17-15.5q18-6 29.5-24t11.5-41q0-29-19-49t-45-20q-26 0-45 17.5T510-720Zm-60 480v-480q0-25-18.5-42.5T386-780q-26 0-45.5 20T321-711q0 23 11 40.5t29 23.5q12 4 17.5 15.5T380-609q-5 12-16.5 18t-23.5 1q-24-8-42-26.5T270-659q-35 3-62.5 29.5T180-565q0 39 26 67t64 28q13 0 21.5 8.5T300-440q0 13-8.5 21.5T270-410q-23 0-44.5-7T186-436q-3 8-4.5 17t-1.5 18q0 43 26.5 70.5T271-303q22 0 41.5-10t32.5-27q8-10 20-12.5t22 5.5q10 8 12.5 20t-5.5 22q-14 20-33.5 33.5T318-250q2 24 21 47t46 23q27 0 46-17.5t19-42.5Zm30-240Z"/></svg></span>
+                  <span class="pf-choice-copy">
+                    <strong>Brain Focus</strong>
+                    <span>Stay sharp<br>and focused</span>
+                  </span>
+                  <span class="pf-choice-check" aria-hidden="true">✓</span>
+                </button>
+
+                <button type="button" class="pf-goal-choice" data-goal="heart-support">
+                  <span class="pf-choice-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M290-840q57 0 105.5 27t84.5 78q42-54 89-79.5T670-840q89 0 149.5 60.5T880-629q0 15-1.5 29.5T873-570h-62q5-15 7-29.5t2-29.5q0-66-42-108.5T670-780q-51 0-95 31.5T504-660h-49q-26-56-70-88t-95-32q-66 0-108 42.5T140-629q0 15 2 29.5t7 29.5H87q-4-15-5.5-29.5T80-629q0-90 60.5-150.5T290-840Zm-98 450h78q38 42 89.5 91.5T480-186q69-63 120-112.5t89-91.5h79q-42 49-102 108.5T521-144l-41 37-41-37q-85-78-145-137.5T192-390Zm250 60q9 0 16-5.5t10-14.5l61-181 46 68q5 6 11 9.5t14 3.5h310v-60H617l-72-106q-5-7-12-10t-15-3q-9 0-16.5 5.5T491-609l-60 181-47-69q-5-6-10.5-9.5T360-510H50v60h292l72 107q5 7 12.5 10t15.5 3Zm38-153Z"/></svg></span>
+                  <span class="pf-choice-copy">
+                    <strong>Heart Support</strong>
+                    <span>Support your<br>heart health</span>
+                  </span>
+                  <span class="pf-choice-check" aria-hidden="true">✓</span>
+                </button>
+
+                <button type="button" class="pf-goal-choice" data-goal="energy-stamina">
+                  <span class="pf-choice-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m393-165 279-335H492l36-286-253 366h154l-36 255Zm-73 85 40-280H160l360-520h80l-40 320h240L400-80h-80Zm154-396Z"/></svg></span>
+                  <span class="pf-choice-copy">
+                    <strong>Energy &amp; Stamina</strong>
+                    <span>Feel your best<br>all day</span>
+                  </span>
+                  <span class="pf-choice-check" aria-hidden="true">✓</span>
+                </button>
+
+                <button type="button" class="pf-goal-choice" data-goal="muscle-health">
+                  <span class="pf-choice-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m550-84-42-42 142-142-382-382-142 142-42-42 56-58-56-56 85-85-42-42 42-42 43 41 84-84 56 56 58-56 42 42-142 142 382 382 142-142 42 42-56 58 56 56-86 86 42 42-42 42-42-42-84 84-56-56-58 56Z"/></svg></span>
+                  <span class="pf-choice-copy">
+                    <strong>Muscle Health</strong>
+                    <span>Support your<br>fitness goals</span>
+                  </span>
+                  <span class="pf-choice-check" aria-hidden="true">✓</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="pf-flow-section pf-flow-time-section">
+              <div class="pf-flow-section-kicker">STEP 2 OF 3</div>
+              <h2>When will you have it?</h2>
+              <p class="pf-flow-section-copy">
+                Choose one to get the right portion and ingredients.
+              </p>
+
+              <div class="pf-time-choice-grid" id="pf-time-choice-grid">
+                <button type="button" class="pf-time-choice" data-time="breakfast">
+                  <span class="pf-time-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m727-563-42-44 86-84 42 42-86 86ZM80-170v-60h800v60H80Zm370-510v-120h60v120h-60ZM233-564l-85-87 42-42 87 87-44 42Zm35 184h424q-19-71-77-115.5T480-540q-77 0-135 44.5T268-380Zm-68 60q0-117 81.5-198.5T480-600q117 0 198.5 81.5T760-320H200Zm280-60Z"/></svg></span>
+                  <strong>Breakfast</strong>
+                  <span>Start your<br>day right</span>
+
+                  <span class="pf-time-check" aria-hidden="true">✓</span></button>
+
+                <button type="button" class="pf-time-choice" data-time="morning-snack">
+                  <span class="pf-time-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M442-242q-116 0-199-80t-83-195v-263q0-25 17.5-42.5T220-840h529q54 0 92.5 37t38.5 91q0 60-37 106t-94 46h-25v43q0 115-83 195t-199 80ZM220-620h444v-160H220v160Zm222 318q91 0 156.5-62T664-517v-43H220v43q0 91 65.5 153T442-302Zm282-318h25q33 0 52-28.5t19-63.5q0-29-21-48.5T749-780h-25v160ZM160-120v-60h640v60H160Zm282-440Z"/></svg></span>
+                  <strong>Morning Snack</strong>
+                  <span>A healthy<br>boost</span>
+
+                  <span class="pf-time-check" aria-hidden="true">✓</span></button>
+
+                <button type="button" class="pf-time-choice" data-time="lunch">
+                  <span class="pf-time-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M579-381q41-41 41-99t-41-99q-41-41-99-41t-99 41q-41 41-41 99t41 99q41 41 99 41t99-41Zm-240.5 42.5Q280-397 280-480t58.5-141.5Q397-680 480-680t141.5 58.5Q680-563 680-480t-58.5 141.5Q563-280 480-280t-141.5-58.5ZM200-450H40v-60h160v60Zm720 0H760v-60h160v60ZM450-760v-160h60v160h-60Zm0 720v-160h60v160h-60ZM262-658l-100-97 43-44 96 100-39 41Zm494 496-98-100 41-41 99 98-42 43Zm-99-537 98-99 44 42-99 98-43-41ZM162-205l99-98 42 42-98 99-43-43Zm318-275Z"/></svg></span>
+                  <strong>Lunch</strong>
+                  <span>Stay energized</span>
+
+                  <span class="pf-time-check" aria-hidden="true">✓</span></button>
+
+                <button type="button" class="pf-time-choice" data-time="afternoon-snack">
+                  <span class="pf-time-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m727-563-42-44 86-84 42 42-86 86ZM80-170v-60h800v60H80Zm370-510v-120h60v120h-60ZM233-564l-85-87 42-42 87 87-44 42Zm35 184h424q-19-71-77-115.5T480-540q-77 0-135 44.5T268-380Zm-68 60q0-117 81.5-198.5T480-600q117 0 198.5 81.5T760-320H200Zm280-60Z"/></svg></span>
+                  <strong>Afternoon Snack</strong>
+                  <span>Keep going</span>
+
+                  <span class="pf-time-check" aria-hidden="true">✓</span></button>
+
+                <button type="button" class="pf-time-choice" data-time="dinner">
+                  <span class="pf-time-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M484-80q-84 0-157.5-32t-128-86.5Q144-253 112-326.5T80-484q0-146 93-257.5T410-880q-18 98 11 192.63 29 94.64 100 165.74 71 71.1 165.5 100.14Q781-392.45 880-410.47q-26 144.2-138 237.34Q630-80 484-80Zm0-60q100 0 182-57t132-145q-90-8-173-41.5T478.5-480Q415-543 382-625.5T341-797q-88 48-144.5 130.5T140-484q0 143.33 100.33 243.67Q340.67-140 484-140Zm-6-340Z"/></svg></span>
+                  <strong>Dinner</strong>
+                  <span>A balanced<br>meal</span>
+
+                  <span class="pf-time-check" aria-hidden="true">✓</span></button>
+
+                <button type="button" class="pf-time-choice" data-time="bedtime">
+                  <span class="pf-time-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M484-80q-84 0-157.5-32t-128-86.5Q144-253 112-326.5T80-484q0-146 93-257.5T410-880q-18 98 11 192.63 29 94.64 100 165.74 71 71.1 165.5 100.14Q781-392.45 880-410.47q-26 144.2-138 237.34Q630-80 484-80Zm0-60q100 0 182-57t132-145q-90-8-173-41.5T478.5-480Q415-543 382-625.5T341-797q-88 48-144.5 130.5T140-484q0 143.33 100.33 243.67Q340.67-140 484-140Zm-6-340Z"/></svg></span>
+                  <strong>Bedtime</strong>
+                  <span>A lighter<br>option</span>
+
+                  <span class="pf-time-check" aria-hidden="true">✓</span></button>
+              </div>
+
+              <button type="button" id="pf-build-my-smoothie" class="pf-build-my-smoothie" disabled>
+                Build my smoothie <span aria-hidden="true">→</span>
+              </button>
+              <div id="pf-build-status" role="status" aria-live="polite" hidden></div>
+
+              <div class="pf-flow-trust-row" aria-label="PureFyul smoothie benefits">
+
+
+                <span><span class="pf-trust-check" aria-hidden="true">✓</span>Exact portions</span>
+
+
+                <span class="pf-trust-separator" aria-hidden="true">·</span>
+
+
+                <span><span class="pf-trust-check" aria-hidden="true">✓</span>Full macros</span>
+
+
+                <span class="pf-trust-separator" aria-hidden="true">·</span>
+
+
+                <span><span class="pf-trust-check" aria-hidden="true">✓</span>Transparent nutrition</span>
+
+
+              </div>
+            </section>
+
+            <section id="pf-result-section" class="pf-flow-section pf-result-view" hidden>
+              <div class="pf-result-topline">
+                <button type="button" id="pf-result-back" class="pf-result-back">
+                  <span aria-hidden="true">←</span>
+                  Back to builder
+                </button>
+
+                <div class="pf-result-generated">Generated just for you</div>
+              </div>
+
+              <div class="pf-result-tags" aria-label="Selected smoothie context">
+                <span id="pf-result-goal-chip" class="pf-result-tag">Skin Glow</span>
+                <span id="pf-result-time-chip" class="pf-result-tag">Breakfast</span>
+              </div>
+
+              <div class="pf-result-heading">
+                <h2 id="pf-result-title">Radiant Glow Smoothie</h2>
+                <p id="pf-result-summary">
+                  A ready-to-make blend for healthy, radiant skin.
+                </p>
+              </div>
+
+              <div class="pf-result-grid">
+                <section class="pf-result-card pf-result-nutrition-card" aria-labelledby="pf-result-nutrition-title">
+                  <div class="pf-result-card-head">
+                    <h3 id="pf-result-nutrition-title">Nutrition Profile</h3>
+                    <span id="pf-result-batch-meta">400 g smoothie · 1 serving</span>
+                  </div>
+
+                  <div class="pf-result-calorie-block">
+                    <div>
+                      <span id="pf-result-calories">313</span>
+                      <span class="pf-result-calorie-unit">kcal</span>
+                    </div>
+                    <span class="pf-result-per-serving">Per serving</span>
+                  </div>
+
+                  <div class="pf-result-macro-bar" aria-label="Macro calorie split">
+                    <div id="pf-result-protein-bar" class="pf-result-macro-segment pf-result-macro-protein">
+                      <span id="pf-result-protein-percent">25%</span>
+                    </div>
+                    <div id="pf-result-carbs-bar" class="pf-result-macro-segment pf-result-macro-carbs">
+                      <span id="pf-result-carbs-percent">32%</span>
+                    </div>
+                    <div id="pf-result-fat-bar" class="pf-result-macro-segment pf-result-macro-fat">
+                      <span id="pf-result-fat-percent">43%</span>
+                    </div>
+                  </div>
+
+                  <div id="pf-result-nutrition" class="pf-result-primary-nutrients">
+                    <div class="pf-result-primary-nutrient">
+                      <span class="pf-result-nutrient-dot pf-result-nutrient-dot-protein"></span>
+                      <span>Protein</span>
+                      <strong id="pf-result-protein">20.9 g</strong>
+                    </div>
+
+                    <div class="pf-result-primary-nutrient">
+                      <span class="pf-result-nutrient-dot pf-result-nutrient-dot-carbs"></span>
+                      <span>Carbs</span>
+                      <strong id="pf-result-carbs">27.3 g</strong>
+                    </div>
+
+                    <div class="pf-result-primary-nutrient">
+                      <span class="pf-result-nutrient-dot pf-result-nutrient-dot-fat"></span>
+                      <span>Fat</span>
+                      <strong id="pf-result-fat">16.4 g</strong>
+                    </div>
+                  </div>
+
+                  <div class="pf-result-secondary-nutrients">
+                    <div>
+                      <span>Fiber</span>
+                      <strong id="pf-result-fiber">10.8 g</strong>
+                    </div>
+                    <div>
+                      <span>Sugar</span>
+                      <strong id="pf-result-sugar">14.3 g</strong>
+                    </div>
+                    <div>
+                      <span>Sodium</span>
+                      <strong id="pf-result-sodium">182 mg</strong>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="pf-result-card pf-result-ingredients-card" aria-labelledby="pf-result-ingredients-title">
+                  <div class="pf-result-card-head">
+                    <h3 id="pf-result-ingredients-title">Ingredients</h3>
+                    <span>1 serving</span>
+                  </div>
+
+                  <div id="pf-result-ingredients" class="pf-result-ingredient-list"></div>
+
+                  <div class="pf-result-why">
+                    <div class="pf-result-why-mark" aria-hidden="true">⌁</div>
+                    <div>
+                      <strong>Why it works:</strong>
+                      <p id="pf-result-why-text">
+                        Guava and flax seeds drive fiber, while pea milk and hemp seeds support protein.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div class="pf-result-actions">
+                <button type="button" id="pf-result-save" class="pf-result-action pf-result-action-secondary">
+                  Save meal
+                </button>
+
+                <button type="button" id="pf-result-personalize" class="pf-result-action pf-result-action-primary">
+                  Personalize
+                </button>
+
+                <button type="button" id="pf-build-another" class="pf-result-build-another">
+                  Build another <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </section>
+          </main>
+
+        </div>
+      </section>
+
+      <script nonce="{{ csp_nonce }}">
+        (function() {
+          document.addEventListener('DOMContentLoaded', function() {
+            var entry = document.getElementById('pf-goal-time-entry');
+            if (!entry) return;
+
+            var goalButtons = entry.querySelectorAll('.pf-goal-choice');
+            var timeButtons = entry.querySelectorAll('.pf-time-choice');
+            var buildButton = document.getElementById('pf-build-my-smoothie');
+            var buildStatus = document.getElementById('pf-build-status');
+            var buildAnotherButton = document.getElementById('pf-build-another');
+            var resultSection = document.getElementById('pf-result-section');
+            var resultTitle = document.getElementById('pf-result-title');
+            var resultSummary = document.getElementById('pf-result-summary');
+            var resultIngredients = document.getElementById('pf-result-ingredients');
+            var resultNutrition = document.getElementById('pf-result-nutrition');
+            var resultGoalChip = document.getElementById('pf-result-goal-chip');
+            var resultTimeChip = document.getElementById('pf-result-time-chip');
+            var resultBatchMeta = document.getElementById('pf-result-batch-meta');
+            var resultCalories = document.getElementById('pf-result-calories');
+            var resultProtein = document.getElementById('pf-result-protein');
+            var resultCarbs = document.getElementById('pf-result-carbs');
+            var resultFat = document.getElementById('pf-result-fat');
+            var resultFiber = document.getElementById('pf-result-fiber');
+            var resultSugar = document.getElementById('pf-result-sugar');
+            var resultSodium = document.getElementById('pf-result-sodium');
+            var resultProteinBar = document.getElementById('pf-result-protein-bar');
+            var resultCarbsBar = document.getElementById('pf-result-carbs-bar');
+            var resultFatBar = document.getElementById('pf-result-fat-bar');
+            var resultProteinPercent = document.getElementById('pf-result-protein-percent');
+            var resultCarbsPercent = document.getElementById('pf-result-carbs-percent');
+            var resultFatPercent = document.getElementById('pf-result-fat-percent');
+            var resultWhyText = document.getElementById('pf-result-why-text');
+            var resultSaveButton = document.getElementById('pf-result-save');
+            var flowSections = entry.querySelectorAll('.pf-flow-section');
+            var flowSteps = entry.querySelectorAll('.pf-flow-step');
+
+            var selectedGoal = '';
+            var selectedTime = '';
+            var isBuilding = false;
+            var currentVariant = 'a';
+
+            function updateBuildState() {
+              if (!buildButton) return;
+              buildButton.disabled = isBuilding || !(selectedGoal && selectedTime);
+            }
+
+            function formatGoalLabel(goal) {
+              var labels = {
+                'skin-glow': 'Skin Glow',
+                'gut-health': 'Gut Health',
+                'brain-focus': 'Brain Focus',
+                'heart-support': 'Heart Support',
+                'energy-stamina': 'Energy & Stamina',
+                'muscle-health': 'Muscle Health'
+              };
+              return labels[goal] || goal || '';
+            }
+
+            function formatTimingLabel(timing) {
+              var labels = {
+                'breakfast': 'Breakfast',
+                'morning-snack': 'Morning Snack',
+                'lunch': 'Lunch',
+                'afternoon-snack': 'Afternoon Snack',
+                'dinner': 'Dinner',
+                'bedtime': 'Bedtime'
+              };
+              return labels[timing] || timing || '';
+            }
+
+            function resultCopyForGoal(goal) {
+              var copy = {
+                'skin-glow': {
+                  title: 'Radiant Glow Smoothie',
+                  summary: 'A ready-to-make blend for healthy, radiant skin.'
+                },
+                'gut-health': {
+                  title: 'Gut Health Smoothie',
+                  summary: 'A ready-to-make blend for a happier, more balanced gut.'
+                },
+                'brain-focus': {
+                  title: 'Brain Focus Smoothie',
+                  summary: 'A ready-to-make blend to support focus and mental clarity.'
+                },
+                'heart-support': {
+                  title: 'Heart Support Smoothie',
+                  summary: 'A ready-to-make blend to support heart health.'
+                },
+                'energy-stamina': {
+                  title: 'Energy & Stamina Smoothie',
+                  summary: 'A ready-to-make blend to support energy and stamina.'
+                },
+                'muscle-health': {
+                  title: 'Muscle Health Smoothie',
+                  summary: 'A ready-to-make blend to support muscle health and fitness goals.'
+                }
+              };
+
+              return copy[goal] || {
+                title: 'Your Smoothie',
+                summary: 'A ready-to-make smoothie with exact portions and nutrition.'
+              };
+            }
+
+            function calculateMacroPercentages(nutrition) {
+              var macroCalories = [
+                Math.max(0, Number(nutrition.protein) || 0) * 4,
+                Math.max(0, Number(nutrition.carbs) || 0) * 4,
+                Math.max(0, Number(nutrition.fat) || 0) * 9
+              ];
+
+              var total = macroCalories.reduce(function(sum, value) {
+                return sum + value;
+              }, 0);
+
+              if (!total) {
+                return [0, 0, 0];
+              }
+
+              var exact = macroCalories.map(function(value) {
+                return value / total * 100;
+              });
+
+              var rounded = exact.map(function(value) {
+                return Math.floor(value);
+              });
+
+              var remaining = 100 - rounded.reduce(function(sum, value) {
+                return sum + value;
+              }, 0);
+
+              var order = exact
+                .map(function(value, index) {
+                  return {
+                    index: index,
+                    remainder: value - Math.floor(value)
+                  };
+                })
+                .sort(function(a, b) {
+                  return b.remainder - a.remainder;
+                });
+
+              for (var i = 0; i < remaining; i += 1) {
+                rounded[order[i % order.length].index] += 1;
+              }
+
+              return rounded;
+            }
+
+            function topIngredientNames(recipe, nutrient, limit) {
+              return (recipe.ingredients || [])
+                .map(function(item) {
+                  return {
+                    name: item.display_name,
+                    value:
+                      item.nutrition && item.nutrition[nutrient] != null
+                        ? Number(item.nutrition[nutrient])
+                        : 0
+                  };
+                })
+                .filter(function(item) {
+                  return Number.isFinite(item.value) && item.value > 0;
+                })
+                .sort(function(a, b) {
+                  return b.value - a.value;
+                })
+                .slice(0, limit)
+                .map(function(item) {
+                  return item.name;
+                });
+            }
+
+            function joinIngredientNames(names) {
+              if (!names.length) return '';
+              if (names.length === 1) return names[0];
+              return names[0] + ' and ' + names[1];
+            }
+
+            function syncPresetRecipeToExistingSaveState(recipe) {
+              if (!recipe) return false;
+
+              window._pfCurrentIngredients = (recipe.ingredients || []).map(
+                function(item) {
+                  return {
+                    name: item.display_name || '',
+                    totalGrams: Number(item.amount) || 0,
+                    portionGrams: Number(item.amount) || 0,
+                    unit: item.unit || 'g'
+                  };
+                }
+              );
+
+              window._pfCurrentNutrition = {
+                total_nutrition:
+                  recipe.batch && recipe.batch.nutrition
+                    ? recipe.batch.nutrition
+                    : {}
+              };
+
+              window._pfLastSmoothieGoal = recipe.goal || '';
+              window._pfLastSmoothieGoalText =
+                formatGoalLabel(recipe.goal);
+              window._pfLastSmoothieTiming =
+                formatTimingLabel(recipe.timing);
+
+              var smoothieNameInput =
+                document.getElementById('smoothie-name');
+
+              if (smoothieNameInput) {
+                smoothieNameInput.value =
+                  resultTitle && resultTitle.textContent
+                    ? resultTitle.textContent.trim()
+                    : 'My Smoothie';
+              }
+
+              var smoothieForInput =
+                document.getElementById('smoothie-for');
+
+              if (
+                smoothieForInput &&
+                smoothieForInput.options &&
+                smoothieForInput.options.length
+              ) {
+                smoothieForInput.selectedIndex = 0;
+              }
+
+              return true;
+            }
+
+            function renderPresetResult(recipe) {
+              if (!recipe || !resultSection) return;
+
+              entry.classList.add('is-result-view');
+
+              if (flowSections.length >= 2) {
+                flowSections[0].hidden = true;
+                flowSections[1].hidden = true;
+              }
+
+              resultSection.hidden = false;
+
+              flowSteps.forEach(function(step, index) {
+                step.classList.toggle('is-active', index === 2);
+              });
+
+              var nutrition =
+                recipe.batch && recipe.batch.nutrition
+                  ? recipe.batch.nutrition
+                  : {};
+
+              var goalCopy = resultCopyForGoal(recipe.goal);
+
+              if (resultGoalChip) {
+                resultGoalChip.textContent = formatGoalLabel(recipe.goal);
+              }
+
+              if (resultTimeChip) {
+                resultTimeChip.textContent = formatTimingLabel(recipe.timing);
+              }
+
+              if (resultTitle) {
+                resultTitle.textContent = goalCopy.title;
+              }
+
+              if (resultSummary) {
+                resultSummary.textContent = goalCopy.summary;
+              }
+
+              if (resultBatchMeta) {
+                resultBatchMeta.textContent =
+                  Math.round(Number(recipe.batch.weight_g)) +
+                  ' g smoothie · 1 serving';
+              }
+
+              if (resultCalories && nutrition.calories != null) {
+                resultCalories.textContent =
+                  Math.round(Number(nutrition.calories));
+              }
+
+              if (resultProtein && nutrition.protein != null) {
+                resultProtein.textContent =
+                  Number(nutrition.protein).toFixed(1) + ' g';
+              }
+
+              if (resultCarbs && nutrition.carbs != null) {
+                resultCarbs.textContent =
+                  Number(nutrition.carbs).toFixed(1) + ' g';
+              }
+
+              if (resultFat && nutrition.fat != null) {
+                resultFat.textContent =
+                  Number(nutrition.fat).toFixed(1) + ' g';
+              }
+
+              if (resultFiber && nutrition.fiber != null) {
+                resultFiber.textContent =
+                  Number(nutrition.fiber).toFixed(1) + ' g';
+              }
+
+              if (resultSugar && nutrition.sugar != null) {
+                resultSugar.textContent =
+                  Number(nutrition.sugar).toFixed(1) + ' g';
+              }
+
+              if (resultSodium && nutrition.sodium != null) {
+                resultSodium.textContent =
+                  Math.round(Number(nutrition.sodium)) + ' mg';
+              }
+
+              var macroPercentages = calculateMacroPercentages(nutrition);
+              var proteinPercent = macroPercentages[0];
+              var carbsPercent = macroPercentages[1];
+              var fatPercent = macroPercentages[2];
+
+              if (resultProteinPercent) {
+                resultProteinPercent.textContent = proteinPercent + '%';
+              }
+
+              if (resultCarbsPercent) {
+                resultCarbsPercent.textContent = carbsPercent + '%';
+              }
+
+              if (resultFatPercent) {
+                resultFatPercent.textContent = fatPercent + '%';
+              }
+
+              if (resultProteinBar) {
+                resultProteinBar.style.width = proteinPercent + '%';
+              }
+
+              if (resultCarbsBar) {
+                resultCarbsBar.style.width = carbsPercent + '%';
+              }
+
+              if (resultFatBar) {
+                resultFatBar.style.width = fatPercent + '%';
+              }
+
+              if (resultIngredients) {
+                resultIngredients.replaceChildren();
+
+                recipe.ingredients.forEach(function(item) {
+                  var row = document.createElement('div');
+                  row.className = 'pf-result-ingredient';
+
+                  var name = document.createElement('span');
+                  name.className = 'pf-result-ingredient-name';
+                  name.textContent = item.display_name;
+
+                  var amount = document.createElement('strong');
+                  amount.className = 'pf-result-ingredient-amount';
+                  amount.textContent =
+                    Math.round(Number(item.amount)) +
+                    ' ' +
+                    (item.unit || 'g');
+
+                  row.appendChild(name);
+                  row.appendChild(amount);
+                  resultIngredients.appendChild(row);
+                });
+              }
+
+              if (resultWhyText) {
+                var fiberDrivers = topIngredientNames(recipe, 'fiber', 2);
+                var proteinDrivers = topIngredientNames(recipe, 'protein', 2);
+
+                var fiberText = joinIngredientNames(fiberDrivers);
+                var proteinText = joinIngredientNames(proteinDrivers);
+
+                if (fiberText && proteinText) {
+                  resultWhyText.textContent =
+                    fiberText +
+                    ' drive most of the fiber, while ' +
+                    proteinText +
+                    ' provide most of the protein.';
+                } else if (fiberText) {
+                  resultWhyText.textContent =
+                    fiberText +
+                    ' provide most of this smoothie’s fiber.';
+                } else if (proteinText) {
+                  resultWhyText.textContent =
+                    proteinText +
+                    ' provide most of this smoothie’s protein.';
+                } else {
+                  resultWhyText.textContent =
+                    'Built from exact ingredient portions and calculated nutrition.';
+                }
+              }
+
+              if (buildStatus) {
+                buildStatus.hidden = true;
+                buildStatus.textContent = '';
+              }
+            }
+
+            goalButtons.forEach(function(button) {
+              button.addEventListener('click', function() {
+                selectedGoal = button.getAttribute('data-goal') || '';
+
+                goalButtons.forEach(function(item) {
+                  item.classList.toggle('is-selected', item === button);
+                  item.setAttribute(
+                    'aria-pressed',
+                    item === button ? 'true' : 'false'
+                  );
+                });
+
+                updateBuildState();
+              });
+
+              button.setAttribute('aria-pressed', 'false');
+            });
+
+            timeButtons.forEach(function(button) {
+              button.addEventListener('click', function() {
+                selectedTime = button.getAttribute('data-time') || '';
+
+                timeButtons.forEach(function(item) {
+                  item.classList.toggle('is-selected', item === button);
+                  item.setAttribute(
+                    'aria-pressed',
+                    item === button ? 'true' : 'false'
+                  );
+                });
+
+                updateBuildState();
+              });
+
+              button.setAttribute('aria-pressed', 'false');
+            });
+
+            async function buildPresetVariant(variant, triggerButton) {
+              if (!selectedGoal || !selectedTime || isBuilding) return;
+
+              isBuilding = true;
+              updateBuildState();
+
+              if (buildAnotherButton) {
+                buildAnotherButton.disabled = true;
+              }
+
+              if (triggerButton) {
+                triggerButton.textContent = 'Building...';
+              }
+
+              if (buildStatus && triggerButton === buildButton) {
+                buildStatus.hidden = false;
+                buildStatus.textContent = 'Building your smoothie...';
+              }
+
+              try {
+                var response = await fetch('/api/build-goal-preset', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    goal: selectedGoal,
+                    timing: selectedTime,
+                    variant: variant
+                  })
+                });
+
+                var payload = await response.json();
+
+                if (!response.ok || !payload.success || !payload.recipe) {
+                  throw new Error(
+                    payload.message ||
+                    payload.reason ||
+                    'This smoothie preset is not ready yet.'
+                  );
+                }
+
+                window.pfGoalPresetRecipe = payload.recipe;
+                currentVariant = payload.recipe.variant || variant;
+                renderPresetResult(payload.recipe);
+              } catch (error) {
+                if (buildStatus) {
+                  buildStatus.hidden = false;
+                  buildStatus.textContent =
+                    error && error.message
+                      ? error.message
+                      : 'Could not build smoothie.';
+                }
+              } finally {
+                isBuilding = false;
+
+                if (buildButton) {
+                  buildButton.textContent = 'Build my smoothie →';
+                }
+
+                if (buildAnotherButton) {
+                  buildAnotherButton.textContent = 'Build another →';
+                  buildAnotherButton.disabled = false;
+                }
+
+                updateBuildState();
+              }
+            }
+
+            if (buildButton) {
+              buildButton.addEventListener('click', function() {
+                buildPresetVariant('a', buildButton);
+              });
+            }
+
+            if (buildAnotherButton) {
+              buildAnotherButton.addEventListener('click', function() {
+                var nextVariant =
+                  currentVariant === 'a'
+                    ? 'b'
+                    : currentVariant === 'b'
+                      ? 'c'
+                      : 'a';
+
+                buildPresetVariant(
+                  nextVariant,
+                  buildAnotherButton
+                );
+              });
+            }
+
+            var resultBackButton = document.getElementById('pf-result-back');
+
+            if (resultBackButton) {
+              resultBackButton.addEventListener('click', function() {
+                entry.classList.remove('is-result-view');
+
+                if (resultSection) {
+                  resultSection.hidden = true;
+                }
+
+                if (flowSections.length >= 2) {
+                  flowSections[0].hidden = false;
+                  flowSections[1].hidden = false;
+                }
+
+                flowSteps.forEach(function(step, index) {
+                  step.classList.toggle(
+                    'is-active',
+                    index === (selectedGoal && selectedTime ? 1 : 0)
+                  );
+                });
+
+                if (buildStatus) {
+                  buildStatus.hidden = true;
+                  buildStatus.textContent = '';
+                }
+
+                updateBuildState();
+              });
+            }
+
+            if (resultSaveButton) {
+              resultSaveButton.addEventListener('click', function() {
+                var recipe = window.pfGoalPresetRecipe;
+
+                if (!recipe) return;
+
+                if (!syncPresetRecipeToExistingSaveState(recipe)) {
+                  return;
+                }
+
+                if (!PF_RESULT_PERMISSIONS.isAuthenticated) {
+                  var snapshotStored = pfStorePendingSaveSnapshot();
+
+                  if (!snapshotStored) {
+                    console.error(
+                      '[pending-save] Preset recipe snapshot was not available'
+                    );
+                    return;
+                  }
+
+                  pfOpenSaveAuthPrompt(resultSaveButton);
+                  return;
+                }
+
+                if (!PF_RESULT_PERMISSIONS.canSaveRecipes) {
+                  window.location.assign('/pricing');
+                  return;
+                }
+
+                var existingSaveButton =
+                  document.getElementById('pf-save-recipe-modal-btn');
+
+                if (existingSaveButton) {
+                  existingSaveButton.click();
+                }
+              });
+            }
+
+            updateBuildState();
+
+          });
+        })();
+      </script>
+
+      <div id="pf-legacy-smoothie-builder" class="main-content-grid">
         <!-- Left: Smoothie Builder (redesigned) -->
         <div class="card search-container">
 
@@ -22804,7 +25379,7 @@ const allergenPanel = allergenNames.length === 0
                     <path d="M6 4.75h12v15l-6-3.7-6 3.7z"></path>
                   </svg>
 
-                  <span>Save Recipe</span>
+                  <span>Save meal</span>
 
                   ${
                     saveLocked
@@ -25094,35 +27669,253 @@ const batchG = (smoothieBatchMlOverride != null)
   </section>
 </div>
 
-<!-- ── Save Recipe Modal ────────────────────────────────────────── -->
-<div id="pf-save-recipe-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:3000;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-    <h3 style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0 0 0.4rem;">💾 Save This Recipe</h3>
-    <p style="font-size:0.85rem;color:#64748b;margin:0 0 0.75rem;">Give your smoothie a name to find it later in My Recipes.</p>
-    <div id="pf-save-context" style="display:none;font-size:0.8rem;color:#0EA5A4;background:#f0fdfa;padding:6px 10px;border-radius:8px;margin-bottom:1rem;font-weight:500;"></div>
-    <input type="text" id="pf-save-recipe-name"
-      placeholder="e.g. Morning Energy Boost"
+<!-- ── Save Meal Modal ─────────────────────────────────────────── -->
+
+<style nonce="{{ csp_nonce }}">
+  #pf-save-recipe-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.44);
+    backdrop-filter: blur(3px);
+  }
+
+  .pf-save-meal-dialog {
+    width: min(440px, 100%);
+    padding: 28px;
+    border: 1px solid #e3e9e5;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+  }
+
+  .pf-save-meal-kicker {
+    margin: 0 0 8px;
+    color: #0f6b4a;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .pf-save-meal-dialog h3 {
+    margin: 0 0 7px;
+    color: #17233b;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 23px;
+    line-height: 1.15;
+  }
+
+  .pf-save-meal-copy {
+    margin: 0 0 18px;
+    color: #66758a;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  #pf-save-context {
+    display: none;
+    margin-bottom: 16px;
+    padding: 9px 11px;
+    border: 1px solid #dcebe2;
+    border-radius: 8px;
+    background: #f5faf7;
+    color: #315b48;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .pf-save-meal-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #344054;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  #pf-save-recipe-name {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 13px;
+    border: 1px solid #d7ded9;
+    border-radius: 9px;
+    outline: none;
+    background: #ffffff;
+    color: #17233b;
+    font-family: inherit;
+    font-size: 14px;
+    transition:
+      border-color 120ms ease,
+      box-shadow 120ms ease;
+  }
+
+  #pf-save-recipe-name:focus {
+    border-color: #0f6b4a;
+    box-shadow: 0 0 0 3px rgba(15, 107, 74, 0.09);
+  }
+
+  #pf-save-recipe-error {
+    display: none;
+    margin-top: 7px;
+    color: #b42318;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .pf-save-meal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  #pf-save-cancel-btn,
+  #pf-save-recipe-confirm {
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  #pf-save-cancel-btn {
+    border: 1px solid #d5ddd8;
+    background: #ffffff;
+    color: #44546a;
+  }
+
+  #pf-save-recipe-confirm {
+    border: 1px solid #0b5d40;
+    background: linear-gradient(90deg, #0f6b4a 0%, #0b6042 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(15, 81, 50, 0.12);
+  }
+
+  #pf-save-cancel-btn:hover {
+    background: #f8faf9;
+  }
+
+  #pf-save-recipe-confirm:hover:not(:disabled) {
+    background: linear-gradient(90deg, #0d6244 0%, #09583c 100%);
+  }
+
+  #pf-save-toast {
+    display: none;
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    z-index: 9999;
+    align-items: center;
+    gap: 12px;
+    max-width: 90vw;
+    padding: 11px 16px;
+    border-radius: 9px;
+    background: #123f30;
+    color: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    transform: translateX(-50%);
+  }
+
+  #pf-save-toast a {
+    color: #ffffff;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  #pf-save-toast-close {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    flex: 0 0 22px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    cursor: pointer;
+  }
+
+  @media (max-width: 520px) {
+    .pf-save-meal-dialog {
+      padding: 22px;
+    }
+
+    .pf-save-meal-actions {
+      flex-direction: column-reverse;
+    }
+
+    #pf-save-cancel-btn,
+    #pf-save-recipe-confirm {
+      width: 100%;
+    }
+  }
+</style>
+
+<div id="pf-save-recipe-overlay">
+  <div
+    class="pf-save-meal-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pf-save-meal-title"
+  >
+    <p class="pf-save-meal-kicker">Save meal</p>
+
+    <h3 id="pf-save-meal-title">Keep this smoothie</h3>
+
+    <p class="pf-save-meal-copy">
+      Save it so you can quickly find and make it again later.
+    </p>
+
+    <div id="pf-save-context"></div>
+
+    <label class="pf-save-meal-label" for="pf-save-recipe-name">
+      Meal name
+    </label>
+
+    <input
+      type="text"
+      id="pf-save-recipe-name"
+      placeholder="e.g. Morning Glow Smoothie"
       maxlength="80"
-      style="width:100%;padding:0.7rem 1rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.95rem;outline:none;box-sizing:border-box;font-family:inherit;transition:border-color 0.15s;"
-      >
-    <div id="pf-save-recipe-error" style="display:none;color:#dc2626;font-size:0.82rem;margin-top:0.5rem;"></div>
-    <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem;">
-      <button id="pf-save-cancel-btn"
-        style="padding:0.6rem 1.25rem;border:1.5px solid #0EA5A4;border-radius:8px;background:transparent;color:#0EA5A4;font-weight:600;font-size:0.9rem;cursor:pointer;font-family:inherit;">
+    >
+
+    <div id="pf-save-recipe-error" role="alert"></div>
+
+    <div class="pf-save-meal-actions">
+      <button type="button" id="pf-save-cancel-btn">
         Cancel
       </button>
-      <button id="pf-save-recipe-confirm"
-        style="padding:0.6rem 1.25rem;border:none;border-radius:8px;background:#0EA5A4;color:#fff;font-weight:600;font-size:0.9rem;cursor:pointer;font-family:inherit;">
-        Save Recipe
+
+      <button type="button" id="pf-save-recipe-confirm">
+        Save meal
       </button>
     </div>
   </div>
 </div>
 
-<!-- ── Save Recipe Toast ─────────────────────────────────────────── -->
-<div id="pf-save-toast" style="display:none;position:fixed;bottom:2.5rem;left:50%;transform:translateX(-50%);background:#0EA5A4;color:#fff;padding:0.75rem 1.5rem;border-radius:10px;font-weight:600;font-size:0.92rem;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.15);align-items:center;gap:12px;max-width:90vw;text-align:center;">
-  ✅ Recipe saved! <a href="/recipes" style="color:#fff;text-decoration:underline;font-weight:700;">View My Recipes →</a>
-  <button id="pf-save-toast-close" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+<!-- ── Save Meal Toast ─────────────────────────────────────────── -->
+
+<div id="pf-save-toast">
+  Meal saved!
+  <a href="/recipes">View My Recipes →</a>
+  <button
+    type="button"
+    id="pf-save-toast-close"
+    aria-label="Close saved meal notification"
+  >×</button>
 </div>
 
 <script nonce="{{ csp_nonce }}">
@@ -25239,11 +28032,10 @@ const batchG = (smoothieBatchMlOverride != null)
   });
 
   // ── Close modal ──────────────────────────────────────────────
-  window.pfCloseSaveRecipeModal = function(skipReopen) {
+  window.pfCloseSaveRecipeModal = function() {
     var overlay = document.getElementById('pf-save-recipe-overlay');
     if (overlay) overlay.style.display = 'none';
     _smoothiePayload = null;
-    if (!skipReopen && typeof pfOpenSmoothieModal === 'function') pfOpenSmoothieModal();
   };
 
   // ── Confirm save ─────────────────────────────────────────────
@@ -25259,7 +28051,7 @@ const batchG = (smoothieBatchMlOverride != null)
     }
 
     btn.disabled = true;
-    btn.textContent = 'Saving...';
+    btn.textContent = 'Saving meal...';
     btn.style.opacity = '0.7';
 
     try {
@@ -25282,6 +28074,7 @@ const batchG = (smoothieBatchMlOverride != null)
           return { calories: tn.calories || 0, protein: tn.protein || 0, carbs: tn.carbs || 0, fat: tn.fat || 0, fiber: tn.fiber || 0, sugar: tn.sugar || 0 };
         })() : (_smoothiePayload && _smoothiePayload.nutrition ? _smoothiePayload.nutrition : {}),
         health_goal: _smoothiePayload ? _smoothiePayload.healthGoal : '',
+        timing: _smoothiePayload ? (_smoothiePayload.timing || '') : (window._pfLastSmoothieTiming || ''),
         notes: notes.join(' | ')
       };
 
@@ -25323,13 +28116,8 @@ const batchG = (smoothieBatchMlOverride != null)
         return;
       }
       if (data.success) {
-        pfCloseSaveRecipeModal(true);
-        setTimeout(function() {
-          var toast = document.getElementById('pf-save-toast');
-          if (toast) {
-            toast.style.display = 'flex';
-          }
-        }, 300);
+        window.location.assign('/recipes');
+        return;
       } else {
         if (errEl) { errEl.textContent = 'Could not save. Please try again.'; errEl.style.display = 'block'; }
       }
@@ -25337,7 +28125,7 @@ const batchG = (smoothieBatchMlOverride != null)
       if (errEl) { errEl.textContent = 'Something went wrong. Please try again.'; errEl.style.display = 'block'; }
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Save Recipe';
+      btn.textContent = 'Save meal';
       btn.style.opacity = '1';
     }
   };
