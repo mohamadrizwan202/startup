@@ -24278,7 +24278,7 @@ const allergenPanel = allergenNames.length === 0
                     <path d="M6 4.75h12v15l-6-3.7-6 3.7z"></path>
                   </svg>
 
-                  <span>Save Recipe</span>
+                  <span>Save meal</span>
 
                   ${
                     saveLocked
@@ -26568,35 +26568,253 @@ const batchG = (smoothieBatchMlOverride != null)
   </section>
 </div>
 
-<!-- ── Save Recipe Modal ────────────────────────────────────────── -->
-<div id="pf-save-recipe-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:3000;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:#fff;border-radius:16px;padding:2rem;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-    <h3 style="font-size:1.1rem;font-weight:700;color:#0f172a;margin:0 0 0.4rem;">💾 Save This Recipe</h3>
-    <p style="font-size:0.85rem;color:#64748b;margin:0 0 0.75rem;">Give your smoothie a name to find it later in My Recipes.</p>
-    <div id="pf-save-context" style="display:none;font-size:0.8rem;color:#0EA5A4;background:#f0fdfa;padding:6px 10px;border-radius:8px;margin-bottom:1rem;font-weight:500;"></div>
-    <input type="text" id="pf-save-recipe-name"
-      placeholder="e.g. Morning Energy Boost"
+<!-- ── Save Meal Modal ─────────────────────────────────────────── -->
+
+<style nonce="{{ csp_nonce }}">
+  #pf-save-recipe-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.44);
+    backdrop-filter: blur(3px);
+  }
+
+  .pf-save-meal-dialog {
+    width: min(440px, 100%);
+    padding: 28px;
+    border: 1px solid #e3e9e5;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+  }
+
+  .pf-save-meal-kicker {
+    margin: 0 0 8px;
+    color: #0f6b4a;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .pf-save-meal-dialog h3 {
+    margin: 0 0 7px;
+    color: #17233b;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 23px;
+    line-height: 1.15;
+  }
+
+  .pf-save-meal-copy {
+    margin: 0 0 18px;
+    color: #66758a;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  #pf-save-context {
+    display: none;
+    margin-bottom: 16px;
+    padding: 9px 11px;
+    border: 1px solid #dcebe2;
+    border-radius: 8px;
+    background: #f5faf7;
+    color: #315b48;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .pf-save-meal-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #344054;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  #pf-save-recipe-name {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 13px;
+    border: 1px solid #d7ded9;
+    border-radius: 9px;
+    outline: none;
+    background: #ffffff;
+    color: #17233b;
+    font-family: inherit;
+    font-size: 14px;
+    transition:
+      border-color 120ms ease,
+      box-shadow 120ms ease;
+  }
+
+  #pf-save-recipe-name:focus {
+    border-color: #0f6b4a;
+    box-shadow: 0 0 0 3px rgba(15, 107, 74, 0.09);
+  }
+
+  #pf-save-recipe-error {
+    display: none;
+    margin-top: 7px;
+    color: #b42318;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .pf-save-meal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+  }
+
+  #pf-save-cancel-btn,
+  #pf-save-recipe-confirm {
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  #pf-save-cancel-btn {
+    border: 1px solid #d5ddd8;
+    background: #ffffff;
+    color: #44546a;
+  }
+
+  #pf-save-recipe-confirm {
+    border: 1px solid #0b5d40;
+    background: linear-gradient(90deg, #0f6b4a 0%, #0b6042 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(15, 81, 50, 0.12);
+  }
+
+  #pf-save-cancel-btn:hover {
+    background: #f8faf9;
+  }
+
+  #pf-save-recipe-confirm:hover:not(:disabled) {
+    background: linear-gradient(90deg, #0d6244 0%, #09583c 100%);
+  }
+
+  #pf-save-toast {
+    display: none;
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    z-index: 9999;
+    align-items: center;
+    gap: 12px;
+    max-width: 90vw;
+    padding: 11px 16px;
+    border-radius: 9px;
+    background: #123f30;
+    color: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    transform: translateX(-50%);
+  }
+
+  #pf-save-toast a {
+    color: #ffffff;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  #pf-save-toast-close {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    flex: 0 0 22px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    cursor: pointer;
+  }
+
+  @media (max-width: 520px) {
+    .pf-save-meal-dialog {
+      padding: 22px;
+    }
+
+    .pf-save-meal-actions {
+      flex-direction: column-reverse;
+    }
+
+    #pf-save-cancel-btn,
+    #pf-save-recipe-confirm {
+      width: 100%;
+    }
+  }
+</style>
+
+<div id="pf-save-recipe-overlay">
+  <div
+    class="pf-save-meal-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pf-save-meal-title"
+  >
+    <p class="pf-save-meal-kicker">Save meal</p>
+
+    <h3 id="pf-save-meal-title">Keep this smoothie</h3>
+
+    <p class="pf-save-meal-copy">
+      Save it so you can quickly find and make it again later.
+    </p>
+
+    <div id="pf-save-context"></div>
+
+    <label class="pf-save-meal-label" for="pf-save-recipe-name">
+      Meal name
+    </label>
+
+    <input
+      type="text"
+      id="pf-save-recipe-name"
+      placeholder="e.g. Morning Glow Smoothie"
       maxlength="80"
-      style="width:100%;padding:0.7rem 1rem;border:1.5px solid #e2e8f0;border-radius:10px;font-size:0.95rem;outline:none;box-sizing:border-box;font-family:inherit;transition:border-color 0.15s;"
-      >
-    <div id="pf-save-recipe-error" style="display:none;color:#dc2626;font-size:0.82rem;margin-top:0.5rem;"></div>
-    <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:1.25rem;">
-      <button id="pf-save-cancel-btn"
-        style="padding:0.6rem 1.25rem;border:1.5px solid #0EA5A4;border-radius:8px;background:transparent;color:#0EA5A4;font-weight:600;font-size:0.9rem;cursor:pointer;font-family:inherit;">
+    >
+
+    <div id="pf-save-recipe-error" role="alert"></div>
+
+    <div class="pf-save-meal-actions">
+      <button type="button" id="pf-save-cancel-btn">
         Cancel
       </button>
-      <button id="pf-save-recipe-confirm"
-        style="padding:0.6rem 1.25rem;border:none;border-radius:8px;background:#0EA5A4;color:#fff;font-weight:600;font-size:0.9rem;cursor:pointer;font-family:inherit;">
-        Save Recipe
+
+      <button type="button" id="pf-save-recipe-confirm">
+        Save meal
       </button>
     </div>
   </div>
 </div>
 
-<!-- ── Save Recipe Toast ─────────────────────────────────────────── -->
-<div id="pf-save-toast" style="display:none;position:fixed;bottom:2.5rem;left:50%;transform:translateX(-50%);background:#0EA5A4;color:#fff;padding:0.75rem 1.5rem;border-radius:10px;font-weight:600;font-size:0.92rem;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.15);align-items:center;gap:12px;max-width:90vw;text-align:center;">
-  ✅ Recipe saved! <a href="/recipes" style="color:#fff;text-decoration:underline;font-weight:700;">View My Recipes →</a>
-  <button id="pf-save-toast-close" style="background:rgba(255,255,255,0.25);border:none;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+<!-- ── Save Meal Toast ─────────────────────────────────────────── -->
+
+<div id="pf-save-toast">
+  Meal saved!
+  <a href="/recipes">View My Recipes →</a>
+  <button
+    type="button"
+    id="pf-save-toast-close"
+    aria-label="Close saved meal notification"
+  >×</button>
 </div>
 
 <script nonce="{{ csp_nonce }}">
@@ -26713,11 +26931,10 @@ const batchG = (smoothieBatchMlOverride != null)
   });
 
   // ── Close modal ──────────────────────────────────────────────
-  window.pfCloseSaveRecipeModal = function(skipReopen) {
+  window.pfCloseSaveRecipeModal = function() {
     var overlay = document.getElementById('pf-save-recipe-overlay');
     if (overlay) overlay.style.display = 'none';
     _smoothiePayload = null;
-    if (!skipReopen && typeof pfOpenSmoothieModal === 'function') pfOpenSmoothieModal();
   };
 
   // ── Confirm save ─────────────────────────────────────────────
@@ -26733,7 +26950,7 @@ const batchG = (smoothieBatchMlOverride != null)
     }
 
     btn.disabled = true;
-    btn.textContent = 'Saving...';
+    btn.textContent = 'Saving meal...';
     btn.style.opacity = '0.7';
 
     try {
@@ -26756,6 +26973,7 @@ const batchG = (smoothieBatchMlOverride != null)
           return { calories: tn.calories || 0, protein: tn.protein || 0, carbs: tn.carbs || 0, fat: tn.fat || 0, fiber: tn.fiber || 0, sugar: tn.sugar || 0 };
         })() : (_smoothiePayload && _smoothiePayload.nutrition ? _smoothiePayload.nutrition : {}),
         health_goal: _smoothiePayload ? _smoothiePayload.healthGoal : '',
+        timing: _smoothiePayload ? (_smoothiePayload.timing || '') : (window._pfLastSmoothieTiming || ''),
         notes: notes.join(' | ')
       };
 
@@ -26797,13 +27015,8 @@ const batchG = (smoothieBatchMlOverride != null)
         return;
       }
       if (data.success) {
-        pfCloseSaveRecipeModal(true);
-        setTimeout(function() {
-          var toast = document.getElementById('pf-save-toast');
-          if (toast) {
-            toast.style.display = 'flex';
-          }
-        }, 300);
+        window.location.assign('/recipes');
+        return;
       } else {
         if (errEl) { errEl.textContent = 'Could not save. Please try again.'; errEl.style.display = 'block'; }
       }
@@ -26811,7 +27024,7 @@ const batchG = (smoothieBatchMlOverride != null)
       if (errEl) { errEl.textContent = 'Something went wrong. Please try again.'; errEl.style.display = 'block'; }
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Save Recipe';
+      btn.textContent = 'Save meal';
       btn.style.opacity = '1';
     }
   };
