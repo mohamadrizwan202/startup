@@ -391,6 +391,54 @@ def ensure_schema():
             """)
         
 
+        # ── WEB SAAS PERSONALIZATION: PERSONS ─────────────────────────────
+        # Consumer web personalization only.
+        # Keep separate from the B2B/app user_profiles system.
+        if USE_POSTGRES:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS persons (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    name VARCHAR(100) NOT NULL,
+                    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT persons_name_not_blank
+                        CHECK (BTRIM(name) <> '')
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS persons_user_id_idx
+                ON persons(user_id)
+            """)
+            cursor.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS persons_one_default_per_user_uidx
+                ON persons(user_id)
+                WHERE is_default = TRUE
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS persons (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    name TEXT NOT NULL,
+                    is_default INTEGER NOT NULL DEFAULT 0,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CHECK (TRIM(name) <> ''),
+                    CHECK (is_default IN (0, 1))
+                )
+            """)
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS persons_user_id_idx
+                ON persons(user_id)
+            """)
+            cursor.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS persons_one_default_per_user_uidx
+                ON persons(user_id)
+                WHERE is_default = 1
+            """)
+
         # ── SAVED RECIPES TABLE ──────────────────────────────────────────
         if USE_POSTGRES:
             cursor.execute("""
