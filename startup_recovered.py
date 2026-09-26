@@ -55637,6 +55637,73 @@ def get_user_plan(user_id):
 
 
 
+
+PERSONALIZED_FREE_GENERATION_LIMIT = 3
+
+
+def _get_personalized_generation_access(user_id):
+    """Return current personalized-generation entitlement for one account."""
+    plan = get_user_plan(user_id)
+
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS free_used
+                FROM personalized_smoothie_generations
+                WHERE user_id = %s
+                  AND access_type = 'free_trial'
+                """,
+                (user_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS free_used
+                FROM personalized_smoothie_generations
+                WHERE user_id = ?
+                  AND access_type = 'free_trial'
+                """,
+                (user_id,),
+            )
+
+        row = cursor.fetchone()
+        free_used = int(db.row_to_dict(row)["free_used"])
+
+    finally:
+        conn.close()
+
+    free_remaining = max(
+        PERSONALIZED_FREE_GENERATION_LIMIT - free_used,
+        0,
+    )
+
+    if plan == "pro":
+        return {
+            "plan": "pro",
+            "allowed": True,
+            "access_type": "pro",
+            "free_limit": PERSONALIZED_FREE_GENERATION_LIMIT,
+            "free_used": free_used,
+            "free_remaining": free_remaining,
+        }
+
+    allowed = free_used < PERSONALIZED_FREE_GENERATION_LIMIT
+
+    return {
+        "plan": "free",
+        "allowed": allowed,
+        "access_type": "free_trial" if allowed else None,
+        "free_limit": PERSONALIZED_FREE_GENERATION_LIMIT,
+        "free_used": free_used,
+        "free_remaining": free_remaining,
+    }
+
+
 # ── TUNE MY SMOOTHIE ──────────────────────────────────────────────────────────
 
 def _tune_smoothie_pro_gate():
@@ -55770,6 +55837,1170 @@ def tune_smoothie_ranges_api():
 def tune_smoothie_api():
     """Tune a Pro user's smoothie to exact selected nutrient targets."""
     return _handle_tune_smoothie_request("tune")
+
+
+# ── WEB PERSONALIZATION: INGREDIENT OPTIONS ──────────────────────────────────
+
+
+@app.route(
+    "/api/personalization/ingredient-options",
+    methods=["GET"],
+)
+@login_required
+def get_personalization_ingredient_options():
+    """Return canonical reviewed ingredient choices for personalization."""
+    from goal_preset_recipe import get_supported_ingredient_options
+
+    return jsonify({
+        "ingredients": list(
+            get_supported_ingredient_options()
+        )
+    })
+
+
+# ── WEB SAAS PERSONALIZATION: PERSONS ────────────────────────────────────────
+# Consumer web personalization only.
+# Keep separate from the app personalization/profile system.
+
+
+def _serialize_web_person(row):
+    person = db.row_to_dict(row)
+
+    return {
+        "id": person["id"],
+        "name": person["name"],
+        "is_default": bool(person["is_default"]),
+        "created_at": person.get("created_at"),
+        "updated_at": person.get("updated_at"),
+    }
+
+
+@app.route("/api/persons", methods=["GET"])
+@login_required
+def get_web_persons():
+    """Return the logged-in user's web personalization Persons."""
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    is_default,
+                    created_at,
+                    updated_at
+                FROM persons
+                WHERE user_id = %s
+                ORDER BY is_default DESC, created_at ASC, id ASC
+                """,
+                (current_user.id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    is_default,
+                    created_at,
+                    updated_at
+                FROM persons
+                WHERE user_id = ?
+                ORDER BY is_default DESC, created_at ASC, id ASC
+                """,
+                (current_user.id,),
+            )
+
+        persons = [
+            _serialize_web_person(row)
+            for row in cursor.fetchall()
+        ]
+
+        return jsonify({"persons": persons})
+
+    finally:
+        conn.close()
+
+
+@app.route("/api/persons", methods=["POST"])
+@login_required
+@csrf.exempt
+def create_web_person():
+    """Create a Person for the logged-in web personalization user."""
+    data = request.get_json(silent=True) or {}
+    raw_name = data.get("name")
+
+    if not isinstance(raw_name, str):
+        return jsonify({"error": "invalid_name"}), 400
+
+    name = raw_name.strip()
+
+    if not name or len(name) > 100:
+        return jsonify({"error": "invalid_name"}), 400
+
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM persons
+                    WHERE user_id = %s
+                ) AS has_person
+                """,
+                (current_user.id,),
+            )
+            result = db.row_to_dict(cursor.fetchone())
+            is_default = not bool(result["has_person"])
+
+            cursor.execute(
+                """
+                INSERT INTO persons (
+                    user_id,
+                    name,
+                    is_default
+                )
+                VALUES (%s, %s, %s)
+                RETURNING
+                    id,
+                    name,
+                    is_default,
+                    created_at,
+                    updated_at
+                """,
+                (
+                    current_user.id,
+                    name,
+                    is_default,
+                ),
+            )
+            row = cursor.fetchone()
+
+        else:
+            cursor.execute(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM persons
+                    WHERE user_id = ?
+                )
+                """,
+                (current_user.id,),
+            )
+            is_default = not bool(cursor.fetchone()[0])
+
+            cursor.execute(
+                """
+                INSERT INTO persons (
+                    user_id,
+                    name,
+                    is_default
+                )
+                VALUES (?, ?, ?)
+                """,
+                (
+                    current_user.id,
+                    name,
+                    1 if is_default else 0,
+                ),
+            )
+
+            person_id = cursor.lastrowid
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    is_default,
+                    created_at,
+                    updated_at
+                FROM persons
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (
+                    person_id,
+                    current_user.id,
+                ),
+            )
+            row = cursor.fetchone()
+
+        conn.commit()
+
+        return jsonify({
+            "person": _serialize_web_person(row)
+        }), 201
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
+@app.route("/api/persons/<int:person_id>", methods=["PATCH"])
+@login_required
+@csrf.exempt
+def update_web_person(person_id):
+    """Update an owned web personalization Person."""
+    data = request.get_json(silent=True) or {}
+
+    has_name = "name" in data
+    wants_default = data.get("is_default") is True
+
+    if "is_default" in data and data.get("is_default") is not True:
+        return jsonify({"error": "invalid_default"}), 400
+
+    if not has_name and not wants_default:
+        return jsonify({"error": "no_changes"}), 400
+
+    name = None
+
+    if has_name:
+        raw_name = data.get("name")
+
+        if not isinstance(raw_name, str):
+            return jsonify({"error": "invalid_name"}), 400
+
+        name = raw_name.strip()
+
+        if not name or len(name) > 100:
+            return jsonify({"error": "invalid_name"}), 400
+
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = %s
+                  AND user_id = %s
+                """,
+                (person_id, current_user.id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (person_id, current_user.id),
+            )
+
+        if cursor.fetchone() is None:
+            return jsonify({"error": "not_found"}), 404
+
+        if wants_default:
+            if db.USE_POSTGRES:
+                cursor.execute(
+                    """
+                    UPDATE persons
+                    SET is_default = FALSE,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = %s
+                      AND is_default = TRUE
+                    """,
+                    (current_user.id,),
+                )
+            else:
+                cursor.execute(
+                    """
+                    UPDATE persons
+                    SET is_default = 0,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE user_id = ?
+                      AND is_default = 1
+                    """,
+                    (current_user.id,),
+                )
+
+        if db.USE_POSTGRES:
+            if has_name and wants_default:
+                cursor.execute(
+                    """
+                    UPDATE persons
+                    SET name = %s,
+                        is_default = TRUE,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                      AND user_id = %s
+                    """,
+                    (name, person_id, current_user.id),
+                )
+            elif has_name:
+                cursor.execute(
+                    """
+                    UPDATE persons
+                    SET name = %s,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                      AND user_id = %s
+                    """,
+                    (name, person_id, current_user.id),
+                )
+            else:
+                cursor.execute(
+                    """
+                    UPDATE persons
+                    SET is_default = TRUE,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s
+                      AND user_id = %s
+                    """,
+                    (person_id, current_user.id),
+                )
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    is_default,
+                    created_at,
+                    updated_at
+                FROM persons
+                WHERE id = %s
+                  AND user_id = %s
+                """,
+                (person_id, current_user.id),
+            )
+
+        else:
+            if has_name and wants_default:
+                cursor.execute(
+                    """
+                    UPDATE persons
+                    SET name = ?,
+                        is_default = 1,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                      AND user_id = ?
+                    """,
+                    (name, person_id, current_user.id),
+                )
+            elif has_name:
+                cursor.execute(
+                    """
+                    UPDATE persons
+                    SET name = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                      AND user_id = ?
+                    """,
+                    (name, person_id, current_user.id),
+                )
+            else:
+                cursor.execute(
+                    """
+                    UPDATE persons
+                    SET is_default = 1,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                      AND user_id = ?
+                    """,
+                    (person_id, current_user.id),
+                )
+
+            cursor.execute(
+                """
+                SELECT
+                    id,
+                    name,
+                    is_default,
+                    created_at,
+                    updated_at
+                FROM persons
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (person_id, current_user.id),
+            )
+
+        row = cursor.fetchone()
+        conn.commit()
+
+        return jsonify({
+            "person": _serialize_web_person(row)
+        })
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
+@app.route("/api/persons/<int:person_id>", methods=["DELETE"])
+@login_required
+@csrf.exempt
+def delete_web_person(person_id):
+    """Delete an owned web personalization Person."""
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT is_default
+                FROM persons
+                WHERE id = %s
+                  AND user_id = %s
+                """,
+                (person_id, current_user.id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT is_default
+                FROM persons
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (person_id, current_user.id),
+            )
+
+        row = cursor.fetchone()
+
+        if row is None:
+            return jsonify({"error": "not_found"}), 404
+
+        existing = db.row_to_dict(row)
+        was_default = bool(existing["is_default"])
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                DELETE FROM persons
+                WHERE id = %s
+                  AND user_id = %s
+                """,
+                (person_id, current_user.id),
+            )
+        else:
+            cursor.execute(
+                """
+                DELETE FROM persons
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (person_id, current_user.id),
+            )
+
+        if was_default:
+            if db.USE_POSTGRES:
+                cursor.execute(
+                    """
+                    SELECT id
+                    FROM persons
+                    WHERE user_id = %s
+                    ORDER BY created_at ASC, id ASC
+                    LIMIT 1
+                    """,
+                    (current_user.id,),
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id
+                    FROM persons
+                    WHERE user_id = ?
+                    ORDER BY created_at ASC, id ASC
+                    LIMIT 1
+                    """,
+                    (current_user.id,),
+                )
+
+            replacement = cursor.fetchone()
+
+            if replacement is not None:
+                replacement_id = db.row_to_dict(replacement)["id"]
+
+                if db.USE_POSTGRES:
+                    cursor.execute(
+                        """
+                        UPDATE persons
+                        SET is_default = TRUE,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = %s
+                          AND user_id = %s
+                        """,
+                        (replacement_id, current_user.id),
+                    )
+                else:
+                    cursor.execute(
+                        """
+                        UPDATE persons
+                        SET is_default = 1,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                          AND user_id = ?
+                        """,
+                        (replacement_id, current_user.id),
+                    )
+
+        conn.commit()
+
+        return jsonify({"success": True})
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
+# ── WEB PERSONALIZATION: PERSON GOAL PREFERENCES ──────────────────────────────
+# Uses the reviewed deterministic preset engine as the goal source of truth.
+
+
+def _serialize_web_person_preference(row):
+    preference = db.row_to_dict(row)
+
+    return {
+        "goal": preference["goal_slug"],
+        "timing": preference.get("timing_slug"),
+        "created_at": preference.get("created_at"),
+        "updated_at": preference.get("updated_at"),
+    }
+
+
+@app.route(
+    "/api/persons/<int:person_id>/preferences",
+    methods=["GET"],
+)
+@login_required
+def get_web_person_preferences(person_id):
+    """Return personalization preferences for an owned Person."""
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = %s
+                  AND user_id = %s
+                """,
+                (person_id, current_user.id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (person_id, current_user.id),
+            )
+
+        if cursor.fetchone() is None:
+            return jsonify({"error": "not_found"}), 404
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT
+                    goal_slug,
+                    timing_slug,
+                    created_at,
+                    updated_at
+                FROM person_preferences
+                WHERE person_id = %s
+                """,
+                (person_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT
+                    goal_slug,
+                    timing_slug,
+                    created_at,
+                    updated_at
+                FROM person_preferences
+                WHERE person_id = ?
+                """,
+                (person_id,),
+            )
+
+        row = cursor.fetchone()
+
+        return jsonify({
+            "preference": (
+                _serialize_web_person_preference(row)
+                if row is not None
+                else None
+            )
+        })
+
+    finally:
+        conn.close()
+
+
+@app.route(
+    "/api/persons/<int:person_id>/preferences",
+    methods=["PATCH"],
+)
+@login_required
+@csrf.exempt
+def update_web_person_preferences(person_id):
+    """Create or update Goal/Time preferences for an owned Person."""
+    from goal_preset_recipe import (
+        get_supported_goal_slugs,
+        get_supported_timing_slugs,
+    )
+
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify({"error": "invalid_request"}), 400
+
+    unexpected_fields = sorted(
+        set(payload) - {"goal", "timing"}
+    )
+
+    if unexpected_fields:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "unsupported request fields",
+            "fields": unexpected_fields,
+        }), 400
+
+    if not payload:
+        return jsonify({"error": "no_changes"}), 400
+
+    goal_slug = None
+    timing_slug = None
+
+    if "goal" in payload:
+        raw_goal = payload.get("goal")
+
+        if not isinstance(raw_goal, str):
+            return jsonify({"error": "invalid_goal"}), 400
+
+        goal_slug = raw_goal.strip().lower()
+
+        if goal_slug not in set(get_supported_goal_slugs()):
+            return jsonify({"error": "unsupported_goal"}), 400
+
+    if "timing" in payload:
+        raw_timing = payload.get("timing")
+
+        if not isinstance(raw_timing, str):
+            return jsonify({"error": "invalid_timing"}), 400
+
+        timing_slug = raw_timing.strip().lower()
+
+        if timing_slug not in set(get_supported_timing_slugs()):
+            return jsonify({"error": "unsupported_timing"}), 400
+
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        # Ownership check.
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = %s
+                  AND user_id = %s
+                """,
+                (person_id, current_user.id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (person_id, current_user.id),
+            )
+
+        if cursor.fetchone() is None:
+            return jsonify({"error": "not_found"}), 404
+
+        # Read any existing preference row.
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT goal_slug, timing_slug
+                FROM person_preferences
+                WHERE person_id = %s
+                """,
+                (person_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT goal_slug, timing_slug
+                FROM person_preferences
+                WHERE person_id = ?
+                """,
+                (person_id,),
+            )
+
+        existing_row = cursor.fetchone()
+
+        if existing_row is None:
+            # goal_slug is the required foundation of a preference row.
+            if goal_slug is None:
+                return jsonify({"error": "goal_required"}), 400
+
+            if db.USE_POSTGRES:
+                cursor.execute(
+                    """
+                    INSERT INTO person_preferences (
+                        person_id,
+                        goal_slug,
+                        timing_slug
+                    )
+                    VALUES (%s, %s, %s)
+                    """,
+                    (person_id, goal_slug, timing_slug),
+                )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO person_preferences (
+                        person_id,
+                        goal_slug,
+                        timing_slug
+                    )
+                    VALUES (?, ?, ?)
+                    """,
+                    (person_id, goal_slug, timing_slug),
+                )
+
+        else:
+            existing = db.row_to_dict(existing_row)
+
+            resolved_goal = (
+                goal_slug
+                if "goal" in payload
+                else existing["goal_slug"]
+            )
+
+            resolved_timing = (
+                timing_slug
+                if "timing" in payload
+                else existing.get("timing_slug")
+            )
+
+            if db.USE_POSTGRES:
+                cursor.execute(
+                    """
+                    UPDATE person_preferences
+                    SET goal_slug = %s,
+                        timing_slug = %s,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE person_id = %s
+                    """,
+                    (
+                        resolved_goal,
+                        resolved_timing,
+                        person_id,
+                    ),
+                )
+            else:
+                cursor.execute(
+                    """
+                    UPDATE person_preferences
+                    SET goal_slug = ?,
+                        timing_slug = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE person_id = ?
+                    """,
+                    (
+                        resolved_goal,
+                        resolved_timing,
+                        person_id,
+                    ),
+                )
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT
+                    goal_slug,
+                    timing_slug,
+                    created_at,
+                    updated_at
+                FROM person_preferences
+                WHERE person_id = %s
+                """,
+                (person_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT
+                    goal_slug,
+                    timing_slug,
+                    created_at,
+                    updated_at
+                FROM person_preferences
+                WHERE person_id = ?
+                """,
+                (person_id,),
+            )
+
+        row = cursor.fetchone()
+
+        conn.commit()
+
+        return jsonify({
+            "preference": _serialize_web_person_preference(row)
+        })
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
+# ── WEB PERSONALIZATION: PERSON INGREDIENT PREFERENCES ────────────────────────
+# Uses canonical reviewed-preset ingredient IDs only.
+
+
+def _serialize_web_person_ingredient_preferences(rows):
+    preferred = []
+    avoid = []
+
+    for row in rows:
+        item = db.row_to_dict(row)
+        ingredient_id = item["ingredient_id"]
+        preference_type = item["preference_type"]
+
+        if preference_type == "preferred":
+            preferred.append(ingredient_id)
+        elif preference_type == "avoid":
+            avoid.append(ingredient_id)
+
+    return {
+        "preferred": sorted(preferred),
+        "avoid": sorted(avoid),
+    }
+
+
+@app.route(
+    "/api/persons/<int:person_id>/ingredient-preferences",
+    methods=["GET"],
+)
+@login_required
+def get_web_person_ingredient_preferences(person_id):
+    """Return preferred/avoid ingredient IDs for an owned Person."""
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = %s
+                  AND user_id = %s
+                """,
+                (person_id, current_user.id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (person_id, current_user.id),
+            )
+
+        if cursor.fetchone() is None:
+            return jsonify({"error": "not_found"}), 404
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT ingredient_id, preference_type
+                FROM person_ingredient_preferences
+                WHERE person_id = %s
+                ORDER BY ingredient_id ASC
+                """,
+                (person_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT ingredient_id, preference_type
+                FROM person_ingredient_preferences
+                WHERE person_id = ?
+                ORDER BY ingredient_id ASC
+                """,
+                (person_id,),
+            )
+
+        return jsonify(
+            _serialize_web_person_ingredient_preferences(
+                cursor.fetchall()
+            )
+        )
+
+    finally:
+        conn.close()
+
+
+@app.route(
+    "/api/persons/<int:person_id>/ingredient-preferences",
+    methods=["PUT"],
+)
+@login_required
+@csrf.exempt
+def replace_web_person_ingredient_preferences(person_id):
+    """Replace the complete preferred/avoid set for an owned Person."""
+    from goal_preset_recipe import get_supported_ingredient_ids
+
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify({"error": "invalid_request"}), 400
+
+    unexpected_fields = sorted(
+        set(payload) - {"preferred", "avoid"}
+    )
+
+    if unexpected_fields:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "unsupported request fields",
+            "fields": unexpected_fields,
+        }), 400
+
+    if set(payload) != {"preferred", "avoid"}:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "preferred and avoid are required",
+        }), 400
+
+    raw_preferred = payload.get("preferred")
+    raw_avoid = payload.get("avoid")
+
+    if not isinstance(raw_preferred, list):
+        return jsonify({"error": "invalid_preferred"}), 400
+
+    if not isinstance(raw_avoid, list):
+        return jsonify({"error": "invalid_avoid"}), 400
+
+    def normalize_ingredient_ids(values):
+        normalized = []
+
+        for value in values:
+            if not isinstance(value, str):
+                return None
+
+            ingredient_id = value.strip().lower()
+
+            if not ingredient_id:
+                return None
+
+            normalized.append(ingredient_id)
+
+        return normalized
+
+    preferred = normalize_ingredient_ids(raw_preferred)
+    avoid = normalize_ingredient_ids(raw_avoid)
+
+    if preferred is None:
+        return jsonify({"error": "invalid_preferred"}), 400
+
+    if avoid is None:
+        return jsonify({"error": "invalid_avoid"}), 400
+
+    if len(preferred) != len(set(preferred)):
+        return jsonify({"error": "duplicate_preferred"}), 400
+
+    if len(avoid) != len(set(avoid)):
+        return jsonify({"error": "duplicate_avoid"}), 400
+
+    overlap = sorted(set(preferred) & set(avoid))
+
+    if overlap:
+        return jsonify({
+            "error": "ingredient_preference_overlap",
+            "ingredients": overlap,
+        }), 400
+
+    supported = set(get_supported_ingredient_ids())
+
+    unsupported = sorted(
+        (set(preferred) | set(avoid)) - supported
+    )
+
+    if unsupported:
+        return jsonify({
+            "error": "unsupported_ingredient",
+            "ingredients": unsupported,
+        }), 400
+
+    conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        # Ownership check.
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = %s
+                  AND user_id = %s
+                """,
+                (person_id, current_user.id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id
+                FROM persons
+                WHERE id = ?
+                  AND user_id = ?
+                """,
+                (person_id, current_user.id),
+            )
+
+        if cursor.fetchone() is None:
+            return jsonify({"error": "not_found"}), 404
+
+        # Full replacement happens inside one transaction.
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                DELETE FROM person_ingredient_preferences
+                WHERE person_id = %s
+                """,
+                (person_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                DELETE FROM person_ingredient_preferences
+                WHERE person_id = ?
+                """,
+                (person_id,),
+            )
+
+        for ingredient_id in preferred:
+            if db.USE_POSTGRES:
+                cursor.execute(
+                    """
+                    INSERT INTO person_ingredient_preferences (
+                        person_id,
+                        ingredient_id,
+                        preference_type
+                    )
+                    VALUES (%s, %s, %s)
+                    """,
+                    (
+                        person_id,
+                        ingredient_id,
+                        "preferred",
+                    ),
+                )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO person_ingredient_preferences (
+                        person_id,
+                        ingredient_id,
+                        preference_type
+                    )
+                    VALUES (?, ?, ?)
+                    """,
+                    (
+                        person_id,
+                        ingredient_id,
+                        "preferred",
+                    ),
+                )
+
+        for ingredient_id in avoid:
+            if db.USE_POSTGRES:
+                cursor.execute(
+                    """
+                    INSERT INTO person_ingredient_preferences (
+                        person_id,
+                        ingredient_id,
+                        preference_type
+                    )
+                    VALUES (%s, %s, %s)
+                    """,
+                    (
+                        person_id,
+                        ingredient_id,
+                        "avoid",
+                    ),
+                )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO person_ingredient_preferences (
+                        person_id,
+                        ingredient_id,
+                        preference_type
+                    )
+                    VALUES (?, ?, ?)
+                    """,
+                    (
+                        person_id,
+                        ingredient_id,
+                        "avoid",
+                    ),
+                )
+
+        conn.commit()
+
+        return jsonify({
+            "preferred": sorted(preferred),
+            "avoid": sorted(avoid),
+        })
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
 
 
 # ── SAVED RECIPES ─────────────────────────────────────────────────────────────

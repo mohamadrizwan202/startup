@@ -1,5 +1,6 @@
 import pytest
 
+import goal_preset_recipe
 import recipe_calculator
 from goal_preset_recipe import (
     GoalPresetRecipeInputError,
@@ -770,3 +771,55 @@ def test_muscle_health_c_uses_two_liquid_display_units():
 
     assert by_id["oat-milk"]["unit"] == "ml"
     assert round(by_id["oat-milk"]["amount"]) == 95
+
+
+
+def test_supported_ingredient_ids_match_reviewed_presets():
+    from goal_preset_recipe import (
+        _PRESET_RECIPES,
+        get_supported_ingredient_ids,
+    )
+
+    expected = tuple(
+        sorted(
+            {
+                ingredient["id"]
+                for preset in _PRESET_RECIPES.values()
+                for ingredient in preset["ingredients"]
+            }
+        )
+    )
+
+    actual = get_supported_ingredient_ids()
+
+    assert actual == expected
+    assert len(actual) == len(set(actual))
+    assert all(
+        isinstance(ingredient_id, str)
+        and ingredient_id.strip()
+        for ingredient_id in actual
+    )
+
+
+def test_supported_ingredient_options_are_canonical():
+    options = goal_preset_recipe.get_supported_ingredient_options()
+
+    assert len(options) == 36
+    assert all(
+        set(option) == {"id", "display_name"}
+        for option in options
+    )
+
+    option_ids = [option["id"] for option in options]
+
+    assert len(option_ids) == len(set(option_ids))
+    assert set(option_ids) == set(
+        goal_preset_recipe.get_supported_ingredient_ids()
+    )
+
+    by_id = {
+        option["id"]: option["display_name"]
+        for option in options
+    }
+
+    assert by_id["oat-milk"] == "Oat Milk"

@@ -439,6 +439,166 @@ def ensure_schema():
                 WHERE is_default = 1
             """)
 
+        # ── WEB PERSONALIZATION: PERSON PREFERENCES ────────────────────────
+        # Consumer web personalization only.
+        # Keep separate from the app profile system.
+        if USE_POSTGRES:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS person_preferences (
+                    id SERIAL PRIMARY KEY,
+                    person_id INTEGER NOT NULL
+                        REFERENCES persons(id) ON DELETE CASCADE,
+                    goal_slug VARCHAR(100) NOT NULL,
+                    timing_slug VARCHAR(100),
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS
+                    person_preferences_person_id_uidx
+                ON person_preferences(person_id)
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS person_preferences (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    person_id INTEGER NOT NULL
+                        REFERENCES persons(id) ON DELETE CASCADE,
+                    goal_slug TEXT NOT NULL,
+                    timing_slug TEXT,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS
+                    person_preferences_person_id_uidx
+                ON person_preferences(person_id)
+            """)
+
+        # ── WEB PERSONALIZATION: PERSON INGREDIENT PREFERENCES ────────────
+        # Preferred/avoid choices use reviewed-preset ingredient IDs.
+        # Keep separate from the app profile system.
+        if USE_POSTGRES:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS person_ingredient_preferences (
+                    id SERIAL PRIMARY KEY,
+                    person_id INTEGER NOT NULL
+                        REFERENCES persons(id) ON DELETE CASCADE,
+                    ingredient_id VARCHAR(100) NOT NULL,
+                    preference_type VARCHAR(20) NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT person_ingredient_preferences_id_not_blank
+                        CHECK (BTRIM(ingredient_id) <> ''),
+                    CONSTRAINT person_ingredient_preferences_type_valid
+                        CHECK (
+                            preference_type IN (
+                                'preferred',
+                                'avoid'
+                            )
+                        )
+                )
+            """)
+            cursor.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS
+                    person_ingredient_preferences_person_ingredient_uidx
+                ON person_ingredient_preferences(
+                    person_id,
+                    ingredient_id
+                )
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS person_ingredient_preferences (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    person_id INTEGER NOT NULL
+                        REFERENCES persons(id) ON DELETE CASCADE,
+                    ingredient_id TEXT NOT NULL,
+                    preference_type TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CHECK (TRIM(ingredient_id) <> ''),
+                    CHECK (
+                        preference_type IN (
+                            'preferred',
+                            'avoid'
+                        )
+                    )
+                )
+            """)
+            cursor.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS
+                    person_ingredient_preferences_person_ingredient_uidx
+                ON person_ingredient_preferences(
+                    person_id,
+                    ingredient_id
+                )
+            """)
+
+        # ── WEB PERSONALIZATION: GENERATION LEDGER ────────────────────────
+        # Records successful personalized smoothie generations.
+        # Free-trial quota is account-wide and counts only free_trial rows.
+        # Person deletion preserves usage history by setting person_id NULL.
+        if USE_POSTGRES:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS personalized_smoothie_generations (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL
+                        REFERENCES users(id) ON DELETE CASCADE,
+                    person_id INTEGER
+                        REFERENCES persons(id) ON DELETE SET NULL,
+                    goal_slug VARCHAR(100) NOT NULL,
+                    timing_slug VARCHAR(100) NOT NULL,
+                    access_type VARCHAR(20) NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT personalized_generations_goal_not_blank
+                        CHECK (BTRIM(goal_slug) <> ''),
+                    CONSTRAINT personalized_generations_timing_not_blank
+                        CHECK (BTRIM(timing_slug) <> ''),
+                    CONSTRAINT personalized_generations_access_type_valid
+                        CHECK (access_type IN ('free_trial', 'pro'))
+                )
+            """)
+
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS
+                    personalized_generations_user_access_created_idx
+                ON personalized_smoothie_generations (
+                    user_id,
+                    access_type,
+                    created_at DESC
+                )
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS personalized_smoothie_generations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL
+                        REFERENCES users(id) ON DELETE CASCADE,
+                    person_id INTEGER
+                        REFERENCES persons(id) ON DELETE SET NULL,
+                    goal_slug TEXT NOT NULL,
+                    timing_slug TEXT NOT NULL,
+                    access_type TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    CHECK (TRIM(goal_slug) <> ''),
+                    CHECK (TRIM(timing_slug) <> ''),
+                    CHECK (access_type IN ('free_trial', 'pro'))
+                )
+            """)
+
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS
+                    personalized_generations_user_access_created_idx
+                ON personalized_smoothie_generations (
+                    user_id,
+                    access_type,
+                    created_at DESC
+                )
+            """)
+
         # ── SAVED RECIPES TABLE ──────────────────────────────────────────
         if USE_POSTGRES:
             cursor.execute("""

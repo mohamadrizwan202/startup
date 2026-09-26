@@ -882,6 +882,83 @@ def _build_scaled_weights(
     return scaled
 
 
+def get_supported_goal_slugs() -> tuple[str, ...]:
+    """Return canonical goal slugs backed by reviewed preset recipes."""
+    return tuple(
+        sorted(
+            {
+                goal_slug
+                for goal_slug, _variant in _PRESET_RECIPES
+            }
+        )
+    )
+
+
+def get_supported_timing_slugs() -> tuple[str, ...]:
+    """Return canonical timing slugs backed by preset target weights."""
+    return tuple(_TIMING_TARGET_WEIGHT_G)
+
+
+def get_supported_ingredient_ids() -> tuple[str, ...]:
+    """Return canonical ingredient IDs used by reviewed preset recipes."""
+    return tuple(
+        sorted(
+            {
+                ingredient["id"]
+                for preset in _PRESET_RECIPES.values()
+                for ingredient in preset["ingredients"]
+            }
+        )
+    )
+
+
+_PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES = {
+    "oat-milk": "Oat Milk",
+}
+
+
+def get_supported_ingredient_options() -> tuple[dict[str, str], ...]:
+    """Return canonical ingredient IDs and display labels for personalization."""
+    display_names_by_id: dict[str, set[str]] = {}
+
+    for preset in _PRESET_RECIPES.values():
+        for ingredient in preset["ingredients"]:
+            ingredient_id = ingredient["id"]
+            display_name = ingredient["display_name"]
+
+            display_names_by_id.setdefault(
+                ingredient_id,
+                set(),
+            ).add(display_name)
+
+    options = []
+
+    for ingredient_id in sorted(display_names_by_id):
+        display_names = display_names_by_id[ingredient_id]
+
+        if ingredient_id in _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES:
+            display_name = (
+                _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES[
+                    ingredient_id
+                ]
+            )
+        elif len(display_names) == 1:
+            display_name = next(iter(display_names))
+        else:
+            raise RuntimeError(
+                "Ingredient has conflicting display names without "
+                f"an explicit personalization override: "
+                f"{ingredient_id}={sorted(display_names)!r}"
+            )
+
+        options.append({
+            "id": ingredient_id,
+            "display_name": display_name,
+        })
+
+    return tuple(options)
+
+
 def build_goal_preset_recipe(
     *,
     goal,
