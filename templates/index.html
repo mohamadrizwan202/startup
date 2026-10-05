@@ -8251,6 +8251,18 @@
               button.setAttribute('aria-pressed', 'false');
             });
 
+
+            window.pfRestoreGoalPresetResult = function(recipe) {
+              if (!recipe) {
+                return false;
+              }
+
+              window.pfGoalPresetRecipe = recipe;
+              currentVariant = recipe.variant || currentVariant;
+              renderPresetResult(recipe);
+              return true;
+            };
+
             async function buildPresetVariant(variant, triggerButton) {
               if (!selectedGoal || !selectedTime || isBuilding) return;
 
@@ -8735,6 +8747,15 @@
     const PF_PENDING_SAVE_TTL_MS =
       60 * 60 * 1000;
 
+    const PF_PENDING_PERSONALIZE_KEY =
+      'purefyul.pending-personalize.v1';
+
+    const PF_PENDING_PERSONALIZE_TTL_MS =
+      60 * 60 * 1000;
+
+    let pfPersonalizeAuthReturnFocus = null;
+    let pfPersonalizeAuthReopenSmoothieModal = false;
+
     let pfSaveAuthReturnFocus = null;
     let pfSaveAuthReopenSmoothieModal = false;
 
@@ -8938,6 +8959,94 @@
       }
     }
 
+    function pfStorePendingPersonalizeSnapshot() {
+      try {
+        const recipe =
+          window.pfGoalPresetRecipe ||
+          null;
+
+        if (!recipe) {
+          return false;
+        }
+
+        const snapshot = {
+          version: 1,
+          createdAt: Date.now(),
+          recipe: recipe
+        };
+
+        sessionStorage.setItem(
+          PF_PENDING_PERSONALIZE_KEY,
+          JSON.stringify(snapshot)
+        );
+
+        return true;
+      } catch (error) {
+        console.error(
+          '[pending-personalize] Could not preserve result:',
+          error
+        );
+
+        return false;
+      }
+    }
+
+    function pfReadPendingPersonalizeSnapshot() {
+      try {
+        const raw =
+          sessionStorage.getItem(
+            PF_PENDING_PERSONALIZE_KEY
+          );
+
+        if (!raw) return null;
+
+        const snapshot =
+          JSON.parse(raw);
+
+        const createdAt =
+          Number(snapshot.createdAt || 0);
+
+        const expired =
+          !createdAt ||
+          (
+            Date.now() - createdAt >
+            PF_PENDING_PERSONALIZE_TTL_MS
+          );
+
+        if (
+          snapshot.version !== 1 ||
+          expired
+        ) {
+          sessionStorage.removeItem(
+            PF_PENDING_PERSONALIZE_KEY
+          );
+
+          return null;
+        }
+
+        return snapshot;
+      } catch (error) {
+        sessionStorage.removeItem(
+          PF_PENDING_PERSONALIZE_KEY
+        );
+
+        return null;
+      }
+    }
+
+    function pfClearPendingPersonalizeSnapshot() {
+      try {
+        sessionStorage.removeItem(
+          PF_PENDING_PERSONALIZE_KEY
+        );
+      } catch (error) {
+        console.warn(
+          '[pending-personalize] Could not clear snapshot:',
+          error
+        );
+      }
+    }
+
     function pfSetSelectValueIfPresent(
       selectElement,
       value
@@ -9086,6 +9195,142 @@
         pfSaveAuthReopenSmoothieModal;
 
       pfSaveAuthReopenSmoothieModal =
+        false;
+
+      if (
+        shouldReopenSmoothieModal &&
+        typeof pfOpenSmoothieModal ===
+          'function'
+      ) {
+        window.requestAnimationFrame(
+          function() {
+            pfOpenSmoothieModal();
+          }
+        );
+      }
+    }
+
+    function pfOpenPersonalizeAuthPrompt(
+      triggerElement
+    ) {
+      const overlay =
+        document.getElementById(
+          'pf-personalize-auth-overlay'
+        );
+
+      const registerLink =
+        document.getElementById(
+          'pf-personalize-auth-register'
+        );
+
+      const loginLink =
+        document.getElementById(
+          'pf-personalize-auth-login'
+        );
+
+      if (!overlay) return;
+
+      const smoothieModal =
+        document.getElementById(
+          'pf-smoothie-modal'
+        );
+
+      pfPersonalizeAuthReopenSmoothieModal =
+        Boolean(
+          smoothieModal &&
+          smoothieModal.getAttribute(
+            'aria-hidden'
+          ) === 'false'
+        );
+
+      if (
+        pfPersonalizeAuthReopenSmoothieModal &&
+        typeof pfCloseSmoothieModal ===
+          'function'
+      ) {
+        pfCloseSmoothieModal({
+          hideCard: false
+        });
+      }
+
+      const returnDestination =
+        '/app?resume_personalize=1';
+
+      const encodedDestination =
+        encodeURIComponent(
+          returnDestination
+        );
+
+      if (registerLink) {
+        registerLink.href =
+          '/register?next=' +
+          encodedDestination;
+      }
+
+      if (loginLink) {
+        loginLink.href =
+          '/login?next=' +
+          encodedDestination;
+      }
+
+      pfPersonalizeAuthReturnFocus =
+        triggerElement || null;
+
+      overlay.classList.add('is-open');
+      overlay.setAttribute(
+        'aria-hidden',
+        'false'
+      );
+
+      document.body.classList.add(
+        'pf-save-auth-open'
+      );
+
+      window.setTimeout(() => {
+        if (registerLink) {
+          registerLink.focus();
+        }
+      }, 30);
+    }
+
+    function pfClosePersonalizeAuthPrompt(
+      discardSnapshot
+    ) {
+      const overlay =
+        document.getElementById(
+          'pf-personalize-auth-overlay'
+        );
+
+      if (!overlay) return;
+
+      overlay.classList.remove('is-open');
+      overlay.setAttribute(
+        'aria-hidden',
+        'true'
+      );
+
+      document.body.classList.remove(
+        'pf-save-auth-open'
+      );
+
+      if (discardSnapshot) {
+        pfClearPendingPersonalizeSnapshot();
+      }
+
+      if (
+        pfPersonalizeAuthReturnFocus &&
+        typeof pfPersonalizeAuthReturnFocus.focus ===
+          'function'
+      ) {
+        pfPersonalizeAuthReturnFocus.focus();
+      }
+
+      pfPersonalizeAuthReturnFocus = null;
+
+      const shouldReopenSmoothieModal =
+        pfPersonalizeAuthReopenSmoothieModal;
+
+      pfPersonalizeAuthReopenSmoothieModal =
         false;
 
       if (
@@ -9327,6 +9572,66 @@
       );
     }
 
+    function pfRestorePendingPersonalizeAfterAuth() {
+      const searchParams =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      if (
+        searchParams.get('resume_personalize') !==
+          '1' ||
+        !PF_RESULT_PERMISSIONS.isAuthenticated
+      ) {
+        return;
+      }
+
+      const snapshot =
+        pfReadPendingPersonalizeSnapshot();
+
+      if (
+        !snapshot ||
+        !snapshot.recipe
+      ) {
+        return;
+      }
+
+      if (
+        typeof window.pfRestoreGoalPresetResult !==
+          'function'
+      ) {
+        return;
+      }
+
+      const restored =
+        window.pfRestoreGoalPresetResult(
+          snapshot.recipe
+        );
+
+      if (!restored) {
+        return;
+      }
+
+      pfClearPendingPersonalizeSnapshot();
+
+      const cleanUrl =
+        new URL(
+          window.location.href
+        );
+
+      cleanUrl.searchParams.delete(
+        'resume_personalize'
+      );
+
+      window.history.replaceState(
+        {},
+        document.title,
+        cleanUrl.pathname +
+          cleanUrl.search +
+          cleanUrl.hash
+      );
+    }
+
     document.addEventListener(
       'DOMContentLoaded',
       function() {
@@ -9390,6 +9695,104 @@
         );
 
         pfRestorePendingSaveAfterAuth();
+      }
+    );
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      function() {
+        const personalizeButton =
+          document.getElementById(
+            'pf-result-personalize'
+          );
+
+        const overlay =
+          document.getElementById(
+            'pf-personalize-auth-overlay'
+          );
+
+        const closeButton =
+          document.getElementById(
+            'pf-personalize-auth-close'
+          );
+
+        const dismissButton =
+          document.getElementById(
+            'pf-personalize-auth-dismiss'
+          );
+
+        if (personalizeButton) {
+          personalizeButton.addEventListener(
+            'click',
+            function() {
+              if (
+                PF_RESULT_PERMISSIONS.isAuthenticated
+              ) {
+                return;
+              }
+
+              const snapshotStored =
+                pfStorePendingPersonalizeSnapshot();
+
+              if (!snapshotStored) {
+                console.error(
+                  '[pending-personalize] Result snapshot was not available'
+                );
+                return;
+              }
+
+              pfOpenPersonalizeAuthPrompt(
+                personalizeButton
+              );
+            }
+          );
+        }
+
+        if (closeButton) {
+          closeButton.addEventListener(
+            'click',
+            function() {
+              pfClosePersonalizeAuthPrompt(false);
+            }
+          );
+        }
+
+        if (dismissButton) {
+          dismissButton.addEventListener(
+            'click',
+            function() {
+              pfClosePersonalizeAuthPrompt(true);
+            }
+          );
+        }
+
+        if (overlay) {
+          overlay.addEventListener(
+            'click',
+            function(event) {
+              if (event.target === overlay) {
+                pfClosePersonalizeAuthPrompt(false);
+              }
+            }
+          );
+        }
+
+        document.addEventListener(
+          'keydown',
+          function(event) {
+            if (
+              event.key === 'Escape' &&
+              overlay &&
+              overlay.classList.contains(
+                'is-open'
+              )
+            ) {
+              pfClosePersonalizeAuthPrompt(false);
+            }
+          }
+        );
+
+        pfRestorePendingPersonalizeAfterAuth();
       }
     );
 
@@ -27555,6 +27958,80 @@ const batchG = (smoothieBatchMlOverride != null)
         class="pf-save-auth-dismiss"
       >
         Continue without saving
+      </button>
+    </div>
+  </section>
+</div>
+
+
+<!-- ── Personalize Authentication Choice ─────────────────────── -->
+<div
+  id="pf-personalize-auth-overlay"
+  class="pf-save-auth-overlay"
+  aria-hidden="true"
+>
+  <section
+    class="pf-save-auth-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pf-personalize-auth-title"
+    aria-describedby="pf-personalize-auth-description"
+  >
+    <button
+      type="button"
+      id="pf-personalize-auth-close"
+      class="pf-save-auth-close"
+      aria-label="Close"
+    >&#10005;</button>
+
+    <div class="pf-save-auth-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M6 4.75h12v15l-6-3.7-6 3.7z"></path>
+      </svg>
+    </div>
+
+    <h2
+      id="pf-personalize-auth-title"
+      class="pf-save-auth-title"
+    >
+      Make this smoothie yours.
+    </h2>
+
+    <p
+      id="pf-personalize-auth-description"
+      class="pf-save-auth-description"
+    >
+      Tell us your ingredient preferences after signup or login. Your first 3 personalized smoothies are free.
+    </p>
+
+    <p class="pf-save-auth-plan-note">
+      Your current smoothie will remain available while you
+      register or log in.
+    </p>
+
+    <div class="pf-save-auth-actions">
+      <a
+        id="pf-personalize-auth-register"
+        class="pf-save-auth-primary"
+        href="/register"
+      >
+        Create free account
+      </a>
+
+      <a
+        id="pf-personalize-auth-login"
+        class="pf-save-auth-secondary"
+        href="/login"
+      >
+        Already have an account? Log in
+      </a>
+
+      <button
+        type="button"
+        id="pf-personalize-auth-dismiss"
+        class="pf-save-auth-dismiss"
+      >
+        Continue without personalizing
       </button>
     </div>
   </section>
