@@ -18977,112 +18977,6 @@ const allergenPanel = allergenNames.length === 0
       return true;
     }
 
-    async function pfRequestAiSmoothieName(
-      payload,
-      fallbackName,
-      fallbackInsight
-    ) {
-      if (
-        !payload ||
-        !Array.isArray(payload.ingredients) ||
-        payload.ingredients.length === 0
-      ) {
-        pfRestoreAiSmoothieFallback(
-          fallbackName,
-          fallbackInsight
-        );
-
-        return;
-      }
-
-      const requestToken =
-        ++pfAiSmoothieNameRequestToken;
-
-      const controller =
-        new AbortController();
-
-      const timeoutId =
-        window.setTimeout(
-          () => controller.abort(),
-          10000
-        );
-
-      try {
-        const response = await fetch(
-          '/api/ai-name-smoothie',
-          {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: {
-              'Content-Type':
-                'application/json'
-            },
-            body: JSON.stringify(payload),
-            signal: controller.signal
-          }
-        );
-
-        if (
-          requestToken !==
-          pfAiSmoothieNameRequestToken
-        ) {
-          return;
-        }
-
-        if (!response.ok) {
-          pfRestoreAiSmoothieFallback(
-            fallbackName,
-            fallbackInsight
-          );
-
-          return;
-        }
-
-        const result =
-          await response.json();
-
-        if (
-          requestToken !==
-          pfAiSmoothieNameRequestToken
-        ) {
-          return;
-        }
-
-        if (
-          !result ||
-          result.success !== true ||
-          typeof result.name !== 'string'
-        ) {
-          pfRestoreAiSmoothieFallback(
-            fallbackName,
-            fallbackInsight
-          );
-
-          return;
-        }
-
-        pfApplyAiSmoothieName(
-          result.name,
-          typeof result.insight === 'string'
-            ? result.insight
-            : fallbackInsight,
-          fallbackInsight
-        );
-      } catch (error) {
-        if (
-          requestToken ===
-          pfAiSmoothieNameRequestToken
-        ) {
-          pfRestoreAiSmoothieFallback(
-            fallbackName,
-            fallbackInsight
-          );
-        }
-      } finally {
-        window.clearTimeout(timeoutId);
-      }
-    }
-
     // Function to update smoothie name from health goal
     function updateSmoothieNameFromHealthGoal() {
       if (!smoothieHealthGoalsEl || !smoothieNameEl || !smoothieNameDisplayEl || !smoothieNameBarEl) {
@@ -23835,12 +23729,9 @@ const allergenPanel = allergenNames.length === 0
               aiSmoothieNamePayload.ingredients
             );
 
-          pfShowAiSmoothieLoading();
-
-          // One Claude request returns both the name
-          // and the grounded ingredient insight.
-          void pfRequestAiSmoothieName(
-            aiSmoothieNamePayload,
+          // Apply the deterministic name and insight immediately.
+          // No AI naming request is made.
+          pfRestoreAiSmoothieFallback(
             fallbackSmoothieName,
             fallbackIngredientInsight
           );

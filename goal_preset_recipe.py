@@ -899,6 +899,38 @@ def get_supported_timing_slugs() -> tuple[str, ...]:
     return tuple(_TIMING_TARGET_WEIGHT_G)
 
 
+def get_reviewed_goal_recipe_candidates(goal) -> tuple[dict, ...]:
+    """Return complete reviewed recipe candidates for one health goal."""
+    normalized_goal = _normalize_required_slug(
+        goal,
+        field="goal",
+    )
+
+    candidates = []
+
+    for (candidate_goal, variant), preset in sorted(
+        _PRESET_RECIPES.items()
+    ):
+        if candidate_goal != normalized_goal:
+            continue
+
+        candidates.append({
+            "variant": variant,
+            "display_name": preset["display_name"],
+            "ingredient_ids": tuple(
+                ingredient["id"]
+                for ingredient in preset["ingredients"]
+            ),
+        })
+
+    if not candidates:
+        raise GoalPresetRecipeInputError(
+            f"unsupported preset goal: '{normalized_goal}'"
+        )
+
+    return tuple(candidates)
+
+
 def get_supported_ingredient_ids() -> tuple[str, ...]:
     """Return canonical ingredient IDs used by reviewed preset recipes."""
     return tuple(

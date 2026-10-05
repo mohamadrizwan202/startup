@@ -2,10 +2,30 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
-import anthropic
 
-# Anthropic Haiku client
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+class _LazyAnthropicClient:
+    """Create the shared Anthropic client only on first AI use."""
+
+    def __init__(self):
+        self._resolved_client = None
+
+    def _resolve(self):
+        if self._resolved_client is None:
+            import anthropic
+
+            self._resolved_client = anthropic.Anthropic(
+                api_key=os.getenv("ANTHROPIC_API_KEY")
+            )
+
+        return self._resolved_client
+
+    def __getattr__(self, name):
+        return getattr(self._resolve(), name)
+
+
+# Shared lazy Anthropic Haiku client.
+client = _LazyAnthropicClient()
 
 import re
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, abort, g, send_from_directory, Response, current_app, make_response
@@ -27,7 +47,6 @@ from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 
 import sqlite3
 import os
-import anthropic
 import sys
 import hmac
 from pathlib import Path
@@ -1146,7 +1165,6 @@ else:
 
 # --- Postgres probe (psycopg v3) ---
 import os
-import anthropic
 import logging
 from importlib import metadata
 
@@ -55545,7 +55563,11 @@ def build_smoothie_api():
 @csrf.exempt
 @app.post("/api/build-goal-preset")
 def build_goal_preset_api():
-    """Build one deterministic reviewed health-goal preset."""
+    """Build one AI-selected, backend-reviewed health-goal recipe."""
+    from ai_goal_recipe_selector import (
+        AIGoalRecipeSelectionError,
+        select_reviewed_goal_recipe,
+    )
     from goal_preset_recipe import (
         GoalPresetRecipeInputError,
         build_goal_preset_recipe,
@@ -55571,12 +55593,69 @@ def build_goal_preset_api():
             "fields": unexpected_fields,
         }), 400
 
+    goal = payload.get("goal")
+    timing = payload.get("timing")
+    requested_variant = payload.get("variant", "a")
+    selection_source = "reviewed_preset_requested"
+    selected_variant = requested_variant
+
     try:
+        if app.config.get("AI_GOAL_RECIPE_ENABLED", True):
+            history = session.get(
+                "pf_ai_goal_recipe_recent_variants",
+                {},
+            )
+
+            if not isinstance(history, dict):
+                history = {}
+
+            history_key = (
+                f"{str(goal).strip().lower()}:"
+                f"{str(timing).strip().lower()}"
+            )
+            recent_variants = history.get(history_key, [])
+
+            if not isinstance(recent_variants, list):
+                recent_variants = []
+
+            try:
+                selection = select_reviewed_goal_recipe(
+                    client=client,
+                    goal=goal,
+                    timing=timing,
+                    excluded_variants=recent_variants[-2:],
+                )
+                selected_variant = selection["variant"]
+                selection_source = selection["selection_source"]
+            except AIGoalRecipeSelectionError:
+                app.logger.warning(
+                    "AI goal recipe selection failed; "
+                    "using reviewed preset fallback",
+                    exc_info=True,
+                )
+                selection_source = "reviewed_preset_fallback"
+
         result = build_goal_preset_recipe(
-            goal=payload.get("goal"),
-            timing=payload.get("timing"),
-            variant=payload.get("variant", "a"),
+            goal=goal,
+            timing=timing,
+            variant=selected_variant,
         )
+
+        result.setdefault("preset_contract", {})[
+            "selection_source"
+        ] = selection_source
+
+        if app.config.get("AI_GOAL_RECIPE_ENABLED", True):
+            updated_recent = [
+                value
+                for value in recent_variants
+                if value != result["variant"]
+            ]
+            updated_recent.append(result["variant"])
+            history[history_key] = updated_recent[-2:]
+            session[
+                "pf_ai_goal_recipe_recent_variants"
+            ] = history
 
         return jsonify({
             "success": True,
