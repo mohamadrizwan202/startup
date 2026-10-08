@@ -1116,3 +1116,204 @@ def build_goal_preset_recipe(
             "composition_source": preset["proportion_source"],
         },
     }
+
+
+def build_personalized_goal_preset_recipe(
+    *,
+    goal,
+    timing,
+    variant,
+    ingredient_ids,
+) -> dict:
+    """Build a reviewed preset after explicit ingredient removals."""
+
+    normalized_goal = _normalize_required_slug(
+        goal,
+        field="goal",
+    )
+    normalized_timing = _normalize_required_slug(
+        timing,
+        field="timing",
+    )
+    normalized_variant = _normalize_required_slug(
+        variant,
+        field="variant",
+    )
+
+    if not isinstance(ingredient_ids, list):
+        raise GoalPresetRecipeInputError(
+            "ingredient_ids must be a list"
+        )
+
+    if not ingredient_ids:
+        raise GoalPresetRecipeInputError(
+            "at least one ingredient is required"
+        )
+
+    normalized_ingredient_ids = [
+        _normalize_required_slug(
+            ingredient_id,
+            field="ingredient_id",
+        )
+        for ingredient_id in ingredient_ids
+    ]
+
+    if len(normalized_ingredient_ids) != len(
+        set(normalized_ingredient_ids)
+    ):
+        raise GoalPresetRecipeInputError(
+            "duplicate ingredient selections are not allowed"
+        )
+
+    target_weight_g = _TIMING_TARGET_WEIGHT_G.get(
+        normalized_timing
+    )
+
+    if target_weight_g is None:
+        raise GoalPresetRecipeInputError(
+            f"unsupported preset timing: '{normalized_timing}'"
+        )
+
+    preset = _PRESET_RECIPES.get(
+        (normalized_goal, normalized_variant)
+    )
+
+    if preset is None:
+        raise GoalPresetRecipeInputError(
+            "unsupported preset recipe: "
+            f"goal='{normalized_goal}', "
+            f"variant='{normalized_variant}'"
+        )
+
+    reviewed_ingredient_ids = {
+        ingredient["id"]
+        for ingredient in preset["ingredients"]
+    }
+
+    foreign_ingredient_ids = [
+        ingredient_id
+        for ingredient_id in normalized_ingredient_ids
+        if ingredient_id not in reviewed_ingredient_ids
+    ]
+
+    if foreign_ingredient_ids:
+        raise GoalPresetRecipeInputError(
+            "ingredient is not part of the reviewed preset: "
+            f"'{foreign_ingredient_ids[0]}'"
+        )
+
+    selected_ingredient_ids = set(
+        normalized_ingredient_ids
+    )
+
+    all_definitions = deepcopy(
+        preset["ingredients"]
+    )
+    all_scaled_weights = _build_scaled_weights(
+        all_definitions,
+        target_weight_g=target_weight_g,
+    )
+
+    retained_definition_weights = [
+        (definition, weight_g)
+        for definition, weight_g in zip(
+            all_definitions,
+            all_scaled_weights,
+            strict=True,
+        )
+        if definition["id"] in selected_ingredient_ids
+    ]
+
+    definitions = [
+        definition
+        for definition, _weight_g in retained_definition_weights
+    ]
+    scaled_weights = [
+        weight_g
+        for _definition, weight_g in retained_definition_weights
+    ]
+
+    recipe_inputs = [
+        {
+            "ingredient": definition["display_name"],
+            "nutrition_lookup_name": definition[
+                "nutrition_lookup_name"
+            ],
+            "amount": weight_g,
+            "unit": "g",
+        }
+        for definition, weight_g in zip(
+            definitions,
+            scaled_weights,
+            strict=True,
+        )
+    ]
+
+    calculated = recipe_calculator.calculate_recipe(
+        recipe_inputs
+    )
+
+    result_ingredients = []
+
+    for definition, weight_g, calculated_ingredient in zip(
+        definitions,
+        scaled_weights,
+        calculated["ingredients"],
+        strict=True,
+    ):
+        display_unit = definition.get("display_unit", "g")
+
+        if display_unit == "ml":
+            display_amount = recipe_mass.convert_liquid_grams_to_ml(
+                nutrition_lookup_name=definition[
+                    "nutrition_lookup_name"
+                ],
+                weight_g=weight_g,
+            )
+        else:
+            display_amount = weight_g
+
+        result_ingredients.append(
+            {
+                "id": definition["id"],
+                "display_name": definition["display_name"],
+                "nutrition_lookup_name": calculated_ingredient[
+                    "nutrition_lookup_name"
+                ],
+                "nutrition_record_name": calculated_ingredient[
+                    "nutrition_record_name"
+                ],
+                "amount": round(display_amount, 3),
+                "unit": display_unit,
+                "weight_g": calculated_ingredient["weight_g"],
+                "mass_source": calculated_ingredient["mass_source"],
+                "nutrition": calculated_ingredient["nutrition"],
+            }
+        )
+
+    result_batch = deepcopy(calculated["batch"])
+    result_batch["weight_g"] = round(
+        float(calculated["batch"]["weight_g"]),
+        3,
+    )
+
+    return {
+        "goal": normalized_goal,
+        "timing": normalized_timing,
+        "variant": normalized_variant,
+        "display_name": preset["display_name"],
+        "target_weight_g": target_weight_g,
+        "ingredients": result_ingredients,
+        "batch": result_batch,
+        "portion": None,
+        "preset_contract": {
+            "personalized": True,
+            "uses_age": False,
+            "uses_sex": False,
+            "uses_eer": False,
+            "weight_source": "retained_preset_amounts",
+            "composition_source": (
+                "user_edited_reviewed_preset_composition"
+            ),
+        },
+    }
