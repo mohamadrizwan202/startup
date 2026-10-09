@@ -17,9 +17,17 @@ normalized through nutrition_facts_adapter before reaching calculation code.
 
 from __future__ import annotations
 
+from copy import deepcopy
+from time import monotonic
+
 import db
 
 from nutrition_facts_adapter import adapt_nutrition_facts_row
+
+
+_POSTGRES_EXACT_CACHE_TTL_SECONDS = 300.0
+_POSTGRES_EXACT_CACHE_MAX_SIZE = 256
+_postgres_exact_cache = {}
 
 
 class NutritionFactsLookupError(ValueError):
@@ -54,6 +62,21 @@ def get_nutrition_facts_exact(ingredient) -> dict | None:
     """
 
     lookup_name = _validate_lookup_name(ingredient)
+    cache_key = lookup_name.casefold()
+
+    if db.USE_POSTGRES:
+        cached = _postgres_exact_cache.get(cache_key)
+
+        if cached is not None:
+            cached_at, cached_result = cached
+
+            if (
+                monotonic() - cached_at
+                <= _POSTGRES_EXACT_CACHE_TTL_SECONDS
+            ):
+                return deepcopy(cached_result)
+
+            _postgres_exact_cache.pop(cache_key, None)
 
     if db.USE_POSTGRES:
         backend = "postgres"
@@ -112,10 +135,24 @@ def get_nutrition_facts_exact(ingredient) -> dict | None:
                 "multiple nutrition_facts rows match the exact ingredient name"
             )
 
-        return adapt_nutrition_facts_row(
+        result = adapt_nutrition_facts_row(
             rows[0],
             backend=backend,
         )
+
+        if db.USE_POSTGRES:
+            if (
+                len(_postgres_exact_cache)
+                >= _POSTGRES_EXACT_CACHE_MAX_SIZE
+            ):
+                _postgres_exact_cache.clear()
+
+            _postgres_exact_cache[cache_key] = (
+                monotonic(),
+                deepcopy(result),
+            )
+
+        return result
 
     finally:
         if cursor is not None:

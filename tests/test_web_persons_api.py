@@ -624,6 +624,111 @@ def test_set_person_goal_and_timing_together(client):
     assert preference["timing"] == "breakfast"
 
 
+def test_person_preferences_requires_goal_before_timing(client):
+    person = client.post(
+        "/api/persons",
+        json={"name": "Me"},
+    ).get_json()["person"]
+
+    response = client.patch(
+        f"/api/persons/{person['id']}/preferences",
+        json={"timing": "dinner"},
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "error": "goal_required",
+    }
+
+
+def test_postgres_person_preferences_patch_uses_single_statement(
+    client,
+    monkeypatch,
+):
+    class FakeCursor:
+        def __init__(self):
+            self.execute_calls = []
+
+        def execute(self, sql, parameters):
+            self.execute_calls.append((sql, parameters))
+
+        def fetchone(self):
+            return {
+                "person_found": True,
+                "goal_required": False,
+                "goal_slug": "skin-glow",
+                "timing_slug": "breakfast",
+                "created_at": "created",
+                "updated_at": "updated",
+            }
+
+    class FakeConnection:
+        def __init__(self):
+            self.cursor_instance = FakeCursor()
+            self.commit_count = 0
+            self.rollback_count = 0
+            self.closed = False
+
+        def cursor(self):
+            return self.cursor_instance
+
+        def commit(self):
+            self.commit_count += 1
+
+        def rollback(self):
+            self.rollback_count += 1
+
+        def close(self):
+            self.closed = True
+
+    connection = FakeConnection()
+
+    monkeypatch.setattr(db, "USE_POSTGRES", True)
+    monkeypatch.setattr(
+        db,
+        "get_conn",
+        lambda: connection,
+    )
+
+    response = client.patch(
+        "/api/persons/123/preferences",
+        json={
+            "goal": "skin-glow",
+            "timing": "breakfast",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["preference"] == {
+        "goal": "skin-glow",
+        "timing": "breakfast",
+        "created_at": "created",
+        "updated_at": "updated",
+    }
+
+    execute_calls = (
+        connection.cursor_instance.execute_calls
+    )
+
+    assert len(execute_calls) == 1
+
+    sql, parameters = execute_calls[0]
+
+    assert "ON CONFLICT (person_id)" in sql
+    assert "RETURNING" in sql
+    assert parameters == (
+        123,
+        TEST_USER["id"],
+        True,
+        "skin-glow",
+        True,
+        "breakfast",
+    )
+    assert connection.commit_count == 1
+    assert connection.rollback_count == 0
+    assert connection.closed is True
+
+
 def test_update_person_timing_preserves_goal(client):
     person = client.post(
         "/api/persons",

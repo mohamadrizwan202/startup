@@ -55689,12 +55689,572 @@ def build_goal_preset_api():
         }), 500
 
 
+def _read_web_personalization_context(
+    user_id,
+    requested_person_id=None,
+    *,
+    conn=None,
+):
+    """Read the web Person and ingredient preferences for generation."""
+    owns_connection = conn is None
+
+    if owns_connection:
+        conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if requested_person_id is not None:
+            if db.USE_POSTGRES:
+                cursor.execute(
+                    """
+                    SELECT id
+                    FROM persons
+                    WHERE id = %s
+                      AND user_id = %s
+                    """,
+                    (requested_person_id, user_id),
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id
+                    FROM persons
+                    WHERE id = ?
+                      AND user_id = ?
+                    """,
+                    (requested_person_id, user_id),
+                )
+        else:
+            if db.USE_POSTGRES:
+                cursor.execute(
+                    """
+                    SELECT id
+                    FROM persons
+                    WHERE user_id = %s
+                    ORDER BY is_default DESC, created_at ASC, id ASC
+                    LIMIT 1
+                    """,
+                    (user_id,),
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT id
+                    FROM persons
+                    WHERE user_id = ?
+                    ORDER BY is_default DESC, created_at ASC, id ASC
+                    LIMIT 1
+                    """,
+                    (user_id,),
+                )
+
+        row = cursor.fetchone()
+
+        if row is None:
+            return {
+                "found": requested_person_id is None,
+                "setup_required": requested_person_id is None,
+                "person_required": requested_person_id is None,
+                "preferences_required": requested_person_id is None,
+                "person_id": None,
+                "preferred": set(),
+                "avoid": set(),
+            }
+
+        person_id = db.row_to_dict(row)["id"]
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT ingredient_id, preference_type
+                FROM person_ingredient_preferences
+                WHERE person_id = %s
+                """,
+                (person_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT ingredient_id, preference_type
+                FROM person_ingredient_preferences
+                WHERE person_id = ?
+                """,
+                (person_id,),
+            )
+
+        preferred = set()
+        avoid = set()
+
+        for preference_row in cursor.fetchall():
+            preference = db.row_to_dict(preference_row)
+            ingredient_id = preference["ingredient_id"]
+            preference_type = preference["preference_type"]
+
+            if preference_type == "preferred":
+                preferred.add(ingredient_id)
+            elif preference_type == "avoid":
+                avoid.add(ingredient_id)
+
+        preferences_required = not preferred and not avoid
+
+        return {
+            "found": True,
+            "setup_required": preferences_required,
+            "person_required": False,
+            "preferences_required": preferences_required,
+            "person_id": person_id,
+            "preferred": preferred,
+            "avoid": avoid,
+        }
+
+    finally:
+        if owns_connection:
+            conn.close()
+
+
+def _select_personalized_goal_variant(
+    *,
+    goal,
+    current_variant,
+    preferred,
+    avoid,
+):
+    """Choose the best reviewed variant for web ingredient preferences."""
+    from goal_preset_recipe import get_reviewed_goal_recipe_candidates
+
+    candidates = list(get_reviewed_goal_recipe_candidates(goal))
+
+    safe_candidates = []
+
+    for candidate in candidates:
+        ingredient_ids = set(candidate["ingredient_ids"])
+
+        if ingredient_ids.intersection(avoid):
+            continue
+
+        safe_candidates.append(candidate)
+
+    if not safe_candidates:
+        return None
+
+    def ranking(candidate):
+        ingredient_ids = set(candidate["ingredient_ids"])
+        preferred_matches = len(ingredient_ids.intersection(preferred))
+
+        return (
+            -preferred_matches,
+            candidate["variant"],
+        )
+
+    return sorted(safe_candidates, key=ranking)[0]["variant"]
+
+
+def _persist_personalize_editor_preferences(
+    *,
+    conn,
+    person_id,
+    goal,
+    timing,
+    variant,
+    ingredient_ids,
+):
+    """Persist one successful explicit Personalize editor selection."""
+    from goal_preset_recipe import get_reviewed_goal_recipe_candidates
+
+    candidate = next(
+        (
+            item
+            for item in get_reviewed_goal_recipe_candidates(goal)
+            if item["variant"] == variant
+        ),
+        None,
+    )
+
+    if candidate is None:
+        raise RuntimeError(
+            "Personalize editor variant was not found after recipe build"
+        )
+
+    selected = list(ingredient_ids)
+    selected_set = set(selected)
+    removed = [
+        ingredient_id
+        for ingredient_id in candidate["ingredient_ids"]
+        if ingredient_id not in selected_set
+    ]
+
+    cursor = conn.cursor()
+
+    if db.USE_POSTGRES:
+        cursor.execute(
+            """
+            INSERT INTO person_preferences (
+                person_id,
+                goal_slug,
+                timing_slug
+            )
+            VALUES (%s, %s, %s)
+            ON CONFLICT (person_id)
+            DO UPDATE SET
+                goal_slug = EXCLUDED.goal_slug,
+                timing_slug = EXCLUDED.timing_slug,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (person_id, goal, timing),
+        )
+        cursor.execute(
+            """
+            DELETE FROM person_ingredient_preferences
+            WHERE person_id = %s
+            """,
+            (person_id,),
+        )
+    else:
+        cursor.execute(
+            """
+            INSERT INTO person_preferences (
+                person_id,
+                goal_slug,
+                timing_slug
+            )
+            VALUES (?, ?, ?)
+            ON CONFLICT (person_id)
+            DO UPDATE SET
+                goal_slug = excluded.goal_slug,
+                timing_slug = excluded.timing_slug,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (person_id, goal, timing),
+        )
+        cursor.execute(
+            """
+            DELETE FROM person_ingredient_preferences
+            WHERE person_id = ?
+            """,
+            (person_id,),
+        )
+
+    preference_rows = [
+        (person_id, ingredient_id, "preferred")
+        for ingredient_id in selected
+    ] + [
+        (person_id, ingredient_id, "avoid")
+        for ingredient_id in removed
+    ]
+
+    if not preference_rows:
+        return
+
+    if db.USE_POSTGRES:
+        value_placeholders = ", ".join(
+            ["(%s, %s, %s)"] * len(preference_rows)
+        )
+        parameters = tuple(
+            value
+            for preference_row in preference_rows
+            for value in preference_row
+        )
+        cursor.execute(
+            f"""
+            INSERT INTO person_ingredient_preferences (
+                person_id,
+                ingredient_id,
+                preference_type
+            )
+            VALUES {value_placeholders}
+            """,
+            parameters,
+        )
+    else:
+        cursor.executemany(
+            """
+            INSERT INTO person_ingredient_preferences (
+                person_id,
+                ingredient_id,
+                preference_type
+            )
+            VALUES (?, ?, ?)
+            """,
+            preference_rows,
+        )
+
+
+def _record_personalized_goal_generation(
+    *,
+    user_id,
+    person_id,
+    goal,
+    timing,
+    access_type,
+    conn=None,
+):
+    """Record one successful personalized generation."""
+    owns_connection = conn is None
+
+    if owns_connection:
+        conn = db.get_conn()
+
+    try:
+        cursor = conn.cursor()
+
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                INSERT INTO personalized_smoothie_generations (
+                    user_id,
+                    person_id,
+                    goal_slug,
+                    timing_slug,
+                    access_type
+                )
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (
+                    user_id,
+                    person_id,
+                    goal,
+                    timing,
+                    access_type,
+                ),
+            )
+        else:
+            cursor.execute(
+                """
+                INSERT INTO personalized_smoothie_generations (
+                    user_id,
+                    person_id,
+                    goal_slug,
+                    timing_slug,
+                    access_type
+                )
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    user_id,
+                    person_id,
+                    goal,
+                    timing,
+                    access_type,
+                ),
+            )
+
+        if owns_connection:
+            conn.commit()
+
+    except Exception:
+        if owns_connection:
+            conn.rollback()
+        raise
+
+    finally:
+        if owns_connection:
+            conn.close()
+
+
+@csrf.exempt
+@app.post("/api/personalized-goal-preset")
+@login_required
+def personalized_goal_preset_api():
+    """Build one explicitly edited logged-in personalized smoothie."""
+    from goal_preset_recipe import (
+        GoalPresetRecipeInputError,
+        build_personalized_goal_preset_recipe,
+    )
+    from recipe_calculator import RecipeCalculationError
+    from recipe_mass import RecipeMassResolutionError
+
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify({
+            "error": "invalid_request",
+            "message": "JSON object required",
+        }), 400
+
+    allowed_fields = {
+        "goal",
+        "timing",
+        "current_variant",
+        "ingredient_ids",
+        "person_id",
+    }
+    unexpected_fields = sorted(set(payload) - allowed_fields)
+
+    if unexpected_fields:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "unsupported request fields",
+            "fields": unexpected_fields,
+        }), 400
+
+    requested_person_id = payload.get("person_id")
+
+    if requested_person_id is not None:
+        if (
+            isinstance(requested_person_id, bool)
+            or not isinstance(requested_person_id, int)
+        ):
+            return jsonify({"error": "invalid_person"}), 400
+
+    goal = payload.get("goal")
+    timing = payload.get("timing")
+    current_variant = payload.get("current_variant")
+    ingredient_ids = payload.get("ingredient_ids")
+
+    try:
+        user_id = int(current_user.id)
+    except (TypeError, ValueError):
+        return jsonify({"error": "auth_required"}), 401
+
+    conn = db.get_conn()
+
+    try:
+        context = _read_web_personalization_context(
+            user_id,
+            requested_person_id=requested_person_id,
+            conn=conn,
+        )
+
+        if not context["found"]:
+            return jsonify({"error": "person_not_found"}), 404
+
+        if (
+            context.get("setup_required")
+            and context.get("person_required")
+        ):
+            return jsonify({
+                "error": "setup_required",
+                "setup": {
+                    "person_required": bool(
+                        context.get("person_required")
+                    ),
+                    "preferences_required": bool(
+                        context.get("preferences_required")
+                    ),
+                },
+            }), 409
+
+        try:
+            access = _get_personalized_generation_access(
+                user_id,
+                conn=conn,
+            )
+        except Exception:
+            app.logger.exception(
+                "Personalized generation entitlement lookup failed "
+                "user_id=%s",
+                user_id,
+            )
+            return jsonify({
+                "error": "entitlement_unavailable",
+                "message": "Personalized access could not be verified.",
+            }), 503
+
+        if not access["allowed"]:
+            return jsonify({
+                "error": "upgrade_required",
+                "feature": "personalized_smoothie",
+                "access": access,
+                "message": (
+                    "You have used your first 3 free personalized smoothies."
+                ),
+            }), 403
+
+        try:
+            result = build_personalized_goal_preset_recipe(
+                goal=goal,
+                timing=timing,
+                variant=current_variant,
+                ingredient_ids=ingredient_ids,
+            )
+
+            selected_ingredient_ids = [
+                item["id"]
+                for item in result["ingredients"]
+            ]
+
+            _persist_personalize_editor_preferences(
+                conn=conn,
+                person_id=context["person_id"],
+                goal=result["goal"],
+                timing=result["timing"],
+                variant=result["variant"],
+                ingredient_ids=selected_ingredient_ids,
+            )
+
+            _record_personalized_goal_generation(
+                user_id=user_id,
+                person_id=context["person_id"],
+                goal=result["goal"],
+                timing=result["timing"],
+                access_type=access["access_type"],
+                conn=conn,
+            )
+            conn.commit()
+
+            access_after = dict(access)
+
+            if access_after["access_type"] == "free_trial":
+                access_after["free_used"] += 1
+                access_after["free_remaining"] = max(
+                    access_after["free_remaining"] - 1,
+                    0,
+                )
+
+            result.setdefault("preset_contract", {}).update({
+                "personalized": True,
+                "personalization_source": "web_personalization",
+                "person_id": context["person_id"],
+                "selection_source": "explicit_ingredient_editor",
+                "access_type": access["access_type"],
+            })
+
+            return jsonify({
+                "success": True,
+                "recipe": result,
+                "access": access_after,
+            }), 200
+
+        except GoalPresetRecipeInputError as exc:
+            return jsonify({
+                "error": "invalid_request",
+                "message": str(exc),
+            }), 400
+
+        except RecipeMassResolutionError:
+            return jsonify({
+                "error": "build_unavailable",
+                "reason": "mass_unresolved",
+            }), 422
+
+        except RecipeCalculationError:
+            return jsonify({
+                "error": "build_unavailable",
+                "reason": "nutrition_unavailable",
+            }), 422
+
+        except Exception:
+            conn.rollback()
+            app.logger.exception(
+                "Personalized Goal Preset unexpected failure"
+            )
+            return jsonify({
+                "error": "build_failed",
+            }), 500
+
+    finally:
+        conn.close()
+
 @csrf.exempt
 # ── PLAN CHECK HELPER ────────────────────────────────────────────────────────
 
-def get_user_plan(user_id):
+def get_user_plan(user_id, *, conn=None):
     """Returns 'free' or 'pro' for a given user."""
-    conn = db.get_conn()
+    owns_connection = conn is None
+
+    if owns_connection:
+        conn = db.get_conn()
     try:
         cursor = conn.cursor()
         if db.USE_POSTGRES:
@@ -55712,7 +56272,8 @@ def get_user_plan(user_id):
             return db.row_to_dict(row)["plan"]
         return "free"
     finally:
-        conn.close()
+        if owns_connection:
+            conn.close()
 
 
 
@@ -55720,11 +56281,19 @@ def get_user_plan(user_id):
 PERSONALIZED_FREE_GENERATION_LIMIT = 3
 
 
-def _get_personalized_generation_access(user_id):
+def _get_personalized_generation_access(
+    user_id,
+    *,
+    conn=None,
+):
     """Return current personalized-generation entitlement for one account."""
-    plan = get_user_plan(user_id)
+    owns_connection = conn is None
 
-    conn = db.get_conn()
+    if owns_connection:
+        plan = get_user_plan(user_id)
+        conn = db.get_conn()
+    else:
+        plan = get_user_plan(user_id, conn=conn)
 
     try:
         cursor = conn.cursor()
@@ -55754,7 +56323,8 @@ def _get_personalized_generation_access(user_id):
         free_used = int(db.row_to_dict(row)["free_used"])
 
     finally:
-        conn.close()
+        if owns_connection:
+            conn.close()
 
     free_remaining = max(
         PERSONALIZED_FREE_GENERATION_LIMIT - free_used,
@@ -56602,17 +57172,108 @@ def update_web_person_preferences(person_id):
     try:
         cursor = conn.cursor()
 
-        # Ownership check.
         if db.USE_POSTGRES:
+            has_goal = "goal" in payload
+            has_timing = "timing" in payload
+
             cursor.execute(
                 """
-                SELECT id
-                FROM persons
-                WHERE id = %s
-                  AND user_id = %s
+                WITH owned_person AS (
+                    SELECT id
+                    FROM persons
+                    WHERE id = %s
+                      AND user_id = %s
+                ),
+                candidate AS (
+                    SELECT
+                        owned_person.id AS person_id,
+                        CASE
+                            WHEN %s THEN %s
+                            ELSE existing.goal_slug
+                        END AS goal_slug,
+                        CASE
+                            WHEN %s THEN %s
+                            ELSE existing.timing_slug
+                        END AS timing_slug
+                    FROM owned_person
+                    LEFT JOIN person_preferences AS existing
+                      ON existing.person_id = owned_person.id
+                ),
+                upserted AS (
+                    INSERT INTO person_preferences (
+                        person_id,
+                        goal_slug,
+                        timing_slug
+                    )
+                    SELECT
+                        person_id,
+                        goal_slug,
+                        timing_slug
+                    FROM candidate
+                    WHERE goal_slug IS NOT NULL
+                    ON CONFLICT (person_id)
+                    DO UPDATE SET
+                        goal_slug = EXCLUDED.goal_slug,
+                        timing_slug = EXCLUDED.timing_slug,
+                        updated_at = CURRENT_TIMESTAMP
+                    RETURNING
+                        goal_slug,
+                        timing_slug,
+                        created_at,
+                        updated_at
+                )
+                SELECT
+                    EXISTS (
+                        SELECT 1
+                        FROM owned_person
+                    ) AS person_found,
+                    EXISTS (
+                        SELECT 1
+                        FROM candidate
+                        WHERE goal_slug IS NULL
+                    ) AS goal_required,
+                    (
+                        SELECT goal_slug
+                        FROM upserted
+                    ) AS goal_slug,
+                    (
+                        SELECT timing_slug
+                        FROM upserted
+                    ) AS timing_slug,
+                    (
+                        SELECT created_at
+                        FROM upserted
+                    ) AS created_at,
+                    (
+                        SELECT updated_at
+                        FROM upserted
+                    ) AS updated_at
                 """,
-                (person_id, current_user.id),
+                (
+                    person_id,
+                    current_user.id,
+                    has_goal,
+                    goal_slug,
+                    has_timing,
+                    timing_slug,
+                ),
             )
+
+            outcome = db.row_to_dict(cursor.fetchone())
+
+            if not outcome["person_found"]:
+                return jsonify({"error": "not_found"}), 404
+
+            if outcome["goal_required"]:
+                return jsonify({"error": "goal_required"}), 400
+
+            if outcome.get("goal_slug") is None:
+                raise RuntimeError(
+                    "PostgreSQL preference upsert returned no row"
+                )
+
+            row = outcome
+
         else:
             cursor.execute(
                 """
@@ -56624,20 +57285,9 @@ def update_web_person_preferences(person_id):
                 (person_id, current_user.id),
             )
 
-        if cursor.fetchone() is None:
-            return jsonify({"error": "not_found"}), 404
+            if cursor.fetchone() is None:
+                return jsonify({"error": "not_found"}), 404
 
-        # Read any existing preference row.
-        if db.USE_POSTGRES:
-            cursor.execute(
-                """
-                SELECT goal_slug, timing_slug
-                FROM person_preferences
-                WHERE person_id = %s
-                """,
-                (person_id,),
-            )
-        else:
             cursor.execute(
                 """
                 SELECT goal_slug, timing_slug
@@ -56647,26 +57297,12 @@ def update_web_person_preferences(person_id):
                 (person_id,),
             )
 
-        existing_row = cursor.fetchone()
+            existing_row = cursor.fetchone()
 
-        if existing_row is None:
-            # goal_slug is the required foundation of a preference row.
-            if goal_slug is None:
-                return jsonify({"error": "goal_required"}), 400
+            if existing_row is None:
+                if goal_slug is None:
+                    return jsonify({"error": "goal_required"}), 400
 
-            if db.USE_POSTGRES:
-                cursor.execute(
-                    """
-                    INSERT INTO person_preferences (
-                        person_id,
-                        goal_slug,
-                        timing_slug
-                    )
-                    VALUES (%s, %s, %s)
-                    """,
-                    (person_id, goal_slug, timing_slug),
-                )
-            else:
                 cursor.execute(
                     """
                     INSERT INTO person_preferences (
@@ -56679,37 +57315,20 @@ def update_web_person_preferences(person_id):
                     (person_id, goal_slug, timing_slug),
                 )
 
-        else:
-            existing = db.row_to_dict(existing_row)
-
-            resolved_goal = (
-                goal_slug
-                if "goal" in payload
-                else existing["goal_slug"]
-            )
-
-            resolved_timing = (
-                timing_slug
-                if "timing" in payload
-                else existing.get("timing_slug")
-            )
-
-            if db.USE_POSTGRES:
-                cursor.execute(
-                    """
-                    UPDATE person_preferences
-                    SET goal_slug = %s,
-                        timing_slug = %s,
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE person_id = %s
-                    """,
-                    (
-                        resolved_goal,
-                        resolved_timing,
-                        person_id,
-                    ),
-                )
             else:
+                existing = db.row_to_dict(existing_row)
+
+                resolved_goal = (
+                    goal_slug
+                    if "goal" in payload
+                    else existing["goal_slug"]
+                )
+                resolved_timing = (
+                    timing_slug
+                    if "timing" in payload
+                    else existing.get("timing_slug")
+                )
+
                 cursor.execute(
                     """
                     UPDATE person_preferences
@@ -56725,20 +57344,6 @@ def update_web_person_preferences(person_id):
                     ),
                 )
 
-        if db.USE_POSTGRES:
-            cursor.execute(
-                """
-                SELECT
-                    goal_slug,
-                    timing_slug,
-                    created_at,
-                    updated_at
-                FROM person_preferences
-                WHERE person_id = %s
-                """,
-                (person_id,),
-            )
-        else:
             cursor.execute(
                 """
                 SELECT
@@ -56752,7 +57357,7 @@ def update_web_person_preferences(person_id):
                 (person_id,),
             )
 
-        row = cursor.fetchone()
+            row = cursor.fetchone()
 
         conn.commit()
 
@@ -56999,59 +57604,46 @@ def replace_web_person_ingredient_preferences(person_id):
                 (person_id,),
             )
 
-        for ingredient_id in preferred:
+        preference_rows = [
+            (
+                person_id,
+                ingredient_id,
+                "preferred",
+            )
+            for ingredient_id in preferred
+        ] + [
+            (
+                person_id,
+                ingredient_id,
+                "avoid",
+            )
+            for ingredient_id in avoid
+        ]
+
+        if preference_rows:
             if db.USE_POSTGRES:
-                cursor.execute(
-                    """
-                    INSERT INTO person_ingredient_preferences (
-                        person_id,
-                        ingredient_id,
-                        preference_type
-                    )
-                    VALUES (%s, %s, %s)
-                    """,
-                    (
-                        person_id,
-                        ingredient_id,
-                        "preferred",
-                    ),
+                value_placeholders = ", ".join(
+                    ["(%s, %s, %s)"] * len(preference_rows)
                 )
-            else:
-                cursor.execute(
-                    """
-                    INSERT INTO person_ingredient_preferences (
-                        person_id,
-                        ingredient_id,
-                        preference_type
-                    )
-                    VALUES (?, ?, ?)
-                    """,
-                    (
-                        person_id,
-                        ingredient_id,
-                        "preferred",
-                    ),
+                parameters = tuple(
+                    value
+                    for preference_row in preference_rows
+                    for value in preference_row
                 )
 
-        for ingredient_id in avoid:
-            if db.USE_POSTGRES:
                 cursor.execute(
-                    """
+                    f"""
                     INSERT INTO person_ingredient_preferences (
                         person_id,
                         ingredient_id,
                         preference_type
                     )
-                    VALUES (%s, %s, %s)
+                    VALUES {value_placeholders}
                     """,
-                    (
-                        person_id,
-                        ingredient_id,
-                        "avoid",
-                    ),
+                    parameters,
                 )
             else:
-                cursor.execute(
+                cursor.executemany(
                     """
                     INSERT INTO person_ingredient_preferences (
                         person_id,
@@ -57060,11 +57652,7 @@ def replace_web_person_ingredient_preferences(person_id):
                     )
                     VALUES (?, ?, ?)
                     """,
-                    (
-                        person_id,
-                        ingredient_id,
-                        "avoid",
-                    ),
+                    preference_rows,
                 )
 
         conn.commit()
