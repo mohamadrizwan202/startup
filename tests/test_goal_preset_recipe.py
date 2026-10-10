@@ -825,13 +825,12 @@ def test_supported_ingredient_options_are_canonical():
     assert by_id["oat-milk"] == "Oat Milk"
 
 
-def test_personalized_recipe_removes_ingredient_without_rescaling_retained_amounts():
+def test_personalized_recipe_removal_rescales_to_timing_target():
     base = build_goal_preset_recipe(
         goal="skin-glow",
         timing="breakfast",
         variant="b",
     )
-
     retained_ids = [
         "oat-milk",
         "greek-yogurt",
@@ -847,73 +846,156 @@ def test_personalized_recipe_removes_ingredient_without_rescaling_retained_amoun
         ingredient_ids=retained_ids,
     )
 
-    assert [
-        item["id"]
-        for item in result["ingredients"]
-    ] == [
+    expected_ids = [
         "kiwi",
         "strawberry",
         "spinach",
         "greek-yogurt",
         "oat-milk",
     ]
-
-    base_by_id = {
-        item["id"]: item
-        for item in base["ingredients"]
-    }
-    result_by_id = {
-        item["id"]: item
+    assert [
+        item["id"]
         for item in result["ingredients"]
-    }
-    removed = base_by_id["chia-seeds"]
+    ] == expected_ids
 
-    for ingredient_id, result_item in result_by_id.items():
-        base_item = base_by_id[ingredient_id]
-
-        assert result_item["weight_g"] == pytest.approx(
-            base_item["weight_g"]
-        )
-        assert result_item["amount"] == pytest.approx(
-            base_item["amount"]
-        )
-        assert result_item["unit"] == base_item["unit"]
-
-    expected_batch_weight = (
-        base["batch"]["weight_g"]
-        - removed["weight_g"]
+    retained_definitions = [
+        definition
+        for definition in goal_preset_recipe._PRESET_RECIPES[
+            ("skin-glow", "b")
+        ]["ingredients"]
+        if definition["id"] in set(retained_ids)
+    ]
+    expected_weights = goal_preset_recipe._build_scaled_weights(
+        retained_definitions,
+        target_weight_g=400.0,
     )
+
+    for result_item, expected_weight in zip(
+        result["ingredients"],
+        expected_weights,
+        strict=True,
+    ):
+        assert result_item["weight_g"] == pytest.approx(
+            expected_weight
+        )
 
     assert result["variant"] == "b"
     assert result["target_weight_g"] == pytest.approx(400.0)
-    assert result["batch"]["weight_g"] == pytest.approx(
-        expected_batch_weight
-    )
+    assert result["batch"]["weight_g"] == pytest.approx(400.0)
     assert sum(
         item["weight_g"]
         for item in result["ingredients"]
-    ) == pytest.approx(expected_batch_weight)
+    ) == pytest.approx(400.0)
 
-    for nutrient, base_value in base["batch"]["nutrition"].items():
-        assert result["batch"]["nutrition"][nutrient] == pytest.approx(
-            base_value - removed["nutrition"][nutrient]
-        )
+    expected = recipe_calculator.calculate_recipe(
+        [
+            {
+                "ingredient": item["display_name"],
+                "nutrition_lookup_name": item[
+                    "nutrition_lookup_name"
+                ],
+                "amount": item["weight_g"],
+                "unit": "g",
+            }
+            for item in result["ingredients"]
+        ]
+    )
+    assert result["batch"]["nutrition"] == pytest.approx(
+        expected["batch"]["nutrition"]
+    )
 
     contract = result["preset_contract"]
-
     assert contract["personalized"] is True
     assert contract["uses_age"] is False
     assert contract["uses_sex"] is False
     assert contract["uses_eer"] is False
-    assert contract["weight_source"] == "retained_preset_amounts"
+    assert contract["weight_source"] == (
+        "normalized_retained_preset_amounts"
+    )
+
+
+def test_personalized_recipe_accepts_catalog_additions_and_normalizes_to_target():
+    selected_ids = [
+        "kiwi",
+        "banana",
+        "blueberry",
+    ]
+
+    result = goal_preset_recipe.build_personalized_goal_preset_recipe(
+        goal="skin-glow",
+        timing="breakfast",
+        variant="b",
+        ingredient_ids=selected_ids,
+    )
+
+    assert [
+        item["id"]
+        for item in result["ingredients"]
+    ] == selected_ids
+    assert result["target_weight_g"] == pytest.approx(400.0)
+    assert result["batch"]["weight_g"] == pytest.approx(400.0)
+    assert sum(
+        item["weight_g"]
+        for item in result["ingredients"]
+    ) == pytest.approx(400.0)
+
+    expected = recipe_calculator.calculate_recipe(
+        [
+            {
+                "ingredient": item["display_name"],
+                "nutrition_lookup_name": item[
+                    "nutrition_lookup_name"
+                ],
+                "amount": item["weight_g"],
+                "unit": "g",
+            }
+            for item in result["ingredients"]
+        ]
+    )
+
+    assert result["batch"]["nutrition"] == pytest.approx(
+        expected["batch"]["nutrition"]
+    )
+    assert result["preset_contract"]["weight_source"] == (
+        "normalized_selected_reference_amounts"
+    )
+    assert result["preset_contract"]["composition_source"] == (
+        "user_selected_preset_and_catalog_composition"
+    )
+
+
+@pytest.mark.parametrize(
+    "ingredient_ids",
+    (
+        [],
+        ["banana"],
+        ["kiwi", "banana"],
+    ),
+)
+def test_personalized_recipe_requires_at_least_three_ingredients(
+    ingredient_ids,
+):
+    with pytest.raises(
+        goal_preset_recipe.GoalPresetRecipeInputError,
+        match="at least 3 ingredients are required",
+    ):
+        goal_preset_recipe.build_personalized_goal_preset_recipe(
+            goal="skin-glow",
+            timing="breakfast",
+            variant="b",
+            ingredient_ids=ingredient_ids,
+        )
 
 
 @pytest.mark.parametrize(
     ("ingredient_ids", "message"),
     (
-        ([], "at least one ingredient"),
+        ([], "at least 3 ingredients"),
         (["kiwi", "kiwi"], "duplicate ingredient"),
-        (["kiwi", "banana"], "not part of the reviewed preset"),
+        (
+            ["kiwi", "not-supported"],
+            "not supported for personalization",
+        ),
     ),
 )
 def test_personalized_recipe_rejects_invalid_ingredient_selections(

@@ -17,6 +17,7 @@ personalized serving recommendations.
 from __future__ import annotations
 
 from copy import deepcopy
+from statistics import median
 
 import recipe_calculator
 import recipe_mass
@@ -991,6 +992,75 @@ def get_supported_ingredient_options() -> tuple[dict[str, str], ...]:
     return tuple(options)
 
 
+def _get_personalization_catalog_definitions() -> dict[str, dict]:
+    """Return canonical reviewed definitions for editable catalog items."""
+    candidates_by_id: dict[str, list[dict]] = {}
+
+    for preset in _PRESET_RECIPES.values():
+        for ingredient in preset["ingredients"]:
+            candidates_by_id.setdefault(
+                ingredient["id"],
+                [],
+            ).append(ingredient)
+
+    definitions_by_id: dict[str, dict] = {}
+
+    for ingredient_id in sorted(candidates_by_id):
+        candidates = candidates_by_id[ingredient_id]
+        display_names = {
+            candidate["display_name"]
+            for candidate in candidates
+        }
+        nutrition_lookup_names = {
+            candidate["nutrition_lookup_name"]
+            for candidate in candidates
+        }
+        display_units = {
+            candidate.get("display_unit", "g")
+            for candidate in candidates
+        }
+
+        if (
+            len(nutrition_lookup_names) != 1
+            or len(display_units) != 1
+        ):
+            raise RuntimeError(
+                "Ingredient has conflicting personalization metadata: "
+                f"{ingredient_id}={candidates!r}"
+            )
+
+        if ingredient_id in _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES:
+            display_name = (
+                _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES[
+                    ingredient_id
+                ]
+            )
+        elif len(display_names) == 1:
+            display_name = next(iter(display_names))
+        else:
+            raise RuntimeError(
+                "Ingredient has conflicting display names without "
+                f"an explicit personalization override: "
+                f"{ingredient_id}={sorted(display_names)!r}"
+            )
+
+        definition = deepcopy(candidates[0])
+        definition["display_name"] = display_name
+        definition["nutrition_lookup_name"] = next(
+            iter(nutrition_lookup_names)
+        )
+        definition["display_unit"] = next(iter(display_units))
+        definition["proportion"] = float(
+            median(
+                float(candidate["proportion"])
+                for candidate in candidates
+            )
+        )
+        definitions_by_id[ingredient_id] = definition
+
+    return definitions_by_id
+
+
 def build_goal_preset_recipe(
     *,
     goal,
@@ -1125,7 +1195,7 @@ def build_personalized_goal_preset_recipe(
     variant,
     ingredient_ids,
 ) -> dict:
-    """Build a reviewed preset after explicit ingredient removals."""
+    """Build one explicit Personalize editor selection."""
 
     normalized_goal = _normalize_required_slug(
         goal,
@@ -1147,7 +1217,7 @@ def build_personalized_goal_preset_recipe(
 
     if not ingredient_ids:
         raise GoalPresetRecipeInputError(
-            "at least one ingredient is required"
+            "at least 3 ingredients are required"
         )
 
     normalized_ingredient_ids = [
@@ -1185,53 +1255,70 @@ def build_personalized_goal_preset_recipe(
             f"variant='{normalized_variant}'"
         )
 
-    reviewed_ingredient_ids = {
-        ingredient["id"]
-        for ingredient in preset["ingredients"]
-    }
-
-    foreign_ingredient_ids = [
+    catalog_definitions = (
+        _get_personalization_catalog_definitions()
+    )
+    unsupported_ingredient_ids = [
         ingredient_id
         for ingredient_id in normalized_ingredient_ids
-        if ingredient_id not in reviewed_ingredient_ids
+        if ingredient_id not in catalog_definitions
     ]
 
-    if foreign_ingredient_ids:
+    if unsupported_ingredient_ids:
         raise GoalPresetRecipeInputError(
-            "ingredient is not part of the reviewed preset: "
-            f"'{foreign_ingredient_ids[0]}'"
+            "ingredient is not supported for personalization: "
+            f"'{unsupported_ingredient_ids[0]}'"
         )
 
-    selected_ingredient_ids = set(
-        normalized_ingredient_ids
+    if len(normalized_ingredient_ids) < 3:
+        raise GoalPresetRecipeInputError(
+            "at least 3 ingredients are required"
+        )
+
+    preset_definitions_by_id = {
+        ingredient["id"]: ingredient
+        for ingredient in preset["ingredients"]
+    }
+    has_catalog_addition = any(
+        ingredient_id not in preset_definitions_by_id
+        for ingredient_id in normalized_ingredient_ids
     )
 
-    all_definitions = deepcopy(
-        preset["ingredients"]
-    )
-    all_scaled_weights = _build_scaled_weights(
-        all_definitions,
+    if has_catalog_addition:
+        definitions = [
+            deepcopy(
+                preset_definitions_by_id[ingredient_id]
+            )
+            if ingredient_id in preset_definitions_by_id
+            else deepcopy(catalog_definitions[ingredient_id])
+            for ingredient_id in normalized_ingredient_ids
+        ]
+        weight_source = (
+            "normalized_selected_reference_amounts"
+        )
+        composition_source = (
+            "user_selected_preset_and_catalog_composition"
+        )
+    else:
+        selected_ingredient_ids = set(
+            normalized_ingredient_ids
+        )
+        definitions = [
+            deepcopy(ingredient)
+            for ingredient in preset["ingredients"]
+            if ingredient["id"] in selected_ingredient_ids
+        ]
+        weight_source = (
+            "normalized_retained_preset_amounts"
+        )
+        composition_source = (
+            "user_edited_reviewed_preset_composition"
+        )
+
+    scaled_weights = _build_scaled_weights(
+        definitions,
         target_weight_g=target_weight_g,
     )
-
-    retained_definition_weights = [
-        (definition, weight_g)
-        for definition, weight_g in zip(
-            all_definitions,
-            all_scaled_weights,
-            strict=True,
-        )
-        if definition["id"] in selected_ingredient_ids
-    ]
-
-    definitions = [
-        definition
-        for definition, _weight_g in retained_definition_weights
-    ]
-    scaled_weights = [
-        weight_g
-        for _definition, weight_g in retained_definition_weights
-    ]
 
     recipe_inputs = [
         {
@@ -1311,9 +1398,7 @@ def build_personalized_goal_preset_recipe(
             "uses_age": False,
             "uses_sex": False,
             "uses_eer": False,
-            "weight_source": "retained_preset_amounts",
-            "composition_source": (
-                "user_edited_reviewed_preset_composition"
-            ),
+            "weight_source": weight_source,
+            "composition_source": composition_source,
         },
     }

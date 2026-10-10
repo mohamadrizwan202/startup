@@ -318,7 +318,7 @@ def test_personalized_goal_preset_persists_editor_preferences_in_same_request(
             "goal": "skin-glow",
             "timing": "breakfast",
             "current_variant": "a",
-            "ingredient_ids": ["guava", "pea-milk"],
+            "ingredient_ids": ["guava", "pea-milk", "banana"],
         },
     )
 
@@ -356,6 +356,7 @@ def test_personalized_goal_preset_persists_editor_preferences_in_same_request(
         ("flax-seeds", "avoid"),
         ("hemp-seeds", "avoid"),
         ("lime-juice", "avoid"),
+        ("banana", "preferred"),
         ("guava", "preferred"),
         ("pea-milk", "preferred"),
     ]
@@ -398,7 +399,7 @@ def test_personalized_goal_preset_requires_setup_before_generation(
     assert _ledger_count() == 0
 
 
-def test_personalized_goal_preset_rejects_invalid_edits_without_credit(
+def test_personalized_goal_preset_rejects_too_few_ingredients_without_credit(
     client,
     monkeypatch,
 ):
@@ -406,7 +407,7 @@ def test_personalized_goal_preset_rejects_invalid_edits_without_credit(
 
     def reject_build(**_kwargs):
         raise goal_preset_recipe.GoalPresetRecipeInputError(
-            "ingredient is not part of the reviewed preset"
+            "at least 3 ingredients are required"
         )
 
     monkeypatch.setattr(
@@ -421,12 +422,15 @@ def test_personalized_goal_preset_rejects_invalid_edits_without_credit(
             "goal": "skin-glow",
             "timing": "breakfast",
             "current_variant": "a",
-            "ingredient_ids": ["banana"],
+            "ingredient_ids": ["guava", "pea-milk"],
         },
     )
 
     assert response.status_code == 400
-    assert response.get_json()["error"] == "invalid_request"
+    assert response.get_json() == {
+        "error": "invalid_request",
+        "message": "at least 3 ingredients are required",
+    }
     assert _ledger_count() == 0
 
 

@@ -100,3 +100,55 @@ def test_logged_in_personalize_editor_updates_explicit_ingredients():
 
     assert "window.pfRestoreGoalPresetResult(recipe)" not in update_flow
     assert "Keep ingredient choices" not in template
+
+def test_personalize_editor_uses_catalog_additions_and_keeps_minimum_three():
+    template = _index_template()
+
+    required_template_markers = (
+        'id="pf-personalize-setup-add-select"',
+        'id="pf-personalize-setup-add-button"',
+        "/api/personalization/ingredient-options",
+        "function pfLoadPersonalizeIngredientOptions(",
+        "function pfRefreshPersonalizeSetupControls(",
+        "function pfAddPersonalizeSetupIngredient(",
+    )
+
+    for marker in required_template_markers:
+        assert marker in template
+
+    save_start = template.index(
+        "async function pfSavePersonalizeSetup("
+    )
+    save_end = template.index(
+        "function pfRestorePendingPersonalizeAfterAuth()",
+        save_start,
+    )
+    save_flow = template[save_start:save_end]
+
+    assert "preferredIds.length < 3" in save_flow
+    assert "at least 3 ingredients are required" in save_flow
+
+    controls_start = template.index(
+        "function pfRefreshPersonalizeSetupControls("
+    )
+    controls_end = template.index(
+        "function pfAddPersonalizeSetupIngredient(",
+        controls_start,
+    )
+    controls_flow = template[controls_start:controls_end]
+
+    assert "selectedCount <= 3" in controls_flow
+    assert "button.disabled" in controls_flow
+
+    open_start = template.index(
+        "function pfOpenPersonalizeSetupPrompt("
+    )
+    open_end = template.index(
+        "function pfClosePersonalizeSetupPrompt(",
+        open_start,
+    )
+    open_flow = template[open_start:open_end]
+
+    assert "pfLoadPersonalizeIngredientOptions()" in open_flow
+    assert "/api/personalized-goal-preset" not in open_flow
+    assert "async function pfGeneratePersonalizedGoalPreset(" not in template
