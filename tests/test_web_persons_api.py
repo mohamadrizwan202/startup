@@ -1025,3 +1025,41 @@ def test_personalization_ingredient_options_returns_reviewed_catalog(client):
     assert by_id["oat-milk"] == "Oat Milk"
     assert by_id["banana"] == "Banana"
     assert by_id["greek-yogurt"] == "Greek Yogurt"
+
+def test_personalization_ingredient_options_include_goal_aligned_ids(
+    client,
+):
+    response = client.get(
+        "/api/personalization/ingredient-options?goal=skin-glow"
+    )
+
+    assert response.status_code == 200
+
+    body = response.get_json()
+
+    assert body["goal"] == "skin-glow"
+    assert len(body["ingredients"]) == 36
+
+    aligned_ids = set(body["goal_aligned_ingredient_ids"])
+
+    assert {
+        "guava",
+        "kiwi",
+        "papaya",
+    } <= aligned_ids
+    assert "banana" not in aligned_ids
+
+
+def test_personalization_ingredient_options_rejects_invalid_goal(
+    client,
+):
+    response = client.get(
+        "/api/personalization/ingredient-options"
+        "?goal=not-a-real-goal"
+    )
+
+    assert response.status_code == 400
+
+    body = response.get_json()
+    assert body["error"] == "invalid_request"
+    assert "unsupported personalization goal" in body["message"]

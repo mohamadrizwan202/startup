@@ -992,6 +992,53 @@ def get_supported_ingredient_options() -> tuple[dict[str, str], ...]:
     return tuple(options)
 
 
+
+def _get_goal_aligned_ingredient_ids(
+    normalized_goal: str,
+) -> tuple[str, ...]:
+    """Return reviewed catalog ingredient IDs for one goal."""
+    aligned_ids = {
+        ingredient["id"]
+        for (candidate_goal, _variant), preset in _PRESET_RECIPES.items()
+        if candidate_goal == normalized_goal
+        for ingredient in preset["ingredients"]
+    }
+
+    if not aligned_ids:
+        raise GoalPresetRecipeInputError(
+            "unsupported personalization goal: "
+            f"'{normalized_goal}'"
+        )
+
+    return tuple(sorted(aligned_ids))
+
+
+def get_personalization_ingredient_options(
+    *,
+    goal=None,
+) -> dict:
+    """Return editable catalog plus optional reviewed goal alignment."""
+    result = {
+        "ingredients": list(get_supported_ingredient_options()),
+    }
+
+    if goal is None:
+        return result
+
+    normalized_goal = _normalize_required_slug(
+        goal,
+        field="goal",
+    )
+
+    result.update({
+        "goal": normalized_goal,
+        "goal_aligned_ingredient_ids": list(
+            _get_goal_aligned_ingredient_ids(normalized_goal)
+        ),
+    })
+
+    return result
+
 def _get_personalization_catalog_definitions() -> dict[str, dict]:
     """Return canonical reviewed definitions for editable catalog items."""
     candidates_by_id: dict[str, list[dict]] = {}
@@ -1275,6 +1322,29 @@ def build_personalized_goal_preset_recipe(
             "at least 3 ingredients are required"
         )
 
+
+    goal_aligned_ingredient_ids = set(
+        _get_goal_aligned_ingredient_ids(normalized_goal)
+    )
+    outside_goal_ingredient_ids = [
+        ingredient_id
+        for ingredient_id in normalized_ingredient_ids
+        if ingredient_id not in goal_aligned_ingredient_ids
+    ]
+    goal_alignment = (
+        "custom"
+        if outside_goal_ingredient_ids
+        else "goal_aligned"
+    )
+    display_name = (
+        "Custom Smoothie"
+        if outside_goal_ingredient_ids
+        else (
+            normalized_goal.replace("-", " ").title()
+            + " Smoothie"
+        )
+    )
+
     preset_definitions_by_id = {
         ingredient["id"]: ingredient
         for ingredient in preset["ingredients"]
@@ -1388,7 +1458,7 @@ def build_personalized_goal_preset_recipe(
         "goal": normalized_goal,
         "timing": normalized_timing,
         "variant": normalized_variant,
-        "display_name": preset["display_name"],
+        "display_name": display_name,
         "target_weight_g": target_weight_g,
         "ingredients": result_ingredients,
         "batch": result_batch,
@@ -1400,5 +1470,9 @@ def build_personalized_goal_preset_recipe(
             "uses_eer": False,
             "weight_source": weight_source,
             "composition_source": composition_source,
+            "goal_alignment": goal_alignment,
+            "outside_goal_ingredient_ids": (
+                outside_goal_ingredient_ids
+            ),
         },
     }

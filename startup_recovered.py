@@ -56497,14 +56497,23 @@ def tune_smoothie_api():
 )
 @login_required
 def get_personalization_ingredient_options():
-    """Return canonical reviewed ingredient choices for personalization."""
-    from goal_preset_recipe import get_supported_ingredient_options
+    """Return reviewed catalog with optional goal-aligned choices."""
+    from goal_preset_recipe import (
+        GoalPresetRecipeInputError,
+        get_personalization_ingredient_options as get_options,
+    )
 
-    return jsonify({
-        "ingredients": list(
-            get_supported_ingredient_options()
+    try:
+        result = get_options(
+            goal=request.args.get("goal")
         )
-    })
+    except GoalPresetRecipeInputError as exc:
+        return jsonify({
+            "error": "invalid_request",
+            "message": str(exc),
+        }), 400
+
+    return jsonify(result)
 
 
 # ── WEB SAAS PERSONALIZATION: PERSONS ────────────────────────────────────────

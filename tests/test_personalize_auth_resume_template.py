@@ -152,3 +152,20 @@ def test_personalize_editor_uses_catalog_additions_and_keeps_minimum_three():
     assert "pfLoadPersonalizeIngredientOptions()" in open_flow
     assert "/api/personalized-goal-preset" not in open_flow
     assert "async function pfGeneratePersonalizedGoalPreset(" not in template
+
+def test_personalize_editor_defaults_to_goal_aligned_options_and_exposes_custom_catalog():
+    template = _index_template()
+
+    required_markers = (
+        'id="pf-personalize-setup-show-all"',
+        "Show all supported ingredients",
+        "goal_aligned_ingredient_ids",
+        "pfPersonalizeGoalAlignedIngredientIds",
+        "pfPersonalizeCatalogMode",
+        "goal_alignment",
+        "Custom Smoothie",
+        "URLSearchParams({ goal: recipe.goal })",
+    )
+
+    for marker in required_markers:
+        assert marker in template

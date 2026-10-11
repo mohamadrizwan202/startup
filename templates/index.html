@@ -8070,10 +8070,26 @@
                   ? recipe.batch.nutrition
                   : {};
 
-              var goalCopy = resultCopyForGoal(recipe.goal);
+              var goalAlignment =
+                recipe.preset_contract &&
+                recipe.preset_contract.goal_alignment;
+
+              var isCustomSmoothie =
+                goalAlignment === 'custom';
+
+              var goalCopy = isCustomSmoothie
+                ? {
+                    title: 'Custom Smoothie',
+                    summary:
+                      'Your selected ingredients have been recalculated to this timing portion.',
+                  }
+                : resultCopyForGoal(recipe.goal);
 
               if (resultGoalChip) {
-                resultGoalChip.textContent = formatGoalLabel(recipe.goal);
+                resultGoalChip.textContent =
+                  isCustomSmoothie
+                    ? 'Custom Smoothie'
+                    : formatGoalLabel(recipe.goal);
               }
 
               if (resultTimeChip) {
@@ -8081,7 +8097,13 @@
               }
 
               if (resultTitle) {
-                resultTitle.textContent = goalCopy.title;
+                resultTitle.textContent =
+                  isCustomSmoothie
+                    ? (
+                        recipe.display_name ||
+                        'Custom Smoothie'
+                      )
+                    : goalCopy.title;
               }
 
               if (resultSummary) {
@@ -9628,7 +9650,30 @@
     }
 
     let pfPersonalizeIngredientOptions = null;
-    let pfPersonalizeIngredientOptionsPromise = null;
+    let pfPersonalizeGoalAlignedIngredientIds = new Set();
+    let pfPersonalizeCatalogMode = 'goal-aligned';
+    const pfPersonalizeIngredientCatalogsByGoal =
+      new Map();
+
+    const pfPersonalizeIngredientCatalogPromisesByGoal =
+      new Map();
+
+    function pfGetPersonalizeRecipeGoal(recipe) {
+      return recipe &&
+        typeof recipe.goal === 'string'
+        ? recipe.goal.trim()
+        : '';
+    }
+
+    function pfSetPersonalizeIngredientCatalog(catalog) {
+      pfPersonalizeIngredientOptions =
+        catalog.ingredients;
+
+      pfPersonalizeGoalAlignedIngredientIds =
+        new Set(
+          catalog.goal_aligned_ingredient_ids
+        );
+    }
 
     function pfAppendPersonalizeSetupIngredient(item) {
       const host =
@@ -9735,14 +9780,26 @@
         document.getElementById(
           'pf-personalize-setup-ingredients'
         );
+
       const select =
         document.getElementById(
           'pf-personalize-setup-add-select'
         );
+
       const addButton =
         document.getElementById(
           'pf-personalize-setup-add-button'
         );
+
+      const addLabel = document.querySelector(
+        'label[for="pf-personalize-setup-add-select"]'
+      );
+
+      const showAllButton =
+        document.getElementById(
+          'pf-personalize-setup-show-all'
+        );
+
       const status =
         document.getElementById(
           'pf-personalize-setup-status'
@@ -9759,7 +9816,23 @@
           return row.dataset.ingredientId;
         })
       );
-      const selectedCount = selectedIngredientIds.size;
+
+      const selectedCount =
+        selectedIngredientIds.size;
+
+      const hasCatalog = Array.isArray(
+        pfPersonalizeIngredientOptions
+      );
+
+      const hasOutsideGoalIngredient =
+        hasCatalog &&
+        Array.from(selectedIngredientIds).some(
+          function(ingredientId) {
+            return !pfPersonalizeGoalAlignedIngredientIds.has(
+              ingredientId
+            );
+          }
+        );
 
       host.querySelectorAll(
         '.pf-personalize-setup-remove'
@@ -9774,37 +9847,89 @@
       });
 
       if (status) {
-        status.textContent =
-          selectedCount <= 3
-            ? (
-              'Keep at least 3 ingredients. Editing is free. ' +
-              'One credit is used only when Update Smoothie succeeds.'
-            )
-            : (
-              'Editing is free. One credit is used only when ' +
-              'Update Smoothie succeeds.'
-            );
+        if (
+          selectedCount <= 3 &&
+          hasOutsideGoalIngredient
+        ) {
+          status.textContent =
+            'Keep at least 3 ingredients. This selection will be saved as a Custom Smoothie. Editing is free. One credit is used only when Update Smoothie succeeds.';
+        } else if (selectedCount <= 3) {
+          status.textContent =
+            'Keep at least 3 ingredients. Editing is free. One credit is used only when Update Smoothie succeeds.';
+        } else if (hasOutsideGoalIngredient) {
+          status.textContent =
+            'This selection will be saved as a Custom Smoothie. Editing is free. One credit is used only when Update Smoothie succeeds.';
+        } else {
+          status.textContent =
+            'Editing is free. One credit is used only when Update Smoothie succeeds.';
+        }
       }
 
       if (!select || !addButton) return;
 
-      if (!Array.isArray(
-        pfPersonalizeIngredientOptions
-      )) {
-        select.replaceChildren();
+      select.replaceChildren();
 
+      if (!hasCatalog) {
         const loadingOption =
           document.createElement('option');
+
         loadingOption.value = '';
         loadingOption.textContent =
-          'Loading supported ingredients…';
+          'Loading ingredients…';
+
         select.appendChild(loadingOption);
         select.disabled = true;
         addButton.disabled = true;
+
+        if (showAllButton) {
+          showAllButton.hidden = true;
+          showAllButton.disabled = true;
+        }
+
         return;
       }
 
-      const previousValue = select.value;
+      const hasAdditionalSupportedOptions =
+        pfPersonalizeIngredientOptions.some(
+          function(option) {
+            return option &&
+              typeof option.id === 'string' &&
+              !pfPersonalizeGoalAlignedIngredientIds.has(
+                option.id
+              );
+          }
+        );
+
+      if (addLabel) {
+        addLabel.textContent =
+          pfPersonalizeCatalogMode ===
+          'all-supported'
+            ? 'Add a supported ingredient'
+            : 'Add a goal-aligned ingredient';
+      }
+
+      if (showAllButton) {
+        showAllButton.hidden =
+          !hasAdditionalSupportedOptions;
+
+        showAllButton.disabled =
+          !hasAdditionalSupportedOptions;
+
+        showAllButton.textContent =
+          pfPersonalizeCatalogMode ===
+          'all-supported'
+            ? 'Show goal-aligned ingredients'
+            : 'Show all supported ingredients';
+
+        showAllButton.setAttribute(
+          'aria-pressed',
+          pfPersonalizeCatalogMode ===
+          'all-supported'
+            ? 'true'
+            : 'false'
+        );
+      }
+
       const availableOptions =
         pfPersonalizeIngredientOptions.filter(
           function(option) {
@@ -9812,44 +9937,72 @@
               option &&
               typeof option.id === 'string' &&
               typeof option.display_name === 'string' &&
-              !selectedIngredientIds.has(option.id)
+              !selectedIngredientIds.has(option.id) &&
+              (
+                pfPersonalizeCatalogMode ===
+                  'all-supported' ||
+                pfPersonalizeGoalAlignedIngredientIds.has(
+                  option.id
+                )
+              )
             );
           }
         );
 
-      select.replaceChildren();
-
       const placeholder =
         document.createElement('option');
+
       placeholder.value = '';
+      placeholder.disabled = true;
+      placeholder.selected = true;
       placeholder.textContent =
         availableOptions.length
-          ? 'Choose an ingredient to add'
-          : 'All supported ingredients are selected';
+          ? (
+              pfPersonalizeCatalogMode ===
+              'all-supported'
+                ? 'Choose a supported ingredient to add'
+                : 'Choose a goal-aligned ingredient to add'
+            )
+          : (
+              pfPersonalizeCatalogMode ===
+              'all-supported'
+                ? 'All supported ingredients are selected'
+                : 'All goal-aligned ingredients are selected'
+            );
+
       select.appendChild(placeholder);
 
       availableOptions.forEach(function(option) {
         const optionElement =
           document.createElement('option');
+
         optionElement.value = option.id;
         optionElement.textContent =
           option.display_name;
+
         select.appendChild(optionElement);
       });
 
-      if (
-        previousValue &&
-        availableOptions.some(function(option) {
-          return option.id === previousValue;
-        })
-      ) {
-        select.value = previousValue;
+      select.disabled = !availableOptions.length;
+      addButton.disabled = true;
+    }
+
+    function pfTogglePersonalizeIngredientCatalog() {
+      if (!Array.isArray(
+        pfPersonalizeIngredientOptions
+      )) {
+        return;
       }
 
-      select.disabled = !availableOptions.length;
-      addButton.disabled =
-        !availableOptions.length || !select.value;
+      pfPersonalizeCatalogMode =
+        pfPersonalizeCatalogMode ===
+        'all-supported'
+          ? 'goal-aligned'
+          : 'all-supported';
+
+      pfRefreshPersonalizeSetupControls();
     }
+
 
     function pfAddPersonalizeSetupIngredient() {
       const select =
@@ -9864,7 +10017,10 @@
       if (!select || !select.value) {
         if (status) {
           status.textContent =
-            'Choose a supported ingredient to add.';
+            pfPersonalizeCatalogMode ===
+            'all-supported'
+              ? 'Choose a supported ingredient to add.'
+              : 'Choose a goal-aligned ingredient to add.';
         }
         return;
       }
@@ -9876,7 +10032,16 @@
           return candidate.id === select.value;
         });
 
-      if (!option) {
+      if (
+        !option ||
+        (
+          pfPersonalizeCatalogMode !==
+            'all-supported' &&
+          !pfPersonalizeGoalAlignedIngredientIds.has(
+            option.id
+          )
+        )
+      ) {
         if (status) {
           status.textContent =
             'That ingredient is not available right now.';
@@ -9890,21 +10055,45 @@
     }
 
     function pfLoadPersonalizeIngredientOptions() {
-      if (Array.isArray(
-        pfPersonalizeIngredientOptions
-      )) {
-        pfRefreshPersonalizeSetupControls();
-        return Promise.resolve(
-          pfPersonalizeIngredientOptions
+      const recipe =
+        pfGetPersonalizeSetupRecipe();
+
+      const goal =
+        pfGetPersonalizeRecipeGoal(recipe);
+
+      if (!goal) {
+        return Promise.resolve(null);
+      }
+
+      const cachedCatalog =
+        pfPersonalizeIngredientCatalogsByGoal.get(
+          goal
         );
+
+      if (cachedCatalog) {
+        pfSetPersonalizeIngredientCatalog(
+          cachedCatalog
+        );
+
+        pfRefreshPersonalizeSetupControls();
+
+        return Promise.resolve(cachedCatalog);
       }
 
-      if (pfPersonalizeIngredientOptionsPromise) {
-        return pfPersonalizeIngredientOptionsPromise;
+      const pendingRequest =
+        pfPersonalizeIngredientCatalogPromisesByGoal.get(
+          goal
+        );
+
+      if (pendingRequest) {
+        return pendingRequest;
       }
 
-      pfPersonalizeIngredientOptionsPromise = fetch(
-        '/api/personalization/ingredient-options',
+      const query = new URLSearchParams({ goal: recipe.goal });
+
+      const request = fetch(
+        '/api/personalization/ingredient-options?' +
+          query.toString(),
         {
           method: 'GET',
         }
@@ -9914,66 +10103,119 @@
         if (
           !response.ok ||
           !body ||
-          !Array.isArray(body.ingredients)
+          !Array.isArray(body.ingredients) ||
+          !Array.isArray(
+            body.goal_aligned_ingredient_ids
+          )
         ) {
           throw new Error(
-            'Could not load supported ingredients.'
+            'Could not load ingredient choices.'
           );
         }
 
-        return body.ingredients;
-      }).then(function(options) {
-        pfPersonalizeIngredientOptions = options;
-        pfRefreshPersonalizeSetupControls();
-        return options;
+        return {
+          ingredients: body.ingredients,
+          goal_aligned_ingredient_ids:
+            body.goal_aligned_ingredient_ids,
+        };
+      }).then(function(catalog) {
+        pfPersonalizeIngredientCatalogsByGoal.set(
+          goal,
+          catalog
+        );
+
+        if (
+          pfGetPersonalizeRecipeGoal(
+            pfGetPersonalizeSetupRecipe()
+          ) === goal
+        ) {
+          pfSetPersonalizeIngredientCatalog(
+            catalog
+          );
+
+          pfRefreshPersonalizeSetupControls();
+        }
+
+        return catalog;
       }).catch(function(error) {
         console.error(
           '[personalize-setup] Could not load ingredients',
           error
         );
 
-        const select =
-          document.getElementById(
-            'pf-personalize-setup-add-select'
-          );
-        const addButton =
-          document.getElementById(
-            'pf-personalize-setup-add-button'
-          );
-        const status =
-          document.getElementById(
-            'pf-personalize-setup-status'
-          );
+        if (
+          pfGetPersonalizeRecipeGoal(
+            pfGetPersonalizeSetupRecipe()
+          ) === goal
+        ) {
+          pfPersonalizeIngredientOptions = null;
+          pfPersonalizeGoalAlignedIngredientIds =
+            new Set();
 
-        if (select) {
-          select.replaceChildren();
+          const select =
+            document.getElementById(
+              'pf-personalize-setup-add-select'
+            );
 
-          const unavailableOption =
-            document.createElement('option');
-          unavailableOption.value = '';
-          unavailableOption.textContent =
-            'Ingredient choices are unavailable';
-          select.appendChild(unavailableOption);
-          select.disabled = true;
-        }
+          const addButton =
+            document.getElementById(
+              'pf-personalize-setup-add-button'
+            );
 
-        if (addButton) {
-          addButton.disabled = true;
-        }
+          const showAllButton =
+            document.getElementById(
+              'pf-personalize-setup-show-all'
+            );
 
-        if (status) {
-          status.textContent =
-            'You can still remove ingredients, but the ' +
-            'ingredient catalog is unavailable right now.';
+          const status =
+            document.getElementById(
+              'pf-personalize-setup-status'
+            );
+
+          if (select) {
+            select.replaceChildren();
+
+            const unavailableOption =
+              document.createElement('option');
+
+            unavailableOption.value = '';
+            unavailableOption.textContent =
+              'Ingredient choices are unavailable';
+
+            select.appendChild(unavailableOption);
+            select.disabled = true;
+          }
+
+          if (addButton) {
+            addButton.disabled = true;
+          }
+
+          if (showAllButton) {
+            showAllButton.hidden = true;
+            showAllButton.disabled = true;
+          }
+
+          if (status) {
+            status.textContent =
+              'You can still remove ingredients, but the ingredient catalog is unavailable right now.';
+          }
         }
 
         return null;
       }).finally(function() {
-        pfPersonalizeIngredientOptionsPromise = null;
+        pfPersonalizeIngredientCatalogPromisesByGoal.delete(
+          goal
+        );
       });
 
-      return pfPersonalizeIngredientOptionsPromise;
+      pfPersonalizeIngredientCatalogPromisesByGoal.set(
+        goal,
+        request
+      );
+
+      return request;
     }
+
 
     function pfRenderPersonalizeSetupIngredients(recipe) {
       const host =
@@ -10066,8 +10308,40 @@
 
       if (!overlay) return;
 
+      const setupRecipe =
+        pfGetPersonalizeSetupRecipe();
+
+      const setupGoal =
+        pfGetPersonalizeRecipeGoal(
+          setupRecipe
+        );
+
+      const cachedCatalog = setupGoal
+        ? pfPersonalizeIngredientCatalogsByGoal.get(
+            setupGoal
+          )
+        : null;
+
+      pfPersonalizeCatalogMode =
+        setupRecipe &&
+        setupRecipe.preset_contract &&
+        setupRecipe.preset_contract.goal_alignment ===
+          'custom'
+          ? 'all-supported'
+          : 'goal-aligned';
+
+      if (cachedCatalog) {
+        pfSetPersonalizeIngredientCatalog(
+          cachedCatalog
+        );
+      } else {
+        pfPersonalizeIngredientOptions = null;
+        pfPersonalizeGoalAlignedIngredientIds =
+          new Set();
+      }
+
       pfRenderPersonalizeSetupIngredients(
-        pfGetPersonalizeSetupRecipe()
+        setupRecipe
       );
 
       void pfLoadPersonalizeIngredientOptions();
@@ -10075,10 +10349,7 @@
       pfPersonalizeAuthReturnFocus =
         triggerElement || null;
 
-      if (status) {
-        status.textContent =
-          'Editing is free. One credit is used only when Update Smoothie succeeds.';
-      }
+      pfRefreshPersonalizeSetupControls();
 
       if (saveButton) {
         saveButton.disabled = false;
@@ -10520,6 +10791,11 @@
             'pf-personalize-setup-add-button'
           );
 
+        const setupShowAllButton =
+          document.getElementById(
+            'pf-personalize-setup-show-all'
+          );
+
         if (personalizeButton) {
           personalizeButton.addEventListener(
             'click',
@@ -10614,6 +10890,15 @@
             'click',
             function() {
               pfAddPersonalizeSetupIngredient();
+            }
+          );
+        }
+
+        if (setupShowAllButton) {
+          setupShowAllButton.addEventListener(
+            'click',
+            function() {
+              pfTogglePersonalizeIngredientCatalog();
             }
           );
         }
@@ -28964,6 +29249,16 @@ const batchG = (smoothieBatchMlOverride != null)
     font-weight: 700;
   }
 
+  .pf-personalize-setup-add .pf-personalize-setup-show-all {
+    justify-self: start;
+    min-height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #0f6b4a;
+    text-decoration: underline;
+  }
+
   .pf-personalize-setup-ingredient {
     display: flex;
     align-items: center;
@@ -29052,7 +29347,7 @@ const batchG = (smoothieBatchMlOverride != null)
 
     <div class="pf-personalize-setup-add">
       <label for="pf-personalize-setup-add-select">
-        Add a supported ingredient
+        Add a goal-aligned ingredient
       </label>
 
       <div class="pf-personalize-setup-add-controls">
@@ -29062,7 +29357,7 @@ const batchG = (smoothieBatchMlOverride != null)
           disabled
         >
           <option value="">
-            Loading supported ingredients…
+            Loading ingredients…
           </option>
         </select>
 
@@ -29074,6 +29369,15 @@ const batchG = (smoothieBatchMlOverride != null)
           Add
         </button>
       </div>
+
+      <button
+        type="button"
+        id="pf-personalize-setup-show-all"
+        class="pf-personalize-setup-show-all"
+        aria-pressed="false"
+      >
+        Show all supported ingredients
+      </button>
     </div>
 
     <div

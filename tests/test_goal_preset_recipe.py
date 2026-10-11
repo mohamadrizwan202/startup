@@ -1012,3 +1012,43 @@ def test_personalized_recipe_rejects_invalid_ingredient_selections(
             variant="b",
             ingredient_ids=ingredient_ids,
         )
+
+def test_personalized_recipe_reports_goal_alignment_and_custom_status():
+    aligned = goal_preset_recipe.build_personalized_goal_preset_recipe(
+        goal="skin-glow",
+        timing="breakfast",
+        variant="b",
+        ingredient_ids=[
+            "kiwi",
+            "strawberry",
+            "guava",
+        ],
+    )
+
+    assert aligned["display_name"] == "Skin Glow Smoothie"
+    assert aligned["preset_contract"]["goal_alignment"] == (
+        "goal_aligned"
+    )
+    assert aligned["preset_contract"][
+        "outside_goal_ingredient_ids"
+    ] == []
+
+    custom = goal_preset_recipe.build_personalized_goal_preset_recipe(
+        goal="skin-glow",
+        timing="breakfast",
+        variant="b",
+        ingredient_ids=[
+            "kiwi",
+            "banana",
+            "blueberry",
+        ],
+    )
+
+    assert custom["display_name"] == "Custom Smoothie"
+    assert custom["preset_contract"]["goal_alignment"] == "custom"
+    assert custom["preset_contract"][
+        "outside_goal_ingredient_ids"
+    ] == [
+        "banana",
+        "blueberry",
+    ]
