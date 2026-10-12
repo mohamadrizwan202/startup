@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 from types import ModuleType
 from unittest.mock import MagicMock
 
@@ -323,3 +324,22 @@ def test_build_goal_preset_uses_reviewed_fallback_when_ai_fails(
         ]
         == "reviewed_preset_fallback"
     )
+
+
+def test_build_goal_preset_template_has_client_deadline():
+    template = (
+        Path(__file__).resolve().parents[1]
+        / "templates"
+        / "index.html"
+    ).read_text(encoding="utf-8")
+
+    start = template.index("async function buildPresetVariant(")
+    end = template.index("if (buildButton)", start)
+    flow = template[start:end]
+
+    assert "new AbortController()" in flow
+    assert "buildRequestController.abort()" in flow
+    assert "4000" in flow
+    assert "signal: buildRequestController.signal" in flow
+    assert "window.clearTimeout(buildRequestTimeout)" in flow
+    assert "This is taking longer than expected." in flow

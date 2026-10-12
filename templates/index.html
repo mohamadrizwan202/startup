@@ -8304,6 +8304,16 @@
                 buildStatus.textContent = 'Building your smoothie...';
               }
 
+              var buildRequestController =
+                new AbortController();
+
+              var buildRequestTimeout = window.setTimeout(
+                function() {
+                  buildRequestController.abort();
+                },
+                4000
+              );
+
               try {
                 var response = await fetch('/api/build-goal-preset', {
                   method: 'POST',
@@ -8314,7 +8324,8 @@
                     goal: selectedGoal,
                     timing: selectedTime,
                     variant: variant
-                  })
+                  }),
+                  signal: buildRequestController.signal
                 });
 
                 var payload = await response.json();
@@ -8331,14 +8342,19 @@
                 currentVariant = payload.recipe.variant || variant;
                 renderPresetResult(payload.recipe);
               } catch (error) {
-                if (buildStatus) {
-                  buildStatus.hidden = false;
-                  buildStatus.textContent =
-                    error && error.message
+                var message =
+                  error && error.name === 'AbortError'
+                    ? 'This is taking longer than expected. Please try again.'
+                    : error && error.message
                       ? error.message
                       : 'Could not build smoothie.';
+
+                if (buildStatus) {
+                  buildStatus.hidden = false;
+                  buildStatus.textContent = message;
                 }
               } finally {
+                window.clearTimeout(buildRequestTimeout);
                 isBuilding = false;
 
                 if (buildButton) {

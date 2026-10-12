@@ -55620,7 +55620,7 @@ def build_goal_preset_api():
 
             try:
                 selection = select_reviewed_goal_recipe(
-                    client=client,
+                    client=None,
                     goal=goal,
                     timing=timing,
                     excluded_variants=recent_variants[-2:],

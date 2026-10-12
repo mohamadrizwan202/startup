@@ -1,7 +1,10 @@
+import json
+import sys
 from types import SimpleNamespace
 
 import pytest
 
+import ai_goal_recipe_selector
 from ai_goal_recipe_selector import (
     AIGoalRecipeSelectionError,
     select_reviewed_goal_recipe,
@@ -43,11 +46,8 @@ def _candidate(goal, variant):
 
 
 def _response_for(candidate):
-    import json
-
     return json.dumps({
         "variant": candidate["variant"],
-        "ingredient_ids": list(candidate["ingredient_ids"]),
     })
 
 
@@ -67,24 +67,82 @@ def test_selects_one_exact_reviewed_goal_candidate():
         "selection_source": "haiku_reviewed_candidate",
     }
     assert client.options == {
-        "timeout": 8.0,
+        "timeout": 2.5,
         "max_retries": 0,
     }
     assert (
         client.messages.request["model"]
         == "claude-haiku-4-5-20251001"
     )
-
-
-def test_rejects_invented_or_unreviewed_ingredient_ids():
-    candidate = _candidate("skin-glow", "a")
-    client = FakeClient(
-        '{"variant":"a","ingredient_ids":["guava","candy"]}'
+    assert client.messages.request["max_tokens"] == 32
+    assert (
+        "exactly this key: variant"
+        in client.messages.request["messages"][0]["content"]
     )
+
+
+def test_uses_bounded_stdlib_transport_without_anthropic_sdk(
+    monkeypatch,
+):
+    candidate = _candidate("skin-glow", "a")
+    captured = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(
+            self,
+            _exception_type,
+            _exception_value,
+            _traceback,
+        ):
+            return False
+
+        def read(self):
+            return json.dumps({
+                "content": [{
+                    "type": "text",
+                    "text": _response_for(candidate),
+                }],
+            }).encode("utf-8")
+
+    def fake_urlopen(request, *, timeout):
+        captured["request"] = request
+        captured["timeout"] = timeout
+        return FakeResponse()
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    monkeypatch.setitem(sys.modules, "anthropic", None)
+    monkeypatch.setattr(
+        ai_goal_recipe_selector.urllib.request,
+        "urlopen",
+        fake_urlopen,
+    )
+
+    result = select_reviewed_goal_recipe(
+        client=None,
+        goal="skin-glow",
+        timing="breakfast",
+    )
+
+    assert result["variant"] == "a"
+    assert captured["timeout"] == 2.5
+    assert (
+        captured["request"].full_url
+        == "https://api.anthropic.com/v1/messages"
+    )
+    assert json.loads(
+        captured["request"].data.decode("utf-8")
+    )["model"] == "claude-haiku-4-5-20251001"
+
+
+def test_rejects_variant_outside_allowed_goal_set():
+    client = FakeClient('{"variant":"not-reviewed"}')
 
     with pytest.raises(
         AIGoalRecipeSelectionError,
-        match="do not match",
+        match="outside the allowed goal set",
     ):
         select_reviewed_goal_recipe(
             client=client,
