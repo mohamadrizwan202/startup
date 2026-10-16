@@ -7041,6 +7041,14 @@
           color: #17211b;
         }
 
+        #pf-goal-time-entry.is-result-view .pf-result-credit-status {
+          margin: 10px 0 0;
+          color: #17603c;
+          font-size: 13px;
+          font-weight: 700;
+          line-height: 1.4;
+        }
+
         #pf-goal-time-entry.is-result-view .pf-result-heading p {
           margin: 0;
           color: #64748b;
@@ -8108,6 +8116,15 @@
 
               if (resultSummary) {
                 resultSummary.textContent = goalCopy.summary;
+              }
+
+              var resultCreditStatus =
+                document.getElementById(
+                  'pf-result-personalize-credit-status'
+                );
+
+              if (resultCreditStatus) {
+                resultCreditStatus.remove();
               }
 
               if (resultBatchMeta) {
@@ -9610,6 +9627,57 @@
       );
     }
 
+    function pfShowPersonalizeCreditStatus(access) {
+      if (!access || typeof access !== 'object') {
+        return;
+      }
+
+      const summary =
+        document.getElementById('pf-result-summary');
+
+      if (!summary) {
+        return;
+      }
+
+      const remaining = Number(access.free_remaining);
+      let message = '';
+
+      if (access.plan === 'pro') {
+        message =
+          'Smoothie updated. Unlimited personalized smoothies.';
+      } else if (
+        Number.isInteger(remaining) &&
+        remaining >= 0
+      ) {
+        const noun =
+          remaining === 1 ? 'smoothie' : 'smoothies';
+
+        message =
+          access.credit_used === true
+            ? 'Smoothie updated. ' +
+              remaining +
+              ' free personalized ' +
+              noun +
+              ' remaining.'
+            : 'Smoothie updated. No credit used. ' +
+              remaining +
+              ' free personalized ' +
+              noun +
+              ' remaining.';
+      }
+
+      if (!message) {
+        return;
+      }
+
+      const status = document.createElement('p');
+      status.id = 'pf-result-personalize-credit-status';
+      status.className = 'pf-result-credit-status';
+      status.setAttribute('aria-live', 'polite');
+      status.textContent = message;
+      summary.insertAdjacentElement('afterend', status);
+    }
+
     function pfGetPersonalizeSetupRecipe() {
       const activeRecipe =
         window.pfGoalPresetRecipe ||
@@ -10798,6 +10866,7 @@
          );
         }
 
+        pfShowPersonalizeCreditStatus(body.access);
         pfClearPendingPersonalizeSnapshot();
         pfClosePersonalizeSetupPrompt(false);
 

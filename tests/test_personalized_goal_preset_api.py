@@ -307,6 +307,7 @@ def test_personalized_goal_preset_uses_explicit_edits_and_records_credit(
     )
     assert body["access"]["free_used"] == 1
     assert body["access"]["free_remaining"] == 2
+    assert body["access"]["credit_used"] is True
     assert _ledger_count() == 1
 
 
@@ -601,6 +602,7 @@ def test_personalized_goal_preset_reuses_existing_identity_after_limit(
     ] == personalization_id
     assert body["access"]["free_used"] == 3
     assert body["access"]["free_remaining"] == 0
+    assert body["access"]["credit_used"] is False
 
 
 def test_personalized_goal_preset_rejects_identity_for_different_contract(

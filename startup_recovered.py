@@ -56309,11 +56309,13 @@ def personalized_goal_preset_api():
             conn.commit()
 
             access_after = dict(access)
-
-            if (
+            credit_used = (
                 existing_generation is None
                 and access_after["access_type"] == "free_trial"
-            ):
+            )
+            access_after["credit_used"] = credit_used
+
+            if credit_used:
                 access_after["free_used"] += 1
                 access_after["free_remaining"] = max(
                     access_after["free_remaining"] - 1,

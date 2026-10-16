@@ -181,3 +181,20 @@ def test_personalize_editor_defaults_to_goal_aligned_options_and_exposes_custom_
 
     for marker in required_markers:
         assert marker in template
+
+
+def test_personalize_result_shows_server_credit_receipt():
+    template = _index_template()
+
+    required_markers = (
+        "function pfShowPersonalizeCreditStatus(",
+        "pf-result-personalize-credit-status",
+        "access.credit_used === true",
+        "No credit used.",
+        "free personalized ",
+        "access.plan === 'pro'",
+        "pfShowPersonalizeCreditStatus(body.access)",
+    )
+
+    for marker in required_markers:
+        assert marker in template
