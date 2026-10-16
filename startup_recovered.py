@@ -55980,6 +55980,53 @@ def _persist_personalize_editor_preferences(
         )
 
 
+def _find_personalized_goal_generation(
+    *,
+    personalization_id,
+    conn,
+):
+    """Return one durable personalized smoothie record, if it exists."""
+    cursor = conn.cursor()
+
+    if db.USE_POSTGRES:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                user_id,
+                person_id,
+                goal_slug,
+                timing_slug,
+                access_type,
+                personalization_id
+            FROM personalized_smoothie_generations
+            WHERE personalization_id = %s
+            LIMIT 1
+            """,
+            (personalization_id,),
+        )
+    else:
+        cursor.execute(
+            """
+            SELECT
+                id,
+                user_id,
+                person_id,
+                goal_slug,
+                timing_slug,
+                access_type,
+                personalization_id
+            FROM personalized_smoothie_generations
+            WHERE personalization_id = ?
+            LIMIT 1
+            """,
+            (personalization_id,),
+        )
+
+    row = cursor.fetchone()
+    return db.row_to_dict(row) if row else None
+
+
 def _record_personalized_goal_generation(
     *,
     user_id,
@@ -55987,9 +56034,10 @@ def _record_personalized_goal_generation(
     goal,
     timing,
     access_type,
+    personalization_id=None,
     conn=None,
 ):
-    """Record one successful personalized generation."""
+    """Record one newly created personalized smoothie."""
     owns_connection = conn is None
 
     if owns_connection:
@@ -56006,9 +56054,10 @@ def _record_personalized_goal_generation(
                     person_id,
                     goal_slug,
                     timing_slug,
-                    access_type
+                    access_type,
+                    personalization_id
                 )
-                VALUES (%s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """,
                 (
                     user_id,
@@ -56016,6 +56065,7 @@ def _record_personalized_goal_generation(
                     goal,
                     timing,
                     access_type,
+                    personalization_id,
                 ),
             )
         else:
@@ -56026,9 +56076,10 @@ def _record_personalized_goal_generation(
                     person_id,
                     goal_slug,
                     timing_slug,
-                    access_type
+                    access_type,
+                    personalization_id
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 (
                     user_id,
@@ -56036,6 +56087,7 @@ def _record_personalized_goal_generation(
                     goal,
                     timing,
                     access_type,
+                    personalization_id,
                 ),
             )
 
@@ -56056,7 +56108,7 @@ def _record_personalized_goal_generation(
 @app.post("/api/personalized-goal-preset")
 @login_required
 def personalized_goal_preset_api():
-    """Build one explicitly edited logged-in personalized smoothie."""
+    """Build or edit one explicitly personalized logged-in smoothie."""
     from goal_preset_recipe import (
         GoalPresetRecipeInputError,
         build_personalized_goal_preset_recipe,
@@ -56076,8 +56128,9 @@ def personalized_goal_preset_api():
         "goal",
         "timing",
         "current_variant",
-        "ingredient_ids",
+        "ingredients",
         "person_id",
+        "personalization_id",
     }
     unexpected_fields = sorted(set(payload) - allowed_fields)
 
@@ -56097,10 +56150,29 @@ def personalized_goal_preset_api():
         ):
             return jsonify({"error": "invalid_person"}), 400
 
+    requested_personalization_id = payload.get("personalization_id")
+
+    if requested_personalization_id is None:
+        personalization_id = str(uuid.uuid4())
+    else:
+        if not isinstance(requested_personalization_id, str):
+            return jsonify({
+                "error": "invalid_personalization_id",
+            }), 400
+
+        try:
+            personalization_id = str(
+                uuid.UUID(requested_personalization_id.strip())
+            )
+        except (AttributeError, ValueError):
+            return jsonify({
+                "error": "invalid_personalization_id",
+            }), 400
+
     goal = payload.get("goal")
     timing = payload.get("timing")
     current_variant = payload.get("current_variant")
-    ingredient_ids = payload.get("ingredient_ids")
+    ingredient_selections = payload.get("ingredients")
 
     try:
         user_id = int(current_user.id)
@@ -56135,6 +56207,20 @@ def personalized_goal_preset_api():
                 },
             }), 409
 
+        existing_generation = _find_personalized_goal_generation(
+            personalization_id=personalization_id,
+            conn=conn,
+        )
+
+        if (
+            existing_generation is not None
+            and int(existing_generation["user_id"]) != user_id
+        ):
+            # Do not reveal whether another account owns this identifier.
+            return jsonify({
+                "error": "personalization_not_found",
+            }), 404
+
         try:
             access = _get_personalized_generation_access(
                 user_id,
@@ -56151,7 +56237,10 @@ def personalized_goal_preset_api():
                 "message": "Personalized access could not be verified.",
             }), 503
 
-        if not access["allowed"]:
+        if (
+            existing_generation is None
+            and not access["allowed"]
+        ):
             return jsonify({
                 "error": "upgrade_required",
                 "feature": "personalized_smoothie",
@@ -56166,8 +56255,31 @@ def personalized_goal_preset_api():
                 goal=goal,
                 timing=timing,
                 variant=current_variant,
-                ingredient_ids=ingredient_ids,
+                ingredient_selections=ingredient_selections,
             )
+
+            if existing_generation is not None:
+                if (
+                    existing_generation["person_id"]
+                    != context["person_id"]
+                    or existing_generation["goal_slug"]
+                    != result["goal"]
+                    or existing_generation["timing_slug"]
+                    != result["timing"]
+                ):
+                    return jsonify({
+                        "error": "personalization_contract_mismatch",
+                        "message": (
+                            "This personalized smoothie can only be edited "
+                            "for its original person, goal, and timing."
+                        ),
+                    }), 409
+
+                generation_access_type = existing_generation[
+                    "access_type"
+                ]
+            else:
+                generation_access_type = access["access_type"]
 
             selected_ingredient_ids = [
                 item["id"]
@@ -56183,19 +56295,25 @@ def personalized_goal_preset_api():
                 ingredient_ids=selected_ingredient_ids,
             )
 
-            _record_personalized_goal_generation(
-                user_id=user_id,
-                person_id=context["person_id"],
-                goal=result["goal"],
-                timing=result["timing"],
-                access_type=access["access_type"],
-                conn=conn,
-            )
+            if existing_generation is None:
+                _record_personalized_goal_generation(
+                    user_id=user_id,
+                    person_id=context["person_id"],
+                    goal=result["goal"],
+                    timing=result["timing"],
+                    access_type=generation_access_type,
+                    personalization_id=personalization_id,
+                    conn=conn,
+                )
+
             conn.commit()
 
             access_after = dict(access)
 
-            if access_after["access_type"] == "free_trial":
+            if (
+                existing_generation is None
+                and access_after["access_type"] == "free_trial"
+            ):
                 access_after["free_used"] += 1
                 access_after["free_remaining"] = max(
                     access_after["free_remaining"] - 1,
@@ -56205,9 +56323,10 @@ def personalized_goal_preset_api():
             result.setdefault("preset_contract", {}).update({
                 "personalized": True,
                 "personalization_source": "web_personalization",
+                "personalization_id": personalization_id,
                 "person_id": context["person_id"],
                 "selection_source": "explicit_ingredient_editor",
-                "access_type": access["access_type"],
+                "access_type": generation_access_type,
             })
 
             return jsonify({

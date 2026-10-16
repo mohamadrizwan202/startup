@@ -58,7 +58,9 @@ def test_logged_in_personalize_editor_updates_explicit_ingredients():
 
     required_markers = (
         "/api/personalized-goal-preset",
-        "ingredient_ids: preferredIds",
+        "ingredients: ingredientSelections",
+        "pfEnsurePersonalizeRecipeIdentity(",
+        "requestPayload.personalization_id =",
         "const requestUpdate = async function(personId)",
         "requestPayload.person_id = personId",
         "await requestUpdate(null)",
@@ -75,6 +77,15 @@ def test_logged_in_personalize_editor_updates_explicit_ingredients():
 
     for marker in required_markers:
         assert marker in update_flow
+
+    template_wide_markers = (
+        "function pfGetPersonalizeSetupIngredientSelections(",
+        "data-personalize-ingredient-amount",
+        "PF_PERSONALIZE_AMOUNT_STEP",
+    )
+
+    for marker in template_wide_markers:
+        assert marker in template
 
     assert update_flow.count("await fetch(") == 1
 
@@ -111,6 +122,7 @@ def test_personalize_editor_uses_catalog_additions_and_keeps_minimum_three():
         "function pfLoadPersonalizeIngredientOptions(",
         "function pfRefreshPersonalizeSetupControls(",
         "function pfAddPersonalizeSetupIngredient(",
+        "function pfAdjustPersonalizeSetupIngredientAmount(",
     )
 
     for marker in required_template_markers:
@@ -125,7 +137,7 @@ def test_personalize_editor_uses_catalog_additions_and_keeps_minimum_three():
     )
     save_flow = template[save_start:save_end]
 
-    assert "preferredIds.length < 3" in save_flow
+    assert "ingredientSelections.length < 3" in save_flow
     assert "at least 3 ingredients are required" in save_flow
 
     controls_start = template.index(

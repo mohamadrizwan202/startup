@@ -104,7 +104,8 @@ def _create_schema():
                 goal_slug TEXT NOT NULL,
                 timing_slug TEXT NOT NULL,
                 access_type TEXT NOT NULL,
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                personalization_id TEXT
             )
             """
         )
@@ -159,20 +160,26 @@ def _fake_personalized_recipe(monkeypatch, captured):
         goal,
         timing,
         variant,
-        ingredient_ids,
+        ingredient_selections,
     ):
         captured["goal"] = goal
         captured["timing"] = timing
         captured["variant"] = variant
-        captured["ingredient_ids"] = list(ingredient_ids)
+        captured["ingredient_selections"] = [
+            dict(selection)
+            for selection in ingredient_selections
+        ]
 
         return {
             "goal": goal,
             "timing": timing,
             "variant": variant,
             "ingredients": [
-                {"id": ingredient_id}
-                for ingredient_id in ingredient_ids
+                {
+                    "id": selection["id"],
+                    "amount": selection["amount"],
+                }
+                for selection in ingredient_selections
             ],
             "batch": {"weight_g": 400, "nutrition": {}},
             "preset_contract": {"personalized": True},
@@ -183,7 +190,6 @@ def _fake_personalized_recipe(monkeypatch, captured):
         "build_personalized_goal_preset_recipe",
         fake_build,
     )
-
 
 def _ledger_count():
     conn = sqlite3.connect(str(db.DB_PATH))
@@ -262,13 +268,13 @@ def test_personalized_goal_preset_uses_explicit_edits_and_records_credit(
     _fake_personalized_recipe(monkeypatch, captured)
     person_id = _create_person_with_preference()
 
-    ingredient_ids = [
-        "guava",
-        "pea-milk",
-        "cucumber",
-        "cauliflower",
-        "hemp-seeds",
-        "flax-seeds",
+    ingredient_selections = [
+        {"id": "guava", "amount": 134.0},
+        {"id": "pea-milk", "amount": 134.0},
+        {"id": "cucumber", "amount": 54.0},
+        {"id": "cauliflower", "amount": 54.0},
+        {"id": "hemp-seeds", "amount": 13.0},
+        {"id": "flax-seeds", "amount": 6.0},
     ]
 
     response = client.post(
@@ -277,7 +283,7 @@ def test_personalized_goal_preset_uses_explicit_edits_and_records_credit(
             "goal": "skin-glow",
             "timing": "breakfast",
             "current_variant": "a",
-            "ingredient_ids": ingredient_ids,
+            "ingredients": ingredient_selections,
         },
     )
 
@@ -290,7 +296,7 @@ def test_personalized_goal_preset_uses_explicit_edits_and_records_credit(
         "goal": "skin-glow",
         "timing": "breakfast",
         "variant": "a",
-        "ingredient_ids": ingredient_ids,
+        "ingredient_selections": ingredient_selections,
     }
     assert body["recipe"]["variant"] == "a"
     assert body["recipe"]["preset_contract"]["personalized"] is True
@@ -303,6 +309,25 @@ def test_personalized_goal_preset_uses_explicit_edits_and_records_credit(
     assert body["access"]["free_remaining"] == 2
     assert _ledger_count() == 1
 
+
+def test_personalized_goal_preset_rejects_legacy_ingredient_ids(client):
+    response = client.post(
+        "/api/personalized-goal-preset",
+        json={
+            "goal": "skin-glow",
+            "timing": "breakfast",
+            "current_variant": "a",
+            "ingredient_ids": ["guava", "pea-milk", "cucumber"],
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "error": "invalid_request",
+        "message": "unsupported request fields",
+        "fields": ["ingredient_ids"],
+    }
+    assert _ledger_count() == 0
 
 def test_personalized_goal_preset_persists_editor_preferences_in_same_request(
     client,
@@ -318,7 +343,11 @@ def test_personalized_goal_preset_persists_editor_preferences_in_same_request(
             "goal": "skin-glow",
             "timing": "breakfast",
             "current_variant": "a",
-            "ingredient_ids": ["guava", "pea-milk", "banana"],
+            "ingredients": [
+                {"id": "guava", "amount": 120.0},
+                {"id": "pea-milk", "amount": 180.0},
+                {"id": "banana", "amount": 80.0},
+            ],
         },
     )
 
@@ -384,7 +413,9 @@ def test_personalized_goal_preset_requires_setup_before_generation(
             "goal": "skin-glow",
             "timing": "breakfast",
             "current_variant": "a",
-            "ingredient_ids": ["guava"],
+            "ingredients": [
+                {"id": "guava", "amount": 100.0},
+            ],
         },
     )
 
@@ -422,7 +453,10 @@ def test_personalized_goal_preset_rejects_too_few_ingredients_without_credit(
             "goal": "skin-glow",
             "timing": "breakfast",
             "current_variant": "a",
-            "ingredient_ids": ["guava", "pea-milk"],
+            "ingredients": [
+                {"id": "guava", "amount": 120.0},
+                {"id": "pea-milk", "amount": 180.0},
+            ],
         },
     )
 
@@ -457,7 +491,10 @@ def test_personalized_goal_preset_does_not_record_credit_when_build_fails(
             "goal": "skin-glow",
             "timing": "breakfast",
             "current_variant": "a",
-            "ingredient_ids": ["guava", "pea-milk"],
+            "ingredients": [
+                {"id": "guava", "amount": 120.0},
+                {"id": "pea-milk", "amount": 180.0},
+            ],
         },
     )
 
@@ -489,10 +526,224 @@ def test_personalized_goal_preset_reuses_one_database_connection(
             "goal": "skin-glow",
             "timing": "breakfast",
             "current_variant": "a",
-            "ingredient_ids": ["guava", "pea-milk"],
+            "ingredients": [
+                {"id": "guava", "amount": 120.0},
+                {"id": "pea-milk", "amount": 180.0},
+                {"id": "cucumber", "amount": 50.0},
+            ],
             "person_id": person_id,
         },
     )
 
     assert response.status_code == 200
     assert connection_calls == 1
+
+def test_personalized_goal_preset_reuses_existing_identity_after_limit(
+    client,
+    monkeypatch,
+):
+    _fake_personalized_recipe(monkeypatch, {})
+    _create_person_with_preference()
+
+    payload = {
+        "goal": "skin-glow",
+        "timing": "breakfast",
+        "current_variant": "a",
+        "ingredients": [
+            {"id": "guava", "amount": 120.0},
+            {"id": "pea-milk", "amount": 180.0},
+            {"id": "cucumber", "amount": 60.0},
+        ],
+    }
+
+    first = client.post(
+        "/api/personalized-goal-preset",
+        json=payload,
+    )
+
+    assert first.status_code == 200
+
+    personalization_id = first.get_json()["recipe"][
+        "preset_contract"
+    ]["personalization_id"]
+
+    assert isinstance(personalization_id, str)
+    assert _ledger_count() == 1
+
+    for _ in range(2):
+        additional = client.post(
+            "/api/personalized-goal-preset",
+            json=payload,
+        )
+        assert additional.status_code == 200
+
+    assert _ledger_count() == 3
+
+    edited_payload = dict(payload)
+    edited_payload["personalization_id"] = personalization_id
+    edited_payload["ingredients"] = [
+        {"id": "guava", "amount": 125.0},
+        {"id": "pea-milk", "amount": 175.0},
+        {"id": "cucumber", "amount": 60.0},
+    ]
+
+    edited = client.post(
+        "/api/personalized-goal-preset",
+        json=edited_payload,
+    )
+
+    assert edited.status_code == 200
+    assert _ledger_count() == 3
+
+    body = edited.get_json()
+    assert body["recipe"]["preset_contract"][
+        "personalization_id"
+    ] == personalization_id
+    assert body["access"]["free_used"] == 3
+    assert body["access"]["free_remaining"] == 0
+
+
+def test_personalized_goal_preset_rejects_identity_for_different_contract(
+    client,
+    monkeypatch,
+):
+    _fake_personalized_recipe(monkeypatch, {})
+    _create_person_with_preference()
+
+    payload = {
+        "goal": "skin-glow",
+        "timing": "breakfast",
+        "current_variant": "a",
+        "ingredients": [
+            {"id": "guava", "amount": 120.0},
+            {"id": "pea-milk", "amount": 180.0},
+            {"id": "cucumber", "amount": 60.0},
+        ],
+    }
+
+    first = client.post(
+        "/api/personalized-goal-preset",
+        json=payload,
+    )
+
+    assert first.status_code == 200
+
+    personalization_id = first.get_json()["recipe"][
+        "preset_contract"
+    ]["personalization_id"]
+
+    rejected = client.post(
+        "/api/personalized-goal-preset",
+        json={
+            **payload,
+            "goal": "brain-focus",
+            "personalization_id": personalization_id,
+        },
+    )
+
+    assert rejected.status_code == 409
+    assert rejected.get_json()["error"] == (
+        "personalization_contract_mismatch"
+    )
+    assert _ledger_count() == 1
+
+
+
+
+def test_personalized_goal_preset_rejects_identity_owned_by_another_user(
+    client,
+    monkeypatch,
+):
+    _create_person_with_preference()
+
+    foreign_identity = (
+        "11111111-1111-4111-8111-111111111111"
+    )
+
+    conn = sqlite3.connect(str(db.DB_PATH))
+
+    try:
+        conn.execute(
+            """
+            INSERT INTO personalized_smoothie_generations (
+                user_id,
+                person_id,
+                goal_slug,
+                timing_slug,
+                access_type,
+                personalization_id
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                999,
+                None,
+                "skin-glow",
+                "breakfast",
+                "free_trial",
+                foreign_identity,
+            ),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    def fail_if_called(**_kwargs):
+        raise AssertionError(
+            "Another user's identity must not build a recipe."
+        )
+
+    monkeypatch.setattr(
+        goal_preset_recipe,
+        "build_personalized_goal_preset_recipe",
+        fail_if_called,
+    )
+
+    response = client.post(
+        "/api/personalized-goal-preset",
+        json={
+            "goal": "skin-glow",
+            "timing": "breakfast",
+            "current_variant": "a",
+            "personalization_id": foreign_identity,
+            "ingredients": [
+                {"id": "guava", "amount": 120.0},
+                {"id": "pea-milk", "amount": 180.0},
+                {"id": "cucumber", "amount": 60.0},
+            ],
+        },
+    )
+
+    assert response.status_code == 404
+    assert response.get_json() == {
+        "error": "personalization_not_found",
+    }
+    assert _ledger_count() == 1
+
+def test_personalized_goal_preset_rejects_malformed_identity_without_credit(
+    client,
+    monkeypatch,
+):
+    _fake_personalized_recipe(monkeypatch, {})
+    _create_person_with_preference()
+
+    response = client.post(
+        "/api/personalized-goal-preset",
+        json={
+            "goal": "skin-glow",
+            "timing": "breakfast",
+            "current_variant": "a",
+            "personalization_id": "not-a-uuid",
+            "ingredients": [
+                {"id": "guava", "amount": 120.0},
+                {"id": "pea-milk", "amount": 180.0},
+                {"id": "cucumber", "amount": 60.0},
+            ],
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "error": "invalid_personalization_id",
+    }
+    assert _ledger_count() == 0

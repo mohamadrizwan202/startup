@@ -9627,43 +9627,131 @@
         : null;
     }
 
-    function pfGetPersonalizeSetupIngredientIds(recipe) {
+    function pfEnsurePersonalizeRecipeIdentity(
+      recipe
+    ) {
+      if (!recipe || typeof recipe !== 'object') {
+        return null;
+      }
+
+      if (
+        !recipe.preset_contract ||
+        typeof recipe.preset_contract !== 'object'
+      ) {
+        recipe.preset_contract = {};
+      }
+
+      const existingId =
+        recipe.preset_contract.personalization_id;
+
+      if (
+        typeof existingId === 'string' &&
+        existingId.trim()
+      ) {
+        return existingId;
+      }
+
+      if (
+        !window.crypto ||
+        typeof window.crypto.randomUUID !== 'function'
+      ) {
+        return null;
+      }
+
+      const personalizationId =
+        window.crypto.randomUUID();
+
+      recipe.preset_contract.personalization_id =
+        personalizationId;
+
+      return personalizationId;
+    }
+
+    function pfGetPersonalizeSetupIngredientSelections(
+      recipe
+    ) {
       const host =
         document.getElementById(
           'pf-personalize-setup-ingredients'
         );
 
+      const selections = [];
+      const seen = new Set();
+      let invalidIngredientName = '';
+
+      const addSelection = function(
+        ingredientId,
+        rawAmount,
+        fallbackName
+      ) {
+        const amount = Number(rawAmount);
+
+        if (
+          !ingredientId ||
+          seen.has(ingredientId) ||
+          !Number.isFinite(amount) ||
+          amount <= 0
+        ) {
+          invalidIngredientName =
+            fallbackName || ingredientId || 'this ingredient';
+          return;
+        }
+
+        seen.add(ingredientId);
+        selections.push({
+          id: ingredientId,
+          amount
+        });
+      };
+
       if (host && host.dataset.seeded === '1') {
-        return Array.from(
+        Array.from(
           host.querySelectorAll(
             '[data-ingredient-id]'
           )
-        ).map(function(row) {
-          return row.dataset.ingredientId;
-        });
-      }
+        ).forEach(function(row) {
+          const input = row.querySelector(
+            '[data-personalize-ingredient-amount]'
+          );
 
-      const ids = [];
-      const seen = new Set();
+          addSelection(
+            row.dataset.ingredientId || '',
+            input ? input.value : '',
+            row.dataset.ingredientName || ''
+          );
+        });
+
+        return {
+          selections,
+          invalidIngredientName
+        };
+      }
 
       (recipe && recipe.ingredients || []).forEach(
         function(item) {
-          const id =
+          const ingredientId =
             item && typeof item.id === 'string'
               ? item.id.trim()
               : '';
 
-          if (!id || seen.has(id)) {
-            return;
-          }
-
-          seen.add(id);
-          ids.push(id);
+          addSelection(
+            ingredientId,
+            item && item.amount,
+            item && (
+              item.display_name ||
+              item.name
+            )
+          );
         }
       );
 
-      return ids;
+      return {
+        selections,
+        invalidIngredientName
+      };
     }
+
+    const PF_PERSONALIZE_AMOUNT_STEP = 5;
 
     let pfPersonalizeIngredientOptions = null;
     let pfPersonalizeGoalAlignedIngredientIds = new Set();
@@ -9689,6 +9777,43 @@
         new Set(
           catalog.goal_aligned_ingredient_ids
         );
+    }
+
+    function pfAdjustPersonalizeSetupIngredientAmount(
+      input,
+      direction
+    ) {
+      const currentAmount = Number(input.value);
+      const safeCurrentAmount =
+        Number.isFinite(currentAmount) &&
+        currentAmount > 0
+          ? currentAmount
+          : 0;
+      const nextAmount =
+        safeCurrentAmount +
+        direction * PF_PERSONALIZE_AMOUNT_STEP;
+
+      if (!Number.isFinite(nextAmount) || nextAmount <= 0) {
+        const status =
+          document.getElementById(
+            'pf-personalize-setup-status'
+          );
+
+        if (status) {
+          status.textContent =
+            'Use Remove to take an ingredient out of your smoothie.';
+        }
+
+        input.focus();
+        return;
+      }
+
+      input.value = String(
+        Math.round(nextAmount * 1000) / 1000
+      );
+      input.dispatchEvent(
+        new Event('input', { bubbles: true })
+      );
     }
 
     function pfAppendPersonalizeSetupIngredient(item) {
@@ -9726,27 +9851,107 @@
         item.display_name ||
         item.name ||
         ingredientId;
+      row.dataset.ingredientName = name.textContent;
 
-      const amount = document.createElement('span');
-      const rawAmount =
-        item && item.weight_g !== undefined
-          ? item.weight_g
-          : item && item.amount;
+      const unit =
+        item && item.unit === 'ml'
+          ? 'mL'
+          : 'g';
+      const rawAmount = item && item.amount;
       const numericAmount = Number(rawAmount);
 
-      amount.textContent =
-        Number.isFinite(numericAmount)
-          ? Math.round(numericAmount) +
-            ' ' +
-            (
-              item && item.weight_g !== undefined
-                ? 'g'
-                : item.unit || 'g'
-            )
-          : 'Amount recalculated when updated';
+      const amountControls =
+        document.createElement('div');
+      amountControls.className =
+        'pf-personalize-setup-amount-controls';
+
+      const decrease = document.createElement('button');
+      decrease.type = 'button';
+      decrease.className =
+        'pf-personalize-setup-amount-button';
+      decrease.textContent = '−';
+      decrease.setAttribute(
+        'aria-label',
+        'Decrease ' + name.textContent +
+          ' by ' +
+          PF_PERSONALIZE_AMOUNT_STEP +
+          ' ' +
+          unit
+      );
+
+      const amountInput = document.createElement('input');
+      amountInput.type = 'number';
+      amountInput.className =
+        'pf-personalize-setup-amount-input';
+      amountInput.min = '0.001';
+      amountInput.step = 'any';
+      amountInput.inputMode = 'decimal';
+      amountInput.setAttribute(
+        'data-personalize-ingredient-amount',
+        '1'
+      );
+      amountInput.setAttribute(
+        'aria-label',
+        'Amount for ' + name.textContent +
+          ' in ' +
+          unit
+      );
+
+      if (
+        Number.isFinite(numericAmount) &&
+        numericAmount > 0
+      ) {
+        amountInput.value = String(numericAmount);
+      } else {
+        amountInput.placeholder = 'Amount';
+      }
+
+      const unitLabel = document.createElement('span');
+      unitLabel.className =
+        'pf-personalize-setup-amount-unit';
+      unitLabel.textContent = unit;
+
+      const increase = document.createElement('button');
+      increase.type = 'button';
+      increase.className =
+        'pf-personalize-setup-amount-button';
+      increase.textContent = '+';
+      increase.setAttribute(
+        'aria-label',
+        'Increase ' + name.textContent +
+          ' by ' +
+          PF_PERSONALIZE_AMOUNT_STEP +
+          ' ' +
+          unit
+      );
+
+      decrease.addEventListener(
+        'click',
+        function() {
+          pfAdjustPersonalizeSetupIngredientAmount(
+            amountInput,
+            -1
+          );
+        }
+      );
+
+      increase.addEventListener(
+        'click',
+        function() {
+          pfAdjustPersonalizeSetupIngredientAmount(
+            amountInput,
+            1
+          );
+        }
+      );
+
+      amountControls.appendChild(decrease);
+      amountControls.appendChild(amountInput);
+      amountControls.appendChild(unitLabel);
+      amountControls.appendChild(increase);
 
       details.appendChild(name);
-      details.appendChild(amount);
+      details.appendChild(amountControls);
 
       const remove = document.createElement('button');
       remove.type = 'button';
@@ -10454,16 +10659,32 @@
         return;
       }
 
-      const preferredIds =
-        pfGetPersonalizeSetupIngredientIds(recipe);
+      const selectionResult =
+        pfGetPersonalizeSetupIngredientSelections(recipe);
 
-      if (preferredIds.length < 3) {
+      if (selectionResult.invalidIngredientName) {
+        if (status) {
+          status.textContent =
+            'Enter a positive amount for ' +
+            selectionResult.invalidIngredientName +
+            '.';
+        }
+        return;
+      }
+
+      const ingredientSelections =
+        selectionResult.selections;
+
+      if (ingredientSelections.length < 3) {
         if (status) {
           status.textContent =
             'You cannot update: at least 3 ingredients are required.';
         }
         return;
       }
+
+      const personalizationId =
+        pfEnsurePersonalizeRecipeIdentity(recipe);
 
       if (saveButton) {
         saveButton.disabled = true;
@@ -10482,11 +10703,16 @@
             goal: recipe.goal,
             timing: recipe.timing,
             current_variant: recipe.variant,
-            ingredient_ids: preferredIds
+            ingredients: ingredientSelections
           };
 
           if (personId !== null) {
             requestPayload.person_id = personId;
+          }
+
+          if (personalizationId) {
+            requestPayload.personalization_id =
+              personalizationId;
           }
 
           const response =
@@ -29320,6 +29546,38 @@ const batchG = (smoothieBatchMlOverride != null)
     font-size: 12px;
     font-weight: 700;
   }
+
+  .pf-personalize-setup-amount-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pf-personalize-setup-ingredient
+  .pf-personalize-setup-amount-button {
+    min-width: 30px;
+    padding: 7px 0;
+    color: #0f6b4a;
+  }
+
+  .pf-personalize-setup-amount-input {
+    width: 76px;
+    min-height: 32px;
+    padding: 0 8px;
+    border: 1px solid #d8e1dc;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #17233b;
+    font: inherit;
+    font-size: 13px;
+  }
+
+  .pf-personalize-setup-amount-unit {
+    min-width: 20px;
+    color: #66758a;
+    font-size: 12px;
+    font-weight: 700;
+  }
 </style>
 
 <div
@@ -29358,7 +29616,7 @@ const batchG = (smoothieBatchMlOverride != null)
       id="pf-personalize-setup-description"
       class="pf-save-auth-description"
     >
-      Review the ingredients in your current smoothie and remove any you do not want.
+      Add, remove, or adjust the amount of any ingredient.
     </p>
 
     <div class="pf-personalize-setup-add">

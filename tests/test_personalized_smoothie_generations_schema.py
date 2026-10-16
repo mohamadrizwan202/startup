@@ -11,6 +11,7 @@ EXPECTED_COLUMNS = [
     "timing_slug",
     "access_type",
     "created_at",
+    "personalization_id",
 ]
 
 

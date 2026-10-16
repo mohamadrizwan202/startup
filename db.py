@@ -553,6 +553,7 @@ def ensure_schema():
                     timing_slug VARCHAR(100) NOT NULL,
                     access_type VARCHAR(20) NOT NULL,
                     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    personalization_id UUID,
                     CONSTRAINT personalized_generations_goal_not_blank
                         CHECK (BTRIM(goal_slug) <> ''),
                     CONSTRAINT personalized_generations_timing_not_blank
@@ -583,6 +584,7 @@ def ensure_schema():
                     timing_slug TEXT NOT NULL,
                     access_type TEXT NOT NULL,
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    personalization_id TEXT,
                     CHECK (TRIM(goal_slug) <> ''),
                     CHECK (TRIM(timing_slug) <> ''),
                     CHECK (access_type IN ('free_trial', 'pro'))
@@ -598,6 +600,35 @@ def ensure_schema():
                     created_at DESC
                 )
             """)
+
+        # Durable identity for one editable personalized smoothie.
+        # Existing rows remain valid quota history but have no editable ID.
+        if USE_POSTGRES:
+            cursor.execute("""
+                ALTER TABLE personalized_smoothie_generations
+                ADD COLUMN IF NOT EXISTS personalization_id UUID
+            """)
+        else:
+            cursor.execute(
+                "PRAGMA table_info(personalized_smoothie_generations)"
+            )
+            generation_columns = {
+                row[1] for row in cursor.fetchall()
+            }
+            if "personalization_id" not in generation_columns:
+                cursor.execute("""
+                    ALTER TABLE personalized_smoothie_generations
+                    ADD COLUMN personalization_id TEXT
+                """)
+
+        cursor.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS
+                personalized_generations_personalization_id_uidx
+            ON personalized_smoothie_generations (
+                personalization_id
+            )
+            WHERE personalization_id IS NOT NULL
+        """)
 
         # ── SAVED RECIPES TABLE ──────────────────────────────────────────
         if USE_POSTGRES:

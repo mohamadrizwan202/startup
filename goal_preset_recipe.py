@@ -951,23 +951,27 @@ _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES = {
 
 
 def get_supported_ingredient_options() -> tuple[dict[str, str], ...]:
-    """Return canonical ingredient IDs and display labels for personalization."""
+    """Return canonical ingredient IDs, labels, and display units."""
     display_names_by_id: dict[str, set[str]] = {}
+    display_units_by_id: dict[str, set[str]] = {}
 
     for preset in _PRESET_RECIPES.values():
         for ingredient in preset["ingredients"]:
             ingredient_id = ingredient["id"]
-            display_name = ingredient["display_name"]
-
             display_names_by_id.setdefault(
                 ingredient_id,
                 set(),
-            ).add(display_name)
+            ).add(ingredient["display_name"])
+            display_units_by_id.setdefault(
+                ingredient_id,
+                set(),
+            ).add(ingredient.get("display_unit", "g"))
 
     options = []
 
     for ingredient_id in sorted(display_names_by_id):
         display_names = display_names_by_id[ingredient_id]
+        display_units = display_units_by_id[ingredient_id]
 
         if ingredient_id in _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES:
             display_name = (
@@ -980,18 +984,23 @@ def get_supported_ingredient_options() -> tuple[dict[str, str], ...]:
         else:
             raise RuntimeError(
                 "Ingredient has conflicting display names without "
-                f"an explicit personalization override: "
+                "an explicit personalization override: "
                 f"{ingredient_id}={sorted(display_names)!r}"
+            )
+
+        if len(display_units) != 1:
+            raise RuntimeError(
+                "Ingredient has conflicting personalization display units: "
+                f"{ingredient_id}={sorted(display_units)!r}"
             )
 
         options.append({
             "id": ingredient_id,
             "display_name": display_name,
+            "unit": next(iter(display_units)),
         })
 
     return tuple(options)
-
-
 
 def _get_goal_aligned_ingredient_ids(
     normalized_goal: str,
@@ -1240,9 +1249,9 @@ def build_personalized_goal_preset_recipe(
     goal,
     timing,
     variant,
-    ingredient_ids,
+    ingredient_selections,
 ) -> dict:
-    """Build one explicit Personalize editor selection."""
+    """Build one Personalize editor selection from explicit user amounts."""
 
     normalized_goal = _normalize_required_slug(
         goal,
@@ -1257,22 +1266,58 @@ def build_personalized_goal_preset_recipe(
         field="variant",
     )
 
-    if not isinstance(ingredient_ids, list):
+    if not isinstance(ingredient_selections, list):
         raise GoalPresetRecipeInputError(
-            "ingredient_ids must be a list"
+            "ingredient selections must be a list"
         )
 
-    if not ingredient_ids:
+    if not ingredient_selections:
         raise GoalPresetRecipeInputError(
             "at least 3 ingredients are required"
         )
 
-    normalized_ingredient_ids = [
-        _normalize_required_slug(
-            ingredient_id,
+    normalized_selections = []
+
+    for selection in ingredient_selections:
+        if not isinstance(selection, dict):
+            raise GoalPresetRecipeInputError(
+                "each ingredient selection must be an object"
+            )
+
+        if set(selection) != {"id", "amount"}:
+            raise GoalPresetRecipeInputError(
+                "each ingredient selection must contain id and amount"
+            )
+
+        ingredient_id = _normalize_required_slug(
+            selection["id"],
             field="ingredient_id",
         )
-        for ingredient_id in ingredient_ids
+        raw_amount = selection["amount"]
+
+        if (
+            isinstance(raw_amount, bool)
+            or not isinstance(raw_amount, (int, float))
+        ):
+            raise GoalPresetRecipeInputError(
+                "ingredient amount must be a positive number"
+            )
+
+        amount = float(raw_amount)
+
+        if not 0.0 < amount < float("inf"):
+            raise GoalPresetRecipeInputError(
+                "ingredient amount must be a positive finite number"
+            )
+
+        normalized_selections.append({
+            "id": ingredient_id,
+            "amount": amount,
+        })
+
+    normalized_ingredient_ids = [
+        selection["id"]
+        for selection in normalized_selections
     ]
 
     if len(normalized_ingredient_ids) != len(
@@ -1322,7 +1367,6 @@ def build_personalized_goal_preset_recipe(
             "at least 3 ingredients are required"
         )
 
-
     goal_aligned_ingredient_ids = set(
         _get_goal_aligned_ingredient_ids(normalized_goal)
     )
@@ -1363,12 +1407,6 @@ def build_personalized_goal_preset_recipe(
             else deepcopy(catalog_definitions[ingredient_id])
             for ingredient_id in normalized_ingredient_ids
         ]
-        weight_source = (
-            "normalized_selected_reference_amounts"
-        )
-        composition_source = (
-            "user_selected_preset_and_catalog_composition"
-        )
     else:
         selected_ingredient_ids = set(
             normalized_ingredient_ids
@@ -1378,17 +1416,27 @@ def build_personalized_goal_preset_recipe(
             for ingredient in preset["ingredients"]
             if ingredient["id"] in selected_ingredient_ids
         ]
-        weight_source = (
-            "normalized_retained_preset_amounts"
-        )
-        composition_source = (
-            "user_edited_reviewed_preset_composition"
-        )
 
-    scaled_weights = _build_scaled_weights(
-        definitions,
-        target_weight_g=target_weight_g,
-    )
+    amounts_by_id = {
+        selection["id"]: selection["amount"]
+        for selection in normalized_selections
+    }
+    explicit_weights = []
+
+    for definition in definitions:
+        amount = amounts_by_id[definition["id"]]
+
+        if definition.get("display_unit", "g") == "ml":
+            weight_g = recipe_mass.convert_liquid_ml_to_grams(
+                nutrition_lookup_name=definition[
+                    "nutrition_lookup_name"
+                ],
+                volume_ml=amount,
+            )
+        else:
+            weight_g = amount
+
+        explicit_weights.append(weight_g)
 
     recipe_inputs = [
         {
@@ -1401,7 +1449,7 @@ def build_personalized_goal_preset_recipe(
         }
         for definition, weight_g in zip(
             definitions,
-            scaled_weights,
+            explicit_weights,
             strict=True,
         )
     ]
@@ -1414,21 +1462,11 @@ def build_personalized_goal_preset_recipe(
 
     for definition, weight_g, calculated_ingredient in zip(
         definitions,
-        scaled_weights,
+        explicit_weights,
         calculated["ingredients"],
         strict=True,
     ):
         display_unit = definition.get("display_unit", "g")
-
-        if display_unit == "ml":
-            display_amount = recipe_mass.convert_liquid_grams_to_ml(
-                nutrition_lookup_name=definition[
-                    "nutrition_lookup_name"
-                ],
-                weight_g=weight_g,
-            )
-        else:
-            display_amount = weight_g
 
         result_ingredients.append(
             {
@@ -1440,7 +1478,7 @@ def build_personalized_goal_preset_recipe(
                 "nutrition_record_name": calculated_ingredient[
                     "nutrition_record_name"
                 ],
-                "amount": round(display_amount, 3),
+                "amount": amounts_by_id[definition["id"]],
                 "unit": display_unit,
                 "weight_g": calculated_ingredient["weight_g"],
                 "mass_source": calculated_ingredient["mass_source"],
@@ -1468,8 +1506,11 @@ def build_personalized_goal_preset_recipe(
             "uses_age": False,
             "uses_sex": False,
             "uses_eer": False,
-            "weight_source": weight_source,
-            "composition_source": composition_source,
+            "weight_source": "explicit_user_amounts",
+            "composition_source": (
+                "explicit_user_ingredient_amounts"
+            ),
+            "timing_target_applied": False,
             "goal_alignment": goal_alignment,
             "outside_goal_ingredient_ids": (
                 outside_goal_ingredient_ids

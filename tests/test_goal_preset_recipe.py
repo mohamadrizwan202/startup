@@ -806,7 +806,7 @@ def test_supported_ingredient_options_are_canonical():
 
     assert len(options) == 36
     assert all(
-        set(option) == {"id", "display_name"}
+        set(option) == {"id", "display_name", "unit"}
         for option in options
     )
 
@@ -818,74 +818,69 @@ def test_supported_ingredient_options_are_canonical():
     )
 
     by_id = {
-        option["id"]: option["display_name"]
+        option["id"]: option
         for option in options
     }
 
-    assert by_id["oat-milk"] == "Oat Milk"
+    assert by_id["oat-milk"]["display_name"] == "Oat Milk"
+    assert by_id["oat-milk"]["unit"] == "ml"
 
 
-def test_personalized_recipe_removal_rescales_to_timing_target():
-    base = build_goal_preset_recipe(
-        goal="skin-glow",
-        timing="breakfast",
-        variant="b",
-    )
-    retained_ids = [
-        "oat-milk",
-        "greek-yogurt",
-        "spinach",
-        "strawberry",
-        "kiwi",
+def test_personalized_recipe_uses_explicit_amounts_without_timing_rescale():
+    ingredient_selections = [
+        {"id": "oat-milk", "amount": 113.0},
+        {"id": "greek-yogurt", "amount": 89.0},
+        {"id": "spinach", "amount": 17.0},
+        {"id": "strawberry", "amount": 53.0},
+        {"id": "kiwi", "amount": 41.0},
     ]
 
     result = goal_preset_recipe.build_personalized_goal_preset_recipe(
         goal="skin-glow",
         timing="breakfast",
         variant="b",
-        ingredient_ids=retained_ids,
+        ingredient_selections=ingredient_selections,
     )
 
-    expected_ids = [
+    assert [
+        item["id"]
+        for item in result["ingredients"]
+    ] == [
         "kiwi",
         "strawberry",
         "spinach",
         "greek-yogurt",
         "oat-milk",
     ]
-    assert [
-        item["id"]
+
+    amounts_by_id = {
+        selection["id"]: selection["amount"]
+        for selection in ingredient_selections
+    }
+    result_by_id = {
+        item["id"]: item
         for item in result["ingredients"]
-    ] == expected_ids
+    }
 
-    retained_definitions = [
-        definition
-        for definition in goal_preset_recipe._PRESET_RECIPES[
-            ("skin-glow", "b")
-        ]["ingredients"]
-        if definition["id"] in set(retained_ids)
-    ]
-    expected_weights = goal_preset_recipe._build_scaled_weights(
-        retained_definitions,
-        target_weight_g=400.0,
-    )
-
-    for result_item, expected_weight in zip(
-        result["ingredients"],
-        expected_weights,
-        strict=True,
-    ):
-        assert result_item["weight_g"] == pytest.approx(
-            expected_weight
+    for ingredient_id, amount in amounts_by_id.items():
+        assert result_by_id[ingredient_id]["amount"] == pytest.approx(
+            amount
         )
 
-    assert result["variant"] == "b"
+    for item in result["ingredients"]:
+        if item["unit"] == "g":
+            assert item["weight_g"] == pytest.approx(item["amount"])
+
+    assert result_by_id["oat-milk"]["unit"] == "ml"
     assert result["target_weight_g"] == pytest.approx(400.0)
-    assert result["batch"]["weight_g"] == pytest.approx(400.0)
-    assert sum(
-        item["weight_g"]
-        for item in result["ingredients"]
-    ) == pytest.approx(400.0)
+    assert result["batch"]["weight_g"] == pytest.approx(
+        sum(
+            item["weight_g"]
+            for item in result["ingredients"]
+        ),
+        abs=0.001,
+    )
+    assert result["batch"]["weight_g"] != pytest.approx(400.0)
 
     expected = recipe_calculator.calculate_recipe(
         [
@@ -909,97 +904,132 @@ def test_personalized_recipe_removal_rescales_to_timing_target():
     assert contract["uses_age"] is False
     assert contract["uses_sex"] is False
     assert contract["uses_eer"] is False
-    assert contract["weight_source"] == (
-        "normalized_retained_preset_amounts"
+    assert contract["weight_source"] == "explicit_user_amounts"
+    assert (
+        contract["composition_source"]
+        == "explicit_user_ingredient_amounts"
     )
+    assert contract["timing_target_applied"] is False
 
 
-def test_personalized_recipe_accepts_catalog_additions_and_normalizes_to_target():
-    selected_ids = [
-        "kiwi",
-        "banana",
-        "blueberry",
+def test_personalized_recipe_accepts_catalog_additions_with_explicit_amounts():
+    ingredient_selections = [
+        {"id": "kiwi", "amount": 91.0},
+        {"id": "banana", "amount": 83.0},
+        {"id": "blueberry", "amount": 67.0},
     ]
 
     result = goal_preset_recipe.build_personalized_goal_preset_recipe(
         goal="skin-glow",
         timing="breakfast",
         variant="b",
-        ingredient_ids=selected_ids,
+        ingredient_selections=ingredient_selections,
     )
 
     assert [
         item["id"]
         for item in result["ingredients"]
-    ] == selected_ids
-    assert result["target_weight_g"] == pytest.approx(400.0)
-    assert result["batch"]["weight_g"] == pytest.approx(400.0)
-    assert sum(
-        item["weight_g"]
+    ] == [
+        "kiwi",
+        "banana",
+        "blueberry",
+    ]
+    assert [
+        item["amount"]
         for item in result["ingredients"]
-    ) == pytest.approx(400.0)
+    ] == pytest.approx([91.0, 83.0, 67.0])
+    assert result["target_weight_g"] == pytest.approx(400.0)
+    assert result["batch"]["weight_g"] == pytest.approx(241.0)
+    assert result["batch"]["weight_g"] != pytest.approx(400.0)
 
-    expected = recipe_calculator.calculate_recipe(
-        [
-            {
-                "ingredient": item["display_name"],
-                "nutrition_lookup_name": item[
-                    "nutrition_lookup_name"
-                ],
-                "amount": item["weight_g"],
-                "unit": "g",
-            }
-            for item in result["ingredients"]
-        ]
+    contract = result["preset_contract"]
+    assert contract["weight_source"] == "explicit_user_amounts"
+    assert (
+        contract["composition_source"]
+        == "explicit_user_ingredient_amounts"
     )
-
-    assert result["batch"]["nutrition"] == pytest.approx(
-        expected["batch"]["nutrition"]
-    )
-    assert result["preset_contract"]["weight_source"] == (
-        "normalized_selected_reference_amounts"
-    )
-    assert result["preset_contract"]["composition_source"] == (
-        "user_selected_preset_and_catalog_composition"
-    )
+    assert contract["timing_target_applied"] is False
+    assert contract["goal_alignment"] == "custom"
+    assert contract["outside_goal_ingredient_ids"] == [
+        "banana",
+        "blueberry",
+    ]
 
 
 @pytest.mark.parametrize(
-    "ingredient_ids",
+    "ingredient_selections",
     (
         [],
-        ["banana"],
-        ["kiwi", "banana"],
+        [{"id": "banana", "amount": 60.0}],
+        [
+            {"id": "kiwi", "amount": 60.0},
+            {"id": "banana", "amount": 60.0},
+        ],
     ),
 )
 def test_personalized_recipe_requires_at_least_three_ingredients(
-    ingredient_ids,
+    ingredient_selections,
 ):
     with pytest.raises(
-        goal_preset_recipe.GoalPresetRecipeInputError,
+        GoalPresetRecipeInputError,
         match="at least 3 ingredients are required",
     ):
         goal_preset_recipe.build_personalized_goal_preset_recipe(
             goal="skin-glow",
             timing="breakfast",
             variant="b",
-            ingredient_ids=ingredient_ids,
+            ingredient_selections=ingredient_selections,
         )
 
 
 @pytest.mark.parametrize(
-    ("ingredient_ids", "message"),
+    ("ingredient_selections", "message"),
     (
-        ([], "at least 3 ingredients"),
-        (["kiwi", "kiwi"], "duplicate ingredient"),
+        (None, "ingredient selections must be a list"),
         (
-            ["kiwi", "not-supported"],
+            [{"id": "kiwi", "amount": 40.0, "extra": True}],
+            "each ingredient selection must contain id and amount",
+        ),
+        (
+            [{"id": "kiwi", "amount": "40"}],
+            "ingredient amount must be a positive number",
+        ),
+        (
+            [{"id": "kiwi", "amount": True}],
+            "ingredient amount must be a positive number",
+        ),
+        (
+            [{"id": "kiwi", "amount": 0.0}],
+            "ingredient amount must be a positive finite number",
+        ),
+        (
+            [{"id": "kiwi", "amount": float("nan")}],
+            "ingredient amount must be a positive finite number",
+        ),
+        (
+            [{"id": "kiwi", "amount": float("inf")}],
+            "ingredient amount must be a positive finite number",
+        ),
+        (
+            [
+                {"id": "kiwi", "amount": 40.0},
+                {"id": "kiwi", "amount": 50.0},
+                {"id": "strawberry", "amount": 60.0},
+            ],
+            "duplicate ingredient selections are not allowed",
+        ),
+        (
+            [
+                {"id": "kiwi", "amount": 40.0},
+                {"id": "strawberry", "amount": 50.0},
+                {"id": "not-supported", "amount": 60.0},
+            ],
             "not supported for personalization",
         ),
     ),
 )
 def test_personalized_recipe_rejects_invalid_ingredient_selections(
-    ingredient_ids,
+    ingredient_selections,
     message,
 ):
     with pytest.raises(
@@ -1010,18 +1040,19 @@ def test_personalized_recipe_rejects_invalid_ingredient_selections(
             goal="skin-glow",
             timing="breakfast",
             variant="b",
-            ingredient_ids=ingredient_ids,
+            ingredient_selections=ingredient_selections,
         )
+
 
 def test_personalized_recipe_reports_goal_alignment_and_custom_status():
     aligned = goal_preset_recipe.build_personalized_goal_preset_recipe(
         goal="skin-glow",
         timing="breakfast",
         variant="b",
-        ingredient_ids=[
-            "kiwi",
-            "strawberry",
-            "guava",
+        ingredient_selections=[
+            {"id": "kiwi", "amount": 75.0},
+            {"id": "strawberry", "amount": 65.0},
+            {"id": "guava", "amount": 80.0},
         ],
     )
 
@@ -1037,10 +1068,10 @@ def test_personalized_recipe_reports_goal_alignment_and_custom_status():
         goal="skin-glow",
         timing="breakfast",
         variant="b",
-        ingredient_ids=[
-            "kiwi",
-            "banana",
-            "blueberry",
+        ingredient_selections=[
+            {"id": "kiwi", "amount": 75.0},
+            {"id": "banana", "amount": 65.0},
+            {"id": "blueberry", "amount": 80.0},
         ],
     )
 
