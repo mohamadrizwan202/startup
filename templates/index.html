@@ -7041,14 +7041,6 @@
           color: #17211b;
         }
 
-        #pf-goal-time-entry.is-result-view .pf-result-credit-status {
-          margin: 10px 0 0;
-          color: #17603c;
-          font-size: 13px;
-          font-weight: 700;
-          line-height: 1.4;
-        }
-
         #pf-goal-time-entry.is-result-view .pf-result-heading p {
           margin: 0;
           color: #64748b;
@@ -8118,15 +8110,6 @@
                 resultSummary.textContent = goalCopy.summary;
               }
 
-              var resultCreditStatus =
-                document.getElementById(
-                  'pf-result-personalize-credit-status'
-                );
-
-              if (resultCreditStatus) {
-                resultCreditStatus.remove();
-              }
-
               if (resultBatchMeta) {
                 resultBatchMeta.textContent =
                   Math.round(Number(recipe.batch.weight_g)) +
@@ -8321,16 +8304,6 @@
                 buildStatus.textContent = 'Building your smoothie...';
               }
 
-              var buildRequestController =
-                new AbortController();
-
-              var buildRequestTimeout = window.setTimeout(
-                function() {
-                  buildRequestController.abort();
-                },
-                4000
-              );
-
               try {
                 var response = await fetch('/api/build-goal-preset', {
                   method: 'POST',
@@ -8341,8 +8314,7 @@
                     goal: selectedGoal,
                     timing: selectedTime,
                     variant: variant
-                  }),
-                  signal: buildRequestController.signal
+                  })
                 });
 
                 var payload = await response.json();
@@ -8360,18 +8332,15 @@
                 renderPresetResult(payload.recipe);
               } catch (error) {
                 var message =
-                  error && error.name === 'AbortError'
-                    ? 'This is taking longer than expected. Please try again.'
-                    : error && error.message
-                      ? error.message
-                      : 'Could not build smoothie.';
+                  error && error.message
+                    ? error.message
+                    : 'Could not build smoothie.';
 
                 if (buildStatus) {
                   buildStatus.hidden = false;
                   buildStatus.textContent = message;
                 }
               } finally {
-                window.clearTimeout(buildRequestTimeout);
                 isBuilding = false;
 
                 if (buildButton) {
@@ -9627,55 +9596,77 @@
       );
     }
 
-    function pfShowPersonalizeCreditStatus(access) {
-      if (!access || typeof access !== 'object') {
+    function pfRenderPersonalizeCreditStatus(access) {
+      const status =
+        document.getElementById(
+          'pf-personalize-setup-credit-status'
+        );
+
+      if (!status) {
         return;
       }
 
-      const summary =
-        document.getElementById('pf-result-summary');
+      if (!access || typeof access !== 'object') {
+        status.textContent =
+          'Your personalized smoothie balance is unavailable right now.';
+        return;
+      }
 
-      if (!summary) {
+      if (access.plan === 'pro') {
+        status.textContent =
+          'Unlimited personalized smoothies with Pro.';
         return;
       }
 
       const remaining = Number(access.free_remaining);
-      let message = '';
+      const limit = Number(access.free_limit);
 
-      if (access.plan === 'pro') {
-        message =
-          'Smoothie updated. Unlimited personalized smoothies.';
-      } else if (
+      if (
         Number.isInteger(remaining) &&
-        remaining >= 0
+        remaining >= 0 &&
+        Number.isInteger(limit) &&
+        limit > 0
       ) {
-        const noun =
-          remaining === 1 ? 'smoothie' : 'smoothies';
-
-        message =
-          access.credit_used === true
-            ? 'Smoothie updated. ' +
-              remaining +
-              ' free personalized ' +
-              noun +
-              ' remaining.'
-            : 'Smoothie updated. No credit used. ' +
-              remaining +
-              ' free personalized ' +
-              noun +
-              ' remaining.';
-      }
-
-      if (!message) {
+        status.textContent =
+          remaining +
+          ' of ' +
+          limit +
+          ' free personalized smoothies remaining.';
         return;
       }
 
-      const status = document.createElement('p');
-      status.id = 'pf-result-personalize-credit-status';
-      status.className = 'pf-result-credit-status';
-      status.setAttribute('aria-live', 'polite');
-      status.textContent = message;
-      summary.insertAdjacentElement('afterend', status);
+      status.textContent =
+        'Your personalized smoothie balance is unavailable right now.';
+    }
+
+    async function pfLoadPersonalizeCreditStatus() {
+      try {
+        const response = await fetch(
+          '/api/personalized-goal-preset/access',
+          {
+            method: 'GET',
+          }
+        );
+        const body = await response.json();
+
+        if (
+          !response.ok ||
+          !body ||
+          !body.access
+        ) {
+          throw new Error(
+            'Could not load personalized smoothie balance.'
+          );
+        }
+
+        pfRenderPersonalizeCreditStatus(body.access);
+      } catch (error) {
+        console.error(
+          '[personalize-setup] Could not load credit balance',
+          error
+        );
+        pfRenderPersonalizeCreditStatus(null);
+      }
     }
 
     function pfGetPersonalizeSetupRecipe() {
@@ -10634,6 +10625,7 @@
       );
 
       void pfLoadPersonalizeIngredientOptions();
+      void pfLoadPersonalizeCreditStatus();
 
       pfPersonalizeAuthReturnFocus =
         triggerElement || null;
@@ -10866,7 +10858,6 @@
          );
         }
 
-        pfShowPersonalizeCreditStatus(body.access);
         pfClearPendingPersonalizeSnapshot();
         pfClosePersonalizeSetupPrompt(false);
 
@@ -29516,6 +29507,18 @@ const batchG = (smoothieBatchMlOverride != null)
     overflow-y: auto;
   }
 
+  .pf-personalize-setup-credit-status {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border: 1px solid #cfe3d8;
+    border-radius: 8px;
+    background: #f2f8f4;
+    color: #1f6a45;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.4;
+  }
+
   .pf-personalize-setup-add {
     display: grid;
     gap: 6px;
@@ -29686,6 +29689,14 @@ const batchG = (smoothieBatchMlOverride != null)
       class="pf-save-auth-description"
     >
       Add, remove, or adjust the amount of any ingredient.
+    </p>
+
+    <p
+      id="pf-personalize-setup-credit-status"
+      class="pf-personalize-setup-credit-status"
+      aria-live="polite"
+    >
+      Checking your free personalized smoothie balance…
     </p>
 
     <div class="pf-personalize-setup-add">

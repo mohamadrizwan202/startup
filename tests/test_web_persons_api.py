@@ -997,6 +997,35 @@ def test_person_ingredient_preferences_are_owner_scoped(client):
     assert put_response.status_code == 404
 
 
+def test_personalized_goal_preset_access_returns_current_account_access(
+    client,
+    monkeypatch,
+):
+    expected_access = {
+        "plan": "free",
+        "allowed": True,
+        "access_type": "free_trial",
+        "free_limit": 3,
+        "free_used": 1,
+        "free_remaining": 2,
+    }
+
+    monkeypatch.setattr(
+        appmod,
+        "_get_personalized_generation_access",
+        lambda user_id: expected_access,
+    )
+
+    response = client.get(
+        "/api/personalized-goal-preset/access"
+    )
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "access": expected_access,
+    }
+
+
 def test_personalization_ingredient_options_returns_reviewed_catalog(client):
     response = client.get(
         "/api/personalization/ingredient-options"
@@ -1009,7 +1038,7 @@ def test_personalization_ingredient_options_returns_reviewed_catalog(client):
 
     assert len(options) == 36
     assert all(
-        set(option) == {"id", "display_name"}
+        set(option) == {"id", "display_name", "unit"}
         for option in options
     )
 

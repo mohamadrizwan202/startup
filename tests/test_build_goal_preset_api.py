@@ -7,7 +7,6 @@ _requests_stub = ModuleType("requests")
 _requests_stub.__getattr__ = lambda _name: MagicMock()
 sys.modules.setdefault("requests", _requests_stub)
 
-import ai_goal_recipe_selector
 import goal_preset_recipe
 import startup_recovered as app_module
 
@@ -180,30 +179,10 @@ def test_build_goal_preset_maps_missing_nutrition_to_422(monkeypatch):
     }
 
 
-def test_build_goal_preset_uses_ai_and_avoids_recent_variant(
+def test_build_goal_preset_uses_requested_reviewed_variants(
     monkeypatch,
 ):
-    selections = []
     built_variants = []
-
-    def fake_select(
-        *,
-        client,
-        goal,
-        timing,
-        excluded_variants,
-    ):
-        selections.append({
-            "goal": goal,
-            "timing": timing,
-            "excluded_variants": tuple(excluded_variants),
-        })
-        variant = "b" if len(selections) == 1 else "c"
-        return {
-            "variant": variant,
-            "ingredient_ids": ["reviewed"],
-            "selection_source": "haiku_reviewed_candidate",
-        }
 
     def fake_build(*, goal, timing, variant):
         built_variants.append(variant)
@@ -220,113 +199,35 @@ def test_build_goal_preset_uses_ai_and_avoids_recent_variant(
         }
 
     monkeypatch.setattr(
-        ai_goal_recipe_selector,
-        "select_reviewed_goal_recipe",
-        fake_select,
-    )
-    monkeypatch.setattr(
         goal_preset_recipe,
         "build_goal_preset_recipe",
         fake_build,
     )
 
-    client = _client(ai_enabled=True)
+    client = _client()
 
-    first = client.post(
-        "/api/build-goal-preset",
-        json={
-            "goal": "skin-glow",
-            "timing": "breakfast",
-            "variant": "a",
-        },
-    )
-    second = client.post(
-        "/api/build-goal-preset",
-        json={
-            "goal": "skin-glow",
-            "timing": "breakfast",
-            "variant": "a",
-        },
-    )
-
-    assert first.status_code == 200
-    assert second.status_code == 200
-    assert built_variants == ["b", "c"]
-    assert selections == [
-        {
-            "goal": "skin-glow",
-            "timing": "breakfast",
-            "excluded_variants": (),
-        },
-        {
-            "goal": "skin-glow",
-            "timing": "breakfast",
-            "excluded_variants": ("b",),
-        },
-    ]
-    assert (
-        first.get_json()["recipe"]["preset_contract"][
-            "selection_source"
-        ]
-        == "haiku_reviewed_candidate"
-    )
-
-
-def test_build_goal_preset_uses_reviewed_fallback_when_ai_fails(
-    monkeypatch,
-):
-    captured = {}
-
-    def fake_select(**_kwargs):
-        raise ai_goal_recipe_selector.AIGoalRecipeSelectionError(
-            "invalid AI output"
+    for variant in ("a", "b", "c"):
+        response = client.post(
+            "/api/build-goal-preset",
+            json={
+                "goal": "skin-glow",
+                "timing": "breakfast",
+                "variant": variant,
+            },
         )
 
-    def fake_build(*, goal, timing, variant):
-        captured["variant"] = variant
-        return {
-            "goal": goal,
-            "timing": timing,
-            "variant": variant,
-            "ingredients": [],
-            "batch": {
-                "weight_g": 400.0,
-                "nutrition": {},
-            },
-            "preset_contract": {},
-        }
+        assert response.status_code == 200
+        assert (
+            response.get_json()["recipe"]["preset_contract"][
+                "selection_source"
+            ]
+            == "reviewed_preset_requested"
+        )
 
-    monkeypatch.setattr(
-        ai_goal_recipe_selector,
-        "select_reviewed_goal_recipe",
-        fake_select,
-    )
-    monkeypatch.setattr(
-        goal_preset_recipe,
-        "build_goal_preset_recipe",
-        fake_build,
-    )
-
-    response = _client(ai_enabled=True).post(
-        "/api/build-goal-preset",
-        json={
-            "goal": "skin-glow",
-            "timing": "breakfast",
-            "variant": "c",
-        },
-    )
-
-    assert response.status_code == 200
-    assert captured["variant"] == "c"
-    assert (
-        response.get_json()["recipe"]["preset_contract"][
-            "selection_source"
-        ]
-        == "reviewed_preset_fallback"
-    )
+    assert built_variants == ["a", "b", "c"]
 
 
-def test_build_goal_preset_template_has_client_deadline():
+def test_build_goal_preset_template_does_not_abort_slow_builds():
     template = (
         Path(__file__).resolve().parents[1]
         / "templates"
@@ -337,9 +238,7 @@ def test_build_goal_preset_template_has_client_deadline():
     end = template.index("if (buildButton)", start)
     flow = template[start:end]
 
-    assert "new AbortController()" in flow
-    assert "buildRequestController.abort()" in flow
-    assert "4000" in flow
-    assert "signal: buildRequestController.signal" in flow
-    assert "window.clearTimeout(buildRequestTimeout)" in flow
-    assert "This is taking longer than expected." in flow
+    assert "new AbortController()" not in flow
+    assert "buildRequestController.abort()" not in flow
+    assert "signal: buildRequestController.signal" not in flow
+    assert "This is taking longer than expected." not in flow

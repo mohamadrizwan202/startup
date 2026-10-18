@@ -183,18 +183,27 @@ def test_personalize_editor_defaults_to_goal_aligned_options_and_exposes_custom_
         assert marker in template
 
 
-def test_personalize_result_shows_server_credit_receipt():
+def test_personalize_editor_shows_server_backed_credit_balance():
     template = _index_template()
 
     required_markers = (
-        "function pfShowPersonalizeCreditStatus(",
-        "pf-result-personalize-credit-status",
-        "access.credit_used === true",
-        "No credit used.",
-        "free personalized ",
-        "access.plan === 'pro'",
-        "pfShowPersonalizeCreditStatus(body.access)",
+        "pf-personalize-setup-credit-status",
+        "function pfRenderPersonalizeCreditStatus(",
+        "function pfLoadPersonalizeCreditStatus()",
+        "/api/personalized-goal-preset/access",
+        "free personalized smoothies remaining.",
+        "Unlimited personalized smoothies with Pro.",
+        "void pfLoadPersonalizeCreditStatus();",
     )
 
     for marker in required_markers:
         assert marker in template
+
+    obsolete_markers = (
+        "pf-result-personalize-credit-status",
+        "function pfShowPersonalizeCreditStatus(",
+        "No credit used.",
+    )
+
+    for marker in obsolete_markers:
+        assert marker not in template

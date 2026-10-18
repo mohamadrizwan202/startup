@@ -55563,11 +55563,7 @@ def build_smoothie_api():
 @csrf.exempt
 @app.post("/api/build-goal-preset")
 def build_goal_preset_api():
-    """Build one AI-selected, backend-reviewed health-goal recipe."""
-    from ai_goal_recipe_selector import (
-        AIGoalRecipeSelectionError,
-        select_reviewed_goal_recipe,
-    )
+    """Build one reviewed health-goal preset recipe."""
     from goal_preset_recipe import (
         GoalPresetRecipeInputError,
         build_goal_preset_recipe,
@@ -55597,65 +55593,17 @@ def build_goal_preset_api():
     timing = payload.get("timing")
     requested_variant = payload.get("variant", "a")
     selection_source = "reviewed_preset_requested"
-    selected_variant = requested_variant
 
     try:
-        if app.config.get("AI_GOAL_RECIPE_ENABLED", True):
-            history = session.get(
-                "pf_ai_goal_recipe_recent_variants",
-                {},
-            )
-
-            if not isinstance(history, dict):
-                history = {}
-
-            history_key = (
-                f"{str(goal).strip().lower()}:"
-                f"{str(timing).strip().lower()}"
-            )
-            recent_variants = history.get(history_key, [])
-
-            if not isinstance(recent_variants, list):
-                recent_variants = []
-
-            try:
-                selection = select_reviewed_goal_recipe(
-                    client=None,
-                    goal=goal,
-                    timing=timing,
-                    excluded_variants=recent_variants[-2:],
-                )
-                selected_variant = selection["variant"]
-                selection_source = selection["selection_source"]
-            except AIGoalRecipeSelectionError:
-                app.logger.warning(
-                    "AI goal recipe selection failed; "
-                    "using reviewed preset fallback",
-                    exc_info=True,
-                )
-                selection_source = "reviewed_preset_fallback"
-
         result = build_goal_preset_recipe(
             goal=goal,
             timing=timing,
-            variant=selected_variant,
+            variant=requested_variant,
         )
 
         result.setdefault("preset_contract", {})[
             "selection_source"
         ] = selection_source
-
-        if app.config.get("AI_GOAL_RECIPE_ENABLED", True):
-            updated_recent = [
-                value
-                for value in recent_variants
-                if value != result["variant"]
-            ]
-            updated_recent.append(result["variant"])
-            history[history_key] = updated_recent[-2:]
-            session[
-                "pf_ai_goal_recipe_recent_variants"
-            ] = history
 
         return jsonify({
             "success": True,
@@ -56635,6 +56583,27 @@ def get_personalization_ingredient_options():
         }), 400
 
     return jsonify(result)
+
+
+@app.get("/api/personalized-goal-preset/access")
+@login_required
+def personalized_goal_preset_access_api():
+    """Return the signed-in account's current personalization access."""
+    try:
+        access = _get_personalized_generation_access(
+            current_user.id
+        )
+    except Exception:
+        app.logger.exception(
+            "Personalized generation access lookup failed"
+        )
+        return jsonify({
+            "error": "entitlement_unavailable",
+        }), 503
+
+    return jsonify({
+        "access": access,
+    })
 
 
 # ── WEB SAAS PERSONALIZATION: PERSONS ────────────────────────────────────────
