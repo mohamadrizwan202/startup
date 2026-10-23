@@ -59,7 +59,7 @@
 
     .register-container {
       width: 100%;
-      max-width: 450px;
+      max-width: 680px;
     }
 
     /* Register Card */
@@ -240,7 +240,83 @@
         font-size: 1.5rem;
       }
     }
-  </style>
+    /* Account health goals */
+    .health-goal-picker {
+      margin: 0 0 25px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #f8fffe;
+    }
+
+    .health-goal-picker legend {
+      padding: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .health-goal-picker p {
+      margin: 7px 0 14px;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+
+    .health-goal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .health-goal-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 40px;
+      padding: 8px 9px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: white;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 0.84rem;
+      line-height: 1.2;
+    }
+
+    .health-goal-option:hover {
+      border-color: var(--primary);
+    }
+
+    .health-goal-selection-status {
+      margin: 0 0 14px;
+      color: var(--primary-dark);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .health-goal-selection-status.is-complete {
+      color: #087f5b;
+    }
+
+    .health-goal-option.is-unavailable {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .health-goal-option input {
+      flex: 0 0 auto;
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      .health-goal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+</style>
   {% include "_adsense_head.html" %}
 </head>
 <body>
@@ -284,6 +360,25 @@
           >
         </div>
         
+        <fieldset class="health-goal-picker" id="account-health-goal-picker" data-required-count="{{ health_goal_required_count }}">
+          <legend>Choose exactly {{ health_goal_required_count }} health goals</legend>
+          <p>Choose the goals that matter most to you. These become your signed-in health-goal shortlist.</p>
+          <p class="health-goal-selection-status" id="health-goal-selection-status" role="status" aria-live="polite">0 of {{ health_goal_required_count }} selected</p>
+          <div class="health-goal-grid">
+            {% for goal in health_goal_catalog %}
+              <label class="health-goal-option">
+                <input
+                  type="checkbox"
+                  name="health_goals"
+                  value="{{ goal.value }}"
+                  {% if goal.value in selected_health_goals %}checked{% endif %}
+                >
+                <span>{{ goal.label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+
         <div class="form-group">
           <label for="password">Password</label>
           <input 
@@ -328,6 +423,7 @@
   </div>
   {% include "_feedback.html" %}
   <script src="{{ url_for('static', filename='js/feedback.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/register-health-goals.js') }}" defer></script>
   {% include "_legal_footer.html" %}
   <script src="{{ url_for('static', filename='js/navbar.js') }}" defer></script>
 </body>

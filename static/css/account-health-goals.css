@@ -1,0 +1,259 @@
+#pf-goal-time-entry .pf-account-health-goals {
+  margin: 0 0 22px;
+  padding: 18px;
+  border: 1px solid #b9e5df;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #effcf9 0%, #ffffff 100%);
+}
+
+#pf-goal-time-entry .pf-account-health-goals-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+#pf-goal-time-entry .pf-account-health-goals-kicker {
+  margin: 0 0 5px;
+  color: #0f766e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+#pf-goal-time-entry .pf-account-health-goals-title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+#pf-goal-time-entry .pf-account-health-goals-copy {
+  margin: 7px 0 0;
+  color: #475569;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+#pf-goal-time-entry .pf-account-health-goal-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+#pf-goal-time-entry .pf-account-health-goal-chip {
+  padding: 7px 10px;
+  border: 1px solid #a7ddd5;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #155e59;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#pf-goal-time-entry .pf-account-health-goal-edit-button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #0f766e;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #0f766e;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#pf-goal-time-entry .pf-account-health-goal-edit-button:hover,
+#pf-goal-time-entry .pf-account-health-goal-edit-button:focus-visible {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.pf-account-health-goal-editor[hidden] {
+  display: none;
+}
+
+.pf-account-health-goal-editor {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.pf-account-health-goal-dialog {
+  width: min(720px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid #dbe5e7;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.3);
+}
+
+.pf-account-health-goal-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.pf-account-health-goal-dialog h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 25px;
+}
+
+.pf-account-health-goal-dialog-copy {
+  margin: 7px 0 0;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.pf-account-health-goal-close {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pf-account-health-goal-editor fieldset {
+  margin: 20px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.pf-account-health-goal-editor legend {
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.pf-account-health-goal-selection-status {
+  display: block;
+  margin: 7px 0 13px;
+  color: #475569;
+  font-size: 14px;
+}
+
+.pf-account-health-goal-option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.pf-account-health-goal-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 43px;
+  padding: 9px 10px;
+  border: 1px solid #d7e2e5;
+  border-radius: 10px;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.pf-account-health-goal-option.is-selected {
+  border-color: #0f9c91;
+  background: #effcf9;
+  color: #115e59;
+}
+
+.pf-account-health-goal-option.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.pf-account-health-goal-option input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #0f9c91;
+}
+
+.pf-account-health-goal-editor-error {
+  margin: 14px 0 0;
+  color: #b91c1c;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pf-account-health-goal-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pf-account-health-goal-cancel,
+.pf-account-health-goal-save {
+  min-height: 42px;
+  padding: 9px 15px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pf-account-health-goal-cancel {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+}
+
+.pf-account-health-goal-save {
+  border: 1px solid #0f766e;
+  background: #0f766e;
+  color: #ffffff;
+}
+
+.pf-account-health-goal-save:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+body.pf-account-health-goal-editor-open {
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  #pf-goal-time-entry .pf-account-health-goals-header {
+    display: block;
+  }
+
+  #pf-goal-time-entry .pf-account-health-goal-edit-button {
+    margin-top: 14px;
+  }
+
+  .pf-account-health-goal-editor {
+    padding: 12px;
+  }
+
+  .pf-account-health-goal-dialog {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .pf-account-health-goal-option-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

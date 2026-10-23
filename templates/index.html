@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8"><link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}?v=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/account-health-goals.css') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -7555,6 +7556,49 @@
                 portions, and nutrition.
               </p>
             </header>
+
+            {% if is_authenticated and account_health_goals_available %}
+            <section
+              class="pf-account-health-goals"
+              id="pf-account-health-goals"
+              aria-labelledby="pf-account-health-goals-title"
+            >
+              <div class="pf-account-health-goals-header">
+                <div>
+                  <p class="pf-account-health-goals-kicker">YOUR ACCOUNT</p>
+                  <h2
+                    class="pf-account-health-goals-title"
+                    id="pf-account-health-goals-title"
+                  >Your health goals</h2>
+                  <p class="pf-account-health-goals-copy">
+                    Your saved shortlist stays separate from the recipe presets below.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="pf-account-health-goal-edit-button"
+                  id="pf-account-health-goal-edit-button"
+                  aria-expanded="false"
+                  aria-controls="pf-account-health-goal-editor"
+                >Edit goals</button>
+              </div>
+
+              {% if account_health_goals %}
+              <ul class="pf-account-health-goal-list" aria-label="Saved health goals">
+                {% for value in account_health_goals %}
+                <li class="pf-account-health-goal-chip">
+                  {{ account_health_goal_labels.get(value, value) }}
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p class="pf-account-health-goals-copy">
+                Choose six goals to create your saved shortlist.
+              </p>
+              {% endif %}
+            </section>
+            {% endif %}
+
 
             <section class="pf-flow-section">
               <div class="pf-flow-section-kicker">STEP 1 OF 3</div>
@@ -30631,6 +30675,91 @@ const batchG = (smoothieBatchMlOverride != null)
 
 
   <script src="{{ url_for('static', filename='js/purefyul-share-card.js') }}?v=7.9.11"></script>
+
+  {% if is_authenticated and account_health_goals_available %}
+  <div
+    class="pf-account-health-goal-editor"
+    id="pf-account-health-goal-editor"
+    data-required-count="{{ account_health_goal_required_count }}"
+    data-selected-goals='{{ account_health_goals|tojson }}'
+    hidden
+    aria-hidden="true"
+  >
+    <div
+      class="pf-account-health-goal-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pf-account-health-goal-editor-title"
+    >
+      <div class="pf-account-health-goal-dialog-header">
+        <div>
+          <h2 id="pf-account-health-goal-editor-title">Edit health goals</h2>
+          <p class="pf-account-health-goal-dialog-copy">
+            Keep exactly {{ account_health_goal_required_count }} goals. Remove one,
+            then add another before saving.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="pf-account-health-goal-close"
+          data-account-health-goal-close
+          aria-label="Close health-goal editor"
+        >&times;</button>
+      </div>
+
+      <form id="pf-account-health-goal-editor-form">
+        <fieldset>
+          <legend>Choose {{ account_health_goal_required_count }} health goals</legend>
+          <span
+            class="pf-account-health-goal-selection-status"
+            id="pf-account-health-goal-selection-status"
+            aria-live="polite"
+          >Loading selection…</span>
+
+          <div class="pf-account-health-goal-option-grid">
+            {% for goal in account_health_goal_catalog %}
+            <label class="pf-account-health-goal-option">
+              <input
+                type="checkbox"
+                name="health_goals"
+                value="{{ goal.value }}"
+                {% if goal.value in account_health_goals %}checked{% endif %}
+              >
+              <span>{{ goal.label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <p
+          class="pf-account-health-goal-editor-error"
+          id="pf-account-health-goal-editor-error"
+          role="alert"
+          hidden
+        ></p>
+
+        <div class="pf-account-health-goal-editor-actions">
+          <button
+            type="button"
+            class="pf-account-health-goal-cancel"
+            data-account-health-goal-close
+          >Cancel</button>
+          <button
+            type="submit"
+            class="pf-account-health-goal-save"
+            id="pf-account-health-goal-save"
+            disabled
+          >Save goals</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script
+    src="{{ url_for('static', filename='js/account-health-goals.js') }}"
+    defer
+  ></script>
+  {% endif %}
+
 </body>
 </html>
 

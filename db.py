@@ -352,6 +352,46 @@ def ensure_schema():
                     )
                 """)
 
+        # Account health goals are chosen during registration and shown on the
+        # signed-in preset screen. They are intentionally separate from
+        # user_profiles, persons, and personalized smoothie credit usage.
+        if USE_POSTGRES:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_health_goal_preferences (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL
+                        REFERENCES users(id) ON DELETE CASCADE,
+                    category_value VARCHAR(255) NOT NULL,
+                    display_order SMALLINT NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                    CONSTRAINT user_health_goal_preferences_category_not_blank
+                        CHECK (BTRIM(category_value) <> ''),
+                    CONSTRAINT user_health_goal_preferences_display_order_valid
+                        CHECK (display_order BETWEEN 1 AND 6),
+                    CONSTRAINT user_health_goal_preferences_user_category_unique
+                        UNIQUE (user_id, category_value),
+                    CONSTRAINT user_health_goal_preferences_user_order_unique
+                        UNIQUE (user_id, display_order)
+                )
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_health_goal_preferences (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL
+                        REFERENCES users(id) ON DELETE CASCADE,
+                    category_value TEXT NOT NULL,
+                    display_order INTEGER NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                    CHECK (TRIM(category_value) <> ''),
+                    CHECK (display_order BETWEEN 1 AND 6),
+                    UNIQUE (user_id, category_value),
+                    UNIQUE (user_id, display_order)
+                )
+            """)
+
         # Create nutrition_facts table for both Postgres and SQLite
         if USE_POSTGRES:
             # PostgreSQL schema

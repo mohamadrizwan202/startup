@@ -2364,12 +2364,41 @@ def app_home():
 
     can_save_recipes = is_authenticated and user_plan != "free"
 
+    account_health_goals = []
+    account_health_goal_catalog = []
+    account_health_goal_labels = {}
+    account_health_goals_available = False
+
+    if is_authenticated:
+        try:
+            account_health_goal_catalog = _get_account_health_goal_catalog()
+            account_health_goals = _get_account_health_goal_preferences(
+                current_user.id
+            )
+            account_health_goal_labels = {
+                goal["value"]: goal["label"]
+                for goal in account_health_goal_catalog
+            }
+            account_health_goals_available = bool(
+                account_health_goal_catalog
+            )
+        except Exception:
+            # A missing migration or unavailable catalog must not break /app.
+            app.logger.exception(
+                "Account health-goal preferences are unavailable on /app"
+            )
+
     html = render_template(
         "index.html",
         time=time,
         is_authenticated=is_authenticated,
         user_plan=user_plan,
         can_save_recipes=can_save_recipes,
+        account_health_goals=account_health_goals,
+        account_health_goal_catalog=account_health_goal_catalog,
+        account_health_goal_labels=account_health_goal_labels,
+        account_health_goals_available=account_health_goals_available,
+        account_health_goal_required_count=ACCOUNT_HEALTH_GOAL_COUNT,
         page_title="Free Smoothie Nutrition Calculator — Age-Adjusted & Allergen Checked | PureFyul",
         meta_description="Build a smoothie for your exact age group. Check calories, allergens, and health goal warnings before you blend. Free — no account needed.",
         canonical_url=canonical,
@@ -2409,6 +2438,261 @@ def _safe_auth_next(raw_next):
     return destination
 
 
+ACCOUNT_HEALTH_GOAL_COUNT = 6
+
+_ACCOUNT_HEALTH_GOAL_EXCLUDED_VALUES = frozenset({
+    "Gut-Stomach Health",
+    "Gut–Stomach Health",
+})
+
+_ACCOUNT_HEALTH_GOAL_LABELS = {
+    "Anemia Prevention": "Iron Support",
+    "Anti-Inflammatory": "Inflammation Support",
+    "Blood Circulation": "Circulation Support",
+    "Blood Pressure": "Blood Pressure Support",
+    "Bone Health": "Bone Strength",
+    "Brain Health": "Brain Focus",
+    "Cholesterol Management": "Cholesterol Support",
+    "Dental Health": "Oral Health",
+    "Diabetes–Blood Sugar": "Blood Sugar Support",
+    "Diabetes-Blood Sugar": "Blood Sugar Support",
+    "Digestive Health": "Digestive Support",
+    "Energy Boost": "Energy & Stamina",
+    "Eye Health": "Vision Support",
+    "Heart Health": "Heart Support",
+    "Immune System": "Immune Support",
+    "Joint Health": "Joint Mobility",
+    "Liver Health": "Liver Support",
+    "Muscle Health": "Muscle Recovery",
+    "Pregnancy Support": "Prenatal Support",
+    "Skin Health": "Skin Glow",
+    "Stress Management": "Stress Relief",
+    "Thyroid Health": "Thyroid Support",
+    "Weight Management": "Weight Balance",
+    "Weight Loss": "Weight Balance",
+}
+
+
+def _get_account_health_goal_catalog():
+    """Return the existing health-goal catalog used by account preferences."""
+    conn = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT DISTINCT category
+            FROM ingredient_categories
+            WHERE category IS NOT NULL AND category != ''
+            ORDER BY category
+        """)
+        rows = cursor.fetchall()
+    finally:
+        if conn is not None:
+            conn.close()
+
+    catalog = []
+    seen_values = set()
+    for row in rows:
+        category_value = (row["category"] or "").strip()
+        if (
+            not category_value
+            or category_value in _ACCOUNT_HEALTH_GOAL_EXCLUDED_VALUES
+            or category_value in seen_values
+        ):
+            continue
+
+        seen_values.add(category_value)
+        catalog.append({
+            "value": category_value,
+            "label": _ACCOUNT_HEALTH_GOAL_LABELS.get(
+                category_value,
+                category_value,
+            ),
+        })
+
+    return catalog
+
+
+def _validate_account_health_goal_selection(raw_values, catalog):
+    """Validate the exact six user-selected account health goals."""
+    if not isinstance(raw_values, (list, tuple)):
+        return None, "Choose exactly six health goals."
+
+    selected_values = []
+    for raw_value in raw_values:
+        if not isinstance(raw_value, str):
+            return None, "Choose only the health goals shown on this page."
+        value = raw_value.strip()
+        if not value:
+            return None, "Choose only the health goals shown on this page."
+        selected_values.append(value)
+
+    if len(selected_values) != ACCOUNT_HEALTH_GOAL_COUNT:
+        return None, (
+            f"Choose exactly {ACCOUNT_HEALTH_GOAL_COUNT} health goals."
+        )
+
+    if len(set(selected_values)) != len(selected_values):
+        return None, "Choose six different health goals."
+
+    catalog_values = {goal["value"] for goal in catalog}
+    if any(value not in catalog_values for value in selected_values):
+        return None, "Choose only the health goals shown on this page."
+
+    return selected_values, None
+
+
+def _get_account_health_goal_preferences(user_id):
+    """Return one user's saved health goals in display order."""
+    conn = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute(
+            db.prepare_query("""
+                SELECT category_value
+                FROM user_health_goal_preferences
+                WHERE user_id = ?
+                ORDER BY display_order ASC
+            """),
+            (user_id,),
+        )
+        return [
+            (
+                row["category_value"]
+                if isinstance(row, dict)
+                else row[0]
+            )
+            for row in cursor.fetchall()
+        ]
+    finally:
+        if conn is not None:
+            conn.close()
+
+
+def _replace_account_health_goal_preferences(
+    cursor,
+    user_id,
+    selected_values,
+):
+    """Atomically replace a user's validated ordered health-goal selection."""
+    cursor.execute(
+        db.prepare_query("""
+            DELETE FROM user_health_goal_preferences
+            WHERE user_id = ?
+        """),
+        (user_id,),
+    )
+    _insert_account_health_goal_preferences(
+        cursor,
+        user_id,
+        selected_values,
+    )
+
+
+def _insert_account_health_goal_preferences(
+    cursor,
+    user_id,
+    selected_values,
+):
+    """Insert one ordered, validated six-goal selection for a new user."""
+    query = db.prepare_query("""
+        INSERT INTO user_health_goal_preferences (
+            user_id,
+            category_value,
+            display_order
+        )
+        VALUES (?, ?, ?)
+    """)
+
+    for display_order, category_value in enumerate(
+        selected_values,
+        start=1,
+    ):
+        cursor.execute(
+            query,
+            (user_id, category_value, display_order),
+        )
+
+
+@app.route("/api/account-health-goals", methods=["PUT"])
+@login_required
+def update_account_health_goal_preferences_api():
+    """Replace the signed-in user's exact six account health goals."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({
+            "error": "invalid_request",
+            "message": "A health-goal selection is required.",
+        }), 400
+
+    try:
+        health_goal_catalog = _get_account_health_goal_catalog()
+    except Exception:
+        app.logger.exception(
+            "Account health-goal catalog lookup failed during update"
+        )
+        return jsonify({
+            "error": "health_goals_unavailable",
+            "message": "Health goals are temporarily unavailable.",
+        }), 503
+
+    selected_values, selection_error = (
+        _validate_account_health_goal_selection(
+            payload.get("health_goals"),
+            health_goal_catalog,
+        )
+    )
+    if selection_error:
+        return jsonify({
+            "error": "invalid_health_goals",
+            "message": selection_error,
+        }), 400
+
+    conn = None
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        _replace_account_health_goal_preferences(
+            cursor,
+            current_user.id,
+            selected_values,
+        )
+        conn.commit()
+    except Exception:
+        if conn is not None:
+            conn.rollback()
+        app.logger.exception(
+            "Account health-goal preference update failed"
+        )
+        return jsonify({
+            "error": "health_goals_unavailable",
+            "message": "Your health goals could not be saved.",
+        }), 503
+    finally:
+        if conn is not None:
+            conn.close()
+
+    return jsonify({
+        "success": True,
+        "health_goals": selected_values,
+    })
+
+
+def _render_register_page(
+    next_url,
+    health_goal_catalog,
+    selected_health_goals,
+):
+    return render_template(
+        "register.html",
+        next_url=next_url,
+        health_goal_catalog=health_goal_catalog,
+        selected_health_goals=selected_health_goals,
+        health_goal_required_count=ACCOUNT_HEALTH_GOAL_COUNT,
+    )
+
+
 @app.route('/register', methods=['GET', 'POST'])
 @limiter.limit("3 per hour", methods=["POST"])
 def register():
@@ -2416,6 +2700,8 @@ def register():
     next_url = _safe_auth_next(
         request.form.get("next") or request.args.get("next")
     )
+    health_goal_catalog = _get_account_health_goal_catalog()
+    selected_health_goals = request.form.getlist("health_goals")
     # Clear stale flash messages from previous redirects (especially "Please log in..." messages)
     if request.method == 'GET':
         # Filter out error flashes that are not relevant to registration
@@ -2433,21 +2719,53 @@ def register():
         # Validation
         if not email:
             flash('Email is required.', 'error')
-            return render_template('register.html', next_url=next_url)
+            return _render_register_page(
+                next_url,
+                health_goal_catalog,
+                selected_health_goals,
+            )
         
         if not password:
             flash('Password is required.', 'error')
-            return render_template('register.html', next_url=next_url)
+            return _render_register_page(
+                next_url,
+                health_goal_catalog,
+                selected_health_goals,
+            )
         
         if password != confirm_password:
             flash('Passwords do not match.', 'error')
-            return render_template('register.html', next_url=next_url)
+            return _render_register_page(
+                next_url,
+                health_goal_catalog,
+                selected_health_goals,
+            )
         
+        validated_health_goals, health_goal_error = (
+            _validate_account_health_goal_selection(
+                selected_health_goals,
+                health_goal_catalog,
+            )
+        )
+        if health_goal_error:
+            flash(health_goal_error, 'error')
+            return _render_register_page(
+                next_url,
+                health_goal_catalog,
+                selected_health_goals,
+            )
+
+        selected_health_goals = validated_health_goals
+
         # Check if user already exists
         existing_user = get_user_by_email(email)
         if existing_user:
             flash('An account with this email already exists.', 'error')
-            return render_template('register.html', next_url=next_url)
+            return _render_register_page(
+                next_url,
+                health_goal_catalog,
+                selected_health_goals,
+            )
         
         # --- Secure Password Hashing ---
         # Hash the plain-text password using a strong algorithm (pbkdf2:sha256)
@@ -2460,6 +2778,7 @@ def register():
         # Password hashing step is complete - original password variable is preserved
         
         # Create new user
+        conn = None
         try:
             conn = get_conn()
             cursor = conn.cursor()
@@ -2481,8 +2800,14 @@ def register():
                 "email": email, 
                 "password_hash": hashed_password  # Use the hash we just created
             }
+            _insert_account_health_goal_preferences(
+                cursor,
+                user_id,
+                selected_health_goals,
+            )
             conn.commit()
             conn.close()
+            conn = None
 
             # Welcome email (async; never blocks registration)
             user_name = (request.form.get("name", "") or "").strip() or None
@@ -2513,11 +2838,24 @@ def register():
             flash('Registration successful!', 'success')
             return redirect(next_url) if next_url else redirect(url_for('index'))
         except Exception as e:
+            if conn is not None:
+                try:
+                    conn.rollback()
+                finally:
+                    conn.close()
             app.logger.exception("Error creating user")
             flash('An error occurred during registration. Please try again.', 'error')
-            return render_template('register.html', next_url=next_url)
+            return _render_register_page(
+                next_url,
+                health_goal_catalog,
+                selected_health_goals,
+            )
     
-    return render_template('register.html', next_url=next_url)
+    return _render_register_page(
+                next_url,
+                health_goal_catalog,
+                selected_health_goals,
+            )
 
 
 @app.route('/login', methods=['GET', 'POST'])
