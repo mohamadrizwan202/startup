@@ -43,6 +43,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime, timezone, date
 from functools import wraps
 from flask import jsonify # pyright: ignore[reportMissingImports]
+from jinja2 import FileSystemBytecodeCache
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 
 import sqlite3
@@ -84,6 +85,61 @@ logging.basicConfig(
 logger = logging.getLogger("startup_recovered")
 
 app = Flask(__name__)
+
+
+
+def _configure_jinja_bytecode_cache():
+    cache_directory = Path(
+        os.getenv(
+            "PUREFYUL_JINJA_CACHE_DIR",
+            "/tmp/purefyul-jinja-bytecode-cache",
+        )
+    )
+    try:
+        cache_directory.mkdir(
+            parents=True,
+            exist_ok=True,
+            mode=0o700,
+        )
+        app.jinja_env.bytecode_cache = FileSystemBytecodeCache(
+            directory=str(cache_directory),
+            pattern="purefyul-%s.cache",
+        )
+    except Exception:
+        logger.exception("JINJA_BYTECODE_CACHE=disabled")
+    else:
+        logger.info(
+            "JINJA_BYTECODE_CACHE=enabled directory=%s",
+            cache_directory,
+        )
+
+
+_configure_jinja_bytecode_cache()
+
+_APP_TEMPLATE_PREWARM_NAMES = (
+    "index.html",
+    "_seo_head.html",
+    "_adsense_head.html",
+    "_navbar.html",
+    "_legal_footer.html",
+    "_feedback.html",
+)
+
+
+def _prewarm_app_templates():
+    try:
+        for template_name in _APP_TEMPLATE_PREWARM_NAMES:
+            app.jinja_env.get_template(template_name)
+    except Exception:
+        logger.exception("JINJA_APP_TEMPLATE_PREWARM=failed")
+    else:
+        logger.info(
+            "JINJA_APP_TEMPLATE_PREWARM=enabled templates=%s",
+            len(_APP_TEMPLATE_PREWARM_NAMES),
+        )
+
+
+_prewarm_app_templates()
 
 # Stripe billing configuration.
 # Values are supplied through environment variables; never hard-code secrets.

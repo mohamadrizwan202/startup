@@ -2,8 +2,11 @@
 Database connection and schema management.
 Supports both PostgreSQL (production) and SQLite (local dev).
 """
+import atexit
+import logging
 import os
 import sqlite3
+import threading
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 
@@ -23,6 +26,96 @@ else:
     RUNTIME_DB_URL = DATABASE_URL
 
 USE_POSTGRES = bool(RUNTIME_DB_URL and (RUNTIME_DB_URL.startswith("postgres://") or RUNTIME_DB_URL.startswith("postgresql://")))
+
+_logger = logging.getLogger(__name__)
+
+_RUNTIME_PG_POOL = None
+_RUNTIME_PG_POOL_LOCK = threading.Lock()
+
+
+class _PooledPostgresConnection:
+    def __init__(self, pool, connection):
+        self._pool = pool
+        self._connection = connection
+
+    def __getattr__(self, name):
+        connection = self._connection
+        if connection is None:
+            raise RuntimeError("PostgreSQL connection is already closed")
+        return getattr(connection, name)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def close(self):
+        connection = self._connection
+        if connection is None:
+            return
+        self._connection = None
+        try:
+            from psycopg.pq import TransactionStatus
+            if connection.info.transaction_status != TransactionStatus.IDLE:
+                connection.rollback()
+        except Exception:
+            _logger.warning(
+                "PSYCOPG_POOL=rollback_before_return_failed",
+                exc_info=True,
+            )
+        finally:
+            self._pool.putconn(connection)
+
+
+def _get_runtime_pg_pool(normalized_url, dict_row):
+    global _RUNTIME_PG_POOL
+
+    pool = _RUNTIME_PG_POOL
+    if pool is not None:
+        return pool
+
+    with _RUNTIME_PG_POOL_LOCK:
+        pool = _RUNTIME_PG_POOL
+        if pool is not None:
+            return pool
+
+        from psycopg_pool import ConnectionPool
+
+        # A per-borrow health query measured about 462 ms here, nearly
+        # erasing pooling benefits. Idle connections are instead bounded.
+        pool = ConnectionPool(
+            conninfo=normalized_url,
+            kwargs={"row_factory": dict_row, "connect_timeout": 5},
+            min_size=0,
+            max_size=4,
+            timeout=5,
+            max_idle=60,
+            open=False,
+        )
+        pool.open()
+        _RUNTIME_PG_POOL = pool
+        _logger.info(
+            "PSYCOPG_POOL=enabled max_size=4 max_idle_seconds=60"
+        )
+        return pool
+
+
+def _close_runtime_pg_pool():
+    global _RUNTIME_PG_POOL
+
+    with _RUNTIME_PG_POOL_LOCK:
+        pool = _RUNTIME_PG_POOL
+        _RUNTIME_PG_POOL = None
+
+    if pool is not None:
+        try:
+            pool.close()
+        except Exception:
+            _logger.exception("PSYCOPG_POOL=close_failed")
+
+
+atexit.register(_close_runtime_pg_pool)
 
 # SQLite path (local dev only)
 if not USE_POSTGRES:
@@ -71,8 +164,8 @@ def get_conn():
             normalized_url = RUNTIME_DB_URL
         else:
             normalized_url = normalize_pg_url(RUNTIME_DB_URL)
-        conn = psycopg.connect(normalized_url, row_factory=dict_row, connect_timeout=5)
-        return conn
+        pool = _get_runtime_pg_pool(normalized_url, dict_row)
+        return _PooledPostgresConnection(pool, pool.getconn())
     else:
         # SQLite fallback (local dev only)
         conn = sqlite3.connect(str(DB_PATH))
