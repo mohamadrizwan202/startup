@@ -7,6 +7,7 @@ from goal_preset_recipe import (
     build_account_goal_preset_recipe,
     build_goal_preset_recipe,
     build_personalized_goal_preset_recipe,
+    get_personalization_goal_base_ingredient_ids,
     get_supported_goal_slugs,
 )
 
@@ -115,3 +116,27 @@ def test_account_profile_keeps_existing_liquid_unit_and_explicit_amounts():
             for item in personalized_recipe["ingredients"]
         )
     )
+
+def test_personalization_base_ids_resolve_every_account_goal_profile():
+    for category_value, profile in ACCOUNT_GOAL_RECIPE_PROFILES.items():
+        base_recipe = build_account_goal_preset_recipe(
+            category_value=category_value,
+            timing="breakfast",
+        )
+
+        assert get_personalization_goal_base_ingredient_ids(
+            goal=profile["goal_slug"],
+            variant="a",
+        ) == tuple(
+            ingredient["id"]
+            for ingredient in base_recipe["ingredients"]
+        )
+
+    with pytest.raises(
+        GoalPresetRecipeInputError,
+        match="unsupported preset recipe",
+    ):
+        get_personalization_goal_base_ingredient_ids(
+            goal="iron-support",
+            variant="b",
+        )

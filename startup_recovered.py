@@ -56467,27 +56467,22 @@ def _persist_personalize_editor_preferences(
     ingredient_ids,
 ):
     """Persist one successful explicit Personalize editor selection."""
-    from goal_preset_recipe import get_reviewed_goal_recipe_candidates
-
-    candidate = next(
-        (
-            item
-            for item in get_reviewed_goal_recipe_candidates(goal)
-            if item["variant"] == variant
-        ),
-        None,
+    from goal_preset_recipe import (
+        get_personalization_goal_base_ingredient_ids,
     )
 
-    if candidate is None:
-        raise RuntimeError(
-            "Personalize editor variant was not found after recipe build"
+    base_ingredient_ids = (
+        get_personalization_goal_base_ingredient_ids(
+            goal=goal,
+            variant=variant,
         )
+    )
 
     selected = list(ingredient_ids)
     selected_set = set(selected)
     removed = [
         ingredient_id
-        for ingredient_id in candidate["ingredient_ids"]
+        for ingredient_id in base_ingredient_ids
         if ingredient_id not in selected_set
     ]
 

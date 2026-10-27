@@ -1272,6 +1272,39 @@ def _get_personalization_goal_preset(
 
     return _get_account_goal_profile_preset(profile)
 
+
+def get_personalization_goal_base_ingredient_ids(
+    *,
+    goal,
+    variant,
+) -> tuple[str, ...]:
+    """Return deterministic base IDs used by a Personalize update."""
+    normalized_goal = _normalize_required_slug(
+        goal,
+        field="goal",
+    )
+    normalized_variant = _normalize_required_slug(
+        variant,
+        field="variant",
+    )
+    preset = _get_personalization_goal_preset(
+        normalized_goal=normalized_goal,
+        normalized_variant=normalized_variant,
+    )
+
+    if preset is None:
+        raise GoalPresetRecipeInputError(
+            "unsupported preset recipe: "
+            f"goal='{normalized_goal}', "
+            f"variant='{normalized_variant}'"
+        )
+
+    return tuple(
+        ingredient["id"]
+        for ingredient in preset["ingredients"]
+    )
+
+
 def _build_recipe_from_preset(
     *,
     normalized_goal: str,
