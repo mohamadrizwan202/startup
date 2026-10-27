@@ -7557,55 +7557,46 @@
               </p>
             </header>
 
-            {% if is_authenticated and account_health_goals_available %}
-            <section
-              class="pf-account-health-goals"
-              id="pf-account-health-goals"
-              aria-labelledby="pf-account-health-goals-title"
-            >
-              <div class="pf-account-health-goals-header">
-                <div>
-                  <p class="pf-account-health-goals-kicker">YOUR ACCOUNT</p>
-                  <h2
-                    class="pf-account-health-goals-title"
-                    id="pf-account-health-goals-title"
-                  >Your health goals</h2>
-                  <p class="pf-account-health-goals-copy">
-                    Your saved shortlist stays separate from the recipe presets below.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  class="pf-account-health-goal-edit-button"
-                  id="pf-account-health-goal-edit-button"
-                  aria-expanded="false"
-                  aria-controls="pf-account-health-goal-editor"
-                >Edit goals</button>
-              </div>
-
-              {% if account_health_goals %}
-              <ul class="pf-account-health-goal-list" aria-label="Saved health goals">
-                {% for value in account_health_goals %}
-                <li class="pf-account-health-goal-chip">
-                  {{ account_health_goal_labels.get(value, value) }}
-                </li>
-                {% endfor %}
-              </ul>
-              {% else %}
-              <p class="pf-account-health-goals-copy">
-                Choose six goals to create your saved shortlist.
-              </p>
-              {% endif %}
-            </section>
-            {% endif %}
-
-
             <section class="pf-flow-section">
               <div class="pf-flow-section-kicker">STEP 1 OF 3</div>
               <h2>What should this smoothie support?</h2>
+              {% if account_health_goals_ready %}
+              <p class="pf-flow-section-copy">
+                Your six selected health goals.
+              </p>
+              {% else %}
               <p class="pf-flow-section-copy">Choose one goal to get started.</p>
+              {% endif %}
+
+              {% if is_authenticated and account_health_goals_available %}
+              <button
+                type="button"
+                class="pf-account-health-goal-edit-button"
+                id="pf-account-health-goal-edit-button"
+                aria-expanded="false"
+                aria-controls="pf-account-health-goal-editor"
+              >Edit goals</button>
+              {% endif %}
 
               <div class="pf-goal-choice-grid" id="pf-goal-choice-grid">
+                {% if account_health_goals_ready %}
+                {% for value in account_health_goals %}
+                <button
+                  type="button"
+                  class="pf-goal-choice pf-account-health-goal-card"
+                  data-account-health-goal="{{ value }}"
+                  aria-label="{{ account_health_goal_labels[value] }}"
+                  aria-pressed="false"
+                >
+                  <span class="pf-choice-icon" aria-hidden="true">✦</span>
+                  <span class="pf-choice-copy">
+                    <strong>{{ account_health_goal_labels[value] }}</strong>
+                    <span>Your selected health goal</span>
+                  </span>
+                  <span class="pf-choice-check" aria-hidden="true">✓</span>
+                </button>
+                {% endfor %}
+                {% else %}
                 <button type="button" class="pf-goal-choice" data-goal="skin-glow">
                   <span class="pf-choice-icon" aria-hidden="true"><svg class="pf-material-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M852-226 746-332l42-42 106 106-42 42ZM708-706l-42-42 106-106 42 42-106 106Zm-456 0L146-812l42-42 106 106-42 42ZM108-226l-42-42 106-106 42 42-106 106Zm215-19 157-94 157 95-42-178 138-120-182-16-71-168-71 167-182 16 138 120-42 178Zm-90 125 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-365Z"/></svg></span>
                   <span class="pf-choice-copy">
@@ -7659,6 +7650,7 @@
                   </span>
                   <span class="pf-choice-check" aria-hidden="true">✓</span>
                 </button>
+                {% endif %}
               </div>
             </section>
 
@@ -7869,7 +7861,10 @@
             var entry = document.getElementById('pf-goal-time-entry');
             if (!entry) return;
 
-            var goalButtons = entry.querySelectorAll('.pf-goal-choice');
+            var goalButtons = entry.querySelectorAll(
+              '.pf-goal-choice[data-goal], ' +
+              '.pf-goal-choice[data-account-health-goal]'
+            );
             var timeButtons = entry.querySelectorAll('.pf-time-choice');
             var buildButton = document.getElementById('pf-build-my-smoothie');
             var buildStatus = document.getElementById('pf-build-status');
@@ -7901,13 +7896,17 @@
             var flowSteps = entry.querySelectorAll('.pf-flow-step');
 
             var selectedGoal = '';
+            var selectedAccountGoal = '';
             var selectedTime = '';
             var isBuilding = false;
             var currentVariant = 'a';
 
             function updateBuildState() {
               if (!buildButton) return;
-              buildButton.disabled = isBuilding || !(selectedGoal && selectedTime);
+              buildButton.disabled = isBuilding || !(
+                (selectedGoal || selectedAccountGoal) &&
+                selectedTime
+              );
             }
 
             function formatGoalLabel(goal) {
@@ -7920,6 +7919,18 @@
                 'muscle-health': 'Muscle Health'
               };
               return labels[goal] || goal || '';
+            }
+
+            function getRecipeGoalLabel(recipe) {
+              var contract =
+                recipe && recipe.preset_contract
+                  ? recipe.preset_contract
+                  : {};
+
+              return (
+                contract.account_goal_label ||
+                formatGoalLabel(recipe && recipe.goal)
+              );
             }
 
             function formatTimingLabel(timing) {
@@ -8065,7 +8076,7 @@
 
               window._pfLastSmoothieGoal = recipe.goal || '';
               window._pfLastSmoothieGoalText =
-                formatGoalLabel(recipe.goal);
+                getRecipeGoalLabel(recipe);
               window._pfLastSmoothieTiming =
                 formatTimingLabel(recipe.timing);
 
@@ -8121,19 +8132,45 @@
               var isCustomSmoothie =
                 goalAlignment === 'custom';
 
+              var isAccountGoalRecipe = Boolean(
+                recipe.preset_contract &&
+                recipe.preset_contract.account_goal_profile
+              );
+
+              var isPersonalizedRecipe = Boolean(
+                recipe.preset_contract &&
+                recipe.preset_contract.personalized
+              );
+
+              var shouldHideBuildAnother =
+                isAccountGoalRecipe || isPersonalizedRecipe;
+
+              if (buildAnotherButton) {
+                buildAnotherButton.hidden = shouldHideBuildAnother;
+                buildAnotherButton.disabled = shouldHideBuildAnother;
+              }
+
               var goalCopy = isCustomSmoothie
                 ? {
                     title: 'Custom Smoothie',
                     summary:
                       'Your selected ingredients have been recalculated to this timing portion.',
                   }
-                : resultCopyForGoal(recipe.goal);
+                : isAccountGoalRecipe
+                  ? {
+                      title:
+                        recipe.display_name ||
+                        (getRecipeGoalLabel(recipe) + ' Smoothie'),
+                      summary:
+                        'A ready-to-make smoothie built for your selected health goal.',
+                    }
+                  : resultCopyForGoal(recipe.goal);
 
               if (resultGoalChip) {
                 resultGoalChip.textContent =
                   isCustomSmoothie
                     ? 'Custom Smoothie'
-                    : formatGoalLabel(recipe.goal);
+                    : getRecipeGoalLabel(recipe);
               }
 
               if (resultTimeChip) {
@@ -8283,7 +8320,10 @@
 
             goalButtons.forEach(function(button) {
               button.addEventListener('click', function() {
-                selectedGoal = button.getAttribute('data-goal') || '';
+                selectedGoal =
+                  button.getAttribute('data-goal') || '';
+                selectedAccountGoal =
+                  button.getAttribute('data-account-health-goal') || '';
 
                 goalButtons.forEach(function(item) {
                   item.classList.toggle('is-selected', item === button);
@@ -8330,7 +8370,11 @@
             };
 
             async function buildPresetVariant(variant, triggerButton) {
-              if (!selectedGoal || !selectedTime || isBuilding) return;
+              if (
+                !(selectedGoal || selectedAccountGoal) ||
+                !selectedTime ||
+                isBuilding
+              ) return;
 
               isBuilding = true;
               updateBuildState();
@@ -8349,16 +8393,27 @@
               }
 
               try {
-                var response = await fetch('/api/build-goal-preset', {
+                var isAccountGoal = Boolean(selectedAccountGoal);
+                var endpoint = isAccountGoal
+                  ? '/api/account-goal-preset'
+                  : '/api/build-goal-preset';
+                var requestBody = isAccountGoal
+                  ? {
+                      category_value: selectedAccountGoal,
+                      timing: selectedTime
+                    }
+                  : {
+                      goal: selectedGoal,
+                      timing: selectedTime,
+                      variant: variant
+                    };
+
+                var response = await fetch(endpoint, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'
                   },
-                  body: JSON.stringify({
-                    goal: selectedGoal,
-                    timing: selectedTime,
-                    variant: variant
-                  })
+                  body: JSON.stringify(requestBody)
                 });
 
                 var payload = await response.json();
@@ -8393,7 +8448,16 @@
 
                 if (buildAnotherButton) {
                   buildAnotherButton.textContent = 'Build another →';
-                  buildAnotherButton.disabled = false;
+                  var latestRecipe = window.pfGoalPresetRecipe;
+                  var latestContract =
+                    latestRecipe && latestRecipe.preset_contract
+                      ? latestRecipe.preset_contract
+                      : {};
+
+                  buildAnotherButton.disabled = Boolean(
+                    latestContract.account_goal_profile ||
+                    latestContract.personalized
+                  );
                 }
 
                 updateBuildState();
@@ -8408,6 +8472,20 @@
 
             if (buildAnotherButton) {
               buildAnotherButton.addEventListener('click', function() {
+                var currentRecipe = window.pfGoalPresetRecipe;
+                var currentContract =
+                  currentRecipe && currentRecipe.preset_contract
+                    ? currentRecipe.preset_contract
+                    : {};
+
+                if (
+                  selectedAccountGoal ||
+                  currentContract.account_goal_profile ||
+                  currentContract.personalized
+                ) {
+                  return;
+                }
+
                 var nextVariant =
                   currentVariant === 'a'
                     ? 'b'
@@ -8440,7 +8518,12 @@
                 flowSteps.forEach(function(step, index) {
                   step.classList.toggle(
                     'is-active',
-                    index === (selectedGoal && selectedTime ? 1 : 0)
+                    index === (
+                    (selectedGoal || selectedAccountGoal) &&
+                    selectedTime
+                      ? 1
+                      : 0
+                  )
                   );
                 });
 

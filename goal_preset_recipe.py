@@ -18,7 +18,14 @@ from __future__ import annotations
 
 from copy import deepcopy
 from statistics import median
+import re
 
+from account_goal_recipe_profiles import (
+    ACCOUNT_GOAL_PROFILE_VERSION,
+    ACCOUNT_GOAL_RECIPE_PROFILES,
+    get_account_goal_profile,
+    get_account_goal_profile_by_slug,
+)
 import recipe_calculator
 import recipe_mass
 
@@ -933,16 +940,8 @@ def get_reviewed_goal_recipe_candidates(goal) -> tuple[dict, ...]:
 
 
 def get_supported_ingredient_ids() -> tuple[str, ...]:
-    """Return canonical ingredient IDs used by reviewed preset recipes."""
-    return tuple(
-        sorted(
-            {
-                ingredient["id"]
-                for preset in _PRESET_RECIPES.values()
-                for ingredient in preset["ingredients"]
-            }
-        )
-    )
+    """Return canonical IDs available to the smoothie personalization editor."""
+    return tuple(sorted(_get_personalization_catalog_definitions()))
 
 
 _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES = {
@@ -951,76 +950,59 @@ _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES = {
 
 
 def get_supported_ingredient_options() -> tuple[dict[str, str], ...]:
-    """Return canonical ingredient IDs, labels, and display units."""
-    display_names_by_id: dict[str, set[str]] = {}
-    display_units_by_id: dict[str, set[str]] = {}
+    """Return canonical editable ingredient IDs, labels, and display units."""
+    definitions = _get_personalization_catalog_definitions()
 
-    for preset in _PRESET_RECIPES.values():
-        for ingredient in preset["ingredients"]:
-            ingredient_id = ingredient["id"]
-            display_names_by_id.setdefault(
-                ingredient_id,
-                set(),
-            ).add(ingredient["display_name"])
-            display_units_by_id.setdefault(
-                ingredient_id,
-                set(),
-            ).add(ingredient.get("display_unit", "g"))
-
-    options = []
-
-    for ingredient_id in sorted(display_names_by_id):
-        display_names = display_names_by_id[ingredient_id]
-        display_units = display_units_by_id[ingredient_id]
-
-        if ingredient_id in _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES:
-            display_name = (
-                _PERSONALIZATION_INGREDIENT_DISPLAY_NAME_OVERRIDES[
-                    ingredient_id
-                ]
-            )
-        elif len(display_names) == 1:
-            display_name = next(iter(display_names))
-        else:
-            raise RuntimeError(
-                "Ingredient has conflicting display names without "
-                "an explicit personalization override: "
-                f"{ingredient_id}={sorted(display_names)!r}"
-            )
-
-        if len(display_units) != 1:
-            raise RuntimeError(
-                "Ingredient has conflicting personalization display units: "
-                f"{ingredient_id}={sorted(display_units)!r}"
-            )
-
-        options.append({
+    return tuple(
+        {
             "id": ingredient_id,
-            "display_name": display_name,
-            "unit": next(iter(display_units)),
-        })
-
-    return tuple(options)
+            "display_name": definition["display_name"],
+            "unit": definition.get("display_unit", "g"),
+        }
+        for ingredient_id, definition in sorted(definitions.items())
+    )
 
 def _get_goal_aligned_ingredient_ids(
     normalized_goal: str,
 ) -> tuple[str, ...]:
-    """Return reviewed catalog ingredient IDs for one goal."""
-    aligned_ids = {
+    """Return reviewed or account-profile ingredient IDs for one goal."""
+    reviewed_ids = {
         ingredient["id"]
         for (candidate_goal, _variant), preset in _PRESET_RECIPES.items()
         if candidate_goal == normalized_goal
         for ingredient in preset["ingredients"]
     }
 
-    if not aligned_ids:
+    if reviewed_ids:
+        return tuple(sorted(reviewed_ids))
+
+    profile = get_account_goal_profile_by_slug(normalized_goal)
+
+    if profile is None or profile["uses_existing_reviewed_preset"]:
         raise GoalPresetRecipeInputError(
             "unsupported personalization goal: "
-            f"'{normalized_goal}'"
+            f"{normalized_goal!r}"
         )
 
-    return tuple(sorted(aligned_ids))
+    definitions = _get_personalization_catalog_definitions()
+    aligned_ids = []
 
+    for raw_name in profile["ingredient_pool"]:
+        ingredient_id = _get_catalog_definition_id_by_lookup_name(
+            definitions,
+            raw_name,
+        )
+
+        if ingredient_id is None:
+            raise RuntimeError(
+                "Account health-goal ingredient is absent from the "
+                f"personalization catalog: {raw_name!r}"
+            )
+
+        if ingredient_id not in aligned_ids:
+            aligned_ids.append(ingredient_id)
+
+    return tuple(aligned_ids)
 
 def get_personalization_ingredient_options(
     *,
@@ -1048,7 +1030,7 @@ def get_personalization_ingredient_options(
 
     return result
 
-def _get_personalization_catalog_definitions() -> dict[str, dict]:
+def _get_static_personalization_catalog_definitions() -> dict[str, dict]:
     """Return canonical reviewed definitions for editable catalog items."""
     candidates_by_id: dict[str, list[dict]] = {}
 
@@ -1117,47 +1099,188 @@ def _get_personalization_catalog_definitions() -> dict[str, dict]:
     return definitions_by_id
 
 
-def build_goal_preset_recipe(
-    *,
-    goal,
-    timing,
-    variant="a",
-) -> dict:
-    """Build one deterministic reviewed preset at its timing target weight."""
 
-    normalized_goal = _normalize_required_slug(
-        goal,
-        field="goal",
-    )
-    normalized_timing = _normalize_required_slug(
-        timing,
-        field="timing",
-    )
-    normalized_variant = _normalize_required_slug(
-        variant,
-        field="variant",
-    )
-
-    target_weight_g = _TIMING_TARGET_WEIGHT_G.get(
-        normalized_timing
-    )
-
-    if target_weight_g is None:
-        raise GoalPresetRecipeInputError(
-            f"unsupported preset timing: '{normalized_timing}'"
+def _account_goal_profile_ingredient_id(raw_name: str) -> str:
+    """Build a deterministic ID only for a profile ingredient new to presets."""
+    if not isinstance(raw_name, str):
+        raise RuntimeError(
+            "Account health-goal ingredient name must be a string."
         )
 
+    ingredient_id = re.sub(
+        r"[^a-z0-9]+",
+        "-",
+        raw_name.strip().casefold(),
+    ).strip("-")
+
+    if not ingredient_id:
+        raise RuntimeError(
+            "Account health-goal ingredient name cannot produce an ID."
+        )
+
+    return ingredient_id
+
+
+def _account_goal_profile_display_name(raw_name: str) -> str:
+    """Create a readable label for a newly canonical profile ingredient."""
+    return " ".join(
+        part.capitalize()
+        for part in str(raw_name).strip().split()
+    )
+
+
+def _get_catalog_definition_id_by_lookup_name(
+    definitions: dict[str, dict],
+    raw_lookup_name: str,
+) -> str | None:
+    """Resolve one canonical catalog ID by exact nutrition lookup name."""
+    lookup_name = str(raw_lookup_name or "").strip().casefold()
+
+    if not lookup_name:
+        raise RuntimeError(
+            "Account health-goal ingredient lookup name is required."
+        )
+
+    matching_ids = [
+        ingredient_id
+        for ingredient_id, definition in definitions.items()
+        if definition["nutrition_lookup_name"].casefold() == lookup_name
+    ]
+
+    if not matching_ids:
+        return None
+
+    if len(matching_ids) != 1:
+        raise RuntimeError(
+            "Account health-goal ingredient has ambiguous canonical "
+            f"metadata: {raw_lookup_name!r} -> {sorted(matching_ids)!r}"
+        )
+
+    return matching_ids[0]
+
+
+def _get_personalization_catalog_definitions() -> dict[str, dict]:
+    """Return the static catalog plus deterministic account-profile items."""
+    definitions = _get_static_personalization_catalog_definitions()
+
+    for profile in ACCOUNT_GOAL_RECIPE_PROFILES.values():
+        for raw_name in profile["ingredient_pool"]:
+            existing_id = _get_catalog_definition_id_by_lookup_name(
+                definitions,
+                raw_name,
+            )
+
+            if existing_id is not None:
+                continue
+
+            ingredient_id = _account_goal_profile_ingredient_id(raw_name)
+            conflicting_definition = definitions.get(ingredient_id)
+
+            if conflicting_definition is not None:
+                raise RuntimeError(
+                    "Account health-goal ingredient ID conflicts with "
+                    "different canonical metadata: "
+                    f"{ingredient_id!r}"
+                )
+
+            definitions[ingredient_id] = {
+                "id": ingredient_id,
+                "display_name": _account_goal_profile_display_name(
+                    raw_name
+                ),
+                "nutrition_lookup_name": raw_name,
+                "display_unit": "g",
+                "proportion": 100.0,
+            }
+
+    return definitions
+
+
+def _get_account_goal_profile_preset(profile: dict) -> dict:
+    """Return a deterministic base preset for one account-goal profile."""
+    goal_slug = profile["goal_slug"]
+
+    if profile["uses_existing_reviewed_preset"]:
+        preset = _PRESET_RECIPES.get((goal_slug, "a"))
+
+        if preset is None:
+            raise RuntimeError(
+                "Account health-goal profile points to a missing reviewed "
+                f"preset: {goal_slug!r}"
+            )
+
+        return deepcopy(preset)
+
+    base_recipe = profile["base_recipe"]
+
+    if not base_recipe:
+        raise RuntimeError(
+            "Account health-goal profile has no base recipe: "
+            f"{goal_slug!r}"
+        )
+
+    definitions = _get_personalization_catalog_definitions()
+    ingredients = []
+
+    for base_ingredient in base_recipe:
+        raw_name = base_ingredient["name"]
+        ingredient_id = _get_catalog_definition_id_by_lookup_name(
+            definitions,
+            raw_name,
+        )
+
+        if ingredient_id is None:
+            raise RuntimeError(
+                "Account health-goal base ingredient is absent from the "
+                f"personalization catalog: {raw_name!r}"
+            )
+
+        definition = deepcopy(definitions[ingredient_id])
+        definition["proportion"] = float(
+            base_ingredient["proportion"]
+        )
+        ingredients.append(definition)
+
+    return {
+        "display_name": f"{profile['label']} Smoothie",
+        "proportion_source": (
+            "account_health_goal_profile_v"
+            f"{ACCOUNT_GOAL_PROFILE_VERSION}:"
+            f"{goal_slug}"
+        ),
+        "ingredients": tuple(ingredients),
+    }
+
+
+def _get_personalization_goal_preset(
+    *,
+    normalized_goal: str,
+    normalized_variant: str,
+) -> dict | None:
+    """Resolve a static or account-only preset for explicit editing."""
     preset = _PRESET_RECIPES.get(
         (normalized_goal, normalized_variant)
     )
 
-    if preset is None:
-        raise GoalPresetRecipeInputError(
-            "unsupported preset recipe: "
-            f"goal='{normalized_goal}', "
-            f"variant='{normalized_variant}'"
-        )
+    if preset is not None:
+        return preset
 
+    profile = get_account_goal_profile_by_slug(normalized_goal)
+
+    if profile is None or normalized_variant != "a":
+        return None
+
+    return _get_account_goal_profile_preset(profile)
+
+def _build_recipe_from_preset(
+    *,
+    normalized_goal: str,
+    normalized_timing: str,
+    normalized_variant: str,
+    target_weight_g: float,
+    preset: dict,
+) -> dict:
+    """Build one recipe result from a resolved deterministic preset."""
     definitions = deepcopy(preset["ingredients"])
 
     scaled_weights = _build_scaled_weights(
@@ -1181,9 +1304,7 @@ def build_goal_preset_recipe(
         )
     ]
 
-    calculated = recipe_calculator.calculate_recipe(
-        recipe_inputs
-    )
+    calculated = recipe_calculator.calculate_recipe(recipe_inputs)
 
     result_ingredients = []
 
@@ -1197,7 +1318,9 @@ def build_goal_preset_recipe(
 
         if display_unit == "ml":
             display_amount = recipe_mass.convert_liquid_grams_to_ml(
-                nutrition_lookup_name=definition["nutrition_lookup_name"],
+                nutrition_lookup_name=definition[
+                    "nutrition_lookup_name"
+                ],
                 weight_g=weight_g,
             )
         else:
@@ -1243,6 +1366,107 @@ def build_goal_preset_recipe(
         },
     }
 
+
+def build_goal_preset_recipe(
+    *,
+    goal,
+    timing,
+    variant="a",
+) -> dict:
+    """Build one deterministic reviewed public preset at its timing target."""
+    normalized_goal = _normalize_required_slug(
+        goal,
+        field="goal",
+    )
+    normalized_timing = _normalize_required_slug(
+        timing,
+        field="timing",
+    )
+    normalized_variant = _normalize_required_slug(
+        variant,
+        field="variant",
+    )
+
+    target_weight_g = _TIMING_TARGET_WEIGHT_G.get(
+        normalized_timing
+    )
+
+    if target_weight_g is None:
+        raise GoalPresetRecipeInputError(
+            f"unsupported preset timing: {normalized_timing!r}"
+        )
+
+    preset = _PRESET_RECIPES.get(
+        (normalized_goal, normalized_variant)
+    )
+
+    if preset is None:
+        raise GoalPresetRecipeInputError(
+            "unsupported preset recipe: "
+            f"goal={normalized_goal!r}, "
+            f"variant={normalized_variant!r}"
+        )
+
+    return _build_recipe_from_preset(
+        normalized_goal=normalized_goal,
+        normalized_timing=normalized_timing,
+        normalized_variant=normalized_variant,
+        target_weight_g=target_weight_g,
+        preset=preset,
+    )
+
+
+def build_account_goal_preset_recipe(
+    *,
+    category_value,
+    timing,
+) -> dict:
+    """Build the one deterministic base recipe for a saved account goal."""
+    if not isinstance(category_value, str):
+        raise GoalPresetRecipeInputError(
+            "account health goal must be a string"
+        )
+
+    profile = get_account_goal_profile(category_value)
+
+    if profile is None:
+        raise GoalPresetRecipeInputError(
+            "unsupported account health goal: "
+            f"{category_value!r}"
+        )
+
+    normalized_timing = _normalize_required_slug(
+        timing,
+        field="timing",
+    )
+    target_weight_g = _TIMING_TARGET_WEIGHT_G.get(
+        normalized_timing
+    )
+
+    if target_weight_g is None:
+        raise GoalPresetRecipeInputError(
+            f"unsupported preset timing: {normalized_timing!r}"
+        )
+
+    preset = _get_account_goal_profile_preset(profile)
+    result = _build_recipe_from_preset(
+        normalized_goal=profile["goal_slug"],
+        normalized_timing=normalized_timing,
+        normalized_variant="a",
+        target_weight_g=target_weight_g,
+        preset=preset,
+    )
+
+    result.setdefault("preset_contract", {}).update({
+        "account_goal_profile": True,
+        "account_goal_profile_version": (
+            ACCOUNT_GOAL_PROFILE_VERSION
+        ),
+        "account_goal_category_value": category_value.strip(),
+        "account_goal_label": profile["label"],
+    })
+
+    return result
 
 def build_personalized_goal_preset_recipe(
     *,
@@ -1336,8 +1560,9 @@ def build_personalized_goal_preset_recipe(
             f"unsupported preset timing: '{normalized_timing}'"
         )
 
-    preset = _PRESET_RECIPES.get(
-        (normalized_goal, normalized_variant)
+    preset = _get_personalization_goal_preset(
+        normalized_goal=normalized_goal,
+        normalized_variant=normalized_variant,
     )
 
     if preset is None:
@@ -1346,6 +1571,14 @@ def build_personalized_goal_preset_recipe(
             f"goal='{normalized_goal}', "
             f"variant='{normalized_variant}'"
         )
+
+    account_goal_profile = get_account_goal_profile_by_slug(
+        normalized_goal
+    )
+    is_account_only_goal_profile = (
+        account_goal_profile is not None
+        and not account_goal_profile["uses_existing_reviewed_preset"]
+    )
 
     catalog_definitions = (
         _get_personalization_catalog_definitions()
@@ -1492,6 +1725,34 @@ def build_personalized_goal_preset_recipe(
         3,
     )
 
+    preset_contract = {
+        "personalized": True,
+        "uses_age": False,
+        "uses_sex": False,
+        "uses_eer": False,
+        "weight_source": "explicit_user_amounts",
+        "composition_source": (
+            "explicit_user_ingredient_amounts"
+        ),
+        "timing_target_applied": False,
+        "goal_alignment": goal_alignment,
+        "outside_goal_ingredient_ids": (
+            outside_goal_ingredient_ids
+        ),
+    }
+
+    if is_account_only_goal_profile:
+        preset_contract.update({
+            "account_goal_profile": True,
+            "account_goal_profile_version": (
+                ACCOUNT_GOAL_PROFILE_VERSION
+            ),
+            "account_goal_category_value": (
+                account_goal_profile["category_value"]
+            ),
+            "account_goal_label": account_goal_profile["label"],
+        })
+
     return {
         "goal": normalized_goal,
         "timing": normalized_timing,
@@ -1501,19 +1762,5 @@ def build_personalized_goal_preset_recipe(
         "ingredients": result_ingredients,
         "batch": result_batch,
         "portion": None,
-        "preset_contract": {
-            "personalized": True,
-            "uses_age": False,
-            "uses_sex": False,
-            "uses_eer": False,
-            "weight_source": "explicit_user_amounts",
-            "composition_source": (
-                "explicit_user_ingredient_amounts"
-            ),
-            "timing_target_applied": False,
-            "goal_alignment": goal_alignment,
-            "outside_goal_ingredient_ids": (
-                outside_goal_ingredient_ids
-            ),
-        },
+        "preset_contract": preset_contract,
     }

@@ -2410,39 +2410,74 @@ def app_home():
 
     is_authenticated = bool(current_user.is_authenticated)
     user_plan = "guest"
-
-    if is_authenticated:
-        try:
-            user_plan = get_user_plan(current_user.id)
-        except Exception:
-            # Fail closed: never unlock Premium Save if plan lookup fails.
-            user_plan = "free"
-
-    can_save_recipes = is_authenticated and user_plan != "free"
-
     account_health_goals = []
     account_health_goal_catalog = []
     account_health_goal_labels = {}
     account_health_goals_available = False
+    account_health_goals_ready = False
 
     if is_authenticated:
+        conn = None
         try:
-            account_health_goal_catalog = _get_account_health_goal_catalog()
-            account_health_goals = _get_account_health_goal_preferences(
-                current_user.id
-            )
-            account_health_goal_labels = {
-                goal["value"]: goal["label"]
-                for goal in account_health_goal_catalog
-            }
-            account_health_goals_available = bool(
-                account_health_goal_catalog
-            )
+            conn = get_conn()
+
+            try:
+                user_plan = get_user_plan(
+                    current_user.id,
+                    conn=conn,
+                )
+            except Exception:
+                # Fail closed: never unlock Premium Save if plan lookup fails.
+                user_plan = "free"
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+
+            try:
+                account_health_goal_catalog = (
+                    _get_account_health_goal_catalog(conn=conn)
+                )
+                account_health_goals = (
+                    _get_account_health_goal_preferences(
+                        current_user.id,
+                        conn=conn,
+                    )
+                )
+                account_health_goal_labels = {
+                    goal["value"]: goal["label"]
+                    for goal in account_health_goal_catalog
+                }
+                account_health_goals_available = bool(
+                    account_health_goal_catalog
+                )
+                account_health_goals_ready = (
+                    account_health_goals_available
+                    and _validate_account_health_goal_selection(
+                        account_health_goals,
+                        account_health_goal_catalog,
+                    )[1] is None
+                )
+            except Exception:
+                # A missing migration or unavailable catalog must not break /app.
+                app.logger.exception(
+                    "Account health-goal preferences are unavailable on /app"
+                )
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
         except Exception:
-            # A missing migration or unavailable catalog must not break /app.
+            # Fail closed: a database connection failure cannot unlock Premium Save.
+            user_plan = "free"
             app.logger.exception(
                 "Account health-goal preferences are unavailable on /app"
             )
+        finally:
+            if conn is not None:
+                conn.close()
+
+    can_save_recipes = is_authenticated and user_plan != "free"
 
     html = render_template(
         "index.html",
@@ -2454,6 +2489,7 @@ def app_home():
         account_health_goal_catalog=account_health_goal_catalog,
         account_health_goal_labels=account_health_goal_labels,
         account_health_goals_available=account_health_goals_available,
+        account_health_goals_ready=account_health_goals_ready,
         account_health_goal_required_count=ACCOUNT_HEALTH_GOAL_COUNT,
         page_title="Free Smoothie Nutrition Calculator — Age-Adjusted & Allergen Checked | PureFyul",
         meta_description="Build a smoothie for your exact age group. Check calories, allergens, and health goal warnings before you blend. Free — no account needed.",
@@ -2529,11 +2565,13 @@ _ACCOUNT_HEALTH_GOAL_LABELS = {
 }
 
 
-def _get_account_health_goal_catalog():
+def _get_account_health_goal_catalog(*, conn=None):
     """Return the existing health-goal catalog used by account preferences."""
-    conn = None
-    try:
+    owns_connection = conn is None
+    if owns_connection:
         conn = get_conn()
+
+    try:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT DISTINCT category
@@ -2543,7 +2581,7 @@ def _get_account_health_goal_catalog():
         """)
         rows = cursor.fetchall()
     finally:
-        if conn is not None:
+        if owns_connection and conn is not None:
             conn.close()
 
     catalog = []
@@ -2598,11 +2636,17 @@ def _validate_account_health_goal_selection(raw_values, catalog):
     return selected_values, None
 
 
-def _get_account_health_goal_preferences(user_id):
+def _get_account_health_goal_preferences(
+    user_id,
+    *,
+    conn=None,
+):
     """Return one user's saved health goals in display order."""
-    conn = None
-    try:
+    owns_connection = conn is None
+    if owns_connection:
         conn = get_conn()
+
+    try:
         cursor = conn.cursor()
         cursor.execute(
             db.prepare_query("""
@@ -2622,8 +2666,116 @@ def _get_account_health_goal_preferences(user_id):
             for row in cursor.fetchall()
         ]
     finally:
-        if conn is not None:
+        if owns_connection and conn is not None:
             conn.close()
+
+
+def _get_account_goal_profile_access(
+    user_id,
+    *,
+    category_value=None,
+    goal_slug=None,
+    conn=None,
+):
+    """Return a saved account-goal profile or a precise access error."""
+    from account_goal_recipe_profiles import (
+        get_account_goal_profile,
+        get_account_goal_profile_by_slug,
+    )
+
+    profile = None
+
+    if category_value is not None:
+        if not isinstance(category_value, str):
+            return None, "unknown_account_goal"
+
+        normalized_category_value = category_value.strip()
+        if not normalized_category_value:
+            return None, "unknown_account_goal"
+
+        profile = get_account_goal_profile(
+            normalized_category_value
+        )
+        if profile is not None:
+            profile["category_value"] = normalized_category_value
+    elif goal_slug is not None:
+        profile = get_account_goal_profile_by_slug(goal_slug)
+
+        # The six established public presets retain their existing access
+        # behavior. Only account-only profile slugs require saved-goal access.
+        if (
+            profile is None
+            or profile["uses_existing_reviewed_preset"]
+        ):
+            return None, None
+    else:
+        return None, None
+
+    if profile is None:
+        return None, "unknown_account_goal"
+
+    health_goal_catalog = _get_account_health_goal_catalog(
+        conn=conn
+    )
+    saved_values = _get_account_health_goal_preferences(
+        user_id,
+        conn=conn,
+    )
+    selected_values, selection_error = (
+        _validate_account_health_goal_selection(
+            saved_values,
+            health_goal_catalog,
+        )
+    )
+
+    if selection_error:
+        return None, "invalid_saved_goals"
+
+    if profile["category_value"] not in selected_values:
+        return None, "account_goal_not_saved"
+
+    return profile, None
+
+
+def _account_goal_access_error_response(access_error):
+    """Return the safe API response for a denied account-goal request."""
+    responses = {
+        "unknown_account_goal": (
+            {
+                "error": "invalid_request",
+                "message": "Unsupported account health goal.",
+            },
+            400,
+        ),
+        "invalid_saved_goals": (
+            {
+                "error": "account_health_goals_invalid",
+                "message": (
+                    "Your account must have exactly six valid health goals "
+                    "before building this smoothie."
+                ),
+            },
+            409,
+        ),
+        "account_goal_not_saved": (
+            {
+                "error": "account_health_goal_not_saved",
+                "message": (
+                    "This health goal is not saved to your account."
+                ),
+            },
+            403,
+        ),
+    }
+
+    try:
+        payload, status_code = responses[access_error]
+    except KeyError as exc:
+        raise RuntimeError(
+            f"Unknown account-goal access error: {access_error!r}"
+        ) from exc
+
+    return jsonify(payload), status_code
 
 
 def _replace_account_health_goal_preferences(
@@ -4879,11 +5031,10 @@ def category_hierarchy():
         return jsonify({"error": str(e)}), 500
 
 def normalize_category_param(category):
-    """Normalize category URL params while preserving readable DB category names."""
+    """Normalize category URL params without destroying stored hyphens."""
     value = str(category or "").strip()
-    value = value.replace("-", " ").replace("_", " ")
-    value = " ".join(value.split())
-    return value
+    value = value.replace("_", " ")
+    return " ".join(value.split())
 
 
 @app.route('/api/ingredients/<category>')
@@ -56031,6 +56182,120 @@ def build_goal_preset_api():
         }), 500
 
 
+@csrf.exempt
+@app.post("/api/account-goal-preset")
+@login_required
+def build_account_goal_preset_api():
+    """Build a deterministic preset for one goal saved to this account."""
+    from goal_preset_recipe import (
+        GoalPresetRecipeInputError,
+        build_account_goal_preset_recipe,
+    )
+    from recipe_calculator import RecipeCalculationError
+    from recipe_mass import RecipeMassResolutionError
+
+    payload = request.get_json(silent=True)
+
+    if not isinstance(payload, dict):
+        return jsonify({
+            "error": "invalid_request",
+            "message": "JSON object required",
+        }), 400
+
+    allowed_fields = {"category_value", "timing"}
+    unexpected_fields = sorted(set(payload) - allowed_fields)
+
+    if unexpected_fields:
+        return jsonify({
+            "error": "invalid_request",
+            "message": "unsupported request fields",
+            "fields": unexpected_fields,
+        }), 400
+
+    category_value = payload.get("category_value")
+    if (
+        not isinstance(category_value, str)
+        or not category_value.strip()
+    ):
+        return jsonify({
+            "error": "invalid_request",
+            "message": "A saved health-goal category is required.",
+        }), 400
+
+    try:
+        user_id = int(current_user.id)
+    except (TypeError, ValueError):
+        return jsonify({"error": "auth_required"}), 401
+
+    conn = None
+
+    try:
+        conn = get_conn()
+
+        try:
+            _, access_error = _get_account_goal_profile_access(
+                user_id,
+                category_value=category_value,
+                conn=conn,
+            )
+        except Exception:
+            app.logger.exception(
+                "Account health-goal verification failed user_id=%s",
+                user_id,
+            )
+            return jsonify({
+                "error": "health_goals_unavailable",
+                "message": "Your saved health goals could not be verified.",
+            }), 503
+
+        if access_error:
+            return _account_goal_access_error_response(access_error)
+
+        result = build_account_goal_preset_recipe(
+            category_value=category_value,
+            timing=payload.get("timing"),
+        )
+        result.setdefault("preset_contract", {})[
+            "selection_source"
+        ] = "account_health_goal_preset"
+
+        return jsonify({
+            "success": True,
+            "recipe": result,
+        }), 200
+
+    except GoalPresetRecipeInputError as exc:
+        return jsonify({
+            "error": "invalid_request",
+            "message": str(exc),
+        }), 400
+
+    except RecipeMassResolutionError:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": "mass_unresolved",
+        }), 422
+
+    except RecipeCalculationError:
+        return jsonify({
+            "error": "build_unavailable",
+            "reason": "nutrition_unavailable",
+        }), 422
+
+    except Exception:
+        app.logger.exception(
+            "Account goal preset build failed user_id=%s",
+            user_id,
+        )
+        return jsonify({
+            "error": "build_failed",
+        }), 500
+
+    finally:
+        if conn is not None:
+            conn.close()
+
+
 def _read_web_personalization_context(
     user_id,
     requested_person_id=None,
@@ -56524,6 +56789,29 @@ def personalized_goal_preset_api():
     conn = db.get_conn()
 
     try:
+        try:
+            _, account_goal_access_error = (
+                _get_account_goal_profile_access(
+                    user_id,
+                    goal_slug=goal,
+                    conn=conn,
+                )
+            )
+        except Exception:
+            app.logger.exception(
+                "Account-only goal verification failed user_id=%s",
+                user_id,
+            )
+            return jsonify({
+                "error": "health_goals_unavailable",
+                "message": "Your saved health goals could not be verified.",
+            }), 503
+
+        if account_goal_access_error:
+            return _account_goal_access_error_response(
+                account_goal_access_error
+            )
+
         context = _read_web_personalization_context(
             user_id,
             requested_person_id=requested_person_id,
@@ -56966,10 +57254,44 @@ def get_personalization_ingredient_options():
         get_personalization_ingredient_options as get_options,
     )
 
+    goal = request.args.get("goal")
+
     try:
-        result = get_options(
-            goal=request.args.get("goal")
+        user_id = int(current_user.id)
+    except (TypeError, ValueError):
+        return jsonify({"error": "auth_required"}), 401
+
+    conn = None
+    try:
+        conn = get_conn()
+        _, account_goal_access_error = (
+            _get_account_goal_profile_access(
+                user_id,
+                goal_slug=goal,
+                conn=conn,
+            )
         )
+    except Exception:
+        app.logger.exception(
+            "Account-only ingredient-option verification failed "
+            "user_id=%s",
+            user_id,
+        )
+        return jsonify({
+            "error": "health_goals_unavailable",
+            "message": "Your saved health goals could not be verified.",
+        }), 503
+    finally:
+        if conn is not None:
+            conn.close()
+
+    if account_goal_access_error:
+        return _account_goal_access_error_response(
+            account_goal_access_error
+        )
+
+    try:
+        result = get_options(goal=goal)
     except GoalPresetRecipeInputError as exc:
         return jsonify({
             "error": "invalid_request",
