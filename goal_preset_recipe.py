@@ -939,6 +939,25 @@ def get_reviewed_goal_recipe_candidates(goal) -> tuple[dict, ...]:
     return tuple(candidates)
 
 
+_NEW_PERSONALIZATION_EXCLUDED_LOOKUP_NAMES = frozenset({
+    "amaranth", "asparagus", "beans", "black beans",
+    "brown rice", "brussels sprouts", "buckwheat",
+    "cabbage", "chickpeas", "edamame", "endive",
+    "fava beans", "grapefruit", "kidney beans",
+    "lentils", "lima beans", "millet", "mustard greens",
+    "navy beans", "pinto beans", "quinoa", "radishes",
+    "soybeans", "squash", "tempeh",
+})
+
+
+def _is_new_personalization_selection_allowed(definition: dict) -> bool:
+    """Keep legacy definitions while curating new smoothie choices."""
+    return (
+        definition["nutrition_lookup_name"].strip().casefold()
+        not in _NEW_PERSONALIZATION_EXCLUDED_LOOKUP_NAMES
+    )
+
+
 def get_supported_ingredient_ids() -> tuple[str, ...]:
     """Return canonical IDs available to the smoothie personalization editor."""
     return tuple(sorted(_get_personalization_catalog_definitions()))
@@ -960,6 +979,7 @@ def get_supported_ingredient_options() -> tuple[dict[str, str], ...]:
             "unit": definition.get("display_unit", "g"),
         }
         for ingredient_id, definition in sorted(definitions.items())
+        if _is_new_personalization_selection_allowed(definition)
     )
 
 def _get_goal_aligned_ingredient_ids(
@@ -974,7 +994,14 @@ def _get_goal_aligned_ingredient_ids(
     }
 
     if reviewed_ids:
-        return tuple(sorted(reviewed_ids))
+        definitions = _get_personalization_catalog_definitions()
+        return tuple(sorted(
+            ingredient_id
+            for ingredient_id in reviewed_ids
+            if _is_new_personalization_selection_allowed(
+                definitions[ingredient_id]
+            )
+        ))
 
     profile = get_account_goal_profile_by_slug(normalized_goal)
 
@@ -999,6 +1026,10 @@ def _get_goal_aligned_ingredient_ids(
                 f"personalization catalog: {raw_name!r}"
             )
 
+        if not _is_new_personalization_selection_allowed(
+            definitions[ingredient_id]
+        ):
+            continue
         if ingredient_id not in aligned_ids:
             aligned_ids.append(ingredient_id)
 
@@ -1507,6 +1538,7 @@ def build_personalized_goal_preset_recipe(
     timing,
     variant,
     ingredient_selections,
+    legacy_allowed_ingredient_ids=(),
 ) -> dict:
     """Build one Personalize editor selection from explicit user amounts."""
 
@@ -1626,6 +1658,21 @@ def build_personalized_goal_preset_recipe(
         raise GoalPresetRecipeInputError(
             "ingredient is not supported for personalization: "
             f"'{unsupported_ingredient_ids[0]}'"
+        )
+
+    legacy_allowed_ids = set(legacy_allowed_ingredient_ids)
+    excluded_new_ids = [
+        ingredient_id
+        for ingredient_id in normalized_ingredient_ids
+        if not _is_new_personalization_selection_allowed(
+            catalog_definitions[ingredient_id]
+        )
+        and ingredient_id not in legacy_allowed_ids
+    ]
+    if excluded_new_ids:
+        raise GoalPresetRecipeInputError(
+            "ingredient is unavailable for new personalization: "
+            f"'{excluded_new_ids[0]}'"
         )
 
     if len(normalized_ingredient_ids) < 3:

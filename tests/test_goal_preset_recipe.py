@@ -792,7 +792,10 @@ def test_supported_ingredient_ids_match_reviewed_presets():
 
     actual = get_supported_ingredient_ids()
 
-    assert actual == expected
+    assert set(expected).issubset(set(actual))
+    assert actual == tuple(sorted(
+        goal_preset_recipe._get_personalization_catalog_definitions()
+    ))
     assert len(actual) == len(set(actual))
     assert all(
         isinstance(ingredient_id, str)
@@ -804,7 +807,10 @@ def test_supported_ingredient_ids_match_reviewed_presets():
 def test_supported_ingredient_options_are_canonical():
     options = goal_preset_recipe.get_supported_ingredient_options()
 
-    assert len(options) == 36
+    assert len(options) > 36
+    assert len(options) < len(
+        goal_preset_recipe.get_supported_ingredient_ids()
+    )
     assert all(
         set(option) == {"id", "display_name", "unit"}
         for option in options
@@ -813,8 +819,19 @@ def test_supported_ingredient_options_are_canonical():
     option_ids = [option["id"] for option in options]
 
     assert len(option_ids) == len(set(option_ids))
-    assert set(option_ids) == set(
-        goal_preset_recipe.get_supported_ingredient_ids()
+    definitions = (
+        goal_preset_recipe._get_personalization_catalog_definitions()
+    )
+    expected_selectable = {
+        ingredient_id
+        for ingredient_id, definition in definitions.items()
+        if goal_preset_recipe._is_new_personalization_selection_allowed(
+            definition
+        )
+    }
+    assert set(option_ids) == expected_selectable
+    assert set(option_ids).issubset(
+        set(goal_preset_recipe.get_supported_ingredient_ids())
     )
 
     by_id = {
@@ -1083,3 +1100,84 @@ def test_personalized_recipe_reports_goal_alignment_and_custom_status():
         "banana",
         "blueberry",
     ]
+
+
+def test_new_personalization_catalog_excludes_unsuitable_ingredients():
+    definitions = (
+        goal_preset_recipe._get_personalization_catalog_definitions()
+    )
+    options = goal_preset_recipe.get_supported_ingredient_options()
+    selectable = {item["id"] for item in options}
+
+    assert len(selectable) == len(options)
+    for ingredient_id, definition in definitions.items():
+        excluded = (
+            definition["nutrition_lookup_name"].strip().casefold()
+            in goal_preset_recipe._NEW_PERSONALIZATION_EXCLUDED_LOOKUP_NAMES
+        )
+        assert (ingredient_id in selectable) is not excluded
+
+    for ingredient_id in (
+        "matcha", "barley", "honeydew", "tofu", "apple"
+    ):
+        assert ingredient_id in selectable
+
+    for ingredient_id in ("quinoa", "grapefruit", "chickpeas"):
+        assert ingredient_id not in selectable
+        assert ingredient_id in definitions
+
+
+def test_new_personalization_rejects_excluded_ingredient():
+    with pytest.raises(
+        GoalPresetRecipeInputError,
+        match="unavailable for new personalization",
+    ):
+        goal_preset_recipe.build_personalized_goal_preset_recipe(
+            goal="skin-glow",
+            timing="breakfast",
+            variant="b",
+            ingredient_selections=[
+                {"id": "kiwi", "amount": 90.0},
+                {"id": "banana", "amount": 100.0},
+                {"id": "quinoa", "amount": 30.0},
+            ],
+        )
+
+
+def test_legacy_authorized_ingredient_preserves_explicit_amounts(
+    monkeypatch,
+):
+    original_lookup = _fake_lookup
+
+    def lookup_with_legacy(name):
+        if name.strip().lower() == "quinoa":
+            return original_lookup("banana")
+        return original_lookup(name)
+
+    monkeypatch.setattr(
+        recipe_calculator.nutrition_facts_repository,
+        "get_nutrition_facts_exact",
+        lookup_with_legacy,
+    )
+
+    result = goal_preset_recipe.build_personalized_goal_preset_recipe(
+        goal="skin-glow",
+        timing="breakfast",
+        variant="b",
+        ingredient_selections=[
+            {"id": "kiwi", "amount": 90.0},
+            {"id": "banana", "amount": 100.0},
+            {"id": "quinoa", "amount": 30.0},
+        ],
+        legacy_allowed_ingredient_ids=("quinoa",),
+    )
+
+    amounts = {
+        ingredient["id"]: ingredient["amount"]
+        for ingredient in result["ingredients"]
+    }
+    assert amounts == {
+        "kiwi": 90.0,
+        "banana": 100.0,
+        "quinoa": 30.0,
+    }

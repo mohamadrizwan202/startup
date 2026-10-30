@@ -56881,6 +56881,11 @@ def personalized_goal_preset_api():
                 timing=timing,
                 variant=current_variant,
                 ingredient_selections=ingredient_selections,
+                legacy_allowed_ingredient_ids=(
+                    context["preferred"]
+                    if existing_generation is not None
+                    else ()
+                ),
             )
 
             if existing_generation is not None:
@@ -58282,7 +58287,10 @@ def get_web_person_ingredient_preferences(person_id):
 @csrf.exempt
 def replace_web_person_ingredient_preferences(person_id):
     """Replace the complete preferred/avoid set for an owned Person."""
-    from goal_preset_recipe import get_supported_ingredient_ids
+    from goal_preset_recipe import (
+        get_supported_ingredient_ids,
+        get_supported_ingredient_options,
+    )
 
     payload = request.get_json(silent=True)
 
@@ -58395,6 +58403,48 @@ def replace_web_person_ingredient_preferences(person_id):
 
         if cursor.fetchone() is None:
             return jsonify({"error": "not_found"}), 404
+
+        # Preserve existing legacy preferences, but reject newly
+        # introduced ingredients excluded from new smoothie selections.
+        if db.USE_POSTGRES:
+            cursor.execute(
+                """
+                SELECT ingredient_id, preference_type
+                FROM person_ingredient_preferences
+                WHERE person_id = %s
+                """,
+                (person_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT ingredient_id, preference_type
+                FROM person_ingredient_preferences
+                WHERE person_id = ?
+                """,
+                (person_id,),
+            )
+
+        previous = {"preferred": set(), "avoid": set()}
+        for existing_row in cursor.fetchall():
+            item = db.row_to_dict(existing_row)
+            preference_type = item["preference_type"]
+            if preference_type in previous:
+                previous[preference_type].add(item["ingredient_id"])
+
+        selectable_ids = {
+            option["id"]
+            for option in get_supported_ingredient_options()
+        }
+        newly_excluded = sorted(
+            (set(preferred) - selectable_ids - previous["preferred"])
+            | (set(avoid) - selectable_ids - previous["avoid"])
+        )
+        if newly_excluded:
+            return jsonify({
+                "error": "unsupported_ingredient",
+                "ingredients": newly_excluded,
+            }), 400
 
         # Full replacement happens inside one transaction.
         if db.USE_POSTGRES:

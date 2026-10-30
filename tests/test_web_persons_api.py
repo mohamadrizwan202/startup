@@ -1036,7 +1036,10 @@ def test_personalization_ingredient_options_returns_reviewed_catalog(client):
     body = response.get_json()
     options = body["ingredients"]
 
-    assert len(options) == 36
+    assert len(options) > 36
+    option_ids = {option["id"] for option in options}
+    assert {"barley", "matcha", "honeydew", "tofu", "apple"} <= option_ids
+    assert {"quinoa", "grapefruit", "chickpeas"}.isdisjoint(option_ids)
     assert all(
         set(option) == {"id", "display_name", "unit"}
         for option in options
@@ -1067,7 +1070,10 @@ def test_personalization_ingredient_options_include_goal_aligned_ids(
     body = response.get_json()
 
     assert body["goal"] == "skin-glow"
-    assert len(body["ingredients"]) == 36
+    from goal_preset_recipe import get_supported_ingredient_options
+    assert len(body["ingredients"]) == len(
+        get_supported_ingredient_options()
+    )
 
     aligned_ids = set(body["goal_aligned_ingredient_ids"])
 
@@ -1092,3 +1098,86 @@ def test_personalization_ingredient_options_rejects_invalid_goal(
     body = response.get_json()
     assert body["error"] == "invalid_request"
     assert "unsupported personalization goal" in body["message"]
+
+
+@pytest.mark.parametrize("field", ["preferred", "avoid"])
+def test_new_excluded_ingredient_preference_is_rejected(client, field):
+    person = client.post(
+        "/api/persons",
+        json={"name": "Catalog Policy Test"},
+    ).get_json()["person"]
+
+    payload = {"preferred": [], "avoid": []}
+    payload[field] = ["quinoa"]
+
+    response = client.put(
+        f"/api/persons/{person['id']}/ingredient-preferences",
+        json=payload,
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "unsupported_ingredient"
+
+
+def test_existing_legacy_preference_is_preserved(client):
+    person = client.post(
+        "/api/persons",
+        json={"name": "Legacy Policy Test"},
+    ).get_json()["person"]
+
+    conn = sqlite3.connect(str(db.DB_PATH))
+    try:
+        conn.execute(
+            """
+            INSERT INTO person_ingredient_preferences
+                (person_id, ingredient_id, preference_type)
+            VALUES (?, ?, ?)
+            """,
+            (person["id"], "quinoa", "preferred"),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    response = client.put(
+        f"/api/persons/{person['id']}/ingredient-preferences",
+        json={
+            "preferred": ["quinoa", "banana"],
+            "avoid": [],
+        },
+    )
+
+    assert response.status_code == 200
+    assert "quinoa" in response.get_json()["preferred"]
+
+
+def test_legacy_avoid_cannot_be_promoted_to_preferred(client):
+    person = client.post(
+        "/api/persons",
+        json={"name": "Legacy Promotion Test"},
+    ).get_json()["person"]
+
+    conn = sqlite3.connect(str(db.DB_PATH))
+    try:
+        conn.execute(
+            """
+            INSERT INTO person_ingredient_preferences
+                (person_id, ingredient_id, preference_type)
+            VALUES (?, ?, ?)
+            """,
+            (person["id"], "quinoa", "avoid"),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    response = client.put(
+        f"/api/persons/{person['id']}/ingredient-preferences",
+        json={
+            "preferred": ["quinoa"],
+            "avoid": [],
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "unsupported_ingredient"
