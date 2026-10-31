@@ -763,6 +763,36 @@ def ensure_schema():
             WHERE personalization_id IS NOT NULL
         """)
 
+        # ── PERSONALIZED SMOOTHIE RECIPE SNAPSHOTS ──────────────────────
+        # One snapshot per generation. Credits remain in the existing
+        # generation ledger, and updates never create another ledger row.
+        if USE_POSTGRES:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS
+                    personalized_smoothie_recipe_snapshots (
+                        generation_id INTEGER PRIMARY KEY
+                            REFERENCES personalized_smoothie_generations(id)
+                            ON DELETE CASCADE,
+                        variant VARCHAR(40) NOT NULL,
+                        ingredient_selections JSONB NOT NULL,
+                        updated_at TIMESTAMP NOT NULL
+                            DEFAULT CURRENT_TIMESTAMP
+                    )
+            """)
+        else:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS
+                    personalized_smoothie_recipe_snapshots (
+                        generation_id INTEGER PRIMARY KEY
+                            REFERENCES personalized_smoothie_generations(id)
+                            ON DELETE CASCADE,
+                        variant TEXT NOT NULL,
+                        ingredient_selections TEXT NOT NULL,
+                        updated_at TEXT NOT NULL
+                            DEFAULT CURRENT_TIMESTAMP
+                    )
+            """)
+
         # ── SAVED RECIPES TABLE ──────────────────────────────────────────
         if USE_POSTGRES:
             cursor.execute("""

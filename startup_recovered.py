@@ -56582,6 +56582,100 @@ def _persist_personalize_editor_preferences(
         )
 
 
+def _read_personalized_goal_recipe_snapshot(*, generation_id, conn):
+    """Read the saved selections belonging to one generation."""
+    cursor = conn.cursor()
+
+    if db.USE_POSTGRES:
+        cursor.execute(
+            """
+            SELECT variant, ingredient_selections
+            FROM personalized_smoothie_recipe_snapshots
+            WHERE generation_id = %s
+            """,
+            (generation_id,),
+        )
+    else:
+        cursor.execute(
+            """
+            SELECT variant, ingredient_selections
+            FROM personalized_smoothie_recipe_snapshots
+            WHERE generation_id = ?
+            """,
+            (generation_id,),
+        )
+
+    row = cursor.fetchone()
+    if row is None:
+        return None
+
+    snapshot = db.row_to_dict(row)
+    selections = snapshot["ingredient_selections"]
+
+    if isinstance(selections, str):
+        selections = json.loads(selections)
+
+    if not isinstance(selections, list):
+        raise RuntimeError(
+            "Personalized recipe snapshot has invalid ingredient data."
+        )
+
+    return {
+        "variant": snapshot["variant"],
+        "ingredient_selections": selections,
+    }
+
+
+def _save_personalized_goal_recipe_snapshot(
+    *,
+    generation_id,
+    variant,
+    ingredient_selections,
+    conn,
+):
+    """Insert or update one recipe snapshot in the caller's transaction."""
+    serialized = json.dumps(
+        ingredient_selections,
+        allow_nan=False,
+    )
+    cursor = conn.cursor()
+
+    if db.USE_POSTGRES:
+        cursor.execute(
+            """
+            INSERT INTO personalized_smoothie_recipe_snapshots (
+                generation_id,
+                variant,
+                ingredient_selections
+            )
+            VALUES (%s, %s, %s::jsonb)
+            ON CONFLICT (generation_id)
+            DO UPDATE SET
+                variant = EXCLUDED.variant,
+                ingredient_selections = EXCLUDED.ingredient_selections,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (generation_id, variant, serialized),
+        )
+    else:
+        cursor.execute(
+            """
+            INSERT INTO personalized_smoothie_recipe_snapshots (
+                generation_id,
+                variant,
+                ingredient_selections
+            )
+            VALUES (?, ?, ?)
+            ON CONFLICT (generation_id)
+            DO UPDATE SET
+                variant = excluded.variant,
+                ingredient_selections = excluded.ingredient_selections,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (generation_id, variant, serialized),
+        )
+
+
 def _find_personalized_goal_generation(
     *,
     personalization_id,
@@ -56876,16 +56970,16 @@ def personalized_goal_preset_api():
             }), 403
 
         try:
-            result = build_personalized_goal_preset_recipe(
-                goal=goal,
-                timing=timing,
-                variant=current_variant,
-                ingredient_selections=ingredient_selections,
-                legacy_allowed_ingredient_ids=(
-                    context["preferred"]
-                    if existing_generation is not None
-                    else ()
-                ),
+            from goal_preset_recipe import _normalize_required_slug
+
+            normalized_goal = _normalize_required_slug(
+                goal, field="goal"
+            )
+            normalized_timing = _normalize_required_slug(
+                timing, field="timing"
+            )
+            normalized_variant = _normalize_required_slug(
+                current_variant, field="variant"
             )
 
             if existing_generation is not None:
@@ -56893,9 +56987,9 @@ def personalized_goal_preset_api():
                     existing_generation["person_id"]
                     != context["person_id"]
                     or existing_generation["goal_slug"]
-                    != result["goal"]
+                    != normalized_goal
                     or existing_generation["timing_slug"]
-                    != result["timing"]
+                    != normalized_timing
                 ):
                     return jsonify({
                         "error": "personalization_contract_mismatch",
@@ -56905,6 +56999,35 @@ def personalized_goal_preset_api():
                         ),
                     }), 409
 
+            existing_snapshot = (
+                _read_personalized_goal_recipe_snapshot(
+                    generation_id=existing_generation["id"],
+                    conn=conn,
+                )
+                if existing_generation is not None
+                else None
+            )
+
+            legacy_allowed_ids = ()
+            if (
+                existing_snapshot is not None
+                and existing_snapshot["variant"] == normalized_variant
+            ):
+                legacy_allowed_ids = tuple(
+                    selection["id"]
+                    for selection in
+                    existing_snapshot["ingredient_selections"]
+                )
+
+            result = build_personalized_goal_preset_recipe(
+                goal=goal,
+                timing=timing,
+                variant=current_variant,
+                ingredient_selections=ingredient_selections,
+                legacy_allowed_ingredient_ids=legacy_allowed_ids,
+            )
+
+            if existing_generation is not None:
                 generation_access_type = existing_generation[
                     "access_type"
                 ]
@@ -56935,6 +57058,33 @@ def personalized_goal_preset_api():
                     personalization_id=personalization_id,
                     conn=conn,
                 )
+
+            snapshot_generation = (
+                existing_generation
+                if existing_generation is not None
+                else _find_personalized_goal_generation(
+                    personalization_id=personalization_id,
+                    conn=conn,
+                )
+            )
+
+            if snapshot_generation is None:
+                raise RuntimeError(
+                    "Personalized generation missing before snapshot save."
+                )
+
+            _save_personalized_goal_recipe_snapshot(
+                generation_id=snapshot_generation["id"],
+                variant=result["variant"],
+                ingredient_selections=[
+                    {
+                        "id": item["id"],
+                        "amount": item["amount"],
+                    }
+                    for item in result["ingredients"]
+                ],
+                conn=conn,
+            )
 
             conn.commit()
 

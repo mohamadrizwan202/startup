@@ -55,6 +55,12 @@ def _create_persons_table():
     conn = sqlite3.connect(str(db.DB_PATH))
     try:
         conn.execute(
+            "DROP TABLE IF EXISTS personalized_smoothie_recipe_snapshots"
+        )
+        conn.execute(
+            "DROP TABLE IF EXISTS personalized_smoothie_generations"
+        )
+        conn.execute(
             "DROP TABLE IF EXISTS person_ingredient_preferences"
         )
         conn.execute("DROP TABLE IF EXISTS persons")
@@ -129,6 +135,99 @@ def _create_persons_table():
             ON person_ingredient_preferences(
                 person_id,
                 ingredient_id
+            )
+            """
+        )
+
+        # Local test account: satisfies the real ledger foreign key.
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO users (
+                id, email, password_hash
+            ) VALUES (?, ?, ?)
+            """,
+            (
+                TEST_USER["id"],
+                TEST_USER["email"],
+                TEST_USER["password_hash"],
+            ),
+        )
+        assert conn.execute(
+            "SELECT id FROM users WHERE id = ?",
+            (TEST_USER["id"],),
+        ).fetchone() is not None
+
+        # Used by the actual get_user_plan() entitlement lookup.
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                plan TEXT NOT NULL,
+                status TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            "DELETE FROM subscriptions WHERE user_id = ?",
+            (TEST_USER["id"],),
+        )
+
+        # Personalized generation ledger and recipe snapshots.
+        # These match the SQLite schema in db.ensure_schema().
+        conn.execute(
+            """
+            CREATE TABLE personalized_smoothie_generations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL
+                    REFERENCES users(id) ON DELETE CASCADE,
+                person_id INTEGER
+                    REFERENCES persons(id) ON DELETE SET NULL,
+                goal_slug TEXT NOT NULL,
+                timing_slug TEXT NOT NULL,
+                access_type TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                personalization_id TEXT,
+                CHECK (TRIM(goal_slug) <> ''),
+                CHECK (TRIM(timing_slug) <> ''),
+                CHECK (access_type IN ('free_trial', 'pro'))
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE INDEX personalized_generations_user_access_created_idx
+            ON personalized_smoothie_generations (
+                user_id, access_type, created_at DESC
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE UNIQUE INDEX personalized_generations_personalization_id_uidx
+            ON personalized_smoothie_generations (personalization_id)
+            WHERE personalization_id IS NOT NULL
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE personalized_smoothie_recipe_snapshots (
+                generation_id INTEGER PRIMARY KEY
+                    REFERENCES personalized_smoothie_generations(id)
+                    ON DELETE CASCADE,
+                variant TEXT NOT NULL,
+                ingredient_selections TEXT NOT NULL,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
@@ -1181,3 +1280,145 @@ def test_legacy_avoid_cannot_be_promoted_to_preferred(client):
 
     assert response.status_code == 400
     assert response.get_json()["error"] == "unsupported_ingredient"
+
+
+def test_personalize_post_preserves_credits_on_same_id_update(
+    client, monkeypatch
+):
+    """A successful update must not consume another free credit."""
+    import goal_preset_recipe
+
+    def fake_builder(
+        *,
+        goal,
+        timing,
+        variant,
+        ingredient_selections,
+        legacy_allowed_ingredient_ids=(),
+    ):
+        assert len(ingredient_selections) >= 3
+        return {
+            "goal": goal.strip().lower(),
+            "timing": timing.strip().lower(),
+            "variant": variant.strip().lower(),
+            "ingredients": [
+                {
+                    "id": item["id"],
+                    "amount": item["amount"],
+                }
+                for item in ingredient_selections
+            ],
+            "preset_contract": {},
+        }
+
+    # Handle both module-level and endpoint-local imports.
+    monkeypatch.setattr(
+        goal_preset_recipe,
+        "build_personalized_goal_preset_recipe",
+        fake_builder,
+    )
+    if hasattr(appmod, "build_personalized_goal_preset_recipe"):
+        monkeypatch.setattr(
+            appmod,
+            "build_personalized_goal_preset_recipe",
+            fake_builder,
+        )
+
+    person_response = client.post(
+        "/api/persons",
+        json={"name": "Credit Regression Test"},
+    )
+    assert person_response.status_code == 201
+    person_id = person_response.get_json()["person"]["id"]
+
+    payload = {
+        "person_id": person_id,
+        "goal": "skin-glow",
+        "timing": "breakfast",
+        "current_variant": "a",
+        "ingredients": [
+            {"id": "banana", "amount": 90.0},
+            {"id": "apple", "amount": 80.0},
+            {"id": "tofu", "amount": 30.0},
+        ],
+    }
+
+    created_ids = []
+
+    for expected_used in (1, 2, 3):
+        response = client.post(
+            "/api/personalized-goal-preset",
+            json=payload,
+        )
+        assert response.status_code == 200, response.get_json()
+
+        body = response.get_json()
+        assert body["access"]["credit_used"] is True
+        assert body["access"]["free_used"] == expected_used
+        assert body["access"]["free_remaining"] == 3 - expected_used
+
+        created_ids.append(
+            body["recipe"]["preset_contract"]["personalization_id"]
+        )
+
+    assert len(set(created_ids)) == 3
+
+    updated_payload = dict(payload)
+    updated_payload["personalization_id"] = created_ids[0]
+    updated_payload["ingredients"] = [
+        {"id": "banana", "amount": 95.0},
+        {"id": "apple", "amount": 75.0},
+        {"id": "tofu", "amount": 35.0},
+    ]
+
+    update_response = client.post(
+        "/api/personalized-goal-preset",
+        json=updated_payload,
+    )
+    assert update_response.status_code == 200, (
+        update_response.get_json()
+    )
+
+    update_body = update_response.get_json()
+    assert update_body["access"]["credit_used"] is False
+    assert update_body["access"]["free_used"] == 3
+    assert update_body["access"]["free_remaining"] == 0
+
+    fourth_response = client.post(
+        "/api/personalized-goal-preset",
+        json=payload,
+    )
+    assert fourth_response.status_code == 403
+    assert fourth_response.get_json()["error"] == "upgrade_required"
+
+    with sqlite3.connect(str(db.DB_PATH)) as conn:
+        generation_count = conn.execute(
+            """
+            SELECT COUNT(*)
+            FROM personalized_smoothie_generations
+            WHERE user_id = ? AND access_type = 'free_trial'
+            """,
+            (TEST_USER["id"],),
+        ).fetchone()[0]
+
+        snapshot_count = conn.execute(
+            "SELECT COUNT(*) FROM personalized_smoothie_recipe_snapshots"
+        ).fetchone()[0]
+
+        saved = conn.execute(
+            """
+            SELECT s.ingredient_selections
+            FROM personalized_smoothie_recipe_snapshots AS s
+            JOIN personalized_smoothie_generations AS g
+                ON g.id = s.generation_id
+            WHERE g.personalization_id = ?
+            """,
+            (created_ids[0],),
+        ).fetchone()
+
+    import json
+
+    assert generation_count == 3
+    assert snapshot_count == 3
+    assert saved is not None
+    assert json.loads(saved[0]) == updated_payload["ingredients"]
