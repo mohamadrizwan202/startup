@@ -56878,6 +56878,22 @@ def personalized_goal_preset_api():
     conn = db.get_conn()
 
     try:
+        if db.USE_POSTGRES:
+            # Serialize credit decisions per account across workers.
+            # Transaction-scoped advisory lock: no UPDATE grant on users.
+            # Namespace 1346782770 isolates PureFyul personalization locks.
+            if conn.autocommit:
+                raise RuntimeError(
+                    "Personalization requires a transactional connection"
+                )
+
+            lock_cursor = conn.cursor()
+            lock_cursor.execute(
+                "SELECT pg_advisory_xact_lock(1346782770, %s)",
+                (user_id,),
+            )
+            lock_cursor.fetchone()
+
         try:
             _, account_goal_access_error = (
                 _get_account_goal_profile_access(
