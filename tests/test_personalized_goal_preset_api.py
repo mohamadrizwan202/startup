@@ -54,6 +54,7 @@ def _create_schema():
 
     try:
         conn.execute("DROP TABLE IF EXISTS person_ingredient_preferences")
+        conn.execute("DROP TABLE IF EXISTS personalized_smoothie_recipe_snapshots")
         conn.execute("DROP TABLE IF EXISTS personalized_smoothie_generations")
         conn.execute("DROP TABLE IF EXISTS subscriptions")
         conn.execute("DROP TABLE IF EXISTS person_preferences")
@@ -111,6 +112,18 @@ def _create_schema():
         )
         conn.execute(
             """
+            CREATE TABLE personalized_smoothie_recipe_snapshots (
+                generation_id INTEGER PRIMARY KEY
+                    REFERENCES personalized_smoothie_generations(id)
+                    ON DELETE CASCADE,
+                variant TEXT NOT NULL,
+                ingredient_selections TEXT NOT NULL,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            """
             CREATE TABLE subscriptions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
@@ -161,6 +174,7 @@ def _fake_personalized_recipe(monkeypatch, captured):
         timing,
         variant,
         ingredient_selections,
+        legacy_allowed_ingredient_ids=(),
     ):
         captured["goal"] = goal
         captured["timing"] = timing
