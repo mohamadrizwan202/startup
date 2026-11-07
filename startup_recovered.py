@@ -986,7 +986,10 @@ else:
 
 # Runtime data hydration that must run even when RUN_SCHEMA=0.
 # This is DML/idempotent, not schema creation.
-ensure_smoothie_seed_ingredients()
+if not is_truthy(os.getenv("PF_SKIP_STARTUP_SEED", "0")):
+    ensure_smoothie_seed_ingredients()
+else:
+    logger.info("PF_SKIP_STARTUP_SEED=1 skipping smoothie seed hydration")
 
 
 @app.route("/home")
@@ -4972,6 +4975,117 @@ def categories():
     except Exception as e:
         app.logger.exception("Error in /api/categories")
         return jsonify({"error": str(e)}), 500
+
+
+# Health Benefits browse: use the existing eligible smoothie catalog.
+# These routes do not replace the legacy APIs or account-only options.
+def _pf_smoothie_browse_allowed_names():
+    from goal_preset_recipe import (
+        _get_personalization_catalog_definitions,
+        get_supported_ingredient_options,
+    )
+
+    definitions = _get_personalization_catalog_definitions()
+    options = get_supported_ingredient_options()
+    if not options:
+        raise RuntimeError("Empty smoothie personalization catalog")
+
+    names = set()
+    for option in options:
+        definition = definitions[option["id"]]
+        name = definition["nutrition_lookup_name"].strip().casefold()
+        if not name:
+            raise RuntimeError("Empty smoothie ingredient lookup name")
+        names.add(name)
+
+    return frozenset(names)
+
+
+@app.route("/api/smoothie-browse/hierarchy", methods=["GET"])
+def pf_smoothie_browse_hierarchy():
+    conn = None
+    try:
+        allowed = _pf_smoothie_browse_allowed_names()
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT category, subcategory, ingredient
+            FROM ingredient_categories
+            WHERE category IS NOT NULL
+              AND subcategory IS NOT NULL
+              AND ingredient IS NOT NULL
+            ORDER BY category, subcategory, ingredient
+        """)
+
+        grouped = {}
+        for row in cursor.fetchall():
+            category = str(row["category"]).strip()
+            subcategory = str(row["subcategory"]).strip()
+            ingredient = str(row["ingredient"]).strip()
+
+            if not category or not subcategory:
+                continue
+            if ingredient.casefold() not in allowed:
+                continue
+
+            grouped.setdefault(
+                (category, subcategory), set()
+            ).add(ingredient.casefold())
+
+        hierarchy = {}
+        for (category, subcategory), names in sorted(grouped.items()):
+            hierarchy.setdefault(category, {})[subcategory] = len(names)
+
+        return jsonify(hierarchy)
+    except Exception:
+        app.logger.exception("Smoothie browse hierarchy failed")
+        return jsonify({"error": "browse_unavailable"}), 500
+    finally:
+        if conn is not None:
+            conn.close()
+
+
+@app.route(
+    "/api/smoothie-browse/ingredients/<category>/<subcategory>",
+    methods=["GET"],
+)
+def pf_smoothie_browse_ingredients(category, subcategory):
+    conn = None
+    try:
+        allowed = _pf_smoothie_browse_allowed_names()
+        conn = get_conn()
+        cursor = conn.cursor()
+        cursor.execute(db.prepare_query("""
+            SELECT ingredient, health_benefits, key_nutrients, description
+            FROM ingredient_categories
+            WHERE category = ? AND subcategory = ?
+            ORDER BY ingredient
+        """), (category, subcategory))
+
+        ingredients = []
+        seen = set()
+        for row in cursor.fetchall():
+            name = str(row["ingredient"] or "").strip()
+            normalized = name.casefold()
+
+            if normalized not in allowed or normalized in seen:
+                continue
+
+            seen.add(normalized)
+            ingredients.append({
+                "ingredient": name,
+                "health_benefits": row["health_benefits"] or "",
+                "key_nutrients": row["key_nutrients"] or "",
+                "description": row["description"] or "",
+            })
+
+        return jsonify(ingredients)
+    except Exception:
+        app.logger.exception("Smoothie browse ingredients failed")
+        return jsonify({"error": "browse_unavailable"}), 500
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 @csrf.exempt

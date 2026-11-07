@@ -12123,9 +12123,15 @@
       const isExpanded = window.pfGoalBrowseAllOpen || false;
       
       // Filter categories based on search
-      let filteredCategories = categories;
+      let filteredCategories = categories.filter(categoryObj => {
+        const categoryValue =
+          (typeof categoryObj === 'object' && categoryObj && 'value' in categoryObj)
+            ? categoryObj.value
+            : categoryObj;
+        return Object.prototype.hasOwnProperty.call(hierarchy, categoryValue);
+      });
       if (searchTerm) {
-        filteredCategories = categories.filter(categoryObj => {
+        filteredCategories = filteredCategories.filter(categoryObj => {
           const categoryLabel = typeof categoryObj === 'object' && 'label' in categoryObj ? categoryObj.label : categoryObj;
           return categoryLabel.toLowerCase().includes(searchTerm);
         });
@@ -12226,7 +12232,7 @@
     // Load Hierarchy
     async function loadHierarchy() {
       try {
-        const res = await fetch('/api/category-hierarchy');
+        const res = await fetch('/api/smoothie-browse/hierarchy');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         hierarchy = await res.json();
       } catch (err) {
@@ -12271,10 +12277,14 @@
             ? subcatObj.value
             : subcatObj;
 
-        const subcatLabel =
+        let subcatLabel =
           (typeof subcatObj === 'object' && subcatObj && 'label' in subcatObj)
             ? subcatObj.label
             : subcatObj;
+
+        if (subcatLabel === 'Detoxifying Foods') {
+          subcatLabel = 'Nutrient-Rich Foods';
+        }
 
         const count = hierarchy[category][subcatObj]; // Use original subcatObj key for hierarchy lookup
         const chip = document.createElement('div');
@@ -12334,18 +12344,18 @@
       ingredientListEl.innerHTML = '<div class="empty-state">Loading ingredients...</div>';
 
       try {
-        const res = await fetch(`/api/categories/${encodeURIComponent(category)}/${encodeURIComponent(subcategory)}`);
+        const res = await fetch(`/api/smoothie-browse/ingredients/${encodeURIComponent(category)}/${encodeURIComponent(subcategory)}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
         // Map to ingredient names and filter out blocked ingredients from Browse panel
         const allIngredients = data.map(item => item.ingredient || item.name || item);
-        currentIngredients = allIngredients.filter(ing => !isBlockedFromBrowse(ing));
+        currentIngredients = allIngredients.filter(ing => typeof ing === 'string' && ing.trim());
         
         // Log if any ingredients were filtered
         const filteredCount = allIngredients.length - currentIngredients.length;
         if (filteredCount > 0) {
-          console.log(`[browse-ingredients] Filtered out ${filteredCount} blocked ingredient(s) from browse panel`);
+          console.log(`[browse-ingredients] Ignored ${filteredCount} invalid ingredient name(s) in browse results`);
         }
         
         renderIngredients(currentIngredients);
@@ -14157,18 +14167,7 @@
           return category === goalName;
         });
         
-        // If no match by category, try benefit/name/title as fallback
-        if (matched.length === 0) {
-          matched = benefits.filter(b => {
-            const benefit = String(b.benefit || b.name || b.title || '').trim().toLowerCase();
-            return benefit.includes(goalName) || goalName.includes(benefit);
-          });
-        }
-        
-        // If still no match, trust the browse API already filtered by goal
-        if (matched.length === 0) {
-          matched = benefits.map(b => ({ ...b, category: ctx.goal, type: ctx.goal }));
-        }
+        // No category match: preserve the existing no-match state.
 
         // Pick the first match as primaryBenefit
         if (matched.length > 0) {
