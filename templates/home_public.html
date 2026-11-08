@@ -502,13 +502,14 @@
     .hp-gap p { color: rgba(255,255,255,0.82); font-size: 0.95rem; line-height: 1.7; margin-bottom: 0.85rem; }
     .hp-gap-btn { display: inline-flex; align-items: center; padding: 0.85rem 2rem; background: #fff; color: #0EA5A4; border: none; border-radius: 100px; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; margin-top: 1rem; }
     .hp-compare { background: rgba(255,255,255,0.95); border-radius: 16px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
-    .hp-compare-row { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 0.85rem 1.25rem; border-bottom: 1px solid #e2e8f0; font-size: 0.875rem; align-items: center; }
+    .hp-compare-heading { font-size: 1.125rem; font-weight: 800; color: #0f172a; margin: 0; padding: 1.25rem; }
+    .hp-compare-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 0.75rem; padding: 0.85rem 1.25rem; border-bottom: 1px solid #e2e8f0; font-size: 0.875rem; align-items: center; }
     .hp-compare-row:last-child { border-bottom: none; }
     .hp-compare-row.hdr { background: #f8fafc; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; }
     .hp-compare-row.hdr .pf { color: #0EA5A4; }
     .hp-compare-row.hdr .other { color: #94a3b8; }
     .hp-feat { color: #64748b; }
-    .hp-ck { color: #0EA5A4; font-weight: 700; }
+    .hp-compare .hp-ck { color: #0f766e; font-weight: 700; }
     .hp-xx { color: #cbd5e1; }
     .hp-cta { background: #0f172a; padding: 5rem 1.5rem; text-align: center; }
     .hp-cta .hp-section-label { color: rgba(255,255,255,0.5); }
@@ -964,17 +965,35 @@
         <a href="/app" class="hp-gap-btn">Try it free</a>
       </div>
       <div class="hp-compare">
+        <h3 class="hp-compare-heading">What PureFyul Offers</h3>
         <div class="hp-compare-row hdr">
           <div class="hp-feat">Feature</div>
-          <div class="pf">PureFyul</div>
-          <div class="other">Others</div>
+          <div class="pf">How it works</div>
         </div>
-        <div class="hp-compare-row"><div class="hp-feat">Age-adjusted portions</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
-        <div class="hp-compare-row"><div class="hp-feat">12 specific age groups</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
-        <div class="hp-compare-row"><div class="hp-feat">Preset smoothies by goal</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
-        <div class="hp-compare-row"><div class="hp-feat">Health goal guidance</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
-        <div class="hp-compare-row"><div class="hp-feat">Allergen checks</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
-        <div class="hp-compare-row"><div class="hp-feat">Weekly meal planner</div><div class="hp-ck">Yes</div><div class="hp-xx">No</div></div>
+        <div class="hp-compare-row">
+          <div class="hp-feat">Age-based portions</div>
+          <div class="hp-ck">Suggested ingredient amounts for your selected age group</div>
+        </div>
+        <div class="hp-compare-row">
+          <div class="hp-feat">22 health goals</div>
+          <div class="hp-ck">Choose a health goal for smoothie recommendations</div>
+        </div>
+        <div class="hp-compare-row">
+          <div class="hp-feat">Smoothie presets</div>
+          <div class="hp-ck">Start with suggested ingredient combinations</div>
+        </div>
+        <div class="hp-compare-row">
+          <div class="hp-feat">Ingredient personalization</div>
+          <div class="hp-ck">Add, remove, and set exact ingredient quantities</div>
+        </div>
+        <div class="hp-compare-row">
+          <div class="hp-feat">Allergen information</div>
+          <div class="hp-ck">Review ingredient allergen flags and context</div>
+        </div>
+        <div class="hp-compare-row">
+          <div class="hp-feat">Weekly meal planner (Pro)</div>
+          <div class="hp-ck">Plan saved smoothies across the week</div>
+        </div>
       </div>
     </div>
   </section>
