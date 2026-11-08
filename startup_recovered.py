@@ -2394,7 +2394,7 @@ def index():
 
     html = render_template(
         "home_public.html",
-        page_title="Smoothie Nutrition Calculator + Goal Warnings | PureFyul",
+        page_title="Smoothie Nutrition Calculator by Age & Health Goal | PureFyul",
         meta_description="Pick a preset smoothie or build your own to see calories, macros, sugar, fiber & goal warnings. Use Ingredient Analysis for allergen flags.",
         canonical_url=canonical,
         og_url=canonical,
