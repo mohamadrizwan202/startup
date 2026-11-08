@@ -536,6 +536,49 @@
       .hp-footer-inner { grid-template-columns: 1fr; }
       .hp-footer-bottom { flex-direction: column; gap: 0.5rem; }
     }
+
+    /* Public homepage: links to existing published guides */
+    .hp-explore { background: #f8fafc; }
+    .hp-explore-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .hp-explore-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 1.75rem;
+    }
+    .hp-explore-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 1rem;
+    }
+    .hp-explore-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .hp-explore-card a {
+      color: #0f766e;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      line-height: 1.5;
+    }
+    .hp-explore-card a:hover,
+    .hp-explore-card a:focus-visible {
+      color: #115e59;
+    }
+    @media (max-width: 700px) {
+      .hp-explore-grid { grid-template-columns: 1fr; }
+    }
   </style>
 
 <!-- Microsoft Clarity -->
@@ -935,6 +978,41 @@
       </div>
     </div>
   </section>
+
+
+  {% if popular_goals or popular_ingredients %}
+  <section class="hp-section hp-explore" aria-labelledby="hp-explore-title">
+    <div class="hp-container">
+      <p class="hp-section-label">Explore PureFyul Guides</p>
+      <h2 class="hp-section-title" id="hp-explore-title">Explore Smoothie Health Goals and Ingredient Nutrition</h2>
+      <p class="hp-section-sub">Browse health-goal guides and ingredient nutrition information, then use PureFyul's smoothie nutrition calculator to build your own smoothie and review estimated calories, protein, carbohydrates, fats, sugar, and fiber.</p>
+
+      <div class="hp-explore-grid">
+        {% if popular_goals %}
+        <div class="hp-explore-card">
+          <h3>Smoothie Health Goals</h3>
+          <ul>
+            {% for goal in popular_goals %}
+            <li><a href="{{ goal.url }}">{{ goal.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if popular_ingredients %}
+        <div class="hp-explore-card">
+          <h3>Ingredient Nutrition Guides</h3>
+          <ul>
+            {% for ingredient in popular_ingredients %}
+            <li><a href="{{ ingredient.url }}">{{ ingredient.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
 
   <section class="hp-cta">
     <div class="hp-container">
