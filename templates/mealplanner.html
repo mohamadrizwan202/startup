@@ -364,10 +364,30 @@
     }
 
     // ── Clear week ───────────────────────────────────────────────────
-    document.getElementById('clearBtn').addEventListener('click', () => {
-      if (confirm('Clear all slots for this week?')) {
-        slots = {};
-        buildGrid();
+    document.getElementById('clearBtn').addEventListener('click', async () => {
+      if (!confirm('Clear all slots for this week?')) return;
+
+      const clearButton = document.getElementById('clearBtn');
+      const previousSlots = slots;
+      const clearedWeekOffset = weekOffset;
+
+      clearButton.disabled = true;
+      slots = {};
+      buildGrid();
+
+      try {
+        const saved = await savePlan();
+        if (!saved) throw new Error('Clear Week could not be saved');
+      } catch (error) {
+        if (weekOffset === clearedWeekOffset) {
+          slots = previousSlots;
+          buildGrid();
+          alert('Clear Week could not be saved. Your previous selections have been restored.');
+        } else {
+          alert('Clear Week could not be saved. Return to that week and retry.');
+        }
+      } finally {
+        clearButton.disabled = false;
       }
     });
 
@@ -385,6 +405,7 @@
         toast.style.display = 'block';
         setTimeout(() => { toast.style.display = 'none'; }, 2500);
       }
+          return res.ok;
     }
     document.getElementById('saveBtn').addEventListener('click', savePlan);
 
