@@ -960,24 +960,21 @@
   }
 
   function buildAllergenStrip(allergenTitle) {
-    const title =
+    const rawTitle =
       safeText(allergenTitle)
       || 'Review selected ingredients';
+    const title = /^no major allergens identified/i.test(rawTitle)
+      ? 'Allergen status unverified — check ingredient labels.'
+      : rawTitle;
 
-    const isClear =
-      /^no major allergens identified/i.test(
-        title
-      );
+    const isClear = false;
 
-    const isContains =
-      /^contains\b/i.test(
-        title
-      );
+    const isContains = /^(?:contains\b|potential allergens flagged:)/i.test(title);
 
     const allergenNames =
       title
         .replace(
-          /^contains\s*:?\s*/i,
+          /^(?:contains|potential allergens flagged)\s*:?\s*/i,
           ''
         )
         .trim()
@@ -1041,7 +1038,7 @@
           font-size="23"
           font-weight="400"
           fill="#FFF8EE"
-        >Contains</text>
+        >Potential</text>
 
         <!-- Dominant allergen name -->
         <text

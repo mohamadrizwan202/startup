@@ -4680,7 +4680,13 @@
     .pfa-chip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .pfa-chip.found .pfa-chip-dot{background:#EF4444}
     .pfa-chip.safe .pfa-chip-dot{background:#22C55E}
-    .pfa-profile-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#FFF8E6;border:1px solid rgba(239,159,39,0.2);border-radius:10px;margin-top:14px;font-size:12px;color:#854F0B;gap:8px;flex-wrap:wrap}
+        .pfa-verdict.neutral{background:#F8FAFC;border:1px solid #CBD5E1}
+    .pfa-verdict.neutral .pfa-verdict-icon{background:#64748B}
+    .pfa-verdict.neutral .pfa-verdict-title{color:#334155}
+    .pfa-verdict.neutral .pfa-verdict-sub{color:#475569}
+    .pfa-chip.neutral{background:#F1F5F9;color:#475569;border:1px solid #CBD5E1}
+    .pfa-chip.neutral .pfa-chip-dot{background:#94A3B8}
+.pfa-profile-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#FFF8E6;border:1px solid rgba(239,159,39,0.2);border-radius:10px;margin-top:14px;font-size:12px;color:#854F0B;gap:8px;flex-wrap:wrap}
     .pfa-profile-link{color:#BA7517;font-weight:600;cursor:pointer;font-size:12px;text-decoration:none;white-space:nowrap}
     .pfa-profile-link:hover{text-decoration:underline}
     @media (max-width:640px){
@@ -14447,276 +14453,118 @@
       });
     }
 
-    function displayAllergenResults(data) {
-      // Parse exact API response structure - allergens are in each ingredient
-      const ingredients = data.ingredients || [];
-      
-      // Use the allergens-specific results body
-      const targetBody = allergensResultsBodyEl || resultsBodyEl;
-      
 
-      
-      /**
-       * Normalize ingredient text for matching
-       */
-      function normalizeIngredient(text) {
-        if (!text) return '';
-        return String(text)
-          .toLowerCase()
-          .trim()
-          .replace(/\s+/g, ' ')  // Collapse multiple spaces
-          .replace(/-/g, ' ');    // Treat hyphens as spaces
-      }
-      
-      /**
-       * Detect allergens from ingredient name (client-side correction)
-       * Returns { milk: boolean, treeNuts: boolean, reason: string }
-       */
-      function detectAllergensFromName(ingredientName) {
-        const normalized = normalizeIngredient(ingredientName);
-        let milk = false;
-        let treeNuts = false;
-        let reason = '';
-        
-        // Nut milk phrases (MUST NOT trigger Milk, but DO trigger Tree Nuts)
-        const nutMilkPhrases = [
-          'almond milk', 'cashew milk', 'walnut milk', 'pistachio milk',
-          'pistachios milk', 'hazelnut milk', 'pecan milk', 'macadamia milk'
-        ];
-        
-        // Plant milk phrases (MUST NOT trigger Milk)
-        const plantMilkPhrases = [
-          'oat milk', 'soy milk', 'coconut milk', 'rice milk',
-          'pea milk', 'hemp milk', 'flax milk',
-          // Include all nut milks in plant milks to prevent Milk trigger
-          ...nutMilkPhrases
-        ];
-        
-        // Dairy indicators (trigger Milk allergen)
-        const dairyIndicators = [
-          'whey', 'casein', 'lactose', 'ghee', 'cream', 'cheese',
-          'yogurt', 'kefir', 'curd'
-        ];
-        
-        // Tree nut indicators (trigger Tree Nuts allergen)
-        const treeNutIndicators = [
-          'almond', 'almonds',
-          'cashew', 'cashews',
-          'walnut', 'walnuts',
-          'pecan', 'pecans',
-          'hazelnut', 'hazelnuts',
-          'pistachio', 'pistachios',
-          'macadamia', 'macadamia nut', 'macadamia nuts',
-          'brazil nut', 'brazil nuts',
-          'pine nut', 'pine nuts'
-        ];
-        
-        // Check for nut milk phrases first (highest priority for exclusion from Milk)
-        const isNutMilk = nutMilkPhrases.some(phrase => normalized.includes(phrase));
-        
-        // Check for plant milk phrases
-        const hasPlantMilk = plantMilkPhrases.some(phrase => normalized.includes(phrase));
-        
-        // Check for dairy indicators (even if plant milk is present, dairy takes priority)
-        const hasDairyIndicator = dairyIndicators.some(indicator => {
-          const regex = new RegExp(`\\b${indicator}\\b`, 'i');
-          return regex.test(normalized);
+    // Shared potential-allergen signals for reports and smoothie results.
+    // This is an informational flagging tool, not an allergy-safety certificate.
+    window.pfSummarizeAllergenSignals = function(ingredients) {
+      const names = new Set();
+      const conflicts = [];
+      const order = [
+        'Milk', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts',
+        'Peanuts', 'Wheat', 'Soy', 'Sesame'
+      ];
+
+      const normalize = value => String(value || '')
+        .toLowerCase()
+        .replace(/[-_]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      (Array.isArray(ingredients) ? ingredients : []).forEach(ing => {
+        if (!ing || typeof ing !== 'object') return;
+
+        const displayName = String(
+          ing.display_name || ing.ingredient || ing.name || 'Unknown'
+        );
+        const raw = normalize(
+          ing.ingredient || ing.display_name || ing.name
+        );
+
+        const plantMilk =
+          /\b(?:almond|cashew|walnut|pistachio|hazelnut|pecan|macadamia|oat|soy|coconut|rice|pea|hemp|flax) milk\b/.test(raw);
+
+        const dairyMarker =
+          /\b(?:whey|casein|lactose|ghee|buttermilk|cheese|kefir|yogurt|curd|cream)\b/.test(raw);
+
+        const treeNutMarker =
+          /\b(?:almonds?|cashews?|walnuts?|pecans?|hazelnuts?|pistachios?|macadamias?|brazil nuts?|pine nuts?)\b/.test(raw);
+
+        const eggplant = /\beggplant\b/.test(raw);
+
+        const backend = ing.allergens;
+        const entries = Array.isArray(backend)
+          ? backend
+          : (backend ? [backend] : []);
+
+        entries.forEach(entry => {
+          const flag = typeof entry === 'string'
+            ? entry
+            : (entry && typeof entry.name === 'string'
+                ? entry.name : '');
+
+          if (!flag.trim()) return;
+
+          const matched = order.find(
+            group => group.toLowerCase() === flag.trim().toLowerCase()
+          );
+          const name = matched || flag.trim();
+
+          names.add(name);
+
+          if (
+            (name === 'Eggs' && eggplant) ||
+            (name === 'Milk' && plantMilk &&
+             !/\b(?:whey|casein|lactose|ghee|buttermilk|cheese|kefir)\b/.test(raw)) ||
+            (name === 'Tree Nuts' && raw.includes('coconut') &&
+             !treeNutMarker)
+          ) {
+            conflicts.push({ ingredient: displayName, allergen: name });
+          }
         });
-        
-        // Check for standalone "milk" (not part of plant milk phrase)
-        let hasStandaloneMilk = false;
-        if (normalized.includes('milk')) {
-          // Check if "milk" is part of a plant milk phrase
-          const isInPlantMilk = plantMilkPhrases.some(phrase => {
-            const milkIndex = normalized.indexOf('milk');
-            const phraseIndex = normalized.indexOf(phrase);
-            return phraseIndex !== -1 && milkIndex >= phraseIndex && milkIndex < phraseIndex + phrase.length;
-          });
-          hasStandaloneMilk = !isInPlantMilk;
-        }
-        
-        // Matching priority: 
-                // 1. Dairy indicators take precedence (even in plant milks)
-        // 2. Nut milks do NOT trigger Milk, but DO trigger Tree Nuts
-        // 3. Other plant milks don't trigger Milk
-        // 4. Standalone milk triggers Milk
-        if (hasDairyIndicator) {
-          milk = true;
-          const matched = dairyIndicators.find(ind => normalized.includes(ind));
-          reason = `dairy indicator: ${matched}`;
-        } else if (isNutMilk) {
-          // Nut milk found - do NOT set Milk, but DO set Tree Nuts
-          milk = false;
-          treeNuts = true;
-          const matched = nutMilkPhrases.find(phrase => normalized.includes(phrase));
-          reason = `nut milk: ${matched} (tree nuts)`;
-        } else if (hasPlantMilk) {
-          // Non-nut plant milk found - do NOT set Milk
-          milk = false;
-          reason = 'plant milk (non-nut)';
-        } else if (hasStandaloneMilk) {
-          milk = true;
-          reason = 'standalone milk';
+
+        if (
+          /\b(?:whey|casein|lactose|ghee|buttermilk|cheese|kefir)\b/.test(raw) ||
+          (!plantMilk && /\b(?:milk|yogurt|curd|cream)\b/.test(raw))
+        ) {
+          names.add('Milk');
         }
 
-        // Check for tree nuts separately (even if not in milk form)
-        // IMPORTANT: Only skip if it's a nut MILK (not just the nut name)
-        // Standalone nuts (like "almond") should trigger Tree Nuts allergen
-        if (!treeNuts) {
-          // Only check for tree nuts if it's NOT a nut milk
-          // If it's a nut milk, treeNuts was already set to true above
-          if (!isNutMilk) {
-            const hasTreeNut = treeNutIndicators.some(nut => {
-              const regex = new RegExp(`\\b${nut}\\b`, 'i');
-              return regex.test(normalized);
-            });
-            if (hasTreeNut) {
-              treeNuts = true;
-              const matched = treeNutIndicators.find(nut => {
-                const regex = new RegExp(`\\b${nut}\\b`, 'i');
-                return regex.test(normalized);
-              });
-              reason = reason ? `${reason} + tree nut: ${matched}` : `tree nut: ${matched}`;
-            }
-          }
+        if (treeNutMarker) names.add('Tree Nuts');
+        if (/\bpeanuts?\b/.test(raw)) names.add('Peanuts');
+        if (/\b(?:soy|soybean|soybeans|tofu|tempeh|edamame)\b/.test(raw)) {
+          names.add('Soy');
         }
-        
-        // Special case: coconut milk should NOT trigger Tree Nuts (coconut is not a tree nut in labeling context)
-        if (normalized.includes('coconut milk')) {
-          treeNuts = false; // Explicitly exclude coconut milk from Tree Nuts
-          if (!reason) reason = 'coconut milk (not tree nut)';
-        }
-        
-        return { milk, treeNuts, reason: reason || 'none' };
-      }
-      
-      // Collect all allergens from all ingredients
-      const allergenMap = new Map();
-      const ingredientsWithAllergens = [];
-
-      ingredients.forEach(ing => {
-        // Use display_name if available (user's original input), otherwise fall back to ingredient (DB key)
-        const displayName = ing.display_name || ing.ingredient || 'Unknown';
-        const rawIngredient = ing.ingredient || displayName;
-        
-        // Detect allergens from ingredient name
-        const detected = detectAllergensFromName(rawIngredient);
-        
-        // Log detection result
-        console.log(`[ALLERGEN_MATCH] ingredient="${rawIngredient}" milk=${detected.milk} treeNuts=${detected.treeNuts} reason="${detected.reason}"`);
-        
-        const allergenData = ing.allergens;
-        
-        // Check if allergen data exists (can be object or empty array)
-        if (allergenData && typeof allergenData === 'object' && !Array.isArray(allergenData) && Object.keys(allergenData).length > 0 && allergenData.name) {
-          const allergenKey = allergenData.name || 'Unknown Allergen';
-          
-          // Filter allergens based on detection logic
-          let shouldInclude = true;
-          
-          // Fix: Exclude "Eggs" allergen for "Eggplant" (eggplant contains "egg" but is not an egg allergen)
-          const normalizedIngredient = String(rawIngredient || displayName).toLowerCase().trim();
-          if (allergenKey === 'Eggs' && (normalizedIngredient === 'eggplant' || normalizedIngredient.includes('eggplant'))) {
-            shouldInclude = false;
-          }
-          
-          // CRITICAL: Nut milks NEVER trigger Milk allergen (red flag)
-          // If backend says "Milk" but our detection says it's a nut milk or plant milk, exclude it
-          if (allergenKey === 'Milk' && !detected.milk) {
-            shouldInclude = false;
-          }
-          
-          // If backend says "Tree Nuts" but our detection says it's not a tree nut, exclude it
-          // (But if we detected tree nuts, include it even if backend didn't)
-          if (allergenKey === 'Tree Nuts' && !detected.treeNuts) {
-            shouldInclude = false;
-          }
-          
-          // If we detected Milk but backend didn't report it, add it
-          if (detected.milk && allergenKey !== 'Milk') {
-            // Check if Milk already exists in map
-            if (!allergenMap.has('Milk')) {
-              allergenMap.set('Milk', {
-                name: 'Milk',
-                severity: 'Unknown',
-                description: 'Dairy milk allergen detected',
-                aliases: '',
-                common_in: '',
-                ingredients: []
-              });
-            }
-            allergenMap.get('Milk').ingredients.push(displayName);
-          }
-          
-          // If we detected Tree Nuts but backend didn't report it, add it
-          if (detected.treeNuts && allergenKey !== 'Tree Nuts') {
-            // Check if Tree Nuts already exists in map
-            if (!allergenMap.has('Tree Nuts')) {
-              allergenMap.set('Tree Nuts', {
-                name: 'Tree Nuts',
-                severity: 'Unknown',
-                description: 'Tree nuts allergen detected',
-                aliases: '',
-                common_in: '',
-                ingredients: []
-              });
-            }
-            allergenMap.get('Tree Nuts').ingredients.push(displayName);
-          }
-          
-          // Include the allergen if it passed our filter
-          if (shouldInclude) {
-          if (!allergenMap.has(allergenKey)) {
-            allergenMap.set(allergenKey, {
-              name: allergenData.name || 'Unknown',
-              severity: allergenData.severity || 'Unknown',
-              description: allergenData.description || '',
-              aliases: allergenData.aliases || '',
-              common_in: allergenData.common_in || '',
-              ingredients: []
-            });
-          }
-          
-          allergenMap.get(allergenKey).ingredients.push(displayName);  // Use display name for UI
-          ingredientsWithAllergens.push({
-            ingredient: displayName,  // Use display name for UI
-            allergen: allergenData
-          });
-        }
-        } else {
-          // No allergen data from backend, but check if we detected any
-          if (detected.milk) {
-            if (!allergenMap.has('Milk')) {
-              allergenMap.set('Milk', {
-                name: 'Milk',
-                severity: 'Unknown',
-                description: 'Dairy milk allergen detected',
-                aliases: '',
-                common_in: '',
-                ingredients: []
-              });
-            }
-            allergenMap.get('Milk').ingredients.push(displayName);
-          }
-          
-          if (detected.treeNuts) {
-            if (!allergenMap.has('Tree Nuts')) {
-              allergenMap.set('Tree Nuts', {
-                name: 'Tree Nuts',
-                severity: 'Unknown',
-                description: 'Tree nuts allergen detected',
-                aliases: '',
-                common_in: '',
-                ingredients: []
-              });
-            }
-            allergenMap.get('Tree Nuts').ingredients.push(displayName);
-          }
+        if (/\b(?:sesame|tahini)\b/.test(raw)) names.add('Sesame');
+        if (/\bwheat\b/.test(raw)) names.add('Wheat');
+        if (!eggplant && /\b(?:egg|eggs|egg white|egg whites)\b/.test(raw)) {
+          names.add('Eggs');
         }
       });
 
-      const uniqueAllergens = Array.from(allergenMap.values());
+      return {
+        names: Array.from(names).sort((a, b) => {
+          const ai = order.indexOf(a);
+          const bi = order.indexOf(b);
+          if (ai === -1 && bi === -1) return a.localeCompare(b);
+          if (ai === -1) return 1;
+          if (bi === -1) return -1;
+          return ai - bi;
+        }),
+        conflicts
+      };
+    };
 
+function displayAllergenResults(data) {
+      // Parse exact API response structure - allergens are in each ingredient
+      const ingredients = data.ingredients || [];
+
+      // Use the allergens-specific results body
+      const targetBody = allergensResultsBodyEl || resultsBodyEl;
+      // Report and smoothie results use identical potential-allergen flags.
+      const allergenSummary =
+        window.pfSummarizeAllergenSignals(ingredients);
+      const uniqueAllergens =
+        allergenSummary.names.map(name => ({ name }));
 
       // Helper function for escaping HTML
       function escapeHtml(s) {
@@ -14756,7 +14604,7 @@
 
       // Status pill (with allergen-badge class for mobile modal styling)
       const statusPill = allergenNames.length === 0
-        ? `<div class="pf-a-pill pf-a-pill--ok allergen-badge"><span class="pf-a-pill-dot"></span>No common allergens detected</div>`
+        ? `<div class="pf-a-pill pf-a-pill--ok allergen-badge"><span class="pf-a-pill-dot"></span>No common allergen flags found</div>`
         : `<div class="pf-a-pill pf-a-pill--bad allergen-badge"><span class="pf-a-pill-dot"></span>Potential allergens detected</div>`;
 
 
@@ -14796,7 +14644,7 @@ const allergenPanel = allergenNames.length === 0
 
       // Build HTML
       
-      const overallSafe = allergenNames.length === 0;
+      const noAllergensFlagged = allergenNames.length === 0;
 
       // Build safe (unflagged) allergen chips — the ones that WERE checked and passed
       const ALL_ALLERGEN_GROUPS = ['Milk', 'Eggs', 'Fish', 'Shellfish', 'Tree Nuts', 'Peanuts', 'Wheat', 'Soy', 'Sesame'];
@@ -14804,16 +14652,16 @@ const allergenPanel = allergenNames.length === 0
       const safeGroups = ALL_ALLERGEN_GROUPS.filter(g => !flaggedSet.has(g));
 
       const safeGroupChips = safeGroups.map(g =>
-        `<div class="pfa-chip safe"><span class="pfa-chip-dot"></span><span>${g}</span></div>`
+        `<div class="pfa-chip neutral"><span class="pfa-chip-dot"></span><span>${g}</span></div>`
       ).join('');
 
       const flaggedChips = allergenNames.map(a =>
         `<div class="pfa-chip found"><span class="pfa-chip-dot"></span><span>${escapeHtml(a)}</span></div>`
       ).join('');
 
-      const verdictSubtitle = overallSafe
-        ? `${escapeHtml(displayName || 'This ingredient')} passed checks for all 9 major food allergens.`
-        : `Contains: ${allergenNames.map(a => escapeHtml(a)).join(', ')} — review before serving to anyone with these allergies.`;
+      const verdictSubtitle = noAllergensFlagged
+          ? 'No common allergen flags found in available ingredient data. This does not establish allergy safety.'
+          : `Potential allergen flags: ${allergenNames.map(a => escapeHtml(a)).join(', ')}. Verify product labels before use.${allergenSummary.conflicts.length ? ' Conflicting ingredient flags require additional review.' : ''}`;
 
       const redesignedHtml = `
         <div class="pf-tab-content-wrapper">
@@ -14826,20 +14674,20 @@ const allergenPanel = allergenNames.length === 0
               <div class="nutrition-selected-chip">${pfIngredientPillHTML(displayName || 'Unknown', formatServingLabel(firstIngredient || {}))}</div>
             </div>
 
-            <div class="pfa-verdict ${overallSafe ? 'safe' : 'danger'}">
-              <div class="pfa-verdict-icon">${overallSafe ? '✓' : '!'}</div>
+            <div class="pfa-verdict ${noAllergensFlagged ? 'neutral' : 'danger'}">
+              <div class="pfa-verdict-icon">${noAllergensFlagged ? '?' : '!'}</div>
               <div class="pfa-verdict-text">
-                <div class="pfa-verdict-title">${overallSafe ? 'No common allergens detected' : 'Potential allergens detected'}</div>
+                <div class="pfa-verdict-title">${noAllergensFlagged ? 'Allergen status unverified' : 'Potential allergens flagged'}</div>
                 <div class="pfa-verdict-sub">${verdictSubtitle}</div>
               </div>
             </div>
 
-            ${!overallSafe ? `
+            ${!noAllergensFlagged ? `
               <div class="pfa-section-header">Flagged allergens</div>
               <div class="pfa-chip-grid">${flaggedChips}</div>
             ` : ''}
 
-            <div class="pfa-section-header">${overallSafe ? 'All groups checked' : 'Standard groups checked'}</div>
+            <div class="pfa-section-header">Other groups not flagged (not verified)</div>
             <div class="pfa-chip-grid">${safeGroupChips}</div>
           </div>
         </div>
@@ -25957,150 +25805,7 @@ const allergenPanel = allergenNames.length === 0
     }
 
     function pfGetSmoothieAllergenNames(ingredients) {
-      const names = new Set();
-      const plantMilks = [
-        'almond milk',
-        'cashew milk',
-        'walnut milk',
-        'pistachio milk',
-        'hazelnut milk',
-        'pecan milk',
-        'macadamia milk',
-        'oat milk',
-        'soy milk',
-        'coconut milk',
-        'rice milk',
-        'pea milk',
-        'hemp milk',
-        'flax milk'
-      ];
-
-      const treeNuts = [
-        'almond',
-        'cashew',
-        'walnut',
-        'pecan',
-        'hazelnut',
-        'pistachio',
-        'macadamia',
-        'brazil nut',
-        'pine nut'
-      ];
-
-      (ingredients || []).forEach(ingredient => {
-        const rawName = String(
-          ingredient.ingredient ||
-          ingredient.display_name ||
-          ingredient.name ||
-          ''
-        ).toLowerCase().replace(/-/g, ' ');
-
-        const allergen = ingredient.allergens;
-
-        if (
-          allergen &&
-          typeof allergen === 'object' &&
-          !Array.isArray(allergen) &&
-          allergen.name
-        ) {
-          const backendName = String(allergen.name);
-
-          if (
-            !(backendName === 'Eggs' && rawName.includes('eggplant')) &&
-            !(
-              backendName === 'Milk' &&
-              plantMilks.some(milk => rawName.includes(milk))
-            ) &&
-            !(
-              backendName === 'Tree Nuts' &&
-              rawName.includes('coconut')
-            )
-          ) {
-            names.add(backendName);
-          }
-        }
-
-        if (
-          rawName.includes('soy') ||
-          rawName.includes('tofu') ||
-          rawName.includes('tempeh') ||
-          rawName.includes('edamame')
-        ) {
-          names.add('Soy');
-        }
-
-        if (rawName.includes('peanut')) {
-          names.add('Peanuts');
-        }
-
-        if (
-          rawName.includes('sesame') ||
-          rawName.includes('tahini')
-        ) {
-          names.add('Sesame');
-        }
-
-        const matchedTreeNut = treeNuts.some(nut => {
-          return rawName.includes(nut);
-        });
-
-        if (matchedTreeNut && !rawName.includes('coconut')) {
-          names.add('Tree Nuts');
-        }
-
-        const isPlantMilk = plantMilks.some(milk => {
-          return rawName.includes(milk);
-        });
-
-        if (
-          !isPlantMilk &&
-          (
-            rawName.includes('milk') ||
-            rawName.includes('yogurt') ||
-            rawName.includes('whey') ||
-            rawName.includes('casein') ||
-            rawName.includes('cream') ||
-            rawName.includes('cheese') ||
-            rawName.includes('kefir') ||
-            rawName.includes('ghee')
-          )
-        ) {
-          names.add('Milk');
-        }
-
-        if (
-          rawName.includes('wheat') ||
-          rawName.includes('barley')
-        ) {
-          names.add('Wheat');
-        }
-      });
-
-      const order = [
-        'Milk',
-        'Eggs',
-        'Fish',
-        'Shellfish',
-        'Tree Nuts',
-        'Peanuts',
-        'Wheat',
-        'Soy',
-        'Sesame'
-      ];
-
-      return Array.from(names).sort((a, b) => {
-        const ai = order.indexOf(a);
-        const bi = order.indexOf(b);
-
-        if (ai === -1 && bi === -1) {
-          return a.localeCompare(b);
-        }
-
-        if (ai === -1) return 1;
-        if (bi === -1) return -1;
-
-        return ai - bi;
-      });
+      return window.pfSummarizeAllergenSignals(ingredients).names;
     }
 
     function displaySmoothieResults(data) {
@@ -27229,8 +26934,8 @@ const allergenPanel = allergenNames.length === 0
 
       const allergenTitle =
         smoothieAllergens.length
-          ? `Contains: ${smoothieAllergens.join(', ')}`
-          : 'No major allergens identified from selected ingredient records.';
+          ? `Potential allergens flagged: ${smoothieAllergens.join(', ')}`
+          : 'Allergen status unverified — check ingredient labels.';
 
       let html = `
         <div class="sn2-card">
