@@ -365,8 +365,9 @@ def run_db(sql, params=(), *, fetchone=False, fetchall=False, commit=False):
     Always closes cursor and connection, even on exceptions.
     """
     conn = get_conn()
-    cur = conn.cursor()
+    cur = None
     try:
+        cur = conn.cursor()
         q = db.prepare_query(sql)
         cur.execute(q, params)
         result = None
@@ -399,12 +400,12 @@ def run_db(sql, params=(), *, fetchone=False, fetchall=False, commit=False):
 def set_user_session_token(user_id):
     """Generate and store active session token for a user"""
     token = secrets.token_urlsafe(32)
-    conn = get_conn()
-    cursor = conn.cursor()
-    query = db.prepare_query("UPDATE users SET active_session_token = ? WHERE id = ?")
-    cursor.execute(query, (token, user_id))
-    conn.commit()
-    conn.close()
+    from contextlib import closing
+    with closing(get_conn()) as conn:
+        with closing(conn.cursor()) as cursor:
+            query = db.prepare_query("UPDATE users SET active_session_token = ? WHERE id = ?")
+            cursor.execute(query, (token, user_id))
+            conn.commit()
     return token
 
 
@@ -422,12 +423,12 @@ def login_required_single_session(f):
             return redirect(url_for('login'))
         
         # Check if session token matches DB token
-        conn = get_conn()
-        cursor = conn.cursor()
-        query = db.prepare_query("SELECT active_session_token FROM users WHERE id = ?")
-        cursor.execute(query, (user_id,))
-        result = cursor.fetchone()
-        conn.close()
+        from contextlib import closing
+        with closing(get_conn()) as conn:
+            with closing(conn.cursor()) as cursor:
+                query = db.prepare_query("SELECT active_session_token FROM users WHERE id = ?")
+                cursor.execute(query, (user_id,))
+                result = cursor.fetchone()
         
         db_token = result['active_session_token'] if result and isinstance(result, dict) else (result[0] if result else None)
         
@@ -1135,13 +1136,13 @@ def init_db():
 
 def get_user_by_id(user_id):
     """Fetch a user by id from the database"""
+    conn = None
     try:
         conn = get_conn()
         cursor = conn.cursor()
         query = db.prepare_query("SELECT * FROM users WHERE id = ?")
         cursor.execute(query, (user_id,))
         row = cursor.fetchone()
-        conn.close()
         if row:
             return db.row_to_dict(row, cursor)
         return None
@@ -1152,17 +1153,20 @@ def get_user_by_id(user_id):
             return None
         logging.error(f"Error fetching user by id: {e}")
         return None
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def get_user_by_email(email):
     """Fetch a user by email from the database"""
+    conn = None
     try:
         conn = get_conn()
         cursor = conn.cursor()
         query = db.prepare_query("SELECT * FROM users WHERE email = ?")
         cursor.execute(query, (email,))
         row = cursor.fetchone()
-        conn.close()
         if row:
             return db.row_to_dict(row, cursor)
         return None
@@ -1173,6 +1177,9 @@ def get_user_by_email(email):
             return None
         logging.error(f"Error fetching user by email: {e}")
         return None
+    finally:
+        if conn is not None:
+            conn.close()
 
 # ============================================================================
 # Security Configuration
@@ -1756,6 +1763,48 @@ def send_hostinger_email(to_email, subject, text_body, *, reply_to=None):
             server.send_message(msg)
 
     return True
+
+
+def _send_welcome_email(email, user_name=None):
+    """Send the account welcome email through the configured SMTP provider."""
+    greeting = f"Hi {user_name}," if user_name else "Hi,"
+    body = f"""{greeting}
+
+Welcome to PureFyul.
+
+Your account is ready. The six health goals you selected are saved to your account, and you can update them anytime from the app.
+
+Build your next smoothie:
+https://purefyul.com/app
+
+PureFyul Support
+support@purefyul.com
+"""
+    send_hostinger_email(
+        to_email=email,
+        subject="Welcome to PureFyul",
+        text_body=body,
+        reply_to=os.environ.get("SMTP_USER", "support@purefyul.com"),
+    )
+    return True
+
+
+def queue_welcome_email(email, user_name=None):
+    """Queue a best-effort welcome email without blocking registration."""
+    import threading
+
+    def _send_async():
+        try:
+            sent_ok = _send_welcome_email(email, user_name)
+        except Exception:
+            app.logger.exception("Welcome email failed after registration")
+        else:
+            app.logger.info("Welcome email sent=%s", sent_ok)
+
+    try:
+        threading.Thread(target=_send_async, daemon=True).start()
+    except Exception:
+        app.logger.exception("Welcome email could not be queued")
 
 
 def send_admin_alert(name, email, message, msg_id=None):
@@ -53345,17 +53394,16 @@ def session_check():
 
     # If you can't fetch user safely, still don't break the UI.
     try:
-        conn = get_conn()
-        cur = conn.cursor()
+        from contextlib import closing
+        with closing(get_conn()) as conn:
+            with closing(conn.cursor()) as cur:
 
-        # IMPORTANT: do NOT return password hashes or secrets.
-        # Adjust column names if your schema differs.
-        q = db.prepare_query("SELECT id, email FROM users WHERE id = ?")
-        cur.execute(q, (user_id,))
-        row = cur.fetchone()
+                # IMPORTANT: do NOT return password hashes or secrets.
+                # Adjust column names if your schema differs.
+                q = db.prepare_query("SELECT id, email FROM users WHERE id = ?")
+                cur.execute(q, (user_id,))
+                row = cur.fetchone()
 
-        cur.close()
-        conn.close()
 
         if not row:
             # stale session -> treat as logged out
@@ -55833,6 +55881,7 @@ def log_smoothie_history():
 @csrf.exempt
 def delete_smoothie_history(history_id):
     """Delete one history entry — only if it belongs to the logged-in user."""
+    conn = None
     try:
         conn = db.get_conn()
         cursor = conn.cursor()
@@ -55849,6 +55898,7 @@ def delete_smoothie_history(history_id):
         deleted = cursor.rowcount
         conn.commit()
         conn.close()
+        conn = None
 
         if deleted == 0:
             return jsonify({'success': False, 'error': 'Not found'}), 404
@@ -55857,12 +55907,16 @@ def delete_smoothie_history(history_id):
     except Exception as e:
         logger.error(f'History delete error: {e}')
         return jsonify({'success': False, 'error': 'Could not delete'}), 200
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 @app.route('/api/history', methods=['GET'])
 @login_required
 def get_smoothie_history():
     """Return the logged-in user's recent smoothie history (last 10)."""
+    conn = None
     try:
         conn = db.get_conn()
         cursor = conn.cursor()
@@ -55878,6 +55932,7 @@ def get_smoothie_history():
             )
         rows = cursor.fetchall()
         conn.close()
+        conn = None
 
         def _parse(val):
             if isinstance(val, (list, dict)):
@@ -55908,6 +55963,9 @@ def get_smoothie_history():
     except Exception as e:
         logger.error(f'History fetch error: {e}')
         return jsonify({'success': False, 'error': 'Could not load history'}), 200
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 @app.route('/api/analyze', methods=['POST'])
@@ -56364,6 +56422,10 @@ def build_account_goal_preset_api():
 
         if access_error:
             return _account_goal_access_error_response(access_error)
+
+        # Release the authorization connection before nutrition lookups.
+        conn.close()
+        conn = None
 
         result = build_account_goal_preset_recipe(
             category_value=category_value,
@@ -57535,6 +57597,8 @@ def get_personalization_ingredient_options():
     )
 
     goal = request.args.get("goal")
+    timing = request.args.get("timing")
+    variant = request.args.get("variant", "a")
 
     try:
         user_id = int(current_user.id)
@@ -57571,7 +57635,7 @@ def get_personalization_ingredient_options():
         )
 
     try:
-        result = get_options(goal=goal)
+        result = get_options(goal=goal, timing=timing, variant=variant)
     except GoalPresetRecipeInputError as exc:
         return jsonify({
             "error": "invalid_request",

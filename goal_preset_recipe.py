@@ -1035,23 +1035,136 @@ def _get_goal_aligned_ingredient_ids(
 
     return tuple(aligned_ids)
 
+def _reviewed_ingredient_starting_amounts(
+    *,
+    goal: str,
+    timing: str,
+    variant: str,
+) -> dict[str, dict]:
+    """Suggest portions from real preset components, never catalog placeholders.
+
+    This is a starting amount for an *added* ingredient, not a medical
+    recommendation, serving limit, or instruction to resize the smoothie.
+    The calculation is read-only and does not perform nutrition lookups.
+    """
+    target_weight_g = _TIMING_TARGET_WEIGHT_G[timing]
+    active = _get_personalization_goal_preset(
+        normalized_goal=goal,
+        normalized_variant=variant,
+    )
+    if active is None:
+        raise GoalPresetRecipeInputError(
+            f"unsupported preset recipe: goal={goal!r}, variant={variant!r}"
+        )
+
+    def friendly_amount(value: float) -> float:
+        # Only presentation recommendations are rounded; never change
+        # original preset weights or the user's personalized amounts.
+        if value >= 25:
+            return float(max(5, round(value / 5) * 5))
+        if value >= 5:
+            return float(round(value))
+        if value >= 1:
+            return round(value, 1)
+        return round(value, 3)
+
+    def get_amounts(preset: dict) -> dict[str, float]:
+        definitions = preset["ingredients"]
+        weights = _build_scaled_weights(
+            definitions, target_weight_g=target_weight_g,
+        )
+        amounts = {}
+        for definition, weight_g in zip(definitions, weights, strict=True):
+            amount = (
+                recipe_mass.convert_liquid_grams_to_ml(
+                    nutrition_lookup_name=definition["nutrition_lookup_name"],
+                    weight_g=weight_g,
+                )
+                if definition.get("display_unit", "g") == "ml"
+                else weight_g
+            )
+            if amount <= 0:
+                raise RuntimeError("Reviewed recipe contains nonpositive amount")
+            amounts.setdefault(definition["id"], []).append(float(amount))
+        return {
+            ingredient_id: round(float(median(values)), 3)
+            for ingredient_id, values in amounts.items()
+        }
+
+    amounts = {}
+
+    def apply(presets, source):
+        # Prefer same-recipe portions over other goals; never overwrite a
+        # higher-priority amount or manufacture values from the 100g sentinel.
+        observed = {}
+        for preset in presets:
+            for ingredient_id, value in get_amounts(preset).items():
+                if ingredient_id not in amounts:
+                    observed.setdefault(ingredient_id, []).append(value)
+        for ingredient_id, values in observed.items():
+            amounts[ingredient_id] = {
+                "amount": friendly_amount(float(median(values))),
+                "amount_source": source,
+            }
+
+    apply([active], "current_reviewed_recipe_component")
+
+    apply(
+        [
+            preset for (candidate_goal, candidate_variant), preset
+            in sorted(_PRESET_RECIPES.items())
+            if candidate_goal == goal and candidate_variant != variant
+        ],
+        "same_goal_reviewed_recipe_component",
+    )
+
+    apply(
+        [
+            preset for (candidate_goal, _), preset
+            in sorted(_PRESET_RECIPES.items())
+            if candidate_goal != goal
+        ],
+        "other_goal_reviewed_recipe_component",
+    )
+
+    # Profile-only ingredients may be present in a reviewed account-goal
+    # base recipe even when they never appeared in public A/B/C recipes.
+    apply(
+        [
+            _get_account_goal_profile_preset(profile)
+            for profile in ACCOUNT_GOAL_RECIPE_PROFILES.values()
+            if not profile["uses_existing_reviewed_preset"]
+            and profile["goal_slug"] != goal
+        ],
+        "other_account_profile_recipe_component",
+    )
+
+    return amounts
+
+
 def get_personalization_ingredient_options(
     *,
     goal=None,
+    timing=None,
+    variant="a",
 ) -> dict:
-    """Return editable catalog plus optional reviewed goal alignment."""
+    """Return editable catalog with optional reviewed starting quantities.
+
+    The legacy goal-only response is preserved for other consumers. A
+    goal+timing context adds amount/source for quantities grounded in actual
+    approved recipe ingredients. Unreviewed options explicitly require an
+    amount chosen by the user before they can be added.
+    """
     result = {
         "ingredients": list(get_supported_ingredient_options()),
     }
 
     if goal is None:
+        if timing is not None:
+            raise GoalPresetRecipeInputError("goal is required with timing")
         return result
 
-    normalized_goal = _normalize_required_slug(
-        goal,
-        field="goal",
-    )
-
+    normalized_goal = _normalize_required_slug(goal, field="goal")
     result.update({
         "goal": normalized_goal,
         "goal_aligned_ingredient_ids": list(
@@ -1059,6 +1172,30 @@ def get_personalization_ingredient_options(
         ),
     })
 
+    if timing is None:
+        return result
+
+    normalized_timing = _normalize_required_slug(timing, field="timing")
+    normalized_variant = _normalize_required_slug(variant, field="variant")
+    if normalized_timing not in _TIMING_TARGET_WEIGHT_G:
+        raise GoalPresetRecipeInputError(
+            f"unsupported preset timing: {normalized_timing!r}"
+        )
+
+    suggested = _reviewed_ingredient_starting_amounts(
+        goal=normalized_goal,
+        timing=normalized_timing,
+        variant=normalized_variant,
+    )
+    for option in result["ingredients"]:
+        recommendation = suggested.get(option["id"])
+        if recommendation is None:
+            option["amount"] = None
+            option["amount_source"] = "manual_amount_required"
+        else:
+            option.update(recommendation)
+    result["timing"] = normalized_timing
+    result["variant"] = normalized_variant
     return result
 
 def _get_static_personalization_catalog_definitions() -> dict[str, dict]:

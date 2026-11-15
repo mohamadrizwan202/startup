@@ -7520,6 +7520,72 @@
           }
         }
 
+
+
+  /* PureFyul scoped UX upgrade 2026-11-15: result page only */
+  #pf-goal-time-entry.is-result-view .pf-result-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: -3px 0 22px;
+  }
+  #pf-goal-time-entry.is-result-view .pf-result-action {
+    min-height: 46px;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  #pf-goal-time-entry.is-result-view .pf-result-action:focus-visible,
+  #pf-goal-time-entry.is-result-view .pf-result-build-another:focus-visible {
+    outline: 3px solid #4d9d79;
+    outline-offset: 3px;
+  }
+  #pf-goal-time-entry.is-result-view .pf-result-build-another {
+    min-height: 46px;
+    padding: 9px 12px;
+  }
+  @media (max-width: 760px) {
+    #pf-goal-time-entry.is-result-view .pf-result-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      margin: 0 0 16px;
+    }
+    #pf-goal-time-entry.is-result-view .pf-result-action {
+      width: 100%;
+      min-width: 0;
+      padding: 10px 9px;
+      font-size: 12px;
+    }
+    #pf-goal-time-entry.is-result-view .pf-result-build-another {
+      grid-column: 1 / -1;
+      justify-self: center;
+    }
+  }
+  @media (max-width: 380px) {
+    #pf-goal-time-entry.is-result-view .pf-result-actions {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+        /* PF result-page overflow repair */
+        .container:has(#pf-goal-time-entry.is-result-view) {
+          height: auto;
+          overflow: visible;
+        }
+
+        .container:has(#pf-goal-time-entry.is-result-view) #smoothie-tab-content {
+          height: auto;
+          overflow: visible;
+        }
+
+        #pf-goal-time-entry.is-result-view,
+        #pf-goal-time-entry.is-result-view .pf-flow-shell,
+        #pf-goal-time-entry.is-result-view .pf-flow-main {
+          height: auto;
+          min-height: 0;
+          overflow: visible;
+        }
+
 </style>
 
       <section id="pf-goal-time-entry" class="pf-goal-time-entry" style="display:block" aria-labelledby="pf-goal-time-title">
@@ -7759,6 +7825,20 @@
                 </p>
               </div>
 
+              <div class="pf-result-actions">
+                <button type="button" id="pf-result-personalize" class="pf-result-action pf-result-action-primary">
+                  Customize ingredients
+                </button>
+
+                <button type="button" id="pf-result-save" class="pf-result-action pf-result-action-secondary">
+                  Save meal
+                </button>
+
+                <button type="button" id="pf-build-another" class="pf-result-build-another">
+                  Build another <span aria-hidden="true">→</span>
+                </button>
+              </div>
+
               <div class="pf-result-grid">
                 <section class="pf-result-card pf-result-nutrition-card" aria-labelledby="pf-result-nutrition-title">
                   <div class="pf-result-card-head">
@@ -7842,19 +7922,6 @@
                 </section>
               </div>
 
-              <div class="pf-result-actions">
-                <button type="button" id="pf-result-save" class="pf-result-action pf-result-action-secondary">
-                  Save meal
-                </button>
-
-                <button type="button" id="pf-result-personalize" class="pf-result-action pf-result-action-primary">
-                  Personalize
-                </button>
-
-                <button type="button" id="pf-build-another" class="pf-result-build-another">
-                  Build another <span aria-hidden="true">→</span>
-                </button>
-              </div>
             </section>
           </main>
 
@@ -9947,7 +10014,7 @@
 
     let pfPersonalizeIngredientOptions = null;
     let pfPersonalizeGoalAlignedIngredientIds = new Set();
-    let pfPersonalizeCatalogMode = 'goal-aligned';
+    let pfPersonalizeCatalogMode = 'all-supported';
     const pfPersonalizeIngredientCatalogsByGoal =
       new Map();
 
@@ -9958,6 +10025,13 @@
       return recipe &&
         typeof recipe.goal === 'string'
         ? recipe.goal.trim()
+        : '';
+    }
+
+    function pfGetPersonalizeCatalogKey(recipe) {
+      const goal = pfGetPersonalizeRecipeGoal(recipe);
+      return goal && recipe && recipe.timing
+        ? [goal, recipe.timing, recipe.variant || 'a'].join('|')
         : '';
     }
 
@@ -10188,6 +10262,51 @@
       host.appendChild(row);
     }
 
+    function pfSyncPersonalizeAdditionAmount() {
+      const select = document.getElementById(
+        'pf-personalize-setup-add-select'
+      );
+      const row = document.getElementById(
+        'pf-personalize-setup-add-amount-row'
+      );
+      const input = document.getElementById(
+        'pf-personalize-setup-add-amount'
+      );
+      const unit = document.getElementById(
+        'pf-personalize-setup-add-amount-unit'
+      );
+      const note = document.getElementById(
+        'pf-personalize-setup-add-amount-note'
+      );
+      if (!select || !row || !input || !unit || !note) return;
+      const option = (pfPersonalizeIngredientOptions || []).find(
+        function(candidate) { return candidate.id === select.value; }
+      );
+      row.hidden = !option;
+      if (!option) {
+        input.value = '';
+        return;
+      }
+      unit.textContent = option.unit === 'ml' ? 'mL' : 'g';
+      const suggested = Number(option.amount);
+      if (option.amount !== null && option.amount !== undefined &&
+          Number.isFinite(suggested) && suggested > 0) {
+        input.value = String(suggested);
+        note.textContent = (
+          option.amount_source === 'current_reviewed_recipe_component'
+            ? 'From this recipe. '
+            : option.amount_source === 'same_goal_reviewed_recipe_component'
+              ? 'From another recipe for this goal. '
+              : 'From a recipe for another goal. '
+        ) + 'You can change it.';
+      } else {
+        input.value = '';
+        input.placeholder = 'Enter amount';
+        note.textContent =
+          'No preset amount for this ingredient. Enter an amount to add.';
+      }
+    }
+
     function pfRefreshPersonalizeSetupControls() {
       const host =
         document.getElementById(
@@ -10265,16 +10384,16 @@
           hasOutsideGoalIngredient
         ) {
           status.textContent =
-            'Keep at least 3 ingredients. This selection will be saved as a Custom Smoothie. Editing is free. One credit is used only when Update Smoothie succeeds.';
+            'Keep at least 3 ingredients. This will be a Custom Smoothie. One credit after a successful update.';
         } else if (selectedCount <= 3) {
           status.textContent =
-            'Keep at least 3 ingredients. Editing is free. One credit is used only when Update Smoothie succeeds.';
+            'Keep at least 3 ingredients. One credit after a successful update.';
         } else if (hasOutsideGoalIngredient) {
           status.textContent =
-            'This selection will be saved as a Custom Smoothie. Editing is free. One credit is used only when Update Smoothie succeeds.';
+            'This will be a Custom Smoothie. One credit after a successful update.';
         } else {
           status.textContent =
-            'Editing is free. One credit is used only when Update Smoothie succeeds.';
+            'Editing is free. One credit after a successful update.';
         }
       }
 
@@ -10293,6 +10412,7 @@
         select.appendChild(loadingOption);
         select.disabled = true;
         addButton.disabled = true;
+        pfSyncPersonalizeAdditionAmount();
 
         if (showAllButton) {
           showAllButton.hidden = true;
@@ -10314,11 +10434,7 @@
         );
 
       if (addLabel) {
-        addLabel.textContent =
-          pfPersonalizeCatalogMode ===
-          'all-supported'
-            ? 'Add a supported ingredient'
-            : 'Add a goal-aligned ingredient';
+        addLabel.textContent = 'Choose an ingredient';
       }
 
       if (showAllButton) {
@@ -10331,8 +10447,8 @@
         showAllButton.textContent =
           pfPersonalizeCatalogMode ===
           'all-supported'
-            ? 'Show goal-aligned ingredients'
-            : 'Show all supported ingredients';
+            ? 'Show suggestions for your goal'
+            : 'Browse all supported ingredients';
 
         showAllButton.setAttribute(
           'aria-pressed',
@@ -10373,8 +10489,8 @@
           ? (
               pfPersonalizeCatalogMode ===
               'all-supported'
-                ? 'Choose a supported ingredient to add'
-                : 'Choose a goal-aligned ingredient to add'
+                ? 'Choose an ingredient'
+                : 'Choose an ingredient'
             )
           : (
               pfPersonalizeCatalogMode ===
@@ -10385,19 +10501,38 @@
 
       select.appendChild(placeholder);
 
-      availableOptions.forEach(function(option) {
-        const optionElement =
-          document.createElement('option');
+      // Goal-relevant options are shown first inside the SAME selector.
+      // The existing API remains authoritative for allowed ingredients.
+      const recommendedOptions = availableOptions.filter(
+        function(option) {
+          return pfPersonalizeGoalAlignedIngredientIds.has(option.id);
+        }
+      );
+      const otherOptions = availableOptions.filter(
+        function(option) {
+          return !pfPersonalizeGoalAlignedIngredientIds.has(option.id);
+        }
+      );
 
-        optionElement.value = option.id;
-        optionElement.textContent =
-          option.display_name;
+      const appendOptionGroup = function(label, options) {
+        if (!options.length) return;
+        const group = document.createElement('optgroup');
+        group.label = label;
+        options.forEach(function(option) {
+          const optionElement = document.createElement('option');
+          optionElement.value = option.id;
+          optionElement.textContent = option.display_name;
+          group.appendChild(optionElement);
+        });
+        select.appendChild(group);
+      };
 
-        select.appendChild(optionElement);
-      });
+      appendOptionGroup('Recommended for your goal', recommendedOptions);
+      appendOptionGroup('Other smoothie ingredients', otherOptions);
 
       select.disabled = !availableOptions.length;
       addButton.disabled = true;
+      pfSyncPersonalizeAdditionAmount();
     }
 
     function pfTogglePersonalizeIngredientCatalog() {
@@ -10462,7 +10597,25 @@
         return;
       }
 
-      pfAppendPersonalizeSetupIngredient(option);
+      const amountInput = document.getElementById(
+        'pf-personalize-setup-add-amount'
+      );
+      const amountText = amountInput ? amountInput.value.trim() : '';
+      const amount = amountText ? Number(amountText) : NaN;
+      if (!Number.isFinite(amount) || amount <= 0) {
+        if (status) {
+          status.textContent =
+            'Enter a positive amount before adding ' +
+            option.display_name + '.';
+        }
+        if (amountInput) amountInput.focus();
+        return;
+      }
+
+      pfAppendPersonalizeSetupIngredient({
+        ...option,
+        amount: amount
+      });
       pfRefreshPersonalizeSetupControls();
       select.focus();
     }
@@ -10478,9 +10631,11 @@
         return Promise.resolve(null);
       }
 
+      const cacheKey = pfGetPersonalizeCatalogKey(recipe);
+      if (!cacheKey) return Promise.resolve(null);
       const cachedCatalog =
         pfPersonalizeIngredientCatalogsByGoal.get(
-          goal
+          cacheKey
         );
 
       if (cachedCatalog) {
@@ -10495,7 +10650,7 @@
 
       const pendingRequest =
         pfPersonalizeIngredientCatalogPromisesByGoal.get(
-          goal
+          cacheKey
         );
 
       if (pendingRequest) {
@@ -10503,6 +10658,8 @@
       }
 
       const query = new URLSearchParams({ goal: recipe.goal });
+      query.set('timing', recipe.timing);
+      query.set('variant', recipe.variant || 'a');
 
       const request = fetch(
         '/api/personalization/ingredient-options?' +
@@ -10533,14 +10690,14 @@
         };
       }).then(function(catalog) {
         pfPersonalizeIngredientCatalogsByGoal.set(
-          goal,
+          cacheKey,
           catalog
         );
 
         if (
-          pfGetPersonalizeRecipeGoal(
+          pfGetPersonalizeCatalogKey(
             pfGetPersonalizeSetupRecipe()
-          ) === goal
+          ) === cacheKey
         ) {
           pfSetPersonalizeIngredientCatalog(
             catalog
@@ -10557,9 +10714,9 @@
         );
 
         if (
-          pfGetPersonalizeRecipeGoal(
+          pfGetPersonalizeCatalogKey(
             pfGetPersonalizeSetupRecipe()
-          ) === goal
+          ) === cacheKey
         ) {
           pfPersonalizeIngredientOptions = null;
           pfPersonalizeGoalAlignedIngredientIds =
@@ -10617,12 +10774,12 @@
         return null;
       }).finally(function() {
         pfPersonalizeIngredientCatalogPromisesByGoal.delete(
-          goal
+          cacheKey
         );
       });
 
       pfPersonalizeIngredientCatalogPromisesByGoal.set(
-        goal,
+        cacheKey,
         request
       );
 
@@ -10729,19 +10886,17 @@
           setupRecipe
         );
 
-      const cachedCatalog = setupGoal
+      const setupCatalogKey = pfGetPersonalizeCatalogKey(setupRecipe);
+      const cachedCatalog = setupCatalogKey
         ? pfPersonalizeIngredientCatalogsByGoal.get(
-            setupGoal
+            setupCatalogKey
           )
         : null;
 
-      pfPersonalizeCatalogMode =
-        setupRecipe &&
-        setupRecipe.preset_contract &&
-        setupRecipe.preset_contract.goal_alignment ===
-          'custom'
-          ? 'all-supported'
-          : 'goal-aligned';
+      // PureFyul unified ingredient selector 2026-11-15.
+      // One selector: show recommended ingredients first, then every
+      // other smoothie-compatible option. No second catalog mode.
+      pfPersonalizeCatalogMode = 'all-supported';
 
       if (cachedCatalog) {
         pfSetPersonalizeIngredientCatalog(
@@ -10752,6 +10907,11 @@
         pfPersonalizeGoalAlignedIngredientIds =
           new Set();
       }
+
+      const addDisclosure = document.getElementById(
+        'pf-personalize-add-disclosure'
+      );
+      if (addDisclosure) addDisclosure.open = false;
 
       pfRenderPersonalizeSetupIngredients(
         setupRecipe
@@ -10782,8 +10942,9 @@
       );
 
       window.setTimeout(() => {
-        if (saveButton) {
-          saveButton.focus();
+        const title = document.getElementById('pf-personalize-setup-title');
+        if (title) {
+          title.focus({ preventScroll: true });
         }
       }, 30);
     }
@@ -11316,6 +11477,7 @@
                 setupAddButton.disabled =
                   !setupAddSelect.value;
               }
+              pfSyncPersonalizeAdditionAmount();
             }
           );
         }
@@ -29367,6 +29529,35 @@ const batchG = (smoothieBatchMlOverride != null)
     gap: 8px;
   }
 
+  #pf-personalize-setup-add-amount-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 8px 0;
+  }
+
+  #pf-personalize-setup-add-amount-row[hidden] {
+    display: none;
+  }
+
+  #pf-personalize-setup-add-amount {
+    width: 110px;
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid #d8e1dc;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #17233b;
+    font: inherit;
+  }
+
+  #pf-personalize-setup-add-amount-note {
+    flex-basis: 100%;
+    color: #596b78;
+    font-size: 12px;
+  }
+
   .pf-personalize-setup-add select {
     min-width: 0;
     flex: 1 1 auto;
@@ -29392,16 +29583,6 @@ const batchG = (smoothieBatchMlOverride != null)
     font: inherit;
     font-size: 12px;
     font-weight: 700;
-  }
-
-  .pf-personalize-setup-add .pf-personalize-setup-show-all {
-    justify-self: start;
-    min-height: auto;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #0f6b4a;
-    text-decoration: underline;
   }
 
   .pf-personalize-setup-ingredient {
@@ -29481,6 +29662,331 @@ const batchG = (smoothieBatchMlOverride != null)
     font-size: 12px;
     font-weight: 700;
   }
+
+  /* PureFyul scoped UX upgrade 2026-11-15: customization dialog only */
+  #pf-personalize-setup-overlay .pf-save-auth-panel {
+    width: min(100%, 670px);
+    max-height: calc(100vh - 48px);
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 24px;
+  }
+  #pf-personalize-setup-overlay .pf-save-auth-icon { display: none; }
+  #pf-personalize-setup-overlay .pf-save-auth-description {
+    margin: 9px 0 12px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-section-head h3 {
+    margin: 0 0 4px;
+    color: #17233b;
+    font-size: 15px;
+    font-weight: 800;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-section-head p {
+    margin: 0;
+    color: #596b78;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-add-heading {
+    margin-top: 20px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredients {
+    max-height: none;
+    overflow: visible;
+    margin: 12px 0;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-add {
+    margin-top: 10px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredient {
+    gap: 12px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredient button,
+  #pf-personalize-setup-overlay .pf-personalize-setup-add button {
+    min-height: 42px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-amount-input {
+    width: 85px;
+    min-height: 42px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-amount-controls {
+    flex-wrap: wrap;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-amount-controls .pf-personalize-setup-amount-button {
+    min-width: 38px;
+  }
+  #pf-personalize-setup-overlay .pf-save-auth-actions {
+    position: sticky;
+    bottom: -24px;
+    z-index: 1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 15px 0 0;
+    background: #fff;
+    border-top: 1px solid #e3e9e5;
+  }
+  #pf-personalize-setup-overlay .pf-save-auth-dismiss {
+    width: auto;
+    min-width: 100px;
+    padding: 11px 16px;
+  }
+  #pf-personalize-setup-overlay :is(button, input, select):focus-visible {
+    outline: 3px solid #4d9d79;
+    outline-offset: 2px;
+  }
+  @media (max-width: 640px) {
+    #pf-personalize-setup-overlay .pf-save-auth-panel {
+      max-height: calc(100vh - 10px);
+      max-height: calc(100dvh - 10px);
+      padding: 24px 16px calc(16px + env(safe-area-inset-bottom));
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-ingredient {
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-ingredient > div {
+      flex: 1 1 auto;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-ingredient .pf-personalize-setup-remove {
+      min-width: 62px;
+      padding: 7px;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-add-controls {
+      flex-wrap: wrap;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-add-controls select {
+      flex-basis: 100%;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-add-controls button {
+      width: 100%;
+    }
+    #pf-personalize-setup-overlay .pf-save-auth-actions {
+      bottom: calc(-16px - env(safe-area-inset-bottom));
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+  }
+
+  /* PureFyul simple personalization editor 2026-11-15 */
+  #pf-personalize-setup-overlay .pf-save-auth-panel {
+    width: min(100%, 680px);
+    max-height: calc(100dvh - 36px);
+    padding: 22px 24px 0;
+    background: #fff;
+  }
+  #pf-personalize-setup-overlay .pf-save-auth-title {
+    margin: 0;
+    font-size: clamp(21px, 2.5vw, 25px);
+    line-height: 1.2;
+  }
+  #pf-personalize-setup-overlay .pf-save-auth-description {
+    margin: 7px 0 20px;
+    color: #64748b;
+    font-size: 13px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-section-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 5px 12px;
+    margin-bottom: 10px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-section-head h3 {
+    font-size: 14px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-section-head p {
+    font-size: 12px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredients {
+    gap: 0;
+    margin: 0 0 12px;
+    border: 1px solid #e4eae6;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredient {
+    display: flex;
+    align-items: center;
+    padding: 9px 12px;
+    gap: 12px;
+    border: 0;
+    border-radius: 0;
+    border-bottom: 1px solid #edf1ee;
+    background: #fff;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredient:last-child {
+    border-bottom: 0;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredient > div {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredient strong {
+    flex: 1 1 115px;
+    font-size: 13px;
+    font-weight: 650;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-amount-controls {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredient .pf-personalize-setup-amount-button {
+    min-width: 32px;
+    width: 32px;
+    min-height: 36px;
+    padding: 0;
+    background: #f3f7f4;
+    border-color: #e0e8e2;
+    border-radius: 8px;
+    color: #126045;
+    font-size: 16px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-amount-input {
+    width: 80px;
+    min-height: 36px;
+    padding: 0 5px;
+    text-align: center;
+    border-radius: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-amount-unit {
+    min-width: 20px;
+    text-align: center;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-ingredient .pf-personalize-setup-remove {
+    min-height: 36px;
+    padding: 4px 8px;
+    border: 0;
+    color: #9b3c3c;
+    background: transparent;
+    text-decoration: underline;
+    font-size: 12px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-add-disclosure {
+    margin: 10px 0 18px;
+    border: 1px solid #cfe2d6;
+    border-radius: 11px;
+    background: #f7fbf8;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-add-disclosure > summary {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 15px;
+    color: #0b5d40;
+    font-size: 14px;
+    font-weight: 750;
+    cursor: pointer;
+    list-style: none;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-add-disclosure > summary::-webkit-details-marker { display: none; }
+  #pf-personalize-setup-overlay .pf-personalize-add-disclosure > summary > span {
+    font-size: 19px;
+    line-height: 1;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-add-disclosure[open] > summary {
+    border-bottom: 1px solid #e1ece5;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-add {
+    padding: 12px 14px 14px;
+    margin-top: 0;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-add-controls select {
+    min-height: 44px;
+    background: #fff;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-add-controls button {
+    min-width: 62px;
+    min-height: 44px;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    padding: 10px 0 18px;
+    border-top: 1px solid #e5ebe7;
+    background: #fff;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-footer .pf-save-auth-plan-note {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #4d6271;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  #pf-personalize-setup-overlay .pf-personalize-setup-credit-status {
+    margin: 5px 0 8px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #3e6958;
+    font-size: 12px;
+    font-weight: 650;
+  }
+  #pf-personalize-setup-overlay .pf-save-auth-actions {
+    position: static;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 4px 0 0;
+    border: 0;
+  }
+  #pf-personalize-setup-overlay .pf-save-auth-primary {
+    min-height: 45px;
+  }
+  #pf-personalize-setup-overlay .pf-save-auth-dismiss {
+    min-height: 45px;
+  }
+  @media (max-width: 580px) {
+    #pf-personalize-setup-overlay .pf-save-auth-panel {
+      max-height: calc(100dvh - 12px);
+      padding: 20px 15px 0;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-section-head p {
+      flex-basis: 100%;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-ingredient {
+      position: relative;
+      display: block;
+      padding: 11px 11px;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-ingredient > div {
+      display: grid;
+      justify-content: stretch;
+      gap: 7px;
+      padding-right: 42px;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-ingredient strong {
+      font-size: 13px;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-amount-controls {
+      justify-self: start;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-ingredient .pf-personalize-setup-remove {
+      position: absolute;
+      top: 8px;
+      right: 5px;
+      min-width: 0;
+      padding: 4px;
+      font-size: 11px;
+    }
+    #pf-personalize-setup-overlay .pf-save-auth-actions {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    #pf-personalize-setup-overlay .pf-save-auth-dismiss {
+      min-width: 70px;
+      padding: 8px;
+    }
+    #pf-personalize-setup-overlay .pf-personalize-setup-footer {
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+  }
+
 </style>
 
 <div
@@ -29511,28 +30017,32 @@ const batchG = (smoothieBatchMlOverride != null)
     <h2
       id="pf-personalize-setup-title"
       class="pf-save-auth-title"
+      tabindex="-1"
     >
-      Personalize this smoothie
+      Edit your smoothie
     </h2>
 
     <p
       id="pf-personalize-setup-description"
       class="pf-save-auth-description"
     >
-      Add, remove, or adjust the amount of any ingredient.
+      Adjust ingredients and amounts, then update your smoothie.
     </p>
 
-    <p
-      id="pf-personalize-setup-credit-status"
-      class="pf-personalize-setup-credit-status"
-      aria-live="polite"
-    >
-      Checking your free personalized smoothie balance…
-    </p>
+    <div class="pf-personalize-setup-section-head">
+      <h3>Ingredients</h3>
+      <p>Change any amount or remove an ingredient.</p>
+    </div>
+    <div
+      id="pf-personalize-setup-ingredients"
+      class="pf-personalize-setup-ingredients"
+    ></div>
 
-    <div class="pf-personalize-setup-add">
+    <details id="pf-personalize-add-disclosure" class="pf-personalize-add-disclosure">
+      <summary><span aria-hidden="true">＋</span> Add ingredient</summary>
+      <div class="pf-personalize-setup-add">
       <label for="pf-personalize-setup-add-select">
-        Add a goal-aligned ingredient
+        Choose an ingredient
       </label>
 
       <div class="pf-personalize-setup-add-controls">
@@ -29554,31 +30064,43 @@ const batchG = (smoothieBatchMlOverride != null)
           Add
         </button>
       </div>
+      <div id="pf-personalize-setup-add-amount-row" hidden>
+        <label for="pf-personalize-setup-add-amount">
+          Amount
+        </label>
+        <input
+          id="pf-personalize-setup-add-amount"
+          type="number"
+          min="0.001"
+          step="any"
+          inputmode="decimal"
+          aria-describedby="pf-personalize-setup-add-amount-note"
+        >
+        <span id="pf-personalize-setup-add-amount-unit">g</span>
+        <small id="pf-personalize-setup-add-amount-note"></small>
+      </div>
 
-      <button
-        type="button"
-        id="pf-personalize-setup-show-all"
-        class="pf-personalize-setup-show-all"
-        aria-pressed="false"
+      </div>
+    </details>
+
+    <div class="pf-personalize-setup-footer">
+      <p
+        id="pf-personalize-setup-status"
+        class="pf-save-auth-plan-note"
+        role="status"
+        aria-live="polite"
       >
-        Show all supported ingredients
-      </button>
-    </div>
-
-    <div
-      id="pf-personalize-setup-ingredients"
-      class="pf-personalize-setup-ingredients"
-    ></div>
-
-    <p
-      id="pf-personalize-setup-status"
-      class="pf-save-auth-plan-note"
+        Editing is free. One credit is used only after an update succeeds.
+      </p>
+      <p
+      id="pf-personalize-setup-credit-status"
+      class="pf-personalize-setup-credit-status"
       aria-live="polite"
     >
-      Editing is free. One credit is used only when Update Smoothie succeeds.
-    </p>
+      Checking your free personalized smoothie balance…
+</p>
 
-    <div class="pf-save-auth-actions">
+      <div class="pf-save-auth-actions">
       <button
         type="button"
         id="pf-personalize-setup-save"
@@ -29592,8 +30114,9 @@ const batchG = (smoothieBatchMlOverride != null)
         id="pf-personalize-setup-dismiss"
         class="pf-save-auth-dismiss"
       >
-        Not now
+        Cancel
       </button>
+      </div>
     </div>
   </section>
 </div>

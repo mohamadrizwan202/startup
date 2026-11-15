@@ -37,6 +37,21 @@ class _PooledPostgresConnection:
     def __init__(self, pool, connection):
         self._pool = pool
         self._connection = connection
+        self._pf_checkout_at = None
+        if os.getenv("PF_DB_POOL_TRACE") == "1":
+            import time
+            import traceback
+            self._pf_checkout_at = time.monotonic()
+            frames = traceback.extract_stack(limit=12)
+            site = "unknown"
+            for frame in reversed(frames[:-1]):
+                if not frame.filename.endswith("/db.py"):
+                    site = f"{os.path.basename(frame.filename)}:{frame.lineno}:{frame.name}"
+                    break
+            try:
+                _logger.warning("PSYCOPG_POOL=borrow site=%s stats=%s", site, pool.get_stats())
+            except Exception:
+                _logger.warning("PSYCOPG_POOL=borrow site=%s", site)
 
     def __getattr__(self, name):
         connection = self._connection
@@ -66,6 +81,13 @@ class _PooledPostgresConnection:
             )
         finally:
             self._pool.putconn(connection)
+            if self._pf_checkout_at is not None:
+                import time
+                held_ms = round((time.monotonic() - self._pf_checkout_at) * 1000)
+                try:
+                    _logger.warning("PSYCOPG_POOL=returned held_ms=%s stats=%s", held_ms, self._pool.get_stats())
+                except Exception:
+                    _logger.warning("PSYCOPG_POOL=returned held_ms=%s", held_ms)
 
 
 def _get_runtime_pg_pool(normalized_url, dict_row):
@@ -165,7 +187,15 @@ def get_conn():
         else:
             normalized_url = normalize_pg_url(RUNTIME_DB_URL)
         pool = _get_runtime_pg_pool(normalized_url, dict_row)
-        return _PooledPostgresConnection(pool, pool.getconn())
+        try:
+            return _PooledPostgresConnection(pool, pool.getconn())
+        except Exception:
+            if os.getenv("PF_DB_POOL_TRACE") == "1":
+                try:
+                    _logger.exception("PSYCOPG_POOL=borrow_failed stats=%s", pool.get_stats())
+                except Exception:
+                    _logger.exception("PSYCOPG_POOL=borrow_failed")
+            raise
     else:
         # SQLite fallback (local dev only)
         conn = sqlite3.connect(str(DB_PATH))
