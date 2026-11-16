@@ -4954,6 +4954,7 @@ def categories():
     """Get list of all unique categories"""
     using_postgres = db.USE_POSTGRES
     logger.info("API /api/categories db=%s", "postgres" if using_postgres else "sqlite")
+    conn = None
     try:
         conn = get_conn()
         cursor = conn.cursor()
@@ -4965,7 +4966,6 @@ def categories():
         """
         cursor.execute(query)
         results = cursor.fetchall()
-        conn.close()
         
         # Both Postgres (dict) and SQLite (sqlite3.Row) support dictionary-style access
         categories_list = [row['category'] for row in results]
@@ -5024,6 +5024,9 @@ def categories():
     except Exception as e:
         app.logger.exception("Error in /api/categories")
         return jsonify({"error": str(e)}), 500
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 # Health Benefits browse: use the existing eligible smoothie catalog.
@@ -5144,6 +5147,7 @@ def category_hierarchy():
     """Return category hierarchy for health browser"""
     using_postgres = db.USE_POSTGRES
     logger.info("API /api/category-hierarchy db=%s", "postgres" if using_postgres else "sqlite")
+    conn = None
     try:
         conn = get_conn()
         cursor = conn.cursor()
@@ -5187,11 +5191,13 @@ def category_hierarchy():
                 hierarchy[category] = {}
             hierarchy[category][subcategory] = ingredient_count
         
-        conn.close()
         return jsonify(hierarchy)
     except Exception as e:
         app.logger.exception("Error in /api/category-hierarchy")
         return jsonify({"error": str(e)}), 500
+    finally:
+        if conn is not None:
+            conn.close()
 
 def normalize_category_param(category):
     """Normalize category URL params without destroying stored hyphens."""
@@ -5281,6 +5287,7 @@ def get_ingredients(category):
 @app.route('/api/ingredient-search')
 def ingredient_search():
     """Search for ingredients by name, returning up to 20 unique matches"""
+    conn = None
     try:
         q = (request.args.get('q', '') or '').strip()
         if not q:
@@ -5373,7 +5380,6 @@ def ingredient_search():
             f'%{canonical_q}%'
         ))
         rows = cursor.fetchall()
-        conn.close()
 
         suggestions = [{
             "name": (r["name"] or "").strip(),
@@ -5430,6 +5436,9 @@ def ingredient_search():
     except Exception as e:
         app.logger.exception("Error in /api/ingredient-search")
         return jsonify({"error": str(e)}), 500
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 @csrf.exempt
@@ -5438,6 +5447,7 @@ def get_category_ingredients(category, subcategory):
     """Get ingredients for a specific category and subcategory"""
     using_postgres = db.USE_POSTGRES
     logger.info("API /api/categories/%s/%s db=%s", category, subcategory, "postgres" if using_postgres else "sqlite")
+    conn = None
     try:
         conn = get_conn()
         cursor = conn.cursor()
@@ -5462,12 +5472,14 @@ def get_category_ingredients(category, subcategory):
             "key_nutrients": row['key_nutrients'] or '',
             "description": row['description'] or ''
         } for row in cursor.fetchall()]
-        conn.close()
         
         return jsonify(ingredients)
     except Exception as e:
         app.logger.exception("Error in /api/categories/%s/%s", category, subcategory)
         return jsonify({"error": str(e)}), 500
+    finally:
+        if conn is not None:
+            conn.close()
 
 def ensure_minimum_ingredients_per_subcategory():
     """Ensure each subcategory has at least 5 ingredients"""
@@ -56025,6 +56037,7 @@ def api_analyze():
 
 @app.route('/api/categories', methods=['GET'])
 def api_categories():
+    conn = None
     try:
         format_type = request.args.get('format', 'json')
         conn = get_conn()
@@ -56036,7 +56049,6 @@ def api_categories():
         
         categories = [row['category'] if isinstance(row, dict) else row[0] for row in rows]
         
-        conn.close()
         
         if format_type == 'ui':
             return jsonify([{'value': c, 'label': c} for c in categories])
@@ -56044,10 +56056,14 @@ def api_categories():
     except Exception as e:
         logger.error(f"Error in /api/categories: {e}")
         return jsonify({"error": str(e)}), 500
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 @app.route('/api/category-hierarchy', methods=['GET'])
 def api_category_hierarchy():
+    conn = None
     try:
         conn = get_conn()
         cursor = conn.cursor()
@@ -56076,15 +56092,18 @@ def api_category_hierarchy():
                 hierarchy[cat] = {}
             hierarchy[cat][sub] = count
             
-        conn.close()
         return jsonify(hierarchy)
     except Exception as e:
         logger.error(f"Error in /api/category-hierarchy: {e}")
         return jsonify({"error": str(e)}), 500
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 @app.route('/api/categories/<category>/<subcategory>', methods=['GET'])
 def api_category_ingredients(category, subcategory):
+    conn = None
     try:
         # Flask decodes the URL params automatically
         conn = get_conn()
@@ -56104,11 +56123,13 @@ def api_category_ingredients(category, subcategory):
             ing = row['ingredient'] if isinstance(row, dict) else row[0]
             ingredients.append({'ingredient': ing})
             
-        conn.close()
         return jsonify(ingredients)
     except Exception as e:
         logger.error(f"Error in /api/categories/<cat>/<subcat>: {e}")
         return jsonify({"error": str(e)}), 500
+    finally:
+        if conn is not None:
+            conn.close()
 
 @app.route('/api/feedback', methods=['POST'])
 @csrf.exempt
@@ -56121,6 +56142,7 @@ def api_feedback():
     if not request.is_json:
         return jsonify({"ok": False, "error": "Content-Type must be application/json"}), 415
     
+    conn = None
     try:
         data = request.get_json(force=True) or {}
         
@@ -56153,7 +56175,6 @@ def api_feedback():
 
         conn.commit()
         cursor.close()
-        conn.close()
         
         return jsonify({"ok": True, "id": feedback_id}), 200
         
@@ -56163,6 +56184,9 @@ def api_feedback():
         if app.debug:
             response["details"] = str(e)
         return jsonify(response), 500
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 # INGREDIENT TAB NUTRITION HELPER
