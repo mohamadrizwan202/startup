@@ -33,11 +33,77 @@ _RUNTIME_PG_POOL = None
 _RUNTIME_PG_POOL_LOCK = threading.Lock()
 
 
+def _get_request_leases(*, create=False):
+    """Return this Flask request's active pooled leases, if in a request."""
+    try:
+        from flask import g, has_request_context
+    except ImportError:
+        return None
+
+    if not has_request_context():
+        return None
+
+    leases = getattr(g, "_purefyul_pg_leases", None)
+    if leases is None and create:
+        leases = set()
+        g._purefyul_pg_leases = leases
+    return leases
+
+
+def _track_request_lease(wrapper):
+    """Keep strong ownership of a checked-out connection through request teardown."""
+    leases = _get_request_leases(create=True)
+    if leases is not None:
+        leases.add(wrapper)
+    return wrapper
+
+
+def _forget_request_lease(wrapper):
+    """An explicitly closed connection must not be reclaimed a second time."""
+    try:
+        leases = _get_request_leases()
+        if leases is not None:
+            leases.discard(wrapper)
+    except Exception:
+        _logger.exception("PSYCOPG_POOL=request_untrack_failed")
+
+
+def reclaim_request_connections():
+    """Last-resort return of any pooled leases abandoned by a request handler.
+
+    Flask calls this at request teardown, including after unhandled errors.
+    No connection is opened and no SQL is executed by this function.
+    """
+    leases = _get_request_leases()
+    if not leases:
+        return 0
+
+    from flask import request
+
+    abandoned = tuple(leases)
+    sites = sorted({getattr(wrapper, "_pf_checkout_site", None) or "unknown"
+                    for wrapper in abandoned})
+    _logger.error(
+        "PSYCOPG_POOL=request_leases_reclaimed path=%s count=%s sites=%s",
+        request.path,
+        len(abandoned),
+        ",".join(sites),
+    )
+    for wrapper in abandoned:
+        try:
+            wrapper.close()
+        except Exception:
+            _logger.exception("PSYCOPG_POOL=request_reclaim_failed")
+    leases.clear()
+    return len(abandoned)
+
+
 class _PooledPostgresConnection:
     def __init__(self, pool, connection):
         self._pool = pool
         self._connection = connection
         self._pf_checkout_at = None
+        self._pf_checkout_site = None
         if os.getenv("PF_DB_POOL_TRACE") == "1":
             import time
             import traceback
@@ -48,6 +114,7 @@ class _PooledPostgresConnection:
                 if not frame.filename.endswith("/db.py"):
                     site = f"{os.path.basename(frame.filename)}:{frame.lineno}:{frame.name}"
                     break
+            self._pf_checkout_site = site
             try:
                 _logger.warning("PSYCOPG_POOL=borrow site=%s stats=%s", site, pool.get_stats())
             except Exception:
@@ -80,7 +147,10 @@ class _PooledPostgresConnection:
                 exc_info=True,
             )
         finally:
-            self._pool.putconn(connection)
+            try:
+                self._pool.putconn(connection)
+            finally:
+                _forget_request_lease(self)
             if self._pf_checkout_at is not None:
                 import time
                 held_ms = round((time.monotonic() - self._pf_checkout_at) * 1000)
@@ -188,7 +258,12 @@ def get_conn():
             normalized_url = normalize_pg_url(RUNTIME_DB_URL)
         pool = _get_runtime_pg_pool(normalized_url, dict_row)
         try:
-            return _PooledPostgresConnection(pool, pool.getconn())
+            wrapper = _PooledPostgresConnection(pool, pool.getconn())
+            try:
+                return _track_request_lease(wrapper)
+            except Exception:
+                wrapper.close()
+                raise
         except Exception:
             if os.getenv("PF_DB_POOL_TRACE") == "1":
                 try:

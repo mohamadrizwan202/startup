@@ -87,6 +87,12 @@ logger = logging.getLogger("startup_recovered")
 app = Flask(__name__)
 
 
+@app.teardown_request
+def _return_orphaned_postgres_connections(_exception):
+    """Never let failed request handlers exhaust the shared PostgreSQL pool."""
+    db.reclaim_request_connections()
+
+
 
 def _configure_jinja_bytecode_cache():
     cache_directory = Path(
