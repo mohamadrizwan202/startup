@@ -256,21 +256,7 @@ def get_conn():
             normalized_url = RUNTIME_DB_URL
         else:
             normalized_url = normalize_pg_url(RUNTIME_DB_URL)
-        pool = _get_runtime_pg_pool(normalized_url, dict_row)
-        try:
-            wrapper = _PooledPostgresConnection(pool, pool.getconn())
-            try:
-                return _track_request_lease(wrapper)
-            except Exception:
-                wrapper.close()
-                raise
-        except Exception:
-            if os.getenv("PF_DB_POOL_TRACE") == "1":
-                try:
-                    _logger.exception("PSYCOPG_POOL=borrow_failed stats=%s", pool.get_stats())
-                except Exception:
-                    _logger.exception("PSYCOPG_POOL=borrow_failed")
-            raise
+        return psycopg.connect(normalized_url, row_factory=dict_row, connect_timeout=5)
     else:
         # SQLite fallback (local dev only)
         conn = sqlite3.connect(str(DB_PATH))

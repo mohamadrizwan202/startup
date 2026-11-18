@@ -3045,6 +3045,7 @@ def register():
         
         # Create new user
         conn = None
+        account_committed = False
         try:
             conn = get_conn()
             cursor = conn.cursor()
@@ -3071,7 +3072,17 @@ def register():
                 user_id,
                 selected_health_goals,
             )
+            if not user_id:
+                raise RuntimeError("Missing new user ID")
+            token = secrets.token_urlsafe(32)
+            cursor.execute(
+                db.prepare_query(
+                    "UPDATE users SET active_session_token = ? WHERE id = ?"
+                ),
+                (token, user_id),
+            )
             conn.commit()
+            account_committed = True
             conn.close()
             conn = None
 
@@ -3079,11 +3090,7 @@ def register():
             user_name = (request.form.get("name", "") or "").strip() or None
             queue_welcome_email(email, user_name)
             
-            if not user_id:
-                raise Exception("Failed to get user_id after insert")
-            
-            # Generate and store session token
-            token = set_user_session_token(user_id)
+            # Session token was committed with the account.
             
             # Clear existing session to avoid session fixation
             session.clear()
@@ -3106,10 +3113,24 @@ def register():
         except Exception as e:
             if conn is not None:
                 try:
-                    conn.rollback()
+                    if not account_committed:
+                        conn.rollback()
+                except Exception:
+                    app.logger.exception("Registration rollback failed")
                 finally:
-                    conn.close()
-            app.logger.exception("Error creating user")
+                    try:
+                        conn.close()
+                    except Exception:
+                        app.logger.exception("Registration connection close failed")
+            app.logger.exception("Error completing registration")
+            if account_committed:
+                session.clear()
+                flash(
+                    'Your account was created, but sign-in was not completed. '
+                    'Please log in.',
+                    'error',
+                )
+                return redirect(url_for('login'))
             flash('An error occurred during registration. Please try again.', 'error')
             return _render_register_page(
                 next_url,
@@ -3158,15 +3179,7 @@ def login():
         
         # Password verified - generate new session token for single-session enforcement
         user_id = user_dict['id']
-        new_token = secrets.token_urlsafe(32)
-        
-        # Update active_session_token in database and commit
-        conn = get_conn()
-        cursor = conn.cursor()
-        query = db.prepare_query("UPDATE users SET active_session_token = ? WHERE id = ?")
-        cursor.execute(query, (new_token, user_id))
-        conn.commit()
-        conn.close()
+        new_token = set_user_session_token(user_id)
         app.logger.info("LOGIN: Generated new session token for user_id=%s", user_id)
         
         # Clear existing session to avoid session fixation
