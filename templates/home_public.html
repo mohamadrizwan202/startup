@@ -480,21 +480,12 @@
     .hp-feature-card p { font-size: 0.875rem; color: #64748b; line-height: 1.65; }
     .hp-scale-items { margin-top: 2rem; }
     .hp-scale-item { display: flex; gap: 18px; align-items: flex-start; background: #F0FDFA; border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
-    .hp-scale-item-last { margin-bottom: 0; }
+    .hp-scale-item:last-child { margin-bottom: 0; }
     .hp-scale-icon { flex-shrink: 0; width: 44px; height: 44px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
     .hp-scale-body { min-width: 0; }
     .hp-scale-eyebrow { font-size: 0.75rem; color: #0d9488; font-weight: 600; margin: 0 0 4px; }
     .hp-scale-item h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
     .hp-scale-item p { font-size: 0.9rem; color: #475569; line-height: 1.6; margin: 0; }
-    .hp-pro-panel { margin: 1.5rem 0 0; padding: 1.5rem 1.75rem; background: #FDF4E7; border-radius: 14px; }
-    .hp-pro-panel-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #B45309; margin: 0 0 1rem; }
-    .hp-pro-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .hp-pro-panel-grid h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
-    .hp-pro-panel-grid p { font-size: 0.875rem; color: #64748b; line-height: 1.6; margin: 0; }
-    @media (max-width: 768px) {
-      .hp-pro-panel { margin-left: 0; }
-      .hp-pro-panel-grid { grid-template-columns: 1fr; }
-    }
     .hp-gap { background: #0EA5A4; padding: 5rem 1.5rem; }
     .hp-gap-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
     .hp-gap .hp-section-label { color: rgba(255,255,255,0.7); text-align: left; }
@@ -598,10 +589,10 @@
   <section class="hp-hero">
     <div class="hp-hero-inner">
       <span class="hp-eyebrow">Age-Smart Smoothie Nutrition</span>
-      <h1 class="hp-h1">Build your smoothie. See the nutrition before you blend.</h1>
-      <p class="hp-lead">Choose your age group and health goal, get suggested smoothie portions, and personalize your ingredients. Review estimated nutrition and ingredient allergen information before blending.</p>
+      <h1 class="hp-h1">Not Just a Smoothie Calculator. Build Around Your Health Goals.</h1>
+      <p class="hp-lead">Choose an age group and health goal, start with suggested smoothie portions, then adjust ingredients and exact quantities. Review estimated nutrition before blending.</p>
       <div class="hp-cta-row">
-        <a href="/app" class="hp-btn-primary">Try Free</a>
+        <a href="/app" class="hp-btn-primary">Try PureFyul Free</a>
         <a href="#how-it-works" class="hp-btn-ghost">How it works</a>
       </div>
       <div class="hp-chips">
@@ -615,7 +606,7 @@
   <section class="hp-section hp-problem">
     <div class="hp-container">
       <p class="hp-section-label">The gap nobody solved</p>
-      <h2 class="hp-section-title">Every body is different. Most apps pretend otherwise.</h2>
+      <h2 class="hp-section-title">A More Useful Way to Plan Your Smoothies</h2>
       <p class="hp-section-sub">Generic nutrition apps were built for adults. PureFyul was built for everyone.</p>
       <div class="hp-problem-grid">
         <div class="hp-problem-card">
@@ -906,7 +897,7 @@
           <div class="hp-scale-body">
             <p class="hp-scale-eyebrow">Ages 4 to 60+</p>
             <h3>Age-specific portions</h3>
-            <p>12 age groups, each with its own portion size. An ingredient scaled for a 4 year old is never the same amount scaled for a 60 year old.</p>
+            <p>12 age groups, each with its own portion size. Suggested portions vary by age group, and you can adjust ingredient amounts.</p>
           </div>
         </div>
 
@@ -924,34 +915,8 @@
           </div>
         </div>
 
-        <div class="hp-scale-item hp-scale-item-last">
-          <div class="hp-scale-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0EA5A4" stroke-width="1.6" aria-hidden="true">
-              <path d="M20 11a8 8 0 1 0-2.3 5.7"/>
-              <path d="M20 5v6h-6"/>
-            </svg>
-          </div>
-          <div class="hp-scale-body">
-            <p class="hp-scale-eyebrow">Every build, remembered</p>
-            <h3>Recent smoothies</h3>
-            <p>What you build is kept automatically. Rebuild any past smoothie in one tap, nothing to re-enter.</p>
-          </div>
-        </div>
       </div>
 
-      <div class="hp-pro-panel">
-        <p class="hp-pro-panel-label">Pro</p>
-        <div class="hp-pro-panel-grid">
-          <div>
-            <h3>Save recipes</h3>
-            <p>Keep your best builds with ingredients, nutrition, goal, and timing attached.</p>
-          </div>
-          <div>
-            <h3>Weekly meal planner</h3>
-            <p>Assign saved smoothies to breakfast, lunch, dinner, or a snack slot for the week.</p>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -990,11 +955,7 @@
           <div class="hp-feat">Allergen information</div>
           <div class="hp-ck">Review ingredient allergen flags and context</div>
         </div>
-        <div class="hp-compare-row">
-          <div class="hp-feat">Weekly meal planner (Pro)</div>
-          <div class="hp-ck">Plan saved smoothies across the week</div>
-        </div>
-      </div>
+              </div>
     </div>
   </section>
 
@@ -1037,7 +998,7 @@
     <div class="hp-container">
       <p class="hp-section-label">Start today</p>
       <h2>A smoothie built around your age group and health goals.</h2>
-      <p>Free forever plan. No credit card required. Build your first smoothie in minutes.</p>
+      <p>Start with our free smoothie builder. No credit card required.</p>
       <div style="margin-bottom:1rem;">
         <a href="/app" class="hp-cta-btn">Start Building Free</a>
         <a href="/pricing" class="hp-cta-btn-ghost">View Pricing</a>
