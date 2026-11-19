@@ -1137,8 +1137,10 @@ def test_personalization_ingredient_options_returns_reviewed_catalog(client):
 
     assert len(options) > 36
     option_ids = {option["id"] for option in options}
-    assert {"barley", "matcha", "honeydew", "tofu", "apple"} <= option_ids
-    assert {"quinoa", "grapefruit", "chickpeas"}.isdisjoint(option_ids)
+    assert {"honeydew", "tofu", "apple", "kale"} <= option_ids
+    assert {
+        "quinoa", "grapefruit", "chickpeas", "barley", "matcha", "broccoli",
+    }.isdisjoint(option_ids)
     assert all(
         set(option) == {"id", "display_name", "unit"}
         for option in options

@@ -940,13 +940,21 @@ def get_reviewed_goal_recipe_candidates(goal) -> tuple[dict, ...]:
 
 
 _NEW_PERSONALIZATION_EXCLUDED_LOOKUP_NAMES = frozenset({
-    "amaranth", "asparagus", "beans", "black beans",
-    "brown rice", "brussels sprouts", "buckwheat",
-    "cabbage", "chickpeas", "edamame", "endive",
-    "fava beans", "grapefruit", "kidney beans",
-    "lentils", "lima beans", "millet", "mustard greens",
-    "navy beans", "pinto beans", "quinoa", "radishes",
-    "soybeans", "squash", "tempeh",
+    # Legumes and grains that must be cooked before eating.
+    "amaranth", "barley", "beans", "black beans",
+    "brown rice", "buckwheat", "chickpeas", "edamame",
+    "fava beans", "kidney beans", "lentils", "lima beans",
+    "millet", "navy beans", "pinto beans", "quinoa",
+    "soybeans", "tempeh",
+    # Savory, bitter, or cooked-only vegetables that do not suit smoothies.
+    "arugula", "asparagus", "bell peppers", "bok choy",
+    "broccoli", "brussels sprouts", "cabbage", "collard greens",
+    "endive", "lettuce", "mustard greens", "radishes",
+    "squash", "sweet potato", "tomatoes", "watercress",
+    # Caffeine sources: not suitable for children.
+    "green tea", "matcha",
+    # Interacts with many medications.
+    "grapefruit",
 })
 
 

@@ -1118,11 +1118,16 @@ def test_new_personalization_catalog_excludes_unsuitable_ingredients():
         assert (ingredient_id in selectable) is not excluded
 
     for ingredient_id in (
-        "matcha", "barley", "honeydew", "tofu", "apple"
+        "honeydew", "tofu", "apple", "kale", "coconut-water"
     ):
         assert ingredient_id in selectable
 
-    for ingredient_id in ("quinoa", "grapefruit", "chickpeas"):
+    # Kept in the catalog so earlier saved recipes still load,
+    # but no longer offered for new smoothies.
+    for ingredient_id in (
+        "quinoa", "grapefruit", "chickpeas",
+        "matcha", "barley", "broccoli", "kidney-beans",
+    ):
         assert ingredient_id not in selectable
         assert ingredient_id in definitions
 
