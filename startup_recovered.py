@@ -2471,6 +2471,7 @@ def app_home():
     account_health_goals = []
     account_health_goal_catalog = []
     account_health_goal_labels = {}
+    account_health_goal_taglines = {}
     account_health_goals_available = False
     account_health_goals_ready = False
 
@@ -2504,6 +2505,14 @@ def app_home():
                 )
                 account_health_goal_labels = {
                     goal["value"]: goal["label"]
+                    for goal in account_health_goal_catalog
+                }
+                from account_goal_recipe_profiles import (
+                    get_account_goal_tagline,
+                )
+
+                account_health_goal_taglines = {
+                    goal["value"]: get_account_goal_tagline(goal["value"])
                     for goal in account_health_goal_catalog
                 }
                 account_health_goals_available = bool(
@@ -2546,6 +2555,7 @@ def app_home():
         account_health_goals=account_health_goals,
         account_health_goal_catalog=account_health_goal_catalog,
         account_health_goal_labels=account_health_goal_labels,
+        account_health_goal_taglines=account_health_goal_taglines,
         account_health_goals_available=account_health_goals_available,
         account_health_goals_ready=account_health_goals_ready,
         account_health_goal_required_count=ACCOUNT_HEALTH_GOAL_COUNT,

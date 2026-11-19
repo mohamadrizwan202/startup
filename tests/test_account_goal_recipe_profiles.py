@@ -140,3 +140,19 @@ def test_personalization_base_ids_resolve_every_account_goal_profile():
             goal="iron-support",
             variant="b",
         )
+
+
+def test_every_account_goal_has_a_card_tagline():
+    from account_goal_recipe_profiles import (
+        ACCOUNT_GOAL_TAGLINES,
+        DEFAULT_ACCOUNT_GOAL_TAGLINE,
+        get_account_goal_tagline,
+    )
+
+    for category_value, profile in ACCOUNT_GOAL_RECIPE_PROFILES.items():
+        assert profile["goal_slug"] in ACCOUNT_GOAL_TAGLINES
+        tagline = get_account_goal_tagline(category_value)
+        assert tagline != DEFAULT_ACCOUNT_GOAL_TAGLINE
+        assert 0 < len(tagline.split()) <= 5
+
+    assert get_account_goal_tagline("Not A Goal") == DEFAULT_ACCOUNT_GOAL_TAGLINE
