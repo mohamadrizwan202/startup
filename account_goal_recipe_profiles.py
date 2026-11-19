@@ -781,3 +781,45 @@ def get_account_goal_profile_by_slug(goal_slug: str) -> dict | None:
 def get_account_goal_profile_slugs() -> tuple[str, ...]:
     """Return canonical goal slugs supported by account-goal profiles."""
     return tuple(sorted(_ACCOUNT_GOAL_PROFILES_BY_SLUG))
+
+
+# Short taglines shown under each goal card in Step 1.
+# Pattern: an everyday moment + how the smoothie leaves you feeling.
+# Never promise a medical result.
+ACCOUNT_GOAL_TAGLINES = {
+    "blood-pressure-support": "Busy day? Stay steady",
+    "blood-sugar-support": "Steady energy till lunch",
+    "bone-strength": "Every morning, stand strong",
+    "brain-focus": "Before work, feel sharp",
+    "cholesterol-support": "Weekday breakfast, feel light",
+    "circulation-support": "Long sitting? Feel refreshed",
+    "gut-health": "After heavy meals, feel light",
+    "energy-stamina": "3 p.m. slump? Recharge",
+    "heart-support": "Every day, love your heart",
+    "immune-support": "Cold season? Feel ready",
+    "inflammation-support": "Achy days? Feel soothed",
+    "iron-support": "Tired often? Feel recharged",
+    "joint-mobility": "Before your walk, feel limber",
+    "liver-support": "Fresh start, feel renewed",
+    "muscle-health": "After workouts, bounce back",
+    "oral-health": "After meals, smile fresh",
+    "prenatal-support": "Morning cravings? Feel nourished",
+    "skin-glow": "Every morning, feel glowing",
+    "stress-relief": "Long day? Unwind gently",
+    "thyroid-support": "Sluggish mornings? Feel balanced",
+    "vision-support": "Long screen days? Refresh",
+    "weight-balance": "Afternoon cravings? Stay satisfied",
+}
+
+DEFAULT_ACCOUNT_GOAL_TAGLINE = "Your selected health goal"
+
+
+def get_account_goal_tagline(category_value: str) -> str:
+    """Return the Step 1 card tagline for a stored account category value."""
+    profile = ACCOUNT_GOAL_RECIPE_PROFILES.get(str(category_value or "").strip())
+    if profile is None:
+        return DEFAULT_ACCOUNT_GOAL_TAGLINE
+    return ACCOUNT_GOAL_TAGLINES.get(
+        profile["goal_slug"],
+        DEFAULT_ACCOUNT_GOAL_TAGLINE,
+    )
