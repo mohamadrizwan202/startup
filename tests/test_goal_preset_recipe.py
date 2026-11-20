@@ -1186,3 +1186,65 @@ def test_legacy_authorized_ingredient_preserves_explicit_amounts(
         "banana": 100.0,
         "quinoa": 30.0,
     }
+
+
+def test_plant_milks_with_sourced_density_use_ml_and_convert_to_grams(
+    monkeypatch,
+):
+    import recipe_mass
+
+    monkeypatch.setattr(
+        recipe_calculator.nutrition_facts_repository,
+        "get_nutrition_facts_exact",
+        lambda name: _fake_lookup(name) or (
+            _fake_lookup("oats") | {"ingredient": name.strip().lower()}
+            if name.strip().lower() in {"rice milk", "mango"}
+            else None
+        ),
+    )
+
+    options = {
+        option["id"]: option
+        for option in goal_preset_recipe.get_supported_ingredient_options()
+    }
+    for ingredient_id in (
+        "rice-milk", "hemp-milk", "cashew-milk", "coconut-milk",
+    ):
+        assert options[ingredient_id]["unit"] == "ml"
+    # No sourced density: not offered for new smoothies at all.
+    for ingredient_id in (
+        "barley-milk", "flax-milk", "hazelnut-milk", "milk",
+        "pecan-milk", "pistachio-milk", "quinoa-milk", "walnut-milk",
+    ):
+        assert ingredient_id not in options
+
+    result = goal_preset_recipe.build_personalized_goal_preset_recipe(
+        goal="skin-glow",
+        timing="breakfast",
+        variant="a",
+        ingredient_selections=[
+            {"id": "rice-milk", "amount": 120.0},
+            {"id": "mango", "amount": 100.0},
+            {"id": "spinach", "amount": 30.0},
+        ],
+    )
+    rice = next(
+        item for item in result["ingredients"] if item["id"] == "rice-milk"
+    )
+    assert rice["unit"] == "ml"
+    assert rice["amount"] == pytest.approx(120.0)
+    assert rice["weight_g"] == pytest.approx(
+        recipe_mass.convert_liquid_ml_to_grams(
+            nutrition_lookup_name="rice milk", volume_ml=120.0
+        )
+    )
+
+
+def test_half_cup_liquid_portion_starts_at_120_ml():
+    response = goal_preset_recipe.get_personalization_ingredient_options(
+        goal="skin-glow", timing="lunch", variant="a"
+    )
+    by_id = {item["id"]: item for item in response["ingredients"]}
+    assert by_id["rice-milk"]["amount"] == 120.0
+    assert by_id["rice-milk"]["unit"] == "ml"
+    assert by_id["rice-milk"]["amount_label"] == "1/2 cup"

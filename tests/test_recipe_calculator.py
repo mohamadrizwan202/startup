@@ -180,8 +180,8 @@ def test_unresolved_ml_mass_fails_before_nutrition_lookup(monkeypatch):
         calculate_recipe(
             [
                 {
-                    "ingredient": "Coconut Milk",
-                    "nutrition_lookup_name": "coconut milk",
+                    "ingredient": "Flax Milk",
+                    "nutrition_lookup_name": "flax milk",
                     "amount": 150,
                     "unit": "ml",
                 }

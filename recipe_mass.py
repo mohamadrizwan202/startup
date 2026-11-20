@@ -106,6 +106,17 @@ _LIQUID_MASS_CONVERSIONS = {
             "thermally treated beverage mean"
         ),
     },
+    "coconut milk": {
+        # PureFyul's "coconut milk" is the drinking beverage (about 20 kcal
+        # per 100 g, confirmed on the live site), not canned coconut milk.
+        "grams_per_ml": 1.0,
+        "mass_source": "explicit_household_weight_conversion",
+        "source_reference": (
+            "USDA FoodData Central SR Legacy, Beverages, coconut milk, "
+            "sweetened, fortified with calcium, vitamins A, B12, D2; "
+            "household weight 240 g per US customary cup (240 mL)"
+        ),
+    },
     "cashew milk": {
         "grams_per_ml": 1.0300,
         "mass_source": "explicit_density_conversion",
@@ -226,6 +237,14 @@ def _get_liquid_mass_conversion(nutrition_lookup_name: str) -> dict:
         )
 
     return conversion
+
+
+def has_liquid_mass_conversion(nutrition_lookup_name) -> bool:
+    """Return True when a sourced mL-to-gram conversion is registered."""
+
+    if not isinstance(nutrition_lookup_name, str):
+        return False
+    return nutrition_lookup_name.strip().lower() in _LIQUID_MASS_CONVERSIONS
 
 
 def convert_liquid_ml_to_grams(
