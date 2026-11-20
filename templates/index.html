@@ -10175,7 +10175,14 @@
         Number.isFinite(numericAmount) &&
         numericAmount > 0
       ) {
-        amountInput.value = String(numericAmount);
+        // Show friendly numbers (57.143 -> 57); the user can still edit.
+        amountInput.value = String(
+          numericAmount >= 5
+            ? Math.round(numericAmount)
+            : numericAmount >= 1
+              ? Math.round(numericAmount * 10) / 10
+              : Math.round(numericAmount * 1000) / 1000
+        );
       } else {
         amountInput.placeholder = 'Amount';
       }
@@ -10301,7 +10308,11 @@
           Number.isFinite(suggested) && suggested > 0) {
         input.value = String(suggested);
         note.textContent = (
-          option.amount_source === 'current_reviewed_recipe_component'
+          option.amount_source === 'usda_standard_portion'
+            ? 'Based on a USDA standard portion' + (
+                option.amount_label ? ' (' + option.amount_label + '). ' : '. '
+              )
+            : option.amount_source === 'current_reviewed_recipe_component'
             ? 'From this recipe. '
             : option.amount_source === 'same_goal_reviewed_recipe_component'
               ? 'From another recipe for this goal. '
