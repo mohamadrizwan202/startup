@@ -1199,14 +1199,19 @@ def _usda_standard_portion_option(ingredient_id: str, unit: str):
     grams, household_measure = portion
     amount = grams
     if unit == "ml":
-        definitions = _get_personalization_catalog_definitions()
-        amount = recipe_mass.convert_liquid_grams_to_ml(
-            nutrition_lookup_name=(
-                definitions[ingredient_id]["nutrition_lookup_name"]
-            ),
-            weight_g=grams,
-        )
-        amount = float(max(5, round(amount / 5) * 5))
+        # A "1/2 cup" liquid portion is 120 mL by the FDA/USDA cup
+        # (240 mL); other liquid portions convert with the sourced density.
+        if household_measure == "1/2 cup":
+            amount = 120.0
+        else:
+            definitions = _get_personalization_catalog_definitions()
+            amount = recipe_mass.convert_liquid_grams_to_ml(
+                nutrition_lookup_name=(
+                    definitions[ingredient_id]["nutrition_lookup_name"]
+                ),
+                weight_g=grams,
+            )
+            amount = float(max(5, round(amount / 5) * 5))
     return {
         "amount": float(amount),
         "amount_source": "usda_standard_portion",
@@ -1433,7 +1438,13 @@ def _get_personalization_catalog_definitions() -> dict[str, dict]:
                     raw_name
                 ),
                 "nutrition_lookup_name": raw_name,
-                "display_unit": "g",
+                # Liquids show in mL only when a sourced density exists;
+                # otherwise mL could not be converted to grams honestly.
+                "display_unit": (
+                    "ml"
+                    if recipe_mass.has_liquid_mass_conversion(raw_name)
+                    else "g"
+                ),
                 "proportion": 100.0,
             }
 

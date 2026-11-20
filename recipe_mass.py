@@ -228,6 +228,14 @@ def _get_liquid_mass_conversion(nutrition_lookup_name: str) -> dict:
     return conversion
 
 
+def has_liquid_mass_conversion(nutrition_lookup_name) -> bool:
+    """Return True when a sourced mL-to-gram conversion is registered."""
+
+    if not isinstance(nutrition_lookup_name, str):
+        return False
+    return nutrition_lookup_name.strip().lower() in _LIQUID_MASS_CONVERSIONS
+
+
 def convert_liquid_ml_to_grams(
     *,
     nutrition_lookup_name,
