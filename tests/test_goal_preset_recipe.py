@@ -1207,7 +1207,9 @@ def test_plant_milks_with_sourced_density_use_ml_and_convert_to_grams(
         option["id"]: option
         for option in goal_preset_recipe.get_supported_ingredient_options()
     }
-    for ingredient_id in ("rice-milk", "hemp-milk", "cashew-milk"):
+    for ingredient_id in (
+        "rice-milk", "hemp-milk", "cashew-milk", "coconut-milk",
+    ):
         assert options[ingredient_id]["unit"] == "ml"
     # No sourced density: not offered for new smoothies at all.
     for ingredient_id in (

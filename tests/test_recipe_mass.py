@@ -83,7 +83,6 @@ def test_citrus_lookup_matching_is_case_insensitive():
     [
         "pea milk",
         "flax milk",
-        "coconut milk",
         "water",
     ],
 )
@@ -212,8 +211,8 @@ def test_recipe_normalization_rejects_one_unresolved_liquid():
                     "unit": "g",
                 },
                 {
-                    "ingredient": "coconut milk",
-                    "nutrition_lookup_name": "coconut milk",
+                    "ingredient": "flax milk",
+                    "nutrition_lookup_name": "flax milk",
                     "amount": 150,
                     "unit": "ml",
                 },
@@ -347,17 +346,18 @@ def test_v1_plant_milk_mass_conversions(
         assert restored_ml == pytest.approx(volume_ml)
 
 
-def test_coconut_milk_does_not_alias_coconut_beverage():
-    with pytest.raises(
-        RecipeMassResolutionError,
-        match="mass conversion is unresolved",
-    ):
-        normalize_recipe_ingredient_mass(
-            ingredient="Coconut Milk",
-            nutrition_lookup_name="coconut milk",
-            amount=240.0,
-            unit="ml",
-        )
+def test_coconut_milk_beverage_uses_usda_cup_weight():
+    # PureFyul's "coconut milk" row is the drinking beverage (about 20 kcal
+    # per 100 g, checked on the live site on 2026-11-20), so 1 cup (240 mL)
+    # weighs 240 g per USDA. Canned coconut milk would need its own entry.
+    result = normalize_recipe_ingredient_mass(
+        ingredient="Coconut Milk",
+        nutrition_lookup_name="coconut milk",
+        amount=240.0,
+        unit="ml",
+    )
+    assert result["weight_g"] == pytest.approx(240.0)
+    assert result["mass_source"] == "explicit_household_weight_conversion"
 
 
 
