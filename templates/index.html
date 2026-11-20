@@ -9981,9 +9981,18 @@
             '[data-personalize-ingredient-amount]'
           );
 
+          // A field the user never changed sends its exact amount, not
+          // the rounded number shown on screen.
+          const untouched =
+            input &&
+            input.dataset.exactAmount !== undefined &&
+            input.value === input.dataset.displayedAmount;
+
           addSelection(
             row.dataset.ingredientId || '',
-            input ? input.value : '',
+            untouched
+              ? input.dataset.exactAmount
+              : (input ? input.value : ''),
             row.dataset.ingredientName || ''
           );
         });
@@ -10176,6 +10185,7 @@
         numericAmount > 0
       ) {
         // Show friendly numbers (57.143 -> 57); the user can still edit.
+        // The exact amount is kept so an untouched field changes nothing.
         amountInput.value = String(
           numericAmount >= 5
             ? Math.round(numericAmount)
@@ -10183,6 +10193,8 @@
               ? Math.round(numericAmount * 10) / 10
               : Math.round(numericAmount * 1000) / 1000
         );
+        amountInput.dataset.exactAmount = String(numericAmount);
+        amountInput.dataset.displayedAmount = amountInput.value;
       } else {
         amountInput.placeholder = 'Amount';
       }
@@ -11052,6 +11064,25 @@
         if (status) {
           status.textContent =
             'You cannot update: at least 3 ingredients are required.';
+        }
+        return;
+      }
+
+      // Nothing changed: don't call the server or use a credit.
+      const currentItems = (recipe && recipe.ingredients) || [];
+      const unchanged =
+        currentItems.length === ingredientSelections.length &&
+        ingredientSelections.every(function(selection, index) {
+          const item = currentItems[index] || {};
+          return (
+            item.id === selection.id &&
+            Math.abs(Number(item.amount) - selection.amount) < 1e-9
+          );
+        });
+      if (unchanged) {
+        if (status) {
+          status.textContent =
+            'No changes yet. Change an amount or add an ingredient first.';
         }
         return;
       }
