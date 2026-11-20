@@ -23,6 +23,7 @@ const context = {
   {id:'raspberry', display_name:'Raspberry',amount:70,amount_source:'same_goal_reviewed_recipe_component',unit:'g'},
   {id:'almond-milk', display_name:'Almond Milk',amount:150,amount_source:'current_reviewed_recipe_component',unit:'ml'},
   {id:'unreviewed', display_name:'Unreviewed',amount:null,amount_source:'manual_amount_required',unit:'g'},
+  {id:'clementine', display_name:'Clementine',amount:75,amount_source:'usda_standard_portion',amount_label:'1 fruit',unit:'g'},
  ],
  pfPersonalizeCatalogMode:'all-supported',
  pfPersonalizeGoalAlignedIngredientIds:new Set(['raspberry']),
@@ -45,4 +46,7 @@ context.pfAddPersonalizeSetupIngredient();
 if(added.length!==2)throw Error('Blank unreviewed amount allowed');
 elements['pf-personalize-setup-add-amount'].value='25';context.pfAddPersonalizeSetupIngredient();
 if(added.length!==3 || added[2].amount!==25)throw Error('Manual-only selection not accepted');
+elements['pf-personalize-setup-add-select'].value='clementine';context.pfSyncPersonalizeAdditionAmount();
+if(elements['pf-personalize-setup-add-amount'].value!=='75')throw Error('USDA portion not initialized');
+if(!elements['pf-personalize-setup-add-amount-note'].textContent.includes('USDA standard portion (1 fruit)'))throw Error('USDA note missing');
 console.log('PASS — JS auto-fill g/mL; editable quantities; manual-only validation; no blank inserted');

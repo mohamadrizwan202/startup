@@ -955,6 +955,8 @@ _NEW_PERSONALIZATION_EXCLUDED_LOOKUP_NAMES = frozenset({
     "green tea", "matcha",
     # Interacts with many medications.
     "grapefruit",
+    # Duplicate of "honeydew"; keep one entry in the picker.
+    "honeydew melon",
 })
 
 
@@ -1150,6 +1152,68 @@ def _reviewed_ingredient_starting_amounts(
     return amounts
 
 
+# Smoothie-sized starting amounts for ingredients that no reviewed recipe
+# uses yet. Each is a household measure from USDA FoodData Central (SR
+# Legacy) household weights, sized for one smoothie, e.g. "1 cup grapes =
+# 151 g" becomes "1/2 cup = 75 g". Amounts are grams; liquids shown in
+# mL are converted with recipe_mass before display. These are editable
+# starting points, not dietary recommendations.
+_USDA_STANDARD_PORTIONS = {
+    "acai-berry": (100.0, "1 frozen pulp pack"),
+    "applesauce": (120.0, "1/2 cup"),
+    "apricot": (70.0, "2 fruits"),
+    "barley-milk": (120.0, "1/2 cup"),
+    "cashew-milk": (120.0, "1/2 cup"),
+    "cashews": (15.0, "1/2 oz"),
+    "celery": (40.0, "1 medium stalk"),
+    "clementine": (75.0, "1 fruit"),
+    "coconut-milk": (120.0, "1/2 cup"),
+    "cottage-cheese": (55.0, "1/4 cup"),
+    "dragon-fruit": (90.0, "1/2 cup cubes"),
+    "grapes": (75.0, "1/2 cup"),
+    "hazelnut-milk": (120.0, "1/2 cup"),
+    "hemp-milk": (120.0, "1/2 cup"),
+    "honeydew": (85.0, "1/2 cup diced"),
+    "honeydew-melon": (85.0, "1/2 cup diced"),
+    "lime": (15.0, "juice of 1/2 lime"),
+    "nectarine": (70.0, "1/2 cup sliced"),
+    "passion-fruit": (35.0, "pulp of 2 fruits"),
+    "peach": (75.0, "1/2 cup sliced"),
+    "pecan-milk": (120.0, "1/2 cup"),
+    "pistachio-milk": (120.0, "1/2 cup"),
+    "quinoa-milk": (120.0, "1/2 cup"),
+    "rice-milk": (120.0, "1/2 cup"),
+    "romaine-lettuce": (45.0, "1 cup shredded"),
+    "swiss-chard": (35.0, "1 cup chopped"),
+    "walnut-milk": (120.0, "1/2 cup"),
+    "watermelon": (75.0, "1/2 cup diced"),
+    "zucchini": (60.0, "1/2 cup chopped"),
+}
+
+
+def _usda_standard_portion_option(ingredient_id: str, unit: str):
+    """Return an amount/source update for an unreviewed ingredient, if any."""
+    portion = _USDA_STANDARD_PORTIONS.get(ingredient_id)
+    if portion is None:
+        return None
+    grams, household_measure = portion
+    amount = grams
+    if unit == "ml":
+        definitions = _get_personalization_catalog_definitions()
+        amount = recipe_mass.convert_liquid_grams_to_ml(
+            nutrition_lookup_name=(
+                definitions[ingredient_id]["nutrition_lookup_name"]
+            ),
+            weight_g=grams,
+        )
+        amount = float(max(5, round(amount / 5) * 5))
+    return {
+        "amount": float(amount),
+        "amount_source": "usda_standard_portion",
+        "amount_label": household_measure,
+    }
+
+
 def get_personalization_ingredient_options(
     *,
     goal=None,
@@ -1197,6 +1261,10 @@ def get_personalization_ingredient_options(
     )
     for option in result["ingredients"]:
         recommendation = suggested.get(option["id"])
+        if recommendation is None:
+            recommendation = _usda_standard_portion_option(
+                option["id"], option["unit"],
+            )
         if recommendation is None:
             option["amount"] = None
             option["amount_source"] = "manual_amount_required"

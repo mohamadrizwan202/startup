@@ -95,3 +95,36 @@ def test_frontend_sends_context_and_never_adds_blank_amount():
     assert "amount: amount" in template
     assert 'id="pf-personalize-setup-add-amount"' in template
     assert "result = get_options(goal=goal, timing=timing, variant=variant)" in backend
+
+
+def test_every_option_gets_a_starting_amount_for_every_goal_and_timing():
+    for goal in ("immune-support", "liver-support", "brain-focus", "skin-glow"):
+        for timing in ("breakfast", "lunch", "bedtime"):
+            response = recipes.get_personalization_ingredient_options(
+                goal=goal, timing=timing, variant="a"
+            )
+            for option in response["ingredients"]:
+                assert option["amount_source"] != "manual_amount_required"
+                assert option["amount"] > 0
+
+
+def test_usda_standard_portion_fills_unreviewed_ingredients():
+    response = recipes.get_personalization_ingredient_options(
+        goal="skin-glow", timing="lunch", variant="a"
+    )
+    options = _by_id(response)
+    clementine = options["clementine"]
+    assert clementine["amount_source"] == "usda_standard_portion"
+    assert clementine["amount"] == 75.0
+    assert clementine["amount_label"] == "1 fruit"
+    # Reviewed recipe amounts still take priority over USDA portions.
+    assert options["mango"]["amount_source"] != "usda_standard_portion"
+
+
+def test_duplicate_honeydew_melon_is_not_offered():
+    response = recipes.get_personalization_ingredient_options(
+        goal="skin-glow", timing="lunch", variant="a"
+    )
+    ids = {item["id"] for item in response["ingredients"]}
+    assert "honeydew" in ids
+    assert "honeydew-melon" not in ids
