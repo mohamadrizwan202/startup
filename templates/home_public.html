@@ -480,21 +480,12 @@
     .hp-feature-card p { font-size: 0.875rem; color: #64748b; line-height: 1.65; }
     .hp-scale-items { margin-top: 2rem; }
     .hp-scale-item { display: flex; gap: 18px; align-items: flex-start; background: #F0FDFA; border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
-    .hp-scale-item-last { margin-bottom: 0; }
+    .hp-scale-item:last-child { margin-bottom: 0; }
     .hp-scale-icon { flex-shrink: 0; width: 44px; height: 44px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
     .hp-scale-body { min-width: 0; }
     .hp-scale-eyebrow { font-size: 0.75rem; color: #0d9488; font-weight: 600; margin: 0 0 4px; }
     .hp-scale-item h3 { font-size: 1.05rem; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
     .hp-scale-item p { font-size: 0.9rem; color: #475569; line-height: 1.6; margin: 0; }
-    .hp-pro-panel { margin: 1.5rem 0 0; padding: 1.5rem 1.75rem; background: #FDF4E7; border-radius: 14px; }
-    .hp-pro-panel-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #B45309; margin: 0 0 1rem; }
-    .hp-pro-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .hp-pro-panel-grid h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0 0 6px; }
-    .hp-pro-panel-grid p { font-size: 0.875rem; color: #64748b; line-height: 1.6; margin: 0; }
-    @media (max-width: 768px) {
-      .hp-pro-panel { margin-left: 0; }
-      .hp-pro-panel-grid { grid-template-columns: 1fr; }
-    }
     .hp-gap { background: #0EA5A4; padding: 5rem 1.5rem; }
     .hp-gap-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
     .hp-gap .hp-section-label { color: rgba(255,255,255,0.7); text-align: left; }
@@ -598,40 +589,40 @@
   <section class="hp-hero">
     <div class="hp-hero-inner">
       <span class="hp-eyebrow">Age-Smart Smoothie Nutrition</span>
-      <h1 class="hp-h1">Build your smoothie. See the nutrition before you blend.</h1>
-      <p class="hp-lead">Choose your age group and health goal, get suggested smoothie portions, and personalize your ingredients. Review estimated nutrition and ingredient allergen information before blending.</p>
+      <h1 class="hp-h1">Not Just a Smoothie Calculator. Build Around Your Health Goals.</h1>
+      <p class="hp-lead">Choose an age group and health goal, start with suggested smoothie portions, then adjust ingredients and exact quantities. Review estimated nutrition before blending.</p>
       <div class="hp-cta-row">
-        <a href="/app" class="hp-btn-primary">Try Free</a>
+        <a href="/app" class="hp-btn-primary">Try PureFyul Free</a>
         <a href="#how-it-works" class="hp-btn-ghost">How it works</a>
       </div>
       <div class="hp-chips">
         <span class="hp-chip">Age-adjusted portions</span>
         <span class="hp-chip">22 health goals</span>
-        <span class="hp-chip">Allergen checks</span>
+        <span class="hp-chip">Ingredient allergen information</span>
       </div>
     </div>
   </section>
 
   <section class="hp-section hp-problem">
     <div class="hp-container">
-      <p class="hp-section-label">The gap nobody solved</p>
-      <h2 class="hp-section-title">Every body is different. Most apps pretend otherwise.</h2>
-      <p class="hp-section-sub">Generic nutrition apps were built for adults. PureFyul was built for everyone.</p>
+      <p class="hp-section-label">Why PureFyul</p>
+      <h2 class="hp-section-title">Suggested Portions, Flexible Ingredients, Clear Estimates</h2>
+      <p class="hp-section-sub">PureFyul provides recipe starting points without locking you into fixed ingredient amounts.</p>
       <div class="hp-problem-grid">
         <div class="hp-problem-card">
           <div class="hp-problem-icon">&#x1F4CA;</div>
-          <h3>Generic apps give generic portions</h3>
-          <p>MyFitnessPal and Cronometer track what you ate. They do not give you the right amounts for your age group, growth stage, or life phase.</p>
+          <h3>Start with suggested portions</h3>
+          <p>Suggested smoothie presets include ingredient quantities you can review and change.</p>
         </div>
         <div class="hp-problem-card">
           <div class="hp-problem-icon">&#x1F46A;</div>
-          <h3>Families blend for multiple ages at once</h3>
-          <p>A smoothie for a 6-year-old is not a scaled-down adult smoothie. Iron, calcium, and calorie needs differ enough that one recipe does not work for everyone at the table.</p>
+          <h3>Choose an age group</h3>
+          <p>Age-group portion suggestions provide general starting points, not individualized dietary requirements.</p>
         </div>
         <div class="hp-problem-card">
           <div class="hp-problem-icon">&#x1F3AF;</div>
-          <h3>Health goals change what you blend</h3>
-          <p>Weight management, energy, muscle recovery, immune support — these are not the same smoothie. PureFyul organises presets by health goal so you blend with a purpose.</p>
+          <h3>Explore recipes by health goal</h3>
+          <p>Browse presets organized by supported health goals and review their ingredients and estimated nutrition.</p>
         </div>
       </div>
     </div>
@@ -888,7 +879,7 @@
   <section class="hp-section hp-features">
     <div class="hp-container">
       <p class="hp-section-label">What is Inside</p>
-      <h2 class="hp-section-title">Everything you need to blend with intention</h2>
+      <h2 class="hp-section-title">Portion and Ingredient Tools</h2>
       <p class="hp-section-sub">Built for parents, athletes, caregivers, and anyone who takes nutrition seriously.</p>
 
       <div class="hp-scale-items">
@@ -906,7 +897,7 @@
           <div class="hp-scale-body">
             <p class="hp-scale-eyebrow">Ages 4 to 60+</p>
             <h3>Age-specific portions</h3>
-            <p>12 age groups, each with its own portion size. An ingredient scaled for a 4 year old is never the same amount scaled for a 60 year old.</p>
+            <p>12 age groups, each with its own portion size. Suggested portions vary by age group, and you can adjust ingredient amounts.</p>
           </div>
         </div>
 
@@ -918,50 +909,24 @@
             </svg>
           </div>
           <div class="hp-scale-body">
-            <p class="hp-scale-eyebrow">Any age, any ingredient</p>
+            <p class="hp-scale-eyebrow">Ingredient information</p>
             <h3>Ingredient analysis</h3>
-            <p>Check one ingredient on its own for serving size, allergen flags, and whether it fits a health goal.</p>
+            <p>Review individual ingredient information, including serving details and available allergen information.</p>
           </div>
         </div>
 
-        <div class="hp-scale-item hp-scale-item-last">
-          <div class="hp-scale-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0EA5A4" stroke-width="1.6" aria-hidden="true">
-              <path d="M20 11a8 8 0 1 0-2.3 5.7"/>
-              <path d="M20 5v6h-6"/>
-            </svg>
-          </div>
-          <div class="hp-scale-body">
-            <p class="hp-scale-eyebrow">Every build, remembered</p>
-            <h3>Recent smoothies</h3>
-            <p>What you build is kept automatically. Rebuild any past smoothie in one tap, nothing to re-enter.</p>
-          </div>
-        </div>
       </div>
 
-      <div class="hp-pro-panel">
-        <p class="hp-pro-panel-label">Pro</p>
-        <div class="hp-pro-panel-grid">
-          <div>
-            <h3>Save recipes</h3>
-            <p>Keep your best builds with ingredients, nutrition, goal, and timing attached.</p>
-          </div>
-          <div>
-            <h3>Weekly meal planner</h3>
-            <p>Assign saved smoothies to breakfast, lunch, dinner, or a snack slot for the week.</p>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
   <section class="hp-gap">
     <div class="hp-gap-inner">
       <div>
-        <p class="hp-section-label">Why PureFyul</p>
+        <p class="hp-section-label">Calculator Details</p>
         <h2 class="hp-section-title">Personalized Smoothie Recipes by Age Group and Health Goal</h2>
-        <p>Build a smoothie around your age group and health goal with PureFyul's smoothie nutrition calculator. Start with suggested smoothie portion sizes and review estimated calories, protein, carbohydrates, fats, sugar, and fiber before you blend.</p>
-        <p>Choose a recommended smoothie recipe or create your own with ingredients you prefer. Add, remove, and adjust ingredient quantities to personalize your smoothie while reviewing its estimated nutrition. PureFyul gives you control over what goes into every blend.</p>
+        <p>PureFyul's smoothie nutrition calculator estimates calories, protein, carbohydrates, fat, sugar, and fiber from selected ingredients and quantities. Results are estimates, not laboratory measurements.</p>
+        <p>Presets provide starting quantities. When personalizing a smoothie, you control which supported ingredients are included and the amounts used in the nutrition estimate.</p>
         <a href="/app" class="hp-gap-btn">Try it free</a>
       </div>
       <div class="hp-compare">
@@ -990,10 +955,6 @@
           <div class="hp-feat">Allergen information</div>
           <div class="hp-ck">Review ingredient allergen flags and context</div>
         </div>
-        <div class="hp-compare-row">
-          <div class="hp-feat">Weekly meal planner (Pro)</div>
-          <div class="hp-ck">Plan saved smoothies across the week</div>
-        </div>
       </div>
     </div>
   </section>
@@ -1004,7 +965,7 @@
     <div class="hp-container">
       <p class="hp-section-label">Explore PureFyul Guides</p>
       <h2 class="hp-section-title" id="hp-explore-title">Explore Smoothie Health Goals and Ingredient Nutrition</h2>
-      <p class="hp-section-sub">Browse health-goal guides and ingredient nutrition information, then use PureFyul's smoothie nutrition calculator to build your own smoothie and review estimated calories, protein, carbohydrates, fats, sugar, and fiber.</p>
+      <p class="hp-section-sub">Explore health-goal guides and individual ingredient nutrition information to help inform your smoothie choices.</p>
 
       <div class="hp-explore-grid">
         {% if popular_goals %}
@@ -1037,7 +998,7 @@
     <div class="hp-container">
       <p class="hp-section-label">Start today</p>
       <h2>A smoothie built around your age group and health goals.</h2>
-      <p>Free forever plan. No credit card required. Build your first smoothie in minutes.</p>
+      <p>Explore suggested recipes or build a smoothie using ingredients you choose.</p>
       <div style="margin-bottom:1rem;">
         <a href="/app" class="hp-cta-btn">Start Building Free</a>
         <a href="/pricing" class="hp-cta-btn-ghost">View Pricing</a>
@@ -1050,7 +1011,7 @@
     <div class="hp-footer-inner">
       <div>
         <div class="hp-footer-logo">PureFyul</div>
-        <p class="hp-footer-about">Age-adjusted smoothie nutrition for ages 4 to 60+. Free to use, no account needed.</p>
+        <p class="hp-footer-about">Smoothie nutrition estimates and suggested portions for ages 4 to 60+.</p>
       </div>
       <div class="hp-footer-col">
         <h5>Product</h5>
