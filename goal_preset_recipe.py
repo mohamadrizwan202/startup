@@ -957,6 +957,11 @@ _NEW_PERSONALIZATION_EXCLUDED_LOOKUP_NAMES = frozenset({
     "grapefruit",
     # Duplicate of "honeydew"; keep one entry in the picker.
     "honeydew melon",
+    # Plant milks without a sourced density: they could only be shown in
+    # grams, so they are not offered until a measured density exists.
+    # (Pea milk stays: it is part of a reviewed instant recipe.)
+    "barley milk", "flax milk", "hazelnut milk", "milk",
+    "pecan milk", "pistachio milk", "quinoa milk", "walnut milk",
 })
 
 

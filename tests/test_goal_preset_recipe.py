@@ -1209,9 +1209,12 @@ def test_plant_milks_with_sourced_density_use_ml_and_convert_to_grams(
     }
     for ingredient_id in ("rice-milk", "hemp-milk", "cashew-milk"):
         assert options[ingredient_id]["unit"] == "ml"
-    # No sourced density yet: stays in grams rather than guessing.
-    for ingredient_id in ("pistachio-milk", "walnut-milk", "coconut-milk"):
-        assert options[ingredient_id]["unit"] == "g"
+    # No sourced density: not offered for new smoothies at all.
+    for ingredient_id in (
+        "barley-milk", "flax-milk", "hazelnut-milk", "milk",
+        "pecan-milk", "pistachio-milk", "quinoa-milk", "walnut-milk",
+    ):
+        assert ingredient_id not in options
 
     result = goal_preset_recipe.build_personalized_goal_preset_recipe(
         goal="skin-glow",
