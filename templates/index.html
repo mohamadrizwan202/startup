@@ -7594,6 +7594,141 @@
           overflow: visible;
         }
 
+        /* PF responsive repair 2026-11-20
+           The compact single-screen layout used fixed heights with
+           overflow:hidden, which clipped the time cards and the
+           "Build my smoothie" button on phones and on short screens
+           (1024x768). Let the flow grow and the page scroll instead. */
+        .container:has(#pf-goal-time-entry) {
+          height: auto;
+          min-height: calc(100dvh - 80px);
+          overflow: visible;
+        }
+
+        .container:has(#pf-goal-time-entry) #smoothie-tab-content,
+        #pf-goal-time-entry,
+        #pf-goal-time-entry .pf-flow-shell,
+        #pf-goal-time-entry .pf-flow-main {
+          height: auto;
+          overflow: visible;
+        }
+
+        #pf-goal-time-entry .pf-choice-copy,
+        #pf-goal-time-entry .pf-choice-copy strong {
+          min-width: 0;
+          overflow-wrap: break-word;
+        }
+
+        @media (max-width: 760px) {
+          .container:has(#pf-goal-time-entry) {
+            min-height: calc(100dvh - 64px);
+          }
+
+          #pf-goal-time-entry .pf-flow-main,
+          #pf-goal-time-entry.is-result-view .pf-flow-main {
+            width: 100%;
+            margin: 0;
+            padding: 0 14px 84px;
+          }
+
+          #pf-goal-time-entry .pf-flow-hero h1 {
+            font-size: clamp(30px, 9vw, 38px);
+          }
+
+          #pf-goal-time-entry .pf-flow-hero p {
+            font-size: 14px;
+          }
+
+          #pf-goal-time-entry .pf-flow-section {
+            padding: 10px 0 12px;
+          }
+
+          #pf-goal-time-entry .pf-flow-section h2 {
+            font-size: 21px;
+          }
+
+          #pf-goal-time-entry .pf-goal-choice-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+          }
+
+          #pf-goal-time-entry .pf-goal-choice {
+            grid-template-columns: 26px minmax(0, 1fr);
+            gap: 8px;
+            min-height: 72px;
+            padding: 10px;
+          }
+
+          #pf-goal-time-entry .pf-choice-icon svg {
+            width: 24px;
+            height: 24px;
+          }
+
+          #pf-goal-time-entry .pf-choice-copy strong {
+            font-size: 13.5px;
+          }
+
+          #pf-goal-time-entry .pf-choice-copy > span {
+            display: block;
+            font-size: 11px;
+            line-height: 1.2;
+          }
+
+          #pf-goal-time-entry .pf-time-choice-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+          }
+
+          #pf-goal-time-entry .pf-time-choice {
+            min-height: 72px;
+            padding: 10px 4px;
+          }
+
+          #pf-goal-time-entry .pf-time-choice strong {
+            font-size: 11.5px;
+            white-space: normal;
+          }
+
+          #pf-goal-time-entry .pf-time-choice > span:not(.pf-time-icon):not(.pf-time-check) {
+            display: block;
+          }
+
+          #pf-goal-time-entry .pf-build-my-smoothie {
+            min-height: 48px;
+            margin-top: 14px;
+            font-size: 15px;
+          }
+
+          #pf-goal-time-entry .pf-flow-trust-row {
+            flex-wrap: wrap;
+            row-gap: 8px;
+            white-space: normal;
+          }
+        }
+
+        @media (max-width: 360px) {
+          #pf-goal-time-entry .pf-goal-choice {
+            grid-template-columns: minmax(0, 1fr);
+            text-align: left;
+          }
+
+          #pf-goal-time-entry .pf-time-choice-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 1050px) and (min-width: 761px) {
+          #pf-goal-time-entry .pf-flow-main {
+            padding-bottom: 72px;
+          }
+
+          #pf-goal-time-entry .pf-flow-trust-row {
+            flex-wrap: wrap;
+            row-gap: 8px;
+            white-space: normal;
+          }
+        }
+
 </style>
 
       <section id="pf-goal-time-entry" class="pf-goal-time-entry" style="display:block" aria-labelledby="pf-goal-time-title">
