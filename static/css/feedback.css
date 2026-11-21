@@ -415,3 +415,11 @@
 #pf-feedback-widget.is-closing #pf-feedback-backdrop{
   pointer-events: none !important;
 }
+
+/* Hide the floating Feedback button while a modal is open, so it
+   never covers modal buttons such as Cancel in the Customize editor. */
+body:has(.pf-save-auth-overlay.is-open) .pf-feedback-widget,
+body:has(.ssm-modal-open) .pf-feedback-widget,
+body.pf-modal-open .pf-feedback-widget {
+  display: none;
+}
