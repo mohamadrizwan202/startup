@@ -199,6 +199,12 @@
       overflow: hidden;
     }
 
+    .hp-walkthrough-image-frame picture {
+      display: block;
+      width: 100%;
+      min-width: 0;
+    }
+
     .hp-walkthrough-image {
       display: block;
       width: 100%;
@@ -660,10 +666,10 @@
             <span class="hp-walkthrough-tab-number">01</span>
             <span class="hp-walkthrough-tab-copy">
               <span class="hp-walkthrough-tab-title">
-                Choose your audience
+                Choose your goal and time
               </span>
               <span class="hp-walkthrough-tab-subtitle">
-                PureFyul adjusts ingredient portions
+                Select a health goal and a time of day
               </span>
             </span>
           </button>
@@ -681,10 +687,10 @@
             <span class="hp-walkthrough-tab-number">02</span>
             <span class="hp-walkthrough-tab-copy">
               <span class="hp-walkthrough-tab-title">
-                Build your smoothie
+                Review your smoothie
               </span>
               <span class="hp-walkthrough-tab-subtitle">
-                Use a preset or choose ingredients
+                See ingredients, portions, and nutrition
               </span>
             </span>
           </button>
@@ -702,10 +708,10 @@
             <span class="hp-walkthrough-tab-number">03</span>
             <span class="hp-walkthrough-tab-copy">
               <span class="hp-walkthrough-tab-title">
-                Review and share
+                Personalization
               </span>
               <span class="hp-walkthrough-tab-subtitle">
-                See the finished personalized result
+                Adjust ingredients and exact amounts
               </span>
             </span>
           </button>
@@ -721,28 +727,28 @@
           >
             <div class="hp-walkthrough-panel-copy">
               <span class="hp-walkthrough-step-label">Step 1</span>
-              <h3>Tell PureFyul who it is for</h3>
+              <h3>Choose your health goal and time</h3>
               <p>
-                Select the audience first. PureFyul uses the
-                age group to set ingredient portions before
-                you build.
+                Select an available health goal and when you plan to have the smoothie. PureFyul uses those choices to suggest a recipe.
               </p>
               <div class="hp-walkthrough-benefit">
-                You choose the person. PureFyul handles the
-                portion calculations.
+                Your choices establish the starting point for the suggested smoothie.
               </div>
             </div>
 
             <div class="hp-walkthrough-image-frame">
-              <img
-                class="hp-walkthrough-image"
-                src="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-1.png') }}?v=1"
-                width="1095"
-                height="562"
-                loading="lazy"
-                decoding="async"
-                alt="PureFyul builder with an audience selected and smoothie presets unlocked"
+              <picture>
+                <source media="(max-width: 600px)" srcset="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-1-mobile.png') }}?v=1" width="486" height="580">
+                <img
+                  class="hp-walkthrough-image"
+                  src="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-1.png') }}?v=2"
+                  width="1135"
+                  height="916"
+                  loading="lazy"
+                  decoding="async"
+                  alt="PureFyul health goal selection, with time-of-day options in the builder"
               >
+              </picture>
             </div>
           </article>
 
@@ -756,28 +762,28 @@
           >
             <div class="hp-walkthrough-panel-copy">
               <span class="hp-walkthrough-step-label">Step 2</span>
-              <h3>Choose a preset or build your own</h3>
+              <h3>Review your suggested smoothie</h3>
               <p>
-                Load a starting recipe or select the timing,
-                health goal, and ingredients yourself. Review
-                the amounts, then build the smoothie.
+                See the estimated calories, macros, ingredient amounts, and accompanying recipe explanation.
               </p>
               <div class="hp-walkthrough-benefit">
-                Start quickly with a preset or keep control
-                over every ingredient.
+                Review the suggested recipe before deciding whether to personalize it.
               </div>
             </div>
 
             <div class="hp-walkthrough-image-frame">
-              <img
-                class="hp-walkthrough-image"
-                src="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-2.png') }}?v=1"
-                width="1095"
-                height="968"
-                loading="lazy"
-                decoding="async"
-                alt="PureFyul builder with timing, health goal, ingredients, and Build Smoothie button ready"
+              <picture>
+                <source media="(max-width: 600px)" srcset="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-2-mobile.png') }}?v=1" width="467" height="446">
+                <img
+                  class="hp-walkthrough-image"
+                  src="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-2.png') }}?v=2"
+                  width="1544"
+                  height="562"
+                  loading="lazy"
+                  decoding="async"
+                  alt="PureFyul generated smoothie showing its estimated nutrition profile"
               >
+              </picture>
             </div>
           </article>
 
@@ -791,28 +797,28 @@
           >
             <div class="hp-walkthrough-panel-copy">
               <span class="hp-walkthrough-step-label">Step 3</span>
-              <h3>Review your personalized result</h3>
+              <h3>Personalize your smoothie</h3>
               <p>
-                See the nutrition summary, portion size,
-                ingredient amounts, insight, and allergen
-                status in one result.
+                Add or remove supported ingredients, or adjust exact quantities using the controls or direct entry.
               </p>
               <div class="hp-walkthrough-benefit">
-                Create a free account when you are ready to
-                share your completed result.
+                Choose your ingredient amounts, then update the smoothie.
               </div>
             </div>
 
             <div class="hp-walkthrough-image-frame">
-              <img
-                class="hp-walkthrough-image"
-                src="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-3.png') }}?v=1"
-                width="1800"
-                height="980"
-                loading="lazy"
-                decoding="async"
-                alt="Completed PureFyul smoothie result with nutrition, ingredients, allergen status, and sharing option"
+              <picture>
+                <source media="(max-width: 600px)" srcset="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-3-mobile.png') }}?v=1" width="488" height="765">
+                <img
+                  class="hp-walkthrough-image"
+                  src="{{ url_for('static', filename='images/home-walkthrough/home-walkthrough-step-3.png') }}?v=2"
+                  width="1226"
+                  height="1112"
+                  loading="lazy"
+                  decoding="async"
+                  alt="PureFyul ingredient personalization controls for editing quantities and adding or removing ingredients"
               >
+              </picture>
             </div>
           </article>
         </div>
