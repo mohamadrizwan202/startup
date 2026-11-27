@@ -2449,7 +2449,7 @@ def index():
 
     html = render_template(
         "home_public.html",
-        page_title="Smoothie Calculator by Age & Health Goal | PureFyul",
+        page_title="Smoothie Calculator by Health Goal | PureFyul",
         meta_description="Build smoothies around your health goals. Adjust ingredient amounts and estimate calories, protein, carbs, fat, sugar and fiber with PureFyul.",
         canonical_url=canonical,
         og_url=canonical,
